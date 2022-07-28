@@ -1,8 +1,8 @@
 require("dotenv").config();
 
 /* The Logger Imports */
-const alphalogger = require("alphalogger/logger");
-global.logger = new alphalogger("default")
+const log = require("./utils/logger");
+global.logger = new log("default")
 
 process.on("uncaughtException", (err, stack) => {
     logger.error(`Unhandled Exception, (${err.stack})`)
@@ -21,8 +21,6 @@ const cookieParser = require("cookie-parser");
 /* Util Imports */
 const redis = require("./utils/redis");
 const routeHandler = require("./utils/routeHandler");
-const { set } = require("./utils/redis");
-const { SchemaFieldTypes } = require("redis");
 
 /* Express Middleware stuff */
 const app = express()

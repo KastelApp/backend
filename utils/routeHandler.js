@@ -38,12 +38,12 @@ const thrandthr = (fipath, arr) => {
  * @param {String} exportPath 
  */
 const cutter = (filePath, exportPath) => {
-    
+
     const splitPath = filePath.split("/routes").pop().split("/")
 
     splitPath.shift() // shift it once to remove the ('')
     splitPath.pop() // pop it to remove the .js file part (example.js)
-    
+
     return splitPath.length >= 1 ? `/${splitPath.join("/")}${exportPath.startsWith("/") ? exportPath : "/" + exportPath}` : `${exportPath}`
 }
 

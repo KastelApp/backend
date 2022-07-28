@@ -12,7 +12,7 @@ const pwdRoute = (req, res, next) => {
     const ip = (req.headers["cf-connecting-ip"] || req.headers["x-forwarded-for"] || req.ip).replace("::ffff:", "");
 
     let requestPassword = req?.body?.password || req?.body?.pass || req?.headers?.password || req?.headers?.pass || req?.query?.password || req?.query?.pass
-    
+
     if (!requestPassword) {
         logger.warn(`${ip} Attempted to access a protected route without a password (${req.path})`);
         return res.status(401).send("Unauthorized");

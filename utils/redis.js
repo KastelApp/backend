@@ -18,7 +18,7 @@ class Redis {
     static createClient() {
         Redis.clientCheck(false);
 
-       return new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             redisClient = redis.createClient({
                 url: `redis://default:${process.env.rpassword}@${process.env.rhost}:${process.env.rport}`,
                 database: process.env.rdb,
@@ -39,7 +39,7 @@ class Redis {
      */
     static set(key, item) {
         Redis.clientCheck(true);
-    
+
         return new Promise((resolve, reject) => {
             if (!item) reject("No item provided");
             if (typeof item == "object") item = JSON.stringify(item);
@@ -64,8 +64,7 @@ class Redis {
     static search() {
         Redis.clientCheck(true);
 
-        return new Promise((resolve, reject) => {
-        })
+        return new Promise((resolve, reject) => {})
     }
 
 
