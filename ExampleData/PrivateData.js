@@ -8,26 +8,25 @@ const PRIVATE_USER_DATA = {
     username: "DarkerInk", // The Username, Supports any Char, (Max Length 46 Chars)
     tag: "8888", // The original tag is the four randomly generated numbers of your id. If its taken will be randomly generated again
     id: "33168888888888888", // Unqiue ID, Adds the date of it being generated and the start date (setable in .env) then four randomly generated numbers
-    email: "darkerink@staff.kastelapp.org", // The Users Email (Will be Encrypted)
+    email: "darkerink@staff.kastelapp.org", // The Users Email (Will be Encrypted & hashed)
     password: "CatsAreVeryCool1234!!!", // A Hashed and Encrypted Password. Nobody will know it besides the User
     created_date: 1658352496290,
     privacy_settings: {
-        hash_email: false, // If the user wants their email hashed, This will make it impossible to send them news updates etc
         two_fa: true, // If the user must require a 2FA code on Login, Password Reset, Email Change ETC
         ip_lock: false, // If true will lock the account to one ip only (All API requests will Fail if its wrong). The only way to access it from a different IP is requesting it then clicking on the email that was sent
         ip_verifiy: true, // If true and a Different IP is found trying to login will force them to verify by clicking the email that is sent to them
     },
     ip: "127.0.0.1", // A Hashed IP Address, Only stored for @PRIVATE_USER_DATA#ip_lock @PRIVATE_USER_DATA#ip_verifiy
     badges: [{
-        name: "Staff",
-        short_description: "Works for Kastelapp",
+        name: "Kastel Staff",
+        short_description: "Moderates Kastel",
         small_image: "https://cdn.kastelapp.org/33171801624545077/33171801624550422/33171801624550004.png"
     }, {
         name: "Original User",
         short_description: "Was one of the first 1000 Users :)",
         small_image: "https://cdn.kastelapp.org/33171802224545005/33171802224547277/33171802224557975.png"
     }, {
-        name: "Kastelapp Developer",
+        name: "Kastel Developer",
         short_description: "Is a Developer at Kastelapp/Has made a big Commit to the Project",
         small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171809644780990.png"
     }],
@@ -46,7 +45,13 @@ const PRIVATE_USER_DATA = {
         id: "33171631673133808",
         dm_channel_id: "33172345402920010"
     }],
-    gifts: []
+    gifts: [],
+    misc: {
+        banned: false,
+        ban_reason: null,
+        account_deletion_in_progress: false,
+        email_verified: true
+    }
 };
 
 /**

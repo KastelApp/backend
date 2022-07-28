@@ -7,7 +7,8 @@ const defaultColors = {
     Debug: chalk.magenta("Debug"),
     Info: chalk.blue("Info"),
     Warn: chalk.yellow("Warn"),
-    Error: chalk.red("Error")
+    Error: chalk.red("Error"),
+    Loaded: chalk.green("Loaded")
 }
 
 const types = {
@@ -39,7 +40,7 @@ class logger extends EventEmitter {
             path: "./logs",
             fileName: "{DATE}.log",
             logFormat: "[{DATE} {TYPE}] {MESSAGE}",
-            logTypes: ["Debug", "Info", "Warn", "Error"],
+            logTypes: ["Debug", "Info", "Warn", "Error", "Loaded"],
             consoleLog: true,
             logCheck: false,
             logOld: false,

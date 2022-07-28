@@ -9,7 +9,7 @@ process.on("uncaughtException", (err, stack) => {
 })
 
 process.on("unhandledRejection", (reason) => {
-    logger.error(`Unhandled Rejection, (${reason})`)
+    logger.error(`Unhandled Rejection, (${reason.stack})`)
 })
 
 /* Express Imports */
@@ -21,6 +21,7 @@ const cookieParser = require("cookie-parser");
 /* Util Imports */
 const redis = require("./utils/redis");
 const routeHandler = require("./utils/routeHandler");
+const { setup } = require("./utils/newIdGen");
 
 /* Express Middleware stuff */
 const app = express()
@@ -63,5 +64,15 @@ app.listen((process.env.port || 3000), async () => {
     await redis.createClient().then(() => logger.info("Redis Server Connected")).catch((e) => {
         logger.error("Failed to connect to Redis,", e)
         process.exit()
+    })
+
+    setup({ // sets up the new ID generator
+        epoch: process.env.epoch,
+        workerId: process.env.workerId,
+        datacenterId: process.env.datacenterId,
+        workerId_Bytes: process.env.workerId_Bytes,
+        datacenterId_Bytes: process.env.datacenterId_Bytes,
+        sequence: process.env.sequence,
+        sequence_Bytes: process.env.sequence_Bytes,
     })
 })

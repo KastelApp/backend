@@ -233,7 +233,7 @@ const PUBLIC_USER_DATA = { // This is data that is Completely Public anyone can 
 
 const ALL_CURRENT_BADGES = [{
     name: "Kastel Staff",
-    short_description: "Moderates Kastelapp",
+    short_description: "Moderates Kastel",
     small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171801624550004.png"
 }, {
     name: "Kastel Developer",

@@ -67,6 +67,10 @@ const routeHandler = (app) => {
         } else {
             app[route.method](newPath, ...route.middleWare, (...args) => route.run(...args, app))
         }
+
+        if (process?.env?.logRoutes == "true") {
+            logger.loaded(`${newPath} (${route?.method || route?.methods.join(", ")})`)
+        }
     }
 }
 
