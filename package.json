@@ -1,0 +1,29 @@
+{
+  "name": "kastel",
+  "description": "A Privacy focused, Chatting app like Discord.",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "alphalogger": "^1.0.3",
+    "chalk": "^4.1.2",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.2",
+    "express-ws": "^5.0.2",
+    "mongoose": "^6.5.0",
+    "nodemon": "^2.0.15",
+    "redis": "^4.0.4"
+  },
+  "scripts": {
+    "test": "echo \"No Tests Made\" && exit 1",
+    "start": "node index.js"
+  },
+  "keywords": [
+    "chatting",
+    "private",
+    "privacy"
+  ],
+  "author": "DarkerInk",
+  "license": "GPL-3.0-or-later"
+}

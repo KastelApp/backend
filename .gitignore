@@ -1,0 +1,10 @@
+# Dir's
+node_modules/
+logs/
+ignoredTestingData/
+
+# Anything
+*fakeData*
+
+# Files
+.env
