@@ -27,7 +27,7 @@ Kastel Is a Chatting App like <a href="https://discord.com">Discord</a> & <a hre
 
 # License
 
-Please read the license that can be found in [LICENSE.md]()
+Please read the license that can be found in [LICENSE.md](https://github.com/Kastelll/backend/blob/master/LICENSE.md)
 
 [contributors-shield]: https://img.shields.io/github/contributors/Kastelll/backend.svg?style=for-the-badge
 [contributors-url]: https://github.com/Kastelll/backend/graphs/contributors
