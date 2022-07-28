@@ -27,6 +27,10 @@ Kastel Is a Chatting App like <a href="https://discord.com">Discord</a> & <a hre
 
 Please read the license that can be found in [LICENSE.md](https://github.com/Kastelll/backend/blob/master/LICENSE.md)
 
+# Security
+
+NOT SECURE, As the Project is right now Messages are **NOT** encrypted. Please check back later! We are working on getting Message encryption :+1:
+
 [contributors-shield]: https://img.shields.io/github/contributors/Kastelll/backend.svg?style=for-the-badge
 [contributors-url]: https://github.com/Kastelll/backend/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/Kastelll/backend.svg?style=for-the-badge
