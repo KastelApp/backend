@@ -17,12 +17,10 @@ Kastel Is a Chatting App like <a href="https://discord.com">Discord</a> & <a hre
 ## **Roadmap**
 - [x] Route Handler/Loader (Loads Routes, Set Routes ETC.)
 - [ ] Start MongoDB Stuff (Creating Schemas, Using it for Creating accounts ETC)
-- [ ] Start on a CDN using S3.
 - [ ] API Endpoints for Creating Accounts, Updating Accounts, Deleting Accounts ETC
 - [ ] Message Encryption & User Data Hashing & Encrypting (Passwords, Phone Numbers ETC)
 - [ ] Correct Error codes and send the error code. (Most error codes are N/A they need to be set to the correct one)
 - [ ] Routing to Different servers, If you are in Canada it will route you to a US Server or if you are in the UK route to a France server
-- [ ] Frontend to Interact with everything, Most likely will be in Next.JS With Tailwind CSS.
 - [ ] A Better ID System
 
 # License
