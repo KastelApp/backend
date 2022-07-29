@@ -1,8 +1,7 @@
-const { generateId } = require("../utils/newIdGen")
-
+const { default: mongoose } = require("mongoose")
 module.exports = {
     path: "/",
-    method: "get",
+    method: "all",
     middleWare: [],
     /**
      * @param {import("express").Request} req 
@@ -10,6 +9,8 @@ module.exports = {
      * @param {import("express").NextFunction} next 
      */
     run: async (req, res, next) => {
-        res.send(generateId())
+        const e = mongoose.connection.host
+
+        res.send(e)
     },
 }

@@ -1,3 +1,14 @@
+const chalk = require("chalk")
+console.log(chalk.yellow(`
+██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
+██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
+█████╔╝ ███████║███████╗   ██║   █████╗  ██║     
+██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+A Privacy focused chatting app
+`))
+
 require("dotenv").config();
 
 /* The Logger Imports */
@@ -18,10 +29,14 @@ const expressWs = require("express-ws")
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
+/* Misc Imports */
+const { default: mongoose } = require("mongoose");
+
 /* Util Imports */
 const redis = require("./utils/redis");
 const routeHandler = require("./utils/routeHandler");
-const { setup } = require("./utils/newIdGen");
+const { setup } = require("./utils/idGen");
+const uriGenerator = require("./utils/uriGenerator");
 
 /* Express Middleware stuff */
 const app = express()
@@ -61,9 +76,14 @@ app.all("*", (req, res) => {
 app.listen((process.env.port || 3000), async () => {
     logger.info(`Server Started On Port ${process.env.port || 3000}`);
 
-    await redis.createClient().then(() => logger.info("Redis Server Connected")).catch((e) => {
-        logger.error("Failed to connect to Redis,", e)
-        process.exit()
+    await redis.createClient().then(() => logger.info("Redis connected!")).catch((e) => {
+        logger.error("Failed to connect to Redis,", e);
+        process.exit();
+    })
+
+    await mongoose.connect(uriGenerator()).then(() => logger.info("MongoDB connected!")).catch((e) => {
+        logger.error("Failed to connect to MongoDB", e);
+        process.exit();
     })
 
     setup({ // sets up the new ID generator
@@ -75,4 +95,5 @@ app.listen((process.env.port || 3000), async () => {
         sequence: process.env.sequence,
         sequence_Bytes: process.env.sequence_Bytes,
     })
+
 })

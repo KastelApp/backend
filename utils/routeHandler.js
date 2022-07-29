@@ -7,29 +7,28 @@ const path = require("node:path");
  * @param {Array<String>} arr 
  */
 const thrandthr = (fipath, arr) => {
-    const dirArray = arr || [];
+    const dirArray = (arr || []);
 
-    const filePath = fipath || path.join(__dirname, "..", "routes")
+    const filePath = (fipath || path.join(__dirname, "..", "routes"));
 
-    const fileInfo = fs.statSync(filePath)
+    const fileInfo = fs.statSync(filePath);
 
     if (fileInfo.isDirectory()) {
-        const files = fs.readdirSync(filePath)
+        const files = fs.readdirSync(filePath);
         for (let i = 0; i < files.length; i++) {
             const fi = fs.statSync(path.join(filePath, files[i]));
 
             if (fi.isDirectory()) {
-                thrandthr(path.join(filePath, files[i]), dirArray)
+                thrandthr(path.join(filePath, files[i]), dirArray);
             } else {
-                dirArray.push(path.join(filePath, files[i]))
+                dirArray.push(path.join(filePath, files[i]));
             }
         }
-
     } else {
-        dirArray.push(filePath)
+        dirArray.push(filePath);
     }
 
-    return dirArray
+    return dirArray;
 }
 
 /**
@@ -39,12 +38,12 @@ const thrandthr = (fipath, arr) => {
  */
 const cutter = (filePath, exportPath) => {
 
-    const splitPath = filePath.split("/routes").pop().split("/")
+    const splitPath = filePath.split("/routes").pop().split("/");
 
-    splitPath.shift() // shift it once to remove the ('')
-    splitPath.pop() // pop it to remove the .js file part (example.js)
+    splitPath.shift(); // shift it once to remove the ('')
+    splitPath.pop(); // pop it to remove the .js file part (example.js)
 
-    return splitPath.length >= 1 ? `/${splitPath.join("/")}${exportPath.startsWith("/") ? exportPath : "/" + exportPath}` : `${exportPath}`
+    return splitPath.length >= 1 ? `/${splitPath.join("/")}${exportPath.startsWith("/") ? exportPath : "/" + exportPath}` : `${exportPath}`;
 }
 
 /**
@@ -56,7 +55,7 @@ const routeHandler = (app) => {
 
     for (let i = 0; i < fipaths.length; i++) {
         const route = require(fipaths[i]);
-        const newPath = cutter(fipaths[i], route.path)
+        const newPath = cutter(fipaths[i], route.path);
 
         if (process?.env?.routedebug == "true") console.log(newPath)
 
@@ -68,9 +67,8 @@ const routeHandler = (app) => {
             app[route.method](newPath, ...route.middleWare, (...args) => route.run(...args, app))
         }
 
-        if (process?.env?.logRoutes == "true") {
-            logger.loaded(`${newPath} (${route?.method || route?.methods.join(", ")})`)
-        }
+        if (process?.env?.logRoutes == "true") logger.loaded(`${newPath} (${route?.method || route?.methods.join(", ")})`)
+        
     }
 }
 

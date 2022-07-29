@@ -1,7 +1,6 @@
 const path = require('path');
 const chalk = require("chalk")
 const fs = require('fs');
-const EventEmitter = require('events');
 
 const defaultColors = {
     Debug: chalk.magenta("Debug"),
@@ -22,7 +21,7 @@ const types = {
     logOldIgnore: "object"
 }
 
-class logger extends EventEmitter {
+class logger {
     /**
      * @param {Object} obj Settings object 
      * @param {String} obj.path The Dir where the logs will be stored
@@ -34,8 +33,6 @@ class logger extends EventEmitter {
      * @param {Array<String>|String} obj.logOldIgnore The stuff you want to ignore from the old log files
      */
     constructor(obj) {
-        super()
-
         if (obj == "default") obj = {
             path: "./logs",
             fileName: "{DATE}.log",
@@ -125,11 +122,7 @@ class logger extends EventEmitter {
             }
 
         } catch (err) {
-            if (this.listenerCount("error") > 0) {
-                this.emit("error", err);
-            } else {
-                throw err;
-            }
+           throw err;
         }
     }
 
@@ -152,11 +145,7 @@ class logger extends EventEmitter {
             }
 
         } catch (err) {
-            if (this.listenerCount("error") > 0) {
-                this.emit("error", err);
-            } else {
-                throw err;
-            }
+            throw err;
         }
     }
 
@@ -174,11 +163,7 @@ class logger extends EventEmitter {
             fs.appendFileSync(filePath, fs.readFileSync(filePath, "utf-8") ? "\n" + log : log, "utf-8")
 
         } catch (err) {
-            if (this.listenerCount("error") > 0) {
-                this.emit("error", err);
-            } else {
-                throw err;
-            }
+           throw err;
         }
     }
 
