@@ -1,4 +1,3 @@
-const apis = require("../../api.json")
 module.exports = {
     path: "/",
     method: "all",

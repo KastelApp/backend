@@ -16,9 +16,7 @@ const types = {
     logFormat: "string",
     logTypes: "object",
     consoleLog: "boolean",
-    logCheck: "boolean",
-    logOld: "boolean",
-    logOldIgnore: "object"
+    logFile: "boolean"
 }
 
 class logger {
@@ -39,9 +37,7 @@ class logger {
             logFormat: "[{DATE} {TYPE}] {MESSAGE}",
             logTypes: ["Debug", "Info", "Warn", "Error", "Loaded"],
             consoleLog: true,
-            logCheck: false,
-            logOld: false,
-            logOldIgnore: []
+            logFile: process.env.logFile == "true" ? true : false
         }
 
         /**
@@ -60,7 +56,7 @@ class logger {
         this.logFormat = obj?.logFormat ? obj.logFormat : "[{DATE} {TYPE}] {MESSAGE}"; // The format of the log message like "[{DATE} {TYPE}] {MESSAGE}"
 
         /**
-         * @type {Array<String>}
+         * @type {obj.logTypes}
          */
         this.logTypes = obj?.logTypes ? obj?.logTypes : ["Debug", "Info", "Warn", "Error"]; // The types of logs that will be stored
 
@@ -72,30 +68,20 @@ class logger {
         /**
          * @type {Boolean}
          */
-        this.logCheck = obj?.logCheck ?? true; // If false, the logger will not check if the log type is valid
-
-        /**
-         * @type {Boolean}
-         */
-        this.logOld = obj?.logOld ?? false; // if False, The old data in log files will not be outputed in the console
-
-        /**
-         * @type {Array<String>}
-         */
-        this.logOldIgnore = obj?.logOldIgnore ? obj.logOldIgnore : [] // The strings to ignore * for anything
+        this.logFile = obj?.logFile ? obj.logFile : false // If true then the logs will be stored in a file
 
         for (const i in obj) {
-            let extype = types?.[i]
-            let gttype = (typeof obj[i])
+            const extype = types?.[i]
+            const gttype = (typeof obj[i])
 
             if (gttype !== extype) throw new Error(`${i} Expected ${extype} but got ${gttype}`)
         }
 
         for (let i = 0; i < this.logTypes.length; i++) {
-            this[this.logTypes[i]?.toLowerCase()] = (...msg) => this.customLog(this.logTypes[i], msg.join(" "))
+            logger.prototype[this.logTypes[i]?.toLowerCase()] = (...msg) => this.log(this.logTypes[i], msg.join(" "))
         }
 
-        if (this.logOld) this.logOldMsgs()
+        if (this.logFile) this.log("Warn", "Logging to files is not recommended. Doing so can and will leak User IPs.")
     }
     /**
      * The log function (Log a Message & Type)
@@ -109,36 +95,13 @@ class logger {
      */
     log(type, ...message) {
         try {
-            let date = new Date().toLocaleString("US", {
+            const date = new Date().toLocaleString("US", {
                 hour12: false,
             })
 
-            let log = this.logFormat.replace("{DATE}", date).replace("{TYPE}", type).replace("{MESSAGE}", message.join(" "));
-
-            this.write(log);
-
-            if (this.consoleLog) {
-                console.log(this.logFormat.replace("{DATE}", (chalk.gray(date))).replace("{TYPE}", (defaultColors?.[type] || type)).replace("{MESSAGE}", chalk.cyan(message.join(" "))))
+            if (this.logFile) {
+                this.write(this.logFormat.replace("{DATE}", date).replace("{TYPE}", type).replace("{MESSAGE}", message.join(" ")));
             }
-
-        } catch (err) {
-           throw err;
-        }
-    }
-
-    /**
-     * @private
-     * @see {log}
-     */
-    customLog(type, ...message) {
-        try {
-            let date = new Date().toLocaleString("US", {
-                hour12: false,
-            })
-
-            let log = this.logFormat.replace("{DATE}", date).replace("{TYPE}", type).replace("{MESSAGE}", message.join(" "));
-
-            this.write(log);
 
             if (this.consoleLog) {
                 console.log(this.logFormat.replace("{DATE}", (chalk.gray(date))).replace("{TYPE}", (defaultColors?.[type] || type)).replace("{MESSAGE}", chalk.cyan(message.join(" "))))
@@ -156,14 +119,16 @@ class logger {
      */
     write(log) {
         try {
-            let filePath = path.join(this.path, this.fileName.replace("{DATE}", `${new Date().getFullYear()}-${new Date().getMonth()}-${new Date().getDate()}`)); // possible issue, If the client/server is lagging/has high ram/cpu usage its possible that the dates will be wrong or if the logger is logging a ton of data it could return the wrong Year, Month and or Day depending on the time easy fix is to get the new date then get the Year, Month and Day or let the user set how many ms ahead it should look to "count" the new day 
+            const writeDate = new Date();
+
+            const filePath = path.join(this.path, this.fileName.replace("{DATE}", `${writeDate.getFullYear()}-${writeDate.getMonth()}-${writeDate.getDate()}`));
 
             if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, "")
 
             fs.appendFileSync(filePath, fs.readFileSync(filePath, "utf-8") ? "\n" + log : log, "utf-8")
 
         } catch (err) {
-           throw err;
+            throw err;
         }
     }
 
@@ -216,17 +181,6 @@ class logger {
         returnLogs.reverse();
 
         return returnLogs;
-    }
-
-    logOldMsgs() {
-        const logDate = new Date();
-        const ignoreText = this.logOldIgnore;
-        const amount = 20;
-        const logs = this.getLogs(amount, ignoreText, logDate)
-
-        for (let i = 0; i < logs.length; i++) {
-            console.log(logs[i])
-        }
     }
 }
 

@@ -57,7 +57,7 @@ const routeHandler = (app) => {
         const route = require(fipaths[i]);
         const newPath = cutter(fipaths[i], route.path);
 
-        if (process?.env?.routedebug == "true") console.log(newPath)
+        if (JSON.parse(process?.env?.routedebug)) logger.debug(newPath)
 
         if (!route?.method && route?.methods) {
             for (const method of route.methods) {
@@ -67,8 +67,8 @@ const routeHandler = (app) => {
             app[route.method](newPath, ...route.middleWare, (...args) => route.run(...args, app))
         }
 
-        if (process?.env?.logRoutes == "true") logger.loaded(`${newPath} (${route?.method || route?.methods.join(", ")})`)
-        
+        if (JSON.parse(process?.env?.logRoutes)) logger.loaded(`${newPath} (${route?.method || route?.methods.join(", ")})`)
+
     }
 }
 

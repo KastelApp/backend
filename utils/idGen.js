@@ -1,45 +1,29 @@
-/**
- Generates Unqiue Ids, Taken and Edited from the NPM package (discord-snowflake-id-js), No other sources found
-
- Creator Unknown, All Credits to them though, License Also Unknown
- */
- class snowflakeIdGenerator {
+class snowflakeIdGenerator {
     /**
-     * @param {Object} args
-     * @param {Number} args.start
-     * @param {BigInt} args.sequence
-     * @param {BigInt} args.workerId
-     * @param {BigInt} args.datacenterId
-     * @param {BigInt} args.datacenterIdShift
-     * @param {BigInt} args.timestampLeftShift
-     * @param {BigInt} args.sequenceMask
-     * @param {BigInt} args.timestamp
-     * @param {Number} args.count
+     * @param {{ epoch: Date, workerId: Number|BigInt, datacenterId: Number|BigInt, workerId_Bytes: Number|BigInt, datacenterId_Bytes: Number|BigInt, sequence: Number|BigInt, sequence_Bytes: Number|BigInt }} config The config
      */
-    static setup(args = {
+    static setup(config = {
         epoch: 1658536392598,
-        workerID: 0,
-        datacenterID: 0,
-        workerID_Bytes: 5,
-        datacenterID_Bytes: 5,
+        workerId: 0,
+        datacenterId: 0,
+        workerId_Bytes: 5,
+        datacenterId_Bytes: 5,
         sequence: 0,
         sequence_Bytes: 12,
     }) {
 
         snowflakeIdGenerator.config = {
-            workerId: snowflakeIdGenerator.hydrate(args.workerId, 0n),
-            datacenterId: snowflakeIdGenerator.hydrate(args.datacenterId, 0n),
-            workerId_Bytes: snowflakeIdGenerator.hydrate(args.workerId_Bytes, 0n),
-            datacenterId_Bytes: snowflakeIdGenerator.hydrate(args.datacenterId_Bytes, 0n),
-            sequence: snowflakeIdGenerator.hydrate(args.sequence, 0n),
-            sequence_Bytes: snowflakeIdGenerator.hydrate(args.sequence_Bytes, 0n),
+            workerId: snowflakeIdGenerator.hydrate(config.workerId, 0n),
+            datacenterId: snowflakeIdGenerator.hydrate(config.datacenterId, 0n),
+            workerId_Bytes: snowflakeIdGenerator.hydrate(config.workerId_Bytes, 0n),
+            datacenterId_Bytes: snowflakeIdGenerator.hydrate(config.datacenterId_Bytes, 0n),
+            sequence: snowflakeIdGenerator.hydrate(config.sequence, 0n),
+            sequence_Bytes: snowflakeIdGenerator.hydrate(config.sequence_Bytes, 0n),
         }
 
-        snowflakeIdGenerator.epoch = snowflakeIdGenerator.hydrate(args.epoch, 1658536392598n)
+        snowflakeIdGenerator.epoch = snowflakeIdGenerator.hydrate(config.epoch, 1658536392598n)
 
         snowflakeIdGenerator.start = 0;
-
-        snowflakeIdGenerator.count = 0;
 
         snowflakeIdGenerator.sequence = snowflakeIdGenerator.config.sequence;
 
@@ -128,7 +112,6 @@
 
         snowflakeIdGenerator.timestamp = timestamp;
 
-        snowflakeIdGenerator.count++;
         return ((((timestamp - snowflakeIdGenerator.epoch) << snowflakeIdGenerator.timestampLeftShift) | (snowflakeIdGenerator.config.datacenterId << snowflakeIdGenerator.datacenterIdShift) | (snowflakeIdGenerator.config.workerId << snowflakeIdGenerator.workerIdShift) | snowflakeIdGenerator.sequence).toString());
     }
 }

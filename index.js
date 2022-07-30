@@ -1,5 +1,14 @@
+require("dotenv").config();
+
+// If the user wants to time the startup
+process?.env?.timeStartUp == "true" ? (timeStarted = Date.now()) : null
+
+/* Misc Imports */
+const { default: mongoose } = require("mongoose");
 const chalk = require("chalk")
-console.log(chalk.yellow(`
+
+if (JSON.parse(process?.env?.logLogo)) {
+    console.log(chalk.yellow(`
 ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
 ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
 █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
@@ -8,20 +17,8 @@ console.log(chalk.yellow(`
 ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
 A Privacy focused chatting app
 `))
+}
 
-require("dotenv").config();
-
-/* The Logger Imports */
-const log = require("./utils/logger");
-global.logger = new log("default")
-
-process.on("uncaughtException", (err, stack) => {
-    logger.error(`Unhandled Exception, (${err.stack})`)
-})
-
-process.on("unhandledRejection", (reason) => {
-    logger.error(`Unhandled Rejection, (${reason.stack})`)
-})
 
 /* Express Imports */
 const express = require('express');
@@ -29,22 +26,32 @@ const expressWs = require("express-ws")
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
-/* Misc Imports */
-const { default: mongoose } = require("mongoose");
 
 /* Util Imports */
 const redis = require("./utils/redis");
 const routeHandler = require("./utils/routeHandler");
-const { setup } = require("./utils/idGen");
+const { setup, generateId } = require("./utils/idGen");
 const uriGenerator = require("./utils/uriGenerator");
+const log = require("./utils/logger");
+
+global.logger = new log("default");
 
 /* Express Middleware stuff */
 const app = express()
 
-app.use(cors())
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser())
+app.use(cookieParser());
+
+/* Error Handling */
+process.on("uncaughtException", (err, stack) => {
+    logger.error(`Unhandled Exception, (${err.stack})`)
+})
+
+process.on("unhandledRejection", (reason) => {
+    logger.error(`Unhandled Rejection, (${reason.stack})`)
+})
 
 /* Sets the users IP for later simpler use */
 /* Also Logs the requested path, Returns on favicon.ico as its no use logging it */
@@ -65,10 +72,12 @@ routeHandler(app) // The route handler (Everything below comes after, Put routes
 app.all("*", (req, res) => {
     logger.warn(`${req.user_ip} Requested a path that does not exist (${req.path})`)
 
-    res.send({
-        error: true,
+    res.status(404).send({
         code: 404,
-        message: `${req.path} not found.`
+        errors: [{
+            code: "PATH_DOESNT_EXIST",
+            message: "The path you have requested does not exist."
+        }]
     })
 })
 
@@ -96,4 +105,5 @@ app.listen((process.env.port || 3000), async () => {
         sequence_Bytes: process.env.sequence_Bytes,
     })
 
+    if (JSON.parse(process.env.timeStartUp)) logger.info(`Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(3)}s to Start Up`)
 })

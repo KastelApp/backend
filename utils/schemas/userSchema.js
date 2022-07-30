@@ -1,8 +1,20 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+const { Types } = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-    avatar_url: {
+    _id: {
         type: String,
+        required: true
+    },
+
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+
+    email_verified: {
+        type: Boolean,
         required: false,
     },
 
@@ -13,21 +25,14 @@ const userSchema = new mongoose.Schema({
     },
 
     tag: {
-        type: Number,
-        required: true,
-        default: 0000,
-    },
-
-    id: {
         type: String,
         required: true,
-        unique: true,
+        default: "0000",
     },
 
-    email: {
+    avatar_url: {
         type: String,
-        required: true,
-        unique: true,
+        required: false,
     },
 
     password: {
@@ -37,28 +42,36 @@ const userSchema = new mongoose.Schema({
 
     created_date: {
         type: Date,
-        required: false,
+        required: true,
         default: Date.now(),
     },
 
-    privacy_settings: {
-        type: Array,
+    date_of_birth: {
+        type: Date,
         required: false,
-        default: {
-            two_fa: false,
-            ip_lock: false,
-            ip_verifiy: true
-        }
     },
 
-    ip: {
+    two_fa: {
         type: String,
         required: false
     },
+    two_fa_verified: {
+        type: Boolean,
+        required: false,
+    },
 
-    badges: {
+    ip_verifiy: {
+        type: Boolean,
+        required: false,
+    },
+
+    ip_lock: {
+        type: Boolean,
+        required: false,
+    },
+    ips: {
         type: Array,
-        required: false
+        required: false,
     },
 
     flags: {
@@ -66,25 +79,29 @@ const userSchema = new mongoose.Schema({
         required: false,
     },
 
-    friends: {
-        type: Array,
-        required: false
+    guilds: [{
+        type: Types.ObjectId,
+        ref: "guilds"
+    }],
+    
+    banned: {
+        type: Boolean,
+        required: false,
+    },
+    ban_reason: {
+        type: String,
+        required: false,
     },
 
-    dms: {
-        type: Array,
-        required: false
+    locked: {
+        type: Boolean,
+        required: false,
     },
 
-    gifts: {
-        type: Array,
-        required: false
+    account_deletion_in_progress: {
+        type: Boolean,
+        required: false,
     },
+});
 
-    misc: {
-        type: Array,
-        required: false
-    }
-})
-
-module.exports = mongoose.model('user', userSchema);
+module.exports = mongoose.model("users", userSchema);

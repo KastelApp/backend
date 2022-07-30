@@ -17,7 +17,7 @@ const PRIVATE_USER_DATA = {
         ip_verifiy: true, // If true and a Different IP is found trying to login will force them to verify by clicking the email that is sent to them
     },
     ip: "127.0.0.1", // A Hashed IP Address, Only stored for @PRIVATE_USER_DATA#ip_lock @PRIVATE_USER_DATA#ip_verifiy
-    badges: [{
+    badges: [{ // The Badges are kept UnEncrypted. There isn't much you can do with them.
         name: "Kastel Staff",
         short_description: "Moderates Kastel",
         small_image: "https://cdn.kastelapp.org/33171801624545077/33171801624550422/33171801624550004.png"
@@ -27,30 +27,37 @@ const PRIVATE_USER_DATA = {
         small_image: "https://cdn.kastelapp.org/33171802224545005/33171802224547277/33171802224557975.png"
     }, {
         name: "Kastel Developer",
-        short_description: "Is a Developer at Kastelapp/Has made a big Commit to the Project",
+        short_description: "Is a Developer at Kastel/Has made a big Commit to the Project",
         small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171809644780990.png"
     }],
     flags: ["STAFF"],
-    friends: [{ // The users friends, Limit is 1000, They can also set a custom nickname for them.
+    friends: [{ // The users friends, Limit is 100, They can also set a custom nickname for them. The Username, Nickname and ID are completely encrypted
         avatar_url: null,
         username: "Mik3.",
         nickname: "Curry",
         tag: "3808",
         id: "33171631673133808",
     }],
-    dms: [{ // Their DMS, 
+    dms: [{ // Their DMS, Username, ID and Channel ID are Encrypted
         avatar_url: null,
         username: "Mik3.",
         tag: "3808",
         id: "33171631673133808",
         dm_channel_id: "33172345402920010"
     }],
+    guilds: [{ // Just some simple guild Data (Max of 50)
+        name: "Kastel Chat Support",
+        id: "33171600011808774",
+    }],
     gifts: [],
     misc: {
         banned: false,
+        locked: false,
         ban_reason: null,
         account_deletion_in_progress: false,
-        email_verified: true
+        email_verified: true,
+        date_of_birth: "976816800000", // The Users Birthday, Completely Encrypted
+        show_ads: false // If the user wants to see ads or not
     }
 };
 
@@ -105,8 +112,13 @@ const DELETED_ACCOUNT_MESSAGE_DATA = {
 };
 
 const GIFT_DATA = {
-    type: "ROSE", // Types are Rose, another_flower_name, and PROMO
+    type: "ROSE", // Types are sunflower, Rose, bouquet, and PROMO (Sunflower would be $3 Rose would be $6 and bouquet would be $15)
     max_age: 1658826027117, // Max age is 24 hours on Subscription Gifts (Promos last longer)
     gift_length: 2592000000, // This gift lasts 30 days (one month)
-    gift_url: "https://kastelapp.org/gifts/McOqLPWH118MF8Mcsbwtllw6aJHwNlfmH6Ra7IDe" // Randomly made gift url, accepting it (since its rose) will give you access to the monthly subscription for free
+    gift_url: "https://kastelapp.org/gifts/McOqLPWH118MF8Mcsbwtllw6aJHwNlfmH6Ra7IDe", // Randomly made gift url, accepting it (since its rose) will give you access to the monthly subscription for free
+    used_by: {
+        username: "Mik3",
+        tag: "3808",
+        id: "33171631673133808"
+    }
 }

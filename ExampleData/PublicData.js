@@ -3,9 +3,9 @@ This is all Data that is public stuff that will be gotten from the API
 */
 
 const GUILD_DATA = {
-    name: "Zuce Chat Support", // The name of the Guild (32 in length)
+    name: "Kastel Chat Support", // The name of the Guild (32 in length)
     id: "33171600011808774", // The ID of the Guild (Unique)
-    description: "Welcome to Zuce Chat Support, We welcome you with open arms :D", // The description of the guild (4096 in length)
+    description: "Welcome to Kastel Chat Support, We welcome you with open arms :D", // The description of the guild (4096 in length)
     info: {
         public: false, // If the guild is Public and will be shown to people
         verified: true, // If the Guild is Verified so Users know
@@ -13,7 +13,7 @@ const GUILD_DATA = {
         under_investigation: false // If its true the Guild is **COMPLETELY** Blocked off API wise so Staff can look into a report if its serious (broken laws etc) 
     },
     vanity_url: {
-        url: "zuce-support", // The custom invite url (18 in length, Unique)
+        url: "kastel-support", // The custom invite url (18 in length, Unique)
         uses: 5867,
         users: [{
             username: "RandomInviteUser",
@@ -43,10 +43,10 @@ const GUILD_DATA = {
     roles: [{
             name: "everyone",
             id: "33171600011808774",
-            allowed_nsfw: false,
+            allowed_nsfw: false, // If the role can Access NSFW channels
             deleteable: false,
-            allowed_mentions: ["users", "roles", "everyone", "here"],
-            permissions: {
+            allowed_mentions: ["users"], // Having this role only lets you mention users
+            permissions: { // Few Permission Ideas
                 READ_MESSAGES: true,
                 SEND_MESSAGES: true,
                 BAN_USERS: false
@@ -265,7 +265,7 @@ const ALL_CURRENT_BADGES = [{
     small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171822999049222.png"
 }, {
     name: "Trustworthy Moderator",
-    short_description: "Has been seen as a Trustworthy Moderator, They are a great Moderator",
+    short_description: "Trustworthy to moderate your guilds.",
     small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33172750946551140.png"
 }];
 

@@ -26,9 +26,16 @@ module.exports = {
             // it should be /ws/
             if (apiPath[0] !== "ws") {
                 logger.warn(`${req.user_ip} Failed the WS Check`)
-                return res.send({
-                    error: true
+
+                res.status(400).send({
+                    code: 400,
+                    errors: [{
+                        code: "FAILED_WS_CHECK",
+                        message: "Failed the WS Check."
+                    }]
                 })
+
+                return
             }
 
             apiPath.shift()
@@ -36,9 +43,17 @@ module.exports = {
             // after that we shift it one more time and it should be /.websocket
             if (apiPath[0] !== '.websocket') {
                 logger.warn(`${req.user_ip} Failed the .websocket Check`)
-                return res.send({
-                    error: true
+
+                res.status(400).send({
+                    code: 400,
+                    errors: [{
+                        code: "FAILED_WS_CHECK",
+                        message: "Failed the WS Check."
+                    }]
                 })
+
+                return
+
             }
 
             apiPath.shift();
@@ -47,9 +62,16 @@ module.exports = {
             // nothing in the array should be left. If there is something they failed the check
             if (apiPath.length > 0) {
                 logger.warn(`${req.user_ip} Failed the remaning length check`)
-                return res.send({
-                    error: true
+                
+                res.status(400).send({
+                    code: 400,
+                    errors: [{
+                        code: "FAILED_WS_CHECK",
+                        message: "Failed the WS Check."
+                    }]
                 })
+
+                return
             }
 
             // we then next it if it passes all the checks, This is so it can go to the ws version check
@@ -61,31 +83,41 @@ module.exports = {
         const apiVersion = apiPath?.[0]
 
         if (!apiVersion.startsWith("v")) {
-            return res.send({
-                error: true,
-                code: "N/A",
-                message: null
+            res.status(400).send({
+                code: 400,
+                errors: [{
+                    code: "INVALID_API_VERSION",
+                    message: "API Version provided is Invalid"
+                }]
             })
+
+            return;
         }
 
         const apiData = apis[apiVersion];
 
         if (!apiData) {
-            return res.send({
-                error: true,
-                code: "N/A",
-                message: `Invalid API version. ${apiVersion} not found.`
+            res.status(404).send({
+                code: 404,
+                errors: [{
+                    code: "INVALID_API_VERSION",
+                    message: "API Version provided does not exist."
+                }]
             })
+
+            return;
         }
 
-        // we return no message since its not public, I think its better then telling them 
-        // that there is a private API.
         if (!apiData.public) {
-            return res.send({
-                error: true,
-                code: "N/A",
-                message: `Invalid API version. ${apiVersion} not found.`
+            res.status(403).send({
+                code: 403,
+                errors: [{
+                    code: "INVALID_API_VERSION",
+                    message: "API Version provided does not exist."
+                }]
             })
+
+            return;
         }
 
 
@@ -95,10 +127,12 @@ module.exports = {
             const endDate = new Date(Number(apiData.end_date));
 
             if (endDate < Date.now()) {
-                return res.send({
-                    error: true,
-                    code: "N/A",
-                    message: `${apiVersion} is deprecated and is now no longer functional, Its end of life date was ${endDate.toLocaleString()}. If this is an error please report it.`
+                res.status(404).send({
+                    code: 404,
+                    errors: [{
+                        code: "API_VERSION_DEPRECATED",
+                        message: `${apiVersion} has reached its EOL, Ending at ${endDate.toLocaleString()}`
+                    }]
                 })
             }
         }

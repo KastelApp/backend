@@ -34,7 +34,7 @@ class Redis {
     /**
      * Set a key in the redis client
      * @param {String} key The key to set 
-     * @param {*} item The item to set
+     * @param {String} item The item to set
      * @returns {Promise<"OK">}
      */
     static set(key, item) {
@@ -57,6 +57,32 @@ class Redis {
         Redis.clientCheck(true);
 
         return new Promise((resolve, reject) => redisClient.get(key).then((v) => resolve(v)).catch((e) => reject(e)));
+    }
+
+    /**
+     * Gets a json key from the database and returns it
+     * @param {String} key 
+     * @returns {Promise<String>}
+     */
+    static jsonGet(key) {
+        Redis.clientCheck(true);
+
+        return new Promise((resolve, reject) => redisClient.json.get(key).then((v) => resolve(v)).catch((e) => reject(e)));
+    }
+    /**
+     * Set a key in the redis client
+     * @param {String} key The key to set 
+     * @param {Object} item The item to set
+     * @returns {Promise<"OK">}
+     */
+    static jsonSet(key, item) {
+        Redis.clientCheck(true);
+
+        return new Promise((resolve, reject) => {
+            if (!item) reject("No item provided");
+
+            redisClient.json.set(key, "$", item).then((v) => resolve(v)).catch((e) => reject(e))
+        });
     }
 
 
@@ -96,6 +122,13 @@ class Redis {
         if (!redisClient && boolean == true) throw new Error("Please create the client.");
 
         if (redisClient && boolean == false) throw new Error("The client is already created.");
+    }
+
+    /**
+     * Clears the Cache DB Keeping only the API Data.
+     */
+    static clear() {
+        Redis.clientCheck(true);
     }
 }
 

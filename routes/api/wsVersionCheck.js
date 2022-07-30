@@ -11,6 +11,7 @@ module.exports = {
     run: async (ws, req, next) => {
 
         const apiPath = req.path.split("/")
+
         apiPath.shift()
         apiPath.shift()
 
@@ -18,9 +19,11 @@ module.exports = {
 
         if (!apiVersion.startsWith("v")) {
             ws.send(JSON.stringify({
-                error: true,
-                code: "N/A",
-                message: null
+                code: 400,
+                errors: [{
+                    code: "INVALID_API_VERSION",
+                    message: "API Version provided is Invalid"
+                }]
             }))
 
             return ws.close()
@@ -30,9 +33,11 @@ module.exports = {
 
         if (!apiData) {
             ws.send(JSON.stringify({
-                error: true,
-                code: "N/A",
-                message: `Invalid API version. ${apiVersion} not found.`
+                code: 404,
+                errors: [{
+                    code: "INVALID_API_VERSION",
+                    message: "API Version provided does not exist."
+                }]
             }))
 
             return ws.close()
@@ -40,9 +45,11 @@ module.exports = {
 
         if (!apiData.public) {
             ws.send(JSON.stringify({
-                error: true,
-                code: "N/A",
-                message: null
+                code: 403,
+                errors: [{
+                    code: "INVALID_API_VERSION",
+                    message: "API Version provided does not exist."
+                }]
             }))
 
             return ws.close()
@@ -54,9 +61,11 @@ module.exports = {
 
         if (endDate < Date.now()) {
             ws.send(JSON.stringify({
-                error: true,
-                code: "N/A",
-                message: `${apiVersion} is deprecated and is now no longer functional, Its end of life date was ${endDate.toLocaleString()}. If this is an error please report it!`
+                code: 404,
+                errors: [{
+                    code: "API_VERSION_DEPRECATED",
+                    message: `${apiVersion} has reached its EOL, Ending at ${endDate.toLocaleString()}`
+                }]
             }))
 
             return ws.close()
