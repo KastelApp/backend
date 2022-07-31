@@ -1,7 +1,10 @@
 const { default: mongoose } = require("mongoose")
-const guildSchema = require("../../../utils/schemas/guildSchema")
-const userSchema = require("../../../utils/schemas/userSchema")
+const { generateId } = require("../../../utils/idGen")
+const lengthChecker = require("../../../utils/lengthChecker")
+const guildSchema = require("../../../utils/schemas/guilds/guildSchema")
+const userSchema = require("../../../utils/schemas/users/userSchema")
 
+// This is a testing endpoint as of now. Code here can and will be completely changed.
 module.exports = {
     path: "/register",
     method: "post",
@@ -18,8 +21,8 @@ module.exports = {
         const { username, email, password, date_of_birth, invite } = req?.body
 
         if (!username || !email || !password) {
-            res.send({
-                code: "N/A",
+            res.status(400).send({
+                code: 400,
                 errors: [!username ? {
                     code: "MISSING_USERNAME",
                     message: "No username provided"
@@ -35,8 +38,33 @@ module.exports = {
             return;
         }
 
+        const Id = generateId();
 
+        const tag = Id.split("").reverse().join("").slice(0, 4).split("").reverse().join("")
 
+        const checks = {
+            email: await userSchema.findOne({ email }),
+            usernameTag: await userSchema.findOne({ username, tag }),
+            usernameslength: await userSchema.countDocuments({ username })
+        }
+
+        if (lengthChecker({ length: 9999, type: "less" })(checks.usernameslength)) {
+            res.status(500).send({
+                code: 500,
+                errors: [{
+                    code: "MAX_USERNAMES",
+                    message: `Max amount of ${username}`
+                }]
+            })
+
+            return;
+        }
+
+        if (checks.usernameTag) {
+            // No Logic yet
+
+            return;
+        }
 
     },
 }

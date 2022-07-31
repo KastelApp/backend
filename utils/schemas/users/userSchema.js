@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
-const { Types } = require("mongoose");
+const { model, Schema, Types } = require("mongoose");
+const lengthChecker = require("../../lengthChecker");
 
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema({
     _id: {
         type: String,
         required: true
@@ -55,6 +55,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: false
     },
+
     two_fa_verified: {
         type: Boolean,
         required: false,
@@ -69,25 +70,31 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         required: false,
     },
+
     ips: {
         type: Array,
         required: false,
+        validate: [lengthChecker({ length: 5, type: "less" }), '{PATH} exceeds the limit of 5'],
+        index: "ips"
     },
 
     flags: {
         type: Array,
         required: false,
+        validate: [lengthChecker({ length: 20, type: "less" }), '{PATH} exceeds the limit of 20']
     },
 
     guilds: [{
         type: Types.ObjectId,
-        ref: "guilds"
+        ref: "guilds",
+        validate: [lengthChecker({ length: 50, type: "less" }), '{PATH} exceeds the limit of 50']
     }],
-    
+
     banned: {
         type: Boolean,
         required: false,
     },
+
     ban_reason: {
         type: String,
         required: false,
@@ -102,6 +109,11 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         required: false,
     },
+
+    show_ads: {
+        type: Boolean,
+        required: false
+    }
 });
 
-module.exports = mongoose.model("users", userSchema);
+module.exports = model("users", userSchema);

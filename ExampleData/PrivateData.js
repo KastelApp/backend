@@ -3,7 +3,8 @@ Most of this Data/Example JSON is for Internal stuff, Things a normal user will 
 
 */
 
-const PRIVATE_USER_DATA = {
+
+const PRIVATE_USER_DATA = { // OUT DATED, WILL BE UPDATED LATER
     avatar_url: "https://cdn.kastelapp.org/33168888888888888/33170000000000000.png", // The Users Avatar, Any Image Type.
     username: "DarkerInk", // The Username, Supports any Char, (Max Length 46 Chars)
     tag: "8888", // The original tag is the four randomly generated numbers of your id. If its taken will be randomly generated again
@@ -11,12 +12,10 @@ const PRIVATE_USER_DATA = {
     email: "darkerink@staff.kastelapp.org", // The Users Email (Will be Encrypted & hashed)
     password: "CatsAreVeryCool1234!!!", // A Hashed and Encrypted Password. Nobody will know it besides the User
     created_date: 1658352496290,
-    privacy_settings: {
-        two_fa: true, // If the user must require a 2FA code on Login, Password Reset, Email Change ETC
-        ip_lock: false, // If true will lock the account to one ip only (All API requests will Fail if its wrong). The only way to access it from a different IP is requesting it then clicking on the email that was sent
-        ip_verifiy: true, // If true and a Different IP is found trying to login will force them to verify by clicking the email that is sent to them
-    },
-    ip: "127.0.0.1", // A Hashed IP Address, Only stored for @PRIVATE_USER_DATA#ip_lock @PRIVATE_USER_DATA#ip_verifiy
+    two_fa: true, // If the user must require a 2FA code on Login, Password Reset, Email Change ETC
+    ip_lock: false, // If true will lock the account to one ip only (All API requests will Fail if its wrong). The only way to access it from a different IP is requesting it then clicking on the email that was sent
+    ip_verifiy: true, // If true and a Different IP is found trying to login will force them to verify by clicking the email that is sent to them
+    ips: ["127.0.0.1"], // Hashed IP Addresses, Only stored for @PRIVATE_USER_DATA#ip_lock @PRIVATE_USER_DATA#ip_verifiy
     badges: [{ // The Badges are kept UnEncrypted. There isn't much you can do with them.
         name: "Kastel Staff",
         short_description: "Moderates Kastel",
@@ -50,27 +49,25 @@ const PRIVATE_USER_DATA = {
         id: "33171600011808774",
     }],
     gifts: [],
-    misc: {
-        banned: false,
-        locked: false,
-        ban_reason: null,
-        account_deletion_in_progress: false,
-        email_verified: true,
-        date_of_birth: "976816800000", // The Users Birthday, Completely Encrypted
-        show_ads: false // If the user wants to see ads or not
-    }
+    banned: false,
+    locked: false,
+    ban_reason: null,
+    account_deletion_in_progress: false,
+    email_verified: true,
+    date_of_birth: "976816800000", // The Users Birthday, Completely Encrypted
+    show_ads: false // If the user wants to see ads or not
 };
 
 /**
  * @STAFF The staff flag just lets the API know you are a staff member.
  * @SYSTEM System Is for messages that did not come from a User/Bot/Webhook.
  * @GHOST The Ghost flag is for when someone deletes there account. 
- * @SPAMMER N/A
- * @BROKE_TOS N/A
- * @CREATING_GUILDS_BAN N/A
- * @ADDING_FRIENDS_BAN N/A
- * @CREATING_GROUP_CHATS_BAN N/A
- * @UNDER_WATCH **N/A**
+ * @SPAMMER N/A (Unknown how it will be given/what it will do)
+ * @BROKE_TOS Will be Given when a user breaks ToS. Only ever will be removed if was a mistake (Even on unbans)
+ * @CREATING_GUILDS_BAN You will not be allowed to make guilds again until it is removed (Must contact support to get it removed)
+ * @ADDING_FRIENDS_BAN You will not be allowed to add friends again until its removed (Must contact support to get it removed)
+ * @CREATING_GROUP_CHATS_BAN You will not be allowed to create group chats until removed (Must contact support to get it removed)
+ * @UNDER_WATCH  N/A (Unknown how it will be given/what it does)
  */
 const ALL_CURRENT_FLAGS = ["STAFF", "SYSTEM", "GHOST", "SPAMMER", "BROKE_TOS", "CREATING_GUILDS_BAN", "ADDING_FRIENDS_BAN", "CREATING_GROUP_CHATS_BAN", "UNDER_WATCH"];
 

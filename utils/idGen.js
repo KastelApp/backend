@@ -76,7 +76,7 @@ class snowflakeIdGenerator {
 
     /**
      * Generate a Id
-     * @returns {BigInt}
+     * @returns {String}
      */
     static generateId() {
 

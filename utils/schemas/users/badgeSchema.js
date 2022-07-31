@@ -1,21 +1,24 @@
-const mongoose = require("mongoose");
+const { model, Schema } = require("mongoose");
 
-const badgeSchema = new mongoose.Schema({
+const badgeSchema = new Schema({
     user: {
         type: String,
         required: true,
         ref: "users",
     },
+
     name: {
         type: String,
         required: true,
         default: "Badge name here",
     },
+
     short_description: {
         type: String,
         required: true,
         default: "Short Description here",
     },
+
     small_image: {
         type: String,
         required: true,
@@ -23,4 +26,4 @@ const badgeSchema = new mongoose.Schema({
 
 });
 
-module.exports = mongoose.model("badges", badgeSchema);
+module.exports = model("badges", badgeSchema);

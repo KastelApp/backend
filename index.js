@@ -93,7 +93,7 @@ app.listen((process.env.port || 3000), async () => {
     await mongoose.connect(uriGenerator(), {
         useNewUrlParser: true,
         useUnifiedTopology: true,
-        useFindAndModify: false,
+        keepAlive: true
     }).then(() => logger.info("MongoDB connected!")).catch((e) => {
         logger.error("Failed to connect to MongoDB", e);
         process.exit();

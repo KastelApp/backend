@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+const { model, Schema } = require("mongoose");
 
-const dmSchema = new mongoose.Schema({
+const dmSchema = new Schema({
     _id: {
         type: String,
         required: true,
@@ -17,7 +17,7 @@ const dmSchema = new mongoose.Schema({
         type: String,
         required: true,
         ref: "users"
-    },
+    }
 });
 
-module.exports = mongoose.model("dms", dmSchema);
+module.exports = model("dms", dmSchema);
