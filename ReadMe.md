@@ -24,6 +24,8 @@ Kastel Is a Chatting App like <a href="https://discord.com">Discord</a> & <a hre
 - [ ] Routing to Different servers
 - [ ] Docker File to easily run the backend
 - [ ] Advanced Caching system using redis
+- [ ] First time script
+- [ ] User creation from CLI
 
 # License
 
@@ -31,7 +33,7 @@ Please read the license that can be found in [LICENSE.md](https://github.com/Kas
 
 # Contributing
 
-If you would like to [Con replace me] fork the repo, Make your changes, Test the code (Verify it works), Make a pull request to the development branch and wait for it to be merged :)
+If you would like to contribute to the project fork the repo, Make your changes, Test the code (Verify it works), Make a pull request to the development branch and wait for it to be merged :)
 
 # Credits
 
