@@ -22,7 +22,8 @@
   },
   "scripts": {
     "test": "echo \"No Tests Made\" && exit 1",
-    "start": "node index.js"
+    "start": "node index.js",
+    "first-time": "node ./utils/firstTime.js"
   },
   "keywords": [
     "chatting",

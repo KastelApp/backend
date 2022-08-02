@@ -58,18 +58,6 @@ const PRIVATE_USER_DATA = { // OUT DATED, WILL BE UPDATED LATER
     show_ads: false // If the user wants to see ads or not
 };
 
-/**
- * @STAFF The staff flag just lets the API know you are a staff member.
- * @SYSTEM System Is for messages that did not come from a User/Bot/Webhook.
- * @GHOST The Ghost flag is for when someone deletes there account. 
- * @SPAMMER N/A (Unknown how it will be given/what it will do)
- * @BROKE_TOS Will be Given when a user breaks ToS. Only ever will be removed if was a mistake (Even on unbans)
- * @CREATING_GUILDS_BAN You will not be allowed to make guilds again until it is removed (Must contact support to get it removed)
- * @ADDING_FRIENDS_BAN You will not be allowed to add friends again until its removed (Must contact support to get it removed)
- * @CREATING_GROUP_CHATS_BAN You will not be allowed to create group chats until removed (Must contact support to get it removed)
- * @UNDER_WATCH  N/A (Unknown how it will be given/what it does)
- */
-const ALL_CURRENT_FLAGS = ["STAFF", "SYSTEM", "GHOST", "SPAMMER", "BROKE_TOS", "CREATING_GUILDS_BAN", "ADDING_FRIENDS_BAN", "CREATING_GROUP_CHATS_BAN", "UNDER_WATCH"];
 
 // When you delete your account most data is removed, The only things stored is the old ID
 // Message content is also removed (See @DELETED_ACCOUNT_MESSAGE_DATA#content)
@@ -78,11 +66,11 @@ const DELETED_ACCOUNT_DATA = {
     username: "Ghost",
     tag: "0000",
     id: "33168888888888888",
-    email: null, // Remove the Email to follow laws relating user data
-    password: null, // Remove the password as no point in storing it
-    privacy_settings: null, // privacy settings are nulled since again no point in storing them
-    ip: null, // the ip is also removed due to laws releating user data
-    badges: [{ // Removes all the badges but adds the Ghost user Badge.
+    email: null, // Removed as you deleted your account and don't need the email stored
+    password: null,
+    privacy_settings: null,
+    ips: [], // Removes the IPs releating to the account
+    badges: [{ // Removes all the badges but adds the Ghost user Badge & Flag
         name: "Ghost User",
         short_description: "A User that has Deleted their Account",
         small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171808450238398.png"
@@ -109,7 +97,7 @@ const DELETED_ACCOUNT_MESSAGE_DATA = {
 };
 
 const GIFT_DATA = {
-    type: "ROSE", // Types are sunflower, Rose, bouquet, and PROMO (Sunflower would be $3 Rose would be $6 and bouquet would be $15)
+    type: "ROSE", // Types are sunflower, Rose, bouquet, and PROMO (Sunflower would be $3, Rose would be $6 and bouquet would be $15)
     max_age: 1658826027117, // Max age is 24 hours on Subscription Gifts (Promos last longer)
     gift_length: 2592000000, // This gift lasts 30 days (one month)
     gift_url: "https://kastelapp.org/gifts/McOqLPWH118MF8Mcsbwtllw6aJHwNlfmH6Ra7IDe", // Randomly made gift url, accepting it (since its rose) will give you access to the monthly subscription for free

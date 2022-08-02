@@ -20,4 +20,4 @@ const dmSchema = new Schema({
     }
 });
 
-module.exports = model("dms", dmSchema);
+module.exports = model("dm", dmSchema);

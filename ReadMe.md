@@ -2,7 +2,7 @@
 <div align="center">
   <br />
   <p>
-    <!-- <a href="https://kastelapp.org"><h1>Kastel</h1></a> -->
+    <!-- <a href="https://kastelapp.org"><h1>Kastel</h1></a> hidden as domain hasn't be bought yet -->
     <h1>Kastel</h1>
   </p>
 </div>
@@ -23,10 +23,15 @@ Kastel Is a Chatting App like <a href="https://discord.com">Discord</a> & <a hre
 - [ ] API Endpoints for Creating Accounts, Updating Accounts, Deleting Accounts ETC
 - [ ] Routing to Different servers
 - [ ] Docker File to easily run the backend
+- [ ] Advanced Caching system using redis
 
 # License
 
-Please read the license that can be found in [LICENSE.md](https://github.com/Kastelll/backend/blob/master/LICENSE.md)
+Please read the license that can be found in [LICENSE.md](https://github.com/Kastelll/backend/blob/stable/LICENSE.md)
+
+# Contributing
+
+If you would like to [Con replace me] fork the repo, Make your changes, Test the code (Verify it works), Make a pull request to the development branch and wait for it to be merged :)
 
 # Credits
 

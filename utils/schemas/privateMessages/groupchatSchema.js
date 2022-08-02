@@ -15,4 +15,4 @@ const groupchatSchema = new Schema({
     }]
 });
 
-module.exports = model("groupchat", groupchatSchema);
+module.exports = model("groupchats", groupchatSchema);

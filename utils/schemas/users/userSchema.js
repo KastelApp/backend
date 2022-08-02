@@ -21,7 +21,7 @@ const userSchema = new Schema({
     username: {
         type: String,
         required: true,
-        default: "Unknown Username",
+        default: "Ghost",
     },
 
     tag: {
@@ -112,7 +112,7 @@ const userSchema = new Schema({
 
     show_ads: {
         type: Boolean,
-        required: false
+        required: false,
     }
 });
 

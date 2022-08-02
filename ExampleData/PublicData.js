@@ -8,19 +8,13 @@ const GUILD_DATA = {
     description: "Welcome to Kastel Chat Support, We welcome you with open arms :D", // The description of the guild (4096 in length)
     info: {
         public: false, // If the guild is Public and will be shown to people
-        verified: true, // If the Guild is Verified so Users know
-        partnered: true, // If its Partnered from like a Youtube ETC
-        under_investigation: false // If its true the Guild is **COMPLETELY** Blocked off API wise so Staff can look into a report if its serious (broken laws etc) 
+        verified: true, // If the guild is Verified so Users know
+        partnered: true, // If the guild is partnered, for like Youtubers, big guilds ETC
+        under_investigation: false // If its true the guild is completely Blocked off API wise so Staff can look into a report if its serious (broken laws etc) 
     },
     vanity_url: {
         url: "kastel-support", // The custom invite url (18 in length, Unique)
-        uses: 5867,
-        users: [{
-            username: "RandomInviteUser",
-            discirm: "8888",
-            id: "33168888888888888",
-            used_date: 1658474124250
-        }]
+        uses: 5867
     },
     owner: {
         username: "Mik3.",
@@ -231,44 +225,6 @@ const PUBLIC_USER_DATA = { // This is data that is Completely Public anyone can 
     flags: ["STAFF"],
 };
 
-const ALL_CURRENT_BADGES = [{
-    name: "Kastel Staff",
-    short_description: "Moderates Kastel",
-    small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171801624550004.png"
-}, {
-    name: "Kastel Developer",
-    short_description: "Is a Developer at Kastelapp/Has made a big Commit to the Project",
-    small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171809644780990.png"
-}, {
-    name: "Original User",
-    short_description: "Was one of the first 1000 Users :)",
-    small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171802224557975.png"
-}, {
-    name: "Verified Bot Developer",
-    short_description: "Has a Verified Bot (A bot in more then 2500 guilds)",
-    small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171808450230326.png"
-}, {
-    name: "Partner",
-    short_description: "Has a Partnered Server",
-    small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171808450238398.png"
-}, {
-    name: "Ghost User",
-    short_description: "This User has Deleted their Account",
-    small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171822999046600.png"
-}, {
-    name: "Major Bug Hunter",
-    short_description: "Has found a Major Bug",
-    small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171822999040000.png"
-}, {
-    name: "Minor Bug Hunter",
-    short_description: "Has found a Minor Bug.",
-    small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171822999049222.png"
-}, {
-    name: "Trustworthy Moderator",
-    short_description: "Trustworthy to moderate your guilds.",
-    small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33172750946551140.png"
-}];
-
 
 const GUILD_MEMBER_DATA = {
     username: "RandomMember",
@@ -306,8 +262,13 @@ const BAN_DATA = {
 const AUDIT_LOG_DATA = {};
 
 const INVITE_DATA = {
+    creator: {
+        username: "DarkerInk",
+        tag: "1750",
+        id: "33168888888888888"
+    },
     code: "bgFcPKOCJ4FN", // The Invite code
     expires: null, // When the invite Expires, Null for never expiring, can go up to 30 days
     uses: 0, // How many uses the invite code has
-    users: [] // the amount of users that have used the code 
+    max_uses: null // null for Infinity
 };

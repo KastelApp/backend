@@ -5,6 +5,7 @@ const path = require("node:path");
  * Goes through each DIR and adds them to the Array.
  * @param {String} file 
  * @param {Array<String>} arr 
+ * @returns {Array<String>}
  */
 const thrandthr = (fipath, arr) => {
     const dirArray = (arr || []);
@@ -35,6 +36,7 @@ const thrandthr = (fipath, arr) => {
  * Cuts the filePath, and adds the export path to make a propper route
  * @param {String} filePath 
  * @param {String} exportPath 
+ * @returns {String}
  */
 const cutter = (filePath, exportPath) => {
 
@@ -48,7 +50,8 @@ const cutter = (filePath, exportPath) => {
 
 /**
  * Loads all the routes.
- * @param {import("express").Application} app 
+ * @param {import("express").Application} app
+ * @returns {Array<String>}
  */
 const routeHandler = (app) => {
     const fipaths = thrandthr(null, []);
@@ -68,8 +71,9 @@ const routeHandler = (app) => {
         }
 
         if (JSON.parse(process?.env?.logRoutes)) logger.loaded(`${newPath} (${route?.method || route?.methods.join(", ")})`)
-
     }
+
+    return fipaths
 }
 
 

@@ -1,7 +1,7 @@
 /**
  * 
  * @param {{length: Number, type: String}} obj 
- * @returns 
+ * @returns {Boolean}
  */
 const lengthChecker = (obj = {
     length: 3,

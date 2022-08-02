@@ -1,3 +1,9 @@
+const processVersion = process.version.slice(process.version.startsWith("v") ? 1 : 0, (process.version.length - 2))
+
+if (processVersion < 16) {
+    throw new Error(`Kastel requires at least Node.js v16.0.0, You are running on ${process.version}`)
+}
+
 require("dotenv").config();
 
 // If the user wants to time the startup
@@ -16,6 +22,7 @@ if (JSON.parse(process?.env?.logLogo)) {
 ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
 ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
 A Privacy focused chatting app
+Running version ${process?.env?.kas_version ? `v${process?.env?.kas_version}` : "Unknown version"} of Kastel. Node.js version ${process.version}
 `))
 }
 
@@ -30,7 +37,7 @@ const cookieParser = require("cookie-parser");
 /* Util Imports */
 const redis = require("./utils/redis");
 const routeHandler = require("./utils/routeHandler");
-const { setup, generateId } = require("./utils/idGen");
+const { setup } = require("./utils/idGen");
 const uriGenerator = require("./utils/uriGenerator");
 const log = require("./utils/logger");
 
@@ -39,18 +46,18 @@ global.logger = new log("default");
 /* Express Middleware stuff */
 const app = express()
 
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(cors())
+    .use(express.json())
+    .use(express.urlencoded({ extended: true }))
+    .use(cookieParser());
 
 /* Error Handling */
 process.on("uncaughtException", (err, stack) => {
-    logger.error(`Unhandled Exception, (${err.stack})`)
+    logger.important.error(`Unhandled Exception, (${err.stack})`)
 })
 
 process.on("unhandledRejection", (reason) => {
-    logger.error(`Unhandled Rejection, (${reason.stack})`)
+    logger.important.error(`Unhandled Rejection, (${reason.stack})`)
 })
 
 /* Sets the users IP for later simpler use */
@@ -83,10 +90,10 @@ app.all("*", (req, res) => {
 
 
 app.listen((process.env.port || 3000), async () => {
-    logger.info(`Server Started On Port ${process.env.port || 3000}`);
+    logger.important.info(`Server Started On Port ${process.env.port || 3000}`);
 
-    await redis.createClient().then(() => logger.info("Redis connected!")).catch((e) => {
-        logger.error("Failed to connect to Redis,", e);
+    await redis.createClient().then(() => logger.important.info("Redis connected!")).catch((e) => {
+        logger.important.error("Failed to connect to Redis,", e);
         process.exit();
     })
 
@@ -94,8 +101,8 @@ app.listen((process.env.port || 3000), async () => {
         useNewUrlParser: true,
         useUnifiedTopology: true,
         keepAlive: true
-    }).then(() => logger.info("MongoDB connected!")).catch((e) => {
-        logger.error("Failed to connect to MongoDB", e);
+    }).then(() => logger.important.info("MongoDB connected!")).catch((e) => {
+        logger.important.error("Failed to connect to MongoDB", e);
         process.exit();
     })
 
@@ -109,5 +116,5 @@ app.listen((process.env.port || 3000), async () => {
         sequence_Bytes: process.env.sequence_Bytes,
     })
 
-    if (JSON.parse(process.env.timeStartUp)) logger.info(`Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(3)}s to Start Up`)
+    if (JSON.parse(process.env.timeStartUp)) logger.important.info(`Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(3)}s to Start Up`)
 })

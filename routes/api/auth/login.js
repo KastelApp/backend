@@ -15,16 +15,13 @@ module.exports = {
          */
         const { username, email, password } = req?.body
 
-        if (!username || !email || !password) {
+        if (!(email ? true : username ? true : false) || !password) {
             res.send({
                 code: "N/A",
-                errors: [!username ? {
-                    code: "MISSING_USERNAME",
-                    message: "No username provided"
-          } : null, !email ? {
-                    code: "MISSING_EMAIL",
-                    message: "No email provided."
-          } : null, !password ? {
+                errors: [email ? null : username ? null : {
+                    code: "MISSING_EMAIL_OR_USERNAME",
+                    message: "No username or email provided"
+                }, !password ? {
                     code: "MISSING_PASSWORD",
                     message: "No Password provided"
           } : null].filter((x) => x !== null)
@@ -32,5 +29,7 @@ module.exports = {
 
             return;
         }
+
+        res.send("works")
     },
 }

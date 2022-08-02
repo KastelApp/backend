@@ -10,12 +10,23 @@ const defaultColors = {
     Loaded: chalk.green("Loaded")
 }
 
+const important = {
+    colors: { // These are types that are important and only able to be accessed if logger is disabled (For errors & Server Info)
+        Debug: chalk.magenta("Debug"),
+        Info: chalk.blue("Info"),
+        Warn: chalk.yellow("Warn"),
+        Error: chalk.red("Error"),
+        Loaded: chalk.green("Loaded")
+    },
+    types: ["Debug", "Info", "Warn", "Error", "Loaded"],
+    format: "[{DATE} {TYPE}] {MESSAGE}"
+}
+
 const types = {
     path: "string",
     fileName: "string",
     logFormat: "string",
     logTypes: "object",
-    consoleLog: "boolean",
     logFile: "boolean"
 }
 
@@ -26,63 +37,68 @@ class logger {
      * @param {String} obj.fileName The logs File name
      * @param {String} obj.logFormat The format of the log messages
      * @param {Array<String>|["Debug"]|["Info"]|["Warn"]|["Error"]} obj.logTypes The types you can use to log things
-     * @param {Boolean} obj.consoleLog If to log or not log to the console
      * @param {Boolean} obj.logOld If you want to log the old data in the log files.
      * @param {Array<String>|String} obj.logOldIgnore The stuff you want to ignore from the old log files
      */
     constructor(obj) {
+        
         if (obj == "default") obj = {
             path: "./logs",
             fileName: "{DATE}.log",
             logFormat: "[{DATE} {TYPE}] {MESSAGE}",
             logTypes: ["Debug", "Info", "Warn", "Error", "Loaded"],
-            consoleLog: true,
             logFile: process.env.logFile == "true" ? true : false
         }
 
-        /**
-         * @type {String}
-         */
-        this.path = obj?.path; // The DIRECTORY where the log files will be stored
-
-        /**
-         * @type {String}
-         */
-        this.fileName = obj?.fileName ? obj.fileName : "{DATE}"; // The name of the log file (without extension) like "{DATE}.log"
-
-        /**
-         * @type {String}
-         */
-        this.logFormat = obj?.logFormat ? obj.logFormat : "[{DATE} {TYPE}] {MESSAGE}"; // The format of the log message like "[{DATE} {TYPE}] {MESSAGE}"
-
-        /**
-         * @type {obj.logTypes}
-         */
-        this.logTypes = obj?.logTypes ? obj?.logTypes : ["Debug", "Info", "Warn", "Error"]; // The types of logs that will be stored
-
-        /**
-         * @type {Boolean}
-         */
-        this.consoleLog = obj?.consoleLog ? obj.consoleLog : false; // If true, the log will be printed to the console
-
-        /**
-         * @type {Boolean}
-         */
-        this.logFile = obj?.logFile ? obj.logFile : false // If true then the logs will be stored in a file
-
-        for (const i in obj) {
-            const extype = types?.[i]
-            const gttype = (typeof obj[i])
-
-            if (gttype !== extype) throw new Error(`${i} Expected ${extype} but got ${gttype}`)
+        for (let i = 0; i < obj.logTypes.length; i++) {
+            logger.prototype[obj.logTypes[i]?.toLowerCase()] = (...msg) => this.log(this.logTypes[i], msg.join(" ")) 
         }
 
-        for (let i = 0; i < this.logTypes.length; i++) {
-            logger.prototype[this.logTypes[i]?.toLowerCase()] = (...msg) => this.log(this.logTypes[i], msg.join(" "))
+        if (process.env.log == "true") {
+
+            /**
+             * @type {String}
+             */
+            this.path = obj?.path; // The DIRECTORY where the log files will be stored
+
+            /**
+             * @type {String}
+             */
+            this.fileName = obj?.fileName ? obj.fileName : "{DATE}"; // The name of the log file (without extension) like "{DATE}.log"
+
+            /**
+             * @type {String}
+             */
+            this.logFormat = obj?.logFormat ? obj.logFormat : "[{DATE} {TYPE}] {MESSAGE}"; // The format of the log message like "[{DATE} {TYPE}] {MESSAGE}"
+
+            /**
+             * @type {obj.logTypes}
+             */
+            this.logTypes = obj?.logTypes ? obj?.logTypes : ["Debug", "Info", "Warn", "Error"]; // The types of logs that will be stored
+
+            /**
+             * @type {Boolean}
+             */
+            this.logFile = obj?.logFile ? obj.logFile : false // If true then the logs will be stored in a file
+
+            for (const i in obj) {
+                const extype = types?.[i]
+                const gttype = (typeof obj[i])
+
+                if (gttype !== extype) throw new Error(`${i} Expected ${extype} but got ${gttype}`)
+            }
+
+
+            if (this.logFile) this.log("Warn", "Logging to files is not recommended. Doing so can and will leak User IPs.")
         }
 
-        if (this.logFile) this.log("Warn", "Logging to files is not recommended. Doing so can and will leak User IPs.")
+
+        for (let i = 0; i < important.types.length; i++) {
+            logger.prototype.important[important.types[i].toLowerCase()] = (...msg) => this.importantLog(important.types[i], msg.join(" "))
+        }
+
     }
+
     /**
      * The log function (Log a Message & Type)
      * @public
@@ -95,6 +111,8 @@ class logger {
      */
     log(type, ...message) {
         try {
+            if (process.env.log == "false") return
+
             const date = new Date().toLocaleString("US", {
                 hour12: false,
             })
@@ -103,9 +121,32 @@ class logger {
                 this.write(this.logFormat.replace("{DATE}", date).replace("{TYPE}", type).replace("{MESSAGE}", message.join(" ")));
             }
 
-            if (this.consoleLog) {
-                console.log(this.logFormat.replace("{DATE}", (chalk.gray(date))).replace("{TYPE}", (defaultColors?.[type] || type)).replace("{MESSAGE}", chalk.cyan(message.join(" "))))
-            }
+            console.log(this.logFormat.replace("{DATE}", (chalk.gray(date))).replace("{TYPE}", (defaultColors?.[type] || type)).replace("{MESSAGE}", chalk.cyan(message.join(" "))))
+
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    important() {}
+
+    /**
+     * The log function (Log a Message & Type)
+     * @public
+     * @example 
+     * const logger = new logger({path: "../logs", consoleLog: true})
+     * 
+     * logger.log("Debug", "Hello, This is a Debug Message") // logger.debug("Hello, This is a Debug Message")
+     * @param {String} type The type (Debug, Info ETC)
+     * @param {Array<String>} message The Messages
+     */
+    importantLog(type, ...message) {
+        try {
+            const date = new Date().toLocaleString("US", {
+                hour12: false,
+            })
+
+            console.log(important.format.replace("{DATE}", (chalk.gray(date))).replace("{TYPE}", (important.colors?.[type] || type)).replace("{MESSAGE}", chalk.cyan(message.join(" "))))
 
         } catch (err) {
             throw err;
