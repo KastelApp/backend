@@ -26,6 +26,8 @@ Kastel Is a Chatting App like <a href="https://discord.com">Discord</a> & <a hre
 - [ ] Advanced Caching system using redis
 - [ ] First time script
 - [ ] User creation from CLI
+- [ ] Rewrite to TS
+    - This project would be much better in TS, I currently do not have the time to set TS up but if you would like to I would love it.
 
 # License
 
