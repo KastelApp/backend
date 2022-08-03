@@ -22,10 +22,12 @@ Kastel Is a Chatting App like <a href="https://discord.com">Discord</a> & <a hre
 - [ ] Encrypting User Data and messages, Username, ID ETC & Hashing Passwords, Emails and IPS
 - [ ] API Endpoints for Creating Accounts, Updating Accounts, Deleting Accounts ETC
 - [ ] Routing to Different servers
+    - If you are in Canada, Route to a US server if there are no canada servers ETC
 - [ ] Docker File to easily run the backend
 - [ ] Advanced Caching system using redis
-- [ ] First time script
+    - Caching system to make API requests faster
 - [ ] User creation from CLI
+    - Useful for creating the first account
 - [ ] Rewrite to TS
     - This project would be much better in TS, I currently do not have the time to set TS up but if you would like to I would love it.
 
