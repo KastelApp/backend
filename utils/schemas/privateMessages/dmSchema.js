@@ -4,7 +4,6 @@ const dmSchema = new Schema({
     _id: {
         type: String,
         required: true,
-        unique: true,
     },
 
     user1: { // First User

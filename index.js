@@ -52,7 +52,7 @@ app.use(cors())
     .use(cookieParser());
 
 /* Error Handling */
-process.on("uncaughtException", (err, stack) => {
+process.on("uncaughtException", (err) => {
     logger.important.error(`Unhandled Exception, (${err.stack})`)
 })
 

@@ -5,7 +5,6 @@ const groupchatSchema = new Schema({
     _id: {
         type: String,
         required: true,
-        unique: true,
     },
 
     users: [{
