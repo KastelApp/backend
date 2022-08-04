@@ -1,33 +1,23 @@
-const { model, Schema } = require("mongoose");
+const { model, Schema, Types } = require("mongoose");
 
 const guildMemberSchema = new Schema({
     user: {
-        type: String,
+        type: Types.ObjectId,
         required: true,
         ref: "users"
     },
 
     guild: {
-        type: String,
+        type: Types.ObjectId,
         required: true,
         ref: "guilds"
     },
 
     roles: [{
-        type: String,
+        type: Types.ObjectId,
         required: false,
         ref: "roles"
-    }],
-
-    bannable: {
-        type: Boolean,
-        required: false
-    },
-
-    kickable: {
-        type: Boolean,
-        required: false
-    }
+    }]
 })
 
 module.exports = model('guildMembers', guildMemberSchema);

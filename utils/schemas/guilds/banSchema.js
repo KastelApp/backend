@@ -3,24 +3,26 @@ const { model, Schema, Types } = require("mongoose");
 const banSchema = new Schema({
 
     guild: {
-        type: String,
+        type: Types.ObjectId,
         required: true,
         ref: "guilds"
     },
 
     user: {
-        type: String,
-        ref: "users"
+        type: Types.ObjectId,
+        ref: "users",
+        required: true
     },
 
     banner: {
-        type: String,
-        ref: "users"
+        type: Types.ObjectId,
+        ref: "users",
+        required: true
     },
 
     reason: {
         type: String,
-        ref: "users"
+        required: false
     },
 
     banned_date: {

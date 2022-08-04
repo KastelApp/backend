@@ -3,7 +3,7 @@ const lengthChecker = require("../../lengthChecker");
 
 const groupchatSchema = new Schema({
     _id: {
-        type: String,
+        type: Types.ObjectId,
         required: true,
     },
 

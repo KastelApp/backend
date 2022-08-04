@@ -2,12 +2,12 @@ const { model, Schema, Types } = require("mongoose");
 
 const inviteSchema = new Schema({
     _id: { // The Code
-        type: String,
+        type: Types.ObjectId,
         required: true
     },
 
     guild: {
-        type: String,
+        type: Types.ObjectId,
         required: true,
         ref: "guilds"
     },

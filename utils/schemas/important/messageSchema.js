@@ -1,13 +1,13 @@
-const { model, Schema } = require("mongoose");
+const { model, Schema, Types } = require("mongoose");
 
 const messageSchema = new Schema({
     _id: {
-        type: String,
+        type: Types.ObjectId,
         required: true
     },
 
     channel: {
-        type: String,
+        type: Types.ObjectId,
         required: true,
         ref: "channels"
     }

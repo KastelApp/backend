@@ -134,7 +134,7 @@ const CHANNEL_DATA = {
         files: [{
             name: "cute-cat.png",
             id: "33171778124978411",
-            cdn_url: "https://cdn.kastelapp.org/33171628010110708/33171778124978411/cute-cat.png",
+            cdn_url: "https://cdn.kastelapp.com/33171628010110708/33171778124978411/cute-cat.png",
             type: "image/png",
             deleted: false
         }],
@@ -150,10 +150,10 @@ const CHANNEL_DATA = {
             bot: false
         },
         id: "33171778124971789",
-        content: "that cat is soooooo cute <33, I love this website as well https://cute-cats.org",
+        content: "that cat is soooooo cute <33, I love this website as well https://cute-cats.com",
         embeds: [{
             title: "Cute Cats",
-            url: "https://cute-cats.org",
+            url: "https://cute-cats.com",
             description: "We got the CUTEST cat images you can imagine.",
             fields: [],
             footer: null,
@@ -170,17 +170,17 @@ const CHANNEL_DATA = {
     }]
 };
 
-const WEBHOOK_DATA = { // Webhook post requests can be made by doing a HTTP post request to "https://kastelapp.org/api/v1/guilds/33171600011808774/webhooks/33172310315275745" and the token is used to verifiy requests.
+const WEBHOOK_DATA = { // Webhook post requests can be made by doing a HTTP post request to "https://kastelapp.com/api/v1/guilds/33171600011808774/webhooks/33172310315275745" and the token is used to verifiy requests.
     username: "cute cats webhook", // The Username, Supports any Char, (Max Length 46 Chars)
     id: "33172310315275745", // Randomly Generated ID
-    avatar_url: "https://cdn.kastelapp.org/33171600011808774/33172310315275745/33172311792240004.png", // The Avatar URL
+    avatar_url: "https://cdn.kastelapp.com/33171600011808774/33172310315275745/33172311792240004.png", // The Avatar URL
     token: "LC_vhQGLKkyLy8JyEaIUAHbB3Czp5mDfEK2tb3TYAs3BZvM5r7JM78vGnAx56cCFNqDuh6yx1rk", // The token to make requests
     allowed_mentions: ["users"] // only allow the webhook mention users (can be "users", "roles", "everyone", "here")
 };
 
 const EMBED_DATA = {
     title: "Cute Cats", // The title of embed. (Will only show 32 Chars, Supports Some Markdown)
-    url: "https://cute-cats.org", // If a valid url (has HTTPS, HTTP or kastelapp://) the title will be clickable leading to the website
+    url: "https://cute-cats.com", // If a valid url (has HTTPS, HTTP or kastelapp://) the title will be clickable leading to the website
     description: "We got the CUTEST cat images you can imagine.", // The Description of the embed (4096 in length, Supports Most Markdown)
     fields: [{
         name: "Cute Cats", // Same as @EMBED_DATA#title
@@ -197,14 +197,14 @@ const EMBED_DATA = {
 const FILE_DATA = { // The file is Downloaded via the CDN to not leak users IPs
     name: "cute-cat.png", // The name is just any name the file had when uploaded defaults to "unknown"
     id: "33171778124978411", // A random ID
-    cdn_url: "https://cdn.kastelapp.org/33171628010110708/33171778124978411/cute-cat.png", // The cdn url if the /channel_id/file_id/file_name
+    cdn_url: "https://cdn.kastelapp.com/33171628010110708/33171778124978411/cute-cat.png", // The cdn url if the /channel_id/file_id/file_name
     type: "image/png", // The file type
     deleted: false // if true it means the CDN url has been deleted and or removed for ToS reasons or PP reasons
 };
 
 
 const PUBLIC_USER_DATA = { // This is data that is Completely Public anyone can access with your userID
-    avatar_url: "https://cdn.kastelapp.org/33168888888888888/33170000000000000.png",
+    avatar_url: "https://cdn.kastelapp.com/33168888888888888/33170000000000000.png",
     username: "DarkerInk",
     tag: "8888",
     id: "33168888888888888",
@@ -212,15 +212,15 @@ const PUBLIC_USER_DATA = { // This is data that is Completely Public anyone can 
     badges: [{
         name: "Staff",
         short_description: "Works for Kastelapp",
-        small_image: "https://cdn.kastelapp.org/33171801624545077/33171801624550422/33171801624550004.png"
+        small_image: "https://cdn.kastelapp.com/33171801624545077/33171801624550422/33171801624550004.png"
     }, {
         name: "Original User",
         short_description: "Was one of the first 1000 Users :)",
-        small_image: "https://cdn.kastelapp.org/33171802224545005/33171802224547277/33171802224557975.png"
+        small_image: "https://cdn.kastelapp.com/33171802224545005/33171802224547277/33171802224557975.png"
     }, {
         name: "Kastelapp Developer",
         short_description: "Is a Developer at Kastelapp/Has made a big Commit to the Project",
-        small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171809644780990.png"
+        small_image: "https://cdn.kastelapp.com/33171802224545005/33171801624550422/33171809644780990.png"
     }],
     flags: ["STAFF"],
 };
@@ -241,7 +241,7 @@ const ROLE_DATA = {};
 
 const BAN_DATA = {
     user: { // the person that got banned
-        avatar_url: "https://cdn.kastelapp.org/33168888888888888/33170000000000000.png",
+        avatar_url: "https://cdn.kastelapp.com/33168888888888888/33170000000000000.png",
         username: "DarkerInk",
         tag: "8888",
         id: "33168888888888888",

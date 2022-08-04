@@ -2,12 +2,12 @@ const { model, Schema, Types } = require("mongoose");
 
 const roleSchema = new Schema({
     _id: {
-        type: String,
+        type: Types.ObjectId,
         required: true
     },
 
     guild: {
-        type: String,
+        type: Types.ObjectId,
         required: true,
         ref: "guilds"
     },
@@ -15,7 +15,7 @@ const roleSchema = new Schema({
     name: {
         type: String,
         required: true,
-        default: "Unknown Channel"
+        default: "Unknown Role"
     },
 
     allowed_nsfw: {

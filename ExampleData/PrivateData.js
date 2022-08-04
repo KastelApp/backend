@@ -5,11 +5,11 @@ Most of this Data/Example JSON is for Internal stuff, Things a normal user will 
 
 
 const PRIVATE_USER_DATA = { // OUT DATED, WILL BE UPDATED LATER
-    avatar_url: "https://cdn.kastelapp.org/33168888888888888/33170000000000000.png", // The Users Avatar, Any Image Type.
+    avatar_url: "https://cdn.kastelapp.com/33168888888888888/33170000000000000.png", // The Users Avatar, Any Image Type.
     username: "DarkerInk", // The Username, Supports any Char, (Max Length 46 Chars)
     tag: "8888", // The original tag is the four randomly generated numbers of your id. If its taken will be randomly generated again
     id: "33168888888888888", // Unqiue ID, Adds the date of it being generated and the start date (setable in .env) then four randomly generated numbers
-    email: "darkerink@staff.kastelapp.org", // The Users Email (Will be Encrypted & hashed)
+    email: "darkerink@staff.kastelapp.com", // The Users Email (Will be Encrypted & hashed)
     password: "CatsAreVeryCool1234!!!", // A Hashed and Encrypted Password. Nobody will know it besides the User
     created_date: 1658352496290,
     two_fa: true, // If the user must require a 2FA code on Login, Password Reset, Email Change ETC
@@ -19,15 +19,15 @@ const PRIVATE_USER_DATA = { // OUT DATED, WILL BE UPDATED LATER
     badges: [{ // The Badges are kept UnEncrypted. There isn't much you can do with them.
         name: "Kastel Staff",
         short_description: "Moderates Kastel",
-        small_image: "https://cdn.kastelapp.org/33171801624545077/33171801624550422/33171801624550004.png"
+        small_image: "https://cdn.kastelapp.com/33171801624545077/33171801624550422/33171801624550004.png"
     }, {
         name: "Original User",
         short_description: "Was one of the first 1000 Users :)",
-        small_image: "https://cdn.kastelapp.org/33171802224545005/33171802224547277/33171802224557975.png"
+        small_image: "https://cdn.kastelapp.com/33171802224545005/33171802224547277/33171802224557975.png"
     }, {
         name: "Kastel Developer",
         short_description: "Is a Developer at Kastel/Has made a big Commit to the Project",
-        small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171809644780990.png"
+        small_image: "https://cdn.kastelapp.com/33171802224545005/33171801624550422/33171809644780990.png"
     }],
     flags: ["STAFF"],
     friends: [{ // The users friends, Limit is 100, They can also set a custom nickname for them. The Username, Nickname and ID are completely encrypted
@@ -73,7 +73,7 @@ const DELETED_ACCOUNT_DATA = {
     badges: [{ // Removes all the badges but adds the Ghost user Badge & Flag
         name: "Ghost User",
         short_description: "A User that has Deleted their Account",
-        small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171808450238398.png"
+        small_image: "https://cdn.kastelapp.com/33171802224545005/33171801624550422/33171808450238398.png"
     }],
     flags: ["GHOST"],
 };
@@ -100,7 +100,7 @@ const GIFT_DATA = {
     type: "ROSE", // Types are sunflower, Rose, bouquet, and PROMO (Sunflower would be $3, Rose would be $6 and bouquet would be $15)
     max_age: 1658826027117, // Max age is 24 hours on Subscription Gifts (Promos last longer)
     gift_length: 2592000000, // This gift lasts 30 days (one month)
-    gift_url: "https://kastelapp.org/gifts/McOqLPWH118MF8Mcsbwtllw6aJHwNlfmH6Ra7IDe", // Randomly made gift url, accepting it (since its rose) will give you access to the monthly subscription for free
+    gift_url: "https://kastelapp.com/gifts/McOqLPWH118MF8Mcsbwtllw6aJHwNlfmH6Ra7IDe", // Randomly made gift url, accepting it (since its rose) will give you access to the monthly subscription for free
     used_by: {
         username: "Mik3",
         tag: "3808",

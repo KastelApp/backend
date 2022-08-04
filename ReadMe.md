@@ -2,8 +2,7 @@
 <div align="center">
   <br />
   <p>
-    <!-- <a href="https://kastelapp.org"><h1>Kastel</h1></a> hidden as domain hasn't be bought yet -->
-    <h1>Kastel</h1>
+    <a href="https://kastelapp.com"><h1>Kastel</h1></a> 
   </p>
 </div>
 

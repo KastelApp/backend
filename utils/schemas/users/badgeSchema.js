@@ -1,8 +1,8 @@
-const { model, Schema } = require("mongoose");
+const { model, Schema, Types } = require("mongoose");
 
 const badgeSchema = new Schema({
     user: {
-        type: String,
+        type: Types.ObjectId,
         required: true,
         ref: "users",
     },

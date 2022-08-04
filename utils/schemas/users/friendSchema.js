@@ -1,14 +1,14 @@
-const { model, Schema } = require("mongoose");
+const { model, Schema, Types } = require("mongoose");
 
 const friendSchema = new Schema({
     user: {
-        type: String,
+        type: Types.ObjectId,
         required: true,
         ref: "users",
     },
 
     friend: {
-        type: String,
+        type: Types.ObjectId,
         required: true,
         ref: "users"
     }

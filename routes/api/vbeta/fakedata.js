@@ -27,7 +27,7 @@ module.exports = {
     run: async (req, res, next) => {
         const user = await userSchema.create({
             _id: generateId(),
-            email: "darkerink@kastelapp.org",
+            email: "darkerink@kastelapp.com",
             username: "Lilith",
             tag: "1750",
             password

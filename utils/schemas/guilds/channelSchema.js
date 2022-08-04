@@ -2,12 +2,12 @@ const { model, Schema, Types } = require("mongoose");
 
 const channelSchema = new Schema({
     _id: {
-        type: String,
+        type: Types.ObjectId,
         required: true
     },
 
     guild: {
-        type: String,
+        type: Types.ObjectId,
         required: true,
         ref: "guilds"
     },
@@ -23,23 +23,18 @@ const channelSchema = new Schema({
     },
 
     type: {
-        type: String,
+        type: Number,
         required: true
     },
 
     nsfw: {
         type: Boolean,
-        required: true
+        required: false
     },
 
     allowed_mentions: [{
         type: String,
         required: false
-    }],
-
-    messages: [{
-        type: String,
-        ref: "messages"
     }]
 })
 

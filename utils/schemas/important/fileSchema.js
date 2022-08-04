@@ -1,13 +1,13 @@
-const { model, Schema } = require("mongoose");
+const { model, Schema, Types } = require("mongoose");
 
 const fileSchema = new Schema({
     _id: {
-        type: String,
+        type: Types.ObjectId,
         required: true
     },
 
     message: {
-        type: String,
+        type: Types.ObjectId,
         required: true,
         ref: "messages"
     },
@@ -18,7 +18,7 @@ const fileSchema = new Schema({
         default: "Unknown"
     },
 
-    cdn_url: {
+    cdn_token: {
         type: String,
         required: true
     },

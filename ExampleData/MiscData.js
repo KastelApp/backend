@@ -33,39 +33,39 @@ const ROLE_PERMISSIONS = {
 const ALL_CURRENT_BADGES = [{
     name: "Kastel Staff",
     short_description: "Moderates Kastel",
-    small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171801624550004.png"
+    small_image: "https://cdn.kastelapp.com/33171802224545005/33171801624550422/33171801624550004.png"
 }, {
     name: "Kastel Developer",
     short_description: "Is a Developer at Kastel/Has made a big Commit to the Project",
-    small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171809644780990.png"
+    small_image: "https://cdn.kastelapp.com/33171802224545005/33171801624550422/33171809644780990.png"
 }, {
     name: "Original User",
     short_description: "Was one of the first 1000 Users :)",
-    small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171802224557975.png"
+    small_image: "https://cdn.kastelapp.com/33171802224545005/33171801624550422/33171802224557975.png"
 }, {
     name: "Verified Bot Developer",
     short_description: "Has a Verified Bot (A bot in more then 2500 guilds)",
-    small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171808450230326.png"
+    small_image: "https://cdn.kastelapp.com/33171802224545005/33171801624550422/33171808450230326.png"
 }, {
     name: "Partner",
     short_description: "Has a Partnered Guild",
-    small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171808450238398.png"
+    small_image: "https://cdn.kastelapp.com/33171802224545005/33171801624550422/33171808450238398.png"
 }, {
     name: "Ghost User",
     short_description: "This User has Deleted their Account",
-    small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171822999046600.png"
+    small_image: "https://cdn.kastelapp.com/33171802224545005/33171801624550422/33171822999046600.png"
 }, {
     name: "Major Bug Hunter",
     short_description: "Has found a Major Bug",
-    small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171822999040000.png"
+    small_image: "https://cdn.kastelapp.com/33171802224545005/33171801624550422/33171822999040000.png"
 }, {
     name: "Minor Bug Hunter",
     short_description: "Has found a Minor Bug.",
-    small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33171822999049222.png"
+    small_image: "https://cdn.kastelapp.com/33171802224545005/33171801624550422/33171822999049222.png"
 }, {
     name: "Trustworthy Moderator",
     short_description: "Trustworthy to moderate your guilds.",
-    small_image: "https://cdn.kastelapp.org/33171802224545005/33171801624550422/33172750946551140.png"
+    small_image: "https://cdn.kastelapp.com/33171802224545005/33171801624550422/33172750946551140.png"
 }];
 
 

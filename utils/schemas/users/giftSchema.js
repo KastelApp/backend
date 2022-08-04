@@ -1,14 +1,20 @@
-const { model, Schema } = require("mongoose");
+const { model, Schema, Types } = require("mongoose");
 
 const giftSchema = new Schema({
+
+    _id: { // The gift token/id
+      type: Types.ObjectId,
+      required: true  
+    },
+
     user: {
-        type: String,
+        type: Types.ObjectId,
         required: true,
         ref: "users",
     },
 
     type: {
-        type: String,
+        type: Number,
         required: true,
     },
 
@@ -22,13 +28,8 @@ const giftSchema = new Schema({
         required: true,
     },
 
-    gift_url: {
-        type: String,
-        required: true,
-    },
-
     used_by: {
-        type: String,
+        type: Types.ObjectId,
         required: true,
         ref: "users"
     }
