@@ -89,7 +89,13 @@ module.exports = {
                 const userTags = (await userSchema.find({ username })).map((user) => user.tag);
                 tag = tagGenerator(userTags)
 
-                if (!tag) throw new Error("User bypassed check & now max usernames has been hit")
+                if (!tag) return res.status(500).send({
+                    code: 500,
+                    errors: [{
+                        code: "NO_TAGS",
+                        message: "Sorry, No tags were able to be made for this username. Please try again."
+                    }]
+                })
             }
 
             const usr = new userSchema({
