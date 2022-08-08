@@ -1,13 +1,13 @@
-const { model, Schema, Types } = require("mongoose");
+const { model, Schema } = require("mongoose");
 
 const fileSchema = new Schema({
     _id: {
-        type: Types.ObjectId,
+        type: String,
         required: true
     },
 
     message: {
-        type: Types.ObjectId,
+        type: String,
         required: true,
         ref: "messages"
     },

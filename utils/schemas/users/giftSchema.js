@@ -1,14 +1,13 @@
-const { model, Schema, Types } = require("mongoose");
+const { model, Schema } = require("mongoose");
 
 const giftSchema = new Schema({
-
     _id: { // The gift token/id
-      type: Types.ObjectId,
+      type: String,
       required: true  
     },
 
     user: {
-        type: Types.ObjectId,
+        type: String,
         required: true,
         ref: "users",
     },
@@ -29,7 +28,7 @@ const giftSchema = new Schema({
     },
 
     used_by: {
-        type: Types.ObjectId,
+        type: String,
         required: true,
         ref: "users"
     }

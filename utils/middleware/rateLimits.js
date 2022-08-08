@@ -12,7 +12,7 @@ const rateLimit = (options = {
     return async (req, res, next) => {
         const requestedTime = Date.now();
 
-        const userIP = await jsonGet(req.user_ip);
+        const userIP = await jsonGet(req.clientIp);
 
         if (!userIP) {
             const data = [{
@@ -20,7 +20,7 @@ const rateLimit = (options = {
                 requests: 1
             }];
 
-            await jsonSet(req.user_ip, data)
+            await jsonSet(req.clientIp, data)
 
             next()
         }

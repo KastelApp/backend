@@ -4,7 +4,7 @@
  */
 const tagGenerator = (tags = []) => {
     tags = tags.map(tag => Number(tag))
-    
+
     // push 0 and 10000 as they will be removed
     tags.push(0, 10000)
 

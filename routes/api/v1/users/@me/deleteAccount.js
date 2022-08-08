@@ -1,6 +1,6 @@
 module.exports = {
     path: "/",
-    method: "all",
+    method: "delete",
     middleWare: [],
     /**
      * @param {import("express").Request} req 

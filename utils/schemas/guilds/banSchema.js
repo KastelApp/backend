@@ -1,21 +1,19 @@
-const { model, Schema, Types } = require("mongoose");
+const { model, Schema } = require("mongoose");
 
 const banSchema = new Schema({
-
-    guild: {
-        type: Types.ObjectId,
-        required: true,
-        ref: "guilds"
+    _id: {
+        type: String,
+        required: true
     },
 
     user: {
-        type: Types.ObjectId,
+        type: String,
         ref: "users",
         required: true
     },
 
     banner: {
-        type: Types.ObjectId,
+        type: String,
         ref: "users",
         required: true
     },

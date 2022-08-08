@@ -1,19 +1,19 @@
-const { model, Schema, Types } = require("mongoose");
+const { model, Schema } = require("mongoose");
 
 const dmSchema = new Schema({
     _id: {
-        type: Types.ObjectId,
+        type: String,
         required: true,
     },
 
-    user1: { // First User
-        type: Types.ObjectId,
+    creator: { // First User
+        type: String,
         required: true,
         ref: "users",
     },
 
-    user2: { // Second User
-        type: Types.ObjectId,
+    receiver: { // Second User
+        type: String,
         required: true,
         ref: "users"
     }

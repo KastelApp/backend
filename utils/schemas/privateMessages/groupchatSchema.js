@@ -1,14 +1,14 @@
-const { model, Schema, Types } = require("mongoose");
+const { model, Schema } = require("mongoose");
 const lengthChecker = require("../../lengthChecker");
 
 const groupchatSchema = new Schema({
     _id: {
-        type: Types.ObjectId,
+        type: String,
         required: true,
     },
 
     users: [{
-        type: Types.ObjectId,
+        type: String,
         ref: "users",
         validate: [lengthChecker({ length: 15, type: "LESS" }), '{PATH} exceeds the limit of 15']
     }]

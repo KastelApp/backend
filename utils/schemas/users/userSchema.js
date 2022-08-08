@@ -1,9 +1,9 @@
-const { model, Schema, Types } = require("mongoose");
+const { model, Schema } = require("mongoose");
 const lengthChecker = require("../../lengthChecker");
 
 const userSchema = new Schema({
     _id: {
-        type: Types.ObjectId,
+        type: String,
         required: true
     },
 
@@ -85,9 +85,26 @@ const userSchema = new Schema({
     },
 
     guilds: [{
-        type: Types.ObjectId,
+        type: String,
         ref: "guilds",
         validate: [lengthChecker({ length: 50, type: "less" }), '{PATH} exceeds the limit of 50']
+    }],
+
+    dms: [{
+        type: String,
+        required: false,
+        ref: "dms"
+    }],
+
+    groupchats: [{
+        type: String,
+        required: false,
+        ref: "groupchats"
+    }],
+
+    bots: [{
+        type: String,
+        ref: "users"
     }],
 
     banned: {
@@ -113,6 +130,11 @@ const userSchema = new Schema({
     show_ads: {
         type: Boolean,
         required: false,
+    },
+
+    bot: {
+        type: Boolean,
+        required: false
     }
 });
 

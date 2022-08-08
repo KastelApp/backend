@@ -1,5 +1,5 @@
 {
-        "v1": {
+    "v1": {
         "status": "development",
         "public": true,
         "end_date": null
@@ -7,7 +7,7 @@
     "vbeta": {
         "status": "development",
         "_comment_": "public should be false but logic has not been made for it",
-        "public": true, 
+        "public": true,
         "end_date": null
     }
 }

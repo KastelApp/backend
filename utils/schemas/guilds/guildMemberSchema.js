@@ -1,20 +1,19 @@
-const { model, Schema, Types } = require("mongoose");
+const { model, Schema } = require("mongoose");
 
 const guildMemberSchema = new Schema({
+    _id: {
+        type: String,
+        required: true
+    },
+
     user: {
-        type: Types.ObjectId,
+        type: String,
         required: true,
         ref: "users"
     },
 
-    guild: {
-        type: Types.ObjectId,
-        required: true,
-        ref: "guilds"
-    },
-
     roles: [{
-        type: Types.ObjectId,
+        type: String,
         required: false,
         ref: "roles"
     }]

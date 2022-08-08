@@ -41,7 +41,7 @@ class logger {
      * @param {Array<String>|String} obj.logOldIgnore The stuff you want to ignore from the old log files
      */
     constructor(obj) {
-        
+
         if (obj == "default") obj = {
             path: "./logs",
             fileName: "{DATE}.log",
@@ -51,7 +51,7 @@ class logger {
         }
 
         for (let i = 0; i < obj.logTypes.length; i++) {
-            logger.prototype[obj.logTypes[i]?.toLowerCase()] = (...msg) => this.log(this.logTypes[i], msg.join(" ")) 
+            logger.prototype[obj.logTypes[i]?.toLowerCase()] = (...msg) => this.log(this.logTypes[i], msg.join(" "))
         }
 
         if (process.env.log == "true") {

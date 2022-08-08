@@ -7,5 +7,5 @@ module.exports = {
      * @param {import("express").Response} res 
      * @param {import("express").NextFunction} next 
      */
-    run: async (req, res, next) => {},  
+    run: async (req, res, next) => {},
 }

@@ -70,15 +70,19 @@ const ALL_CURRENT_BADGES = [{
 
 
 const ALL_CURRENT_FLAGS = [
-     "STAFF", // Lets the API know you are staff
-     "SYSTEM", // For Messages the system sent out, Used to verify announcement DMs
-     "BOT", // Lets the API know that its a bot
-     "GHOST", // Given when you delete your account
-     "SPAMMER",
-     "BROKE_TOS", // If you break ToS this flag will be given, only removed if it was added by mistake
-     
+    // Flags that are possible to get normally
+    "BETA_TESTER", // When you create your account for the first time you have a 0.05 of getting the beta tester flag. Gives access to beta endpoints & other things
+    "STAFF", // Lets the API know you are staff
+    "BOT", // Lets the API know that its a bot
+    "VERIFIED_BOT",
+
+     // Flags that are normally impossible to get as a normal user
+    "SYSTEM", // For Messages the system sent out, Used to verify announcement DMs
+    "GHOST", // Given when you delete your account
+    "SPAMMER",
+    "BROKE_TOS", // If you break ToS this flag will be given, only removed if it was added by mistake
      // Lets the API know the user is not allowed to create guilds, add friends or create Group chats
-     "CREATING_GUILDS_BAN",
-     "ADDING_FRIENDS_BAN",
-     "CREATING_GROUP_CHATS_BAN"
+    "CREATING_GUILDS_BAN",
+    "ADDING_FRIENDS_BAN",
+    "CREATING_GROUP_CHATS_BAN"
 ];

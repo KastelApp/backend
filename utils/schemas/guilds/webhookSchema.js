@@ -1,20 +1,14 @@
-const { model, Schema, Types } = require("mongoose");
+const { model, Schema } = require("mongoose");
 const lengthChecker = require("../../lengthChecker");
 
 const webhookSchema = new Schema({
     _id: {
-        type: Types.ObjectId,
+        type: String,
         required: true
     },
 
-    guild: {
-        type: Types.ObjectId,
-        required: true,
-        ref: "guilds"
-    },
-
     channel: {
-        type: Types.ObjectId,
+        type: String,
         required: true,
         ref: "channels"
     },

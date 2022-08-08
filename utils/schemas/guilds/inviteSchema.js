@@ -1,13 +1,13 @@
-const { model, Schema, Types } = require("mongoose");
+const { model, Schema } = require("mongoose");
 
 const inviteSchema = new Schema({
     _id: { // The Code
-        type: Types.ObjectId,
+        type: String,
         required: true
     },
 
     guild: {
-        type: Types.ObjectId,
+        type: String,
         required: true,
         ref: "guilds"
     },
@@ -28,7 +28,7 @@ const inviteSchema = new Schema({
     },
 
     creator: {
-        type: Types.ObjectId,
+        type: String,
         ref: "guildMembers"
     }
 })

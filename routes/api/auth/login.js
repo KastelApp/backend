@@ -1,4 +1,5 @@
-const rateLimit = require("../../../utils/middleware/rateLimits");
+const { compare } = require("bcrypt");
+const userSchema = require("../../../utils/schemas/users/userSchema")
 
 module.exports = {
     path: "/login",
@@ -11,16 +12,16 @@ module.exports = {
      */
     run: async (req, res, next) => {
         /**
-         * @type {{username: String, email: String, password: String}} 
+         * @type {{email: String, password: String, twofa: String}} 
          */
-        const { username, email, password } = req?.body
+        const { email, password, twofa } = req?.body
 
-        if (!(email ? true : username ? true : false) || !password) {
-            res.send({
-                code: "N/A",
-                errors: [email ? null : username ? null : {
-                    code: "MISSING_EMAIL_OR_USERNAME",
-                    message: "No username or email provided"
+        if (!email || !password) {
+            res.status(403).send({
+                code: 403,
+                errors: [email ? null : {
+                    code: "MISSING_EMAIL",
+                    message: "No Email provided"
                 }, !password ? {
                     code: "MISSING_PASSWORD",
                     message: "No Password provided"
@@ -30,6 +31,32 @@ module.exports = {
             return;
         }
 
-        res.send("works")
+        const usr = await userSchema.findOne({ email });
+
+        if (!usr) {
+            res.status(403).send({
+                code: 403,
+                errors: [{
+                    code: "ACCOUNT_NOT_FOUND",
+                    message: "There was no account found with the provided email"
+                }]
+            })
+
+            return;
+        }
+
+        if (!(await compare(password, usr.password))) {
+            res.status(401).send({
+                code: 401,
+                errors: [{
+                    code: "INVALID_PASSWORD",
+                    message: "The password provided is invalid"
+                }]
+            })
+
+            return;
+        }
+
+        res.send(usr)
     },
 }

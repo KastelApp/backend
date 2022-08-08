@@ -1,9 +1,9 @@
-const { model, Schema, Types } = require("mongoose");
+const { model, Schema } = require("mongoose");
 const lengthChecker = require("../../lengthChecker");
 
 const guildSchema = new Schema({
     _id: {
-        type: Types.ObjectId,
+        type: String,
         required: true
     },
 
@@ -39,16 +39,46 @@ const guildSchema = new Schema({
     },
 
     owner: {
-        type: Types.ObjectId,
+        type: String,
         required: true,
         ref: "users"
     },
 
     co_owners: [{
-        type: Types.ObjectId,
+        type: String,
         required: false,
         ref: "users",
         validate: [lengthChecker({ length: 3, type: "less" }), '{PATH} exceeds the limit of 3']
+    }],
+
+    channels: [{
+        type: String,
+        required: false,
+        ref: "channels"
+    }],
+
+    roles: [{
+        type: String,
+        required: false,
+        ref: "roles"
+    }],
+
+    invites: [{
+        type: String,
+        required: false,
+        ref: "invites"
+    }],
+
+    bans: [{
+        type: String,
+        required: false,
+        ref: "bans"
+    }],
+
+    members: [{
+        type: String,
+        required: false,
+        ref: "guildMembers",
     }]
 })
 
