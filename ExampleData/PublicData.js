@@ -170,7 +170,7 @@ const CHANNEL_DATA = {
     }]
 };
 
-const WEBHOOK_DATA = { // Webhook post requests can be made by doing a HTTP post request to "https://kastelapp.com/api/v1/guilds/33171600011808774/webhooks/33172310315275745" and the token is used to verifiy requests.
+const WEBHOOK_DATA = { // Webhook post requests can be made by doing a HTTP post request to "https://kastelapp.com/api/v1/guilds/33171600011808774/webhooks/33172310315275745" and the token is used to verify requests.
     username: "cute cats webhook", // The Username, Supports any Char, (Max Length 46 Chars)
     id: "33172310315275745", // Randomly Generated ID
     avatar_url: "https://cdn.kastelapp.com/33171600011808774/33172310315275745/33172311792240004.png", // The Avatar URL

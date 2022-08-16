@@ -69,6 +69,7 @@ class Redis {
 
         return new Promise((resolve, reject) => redisClient.json.get(key).then((v) => resolve(v)).catch((e) => reject(e)));
     }
+
     /**
      * Set a key in the redis client
      * @param {String} key The key to set 

@@ -18,7 +18,7 @@ Kastel Is a Chatting App like <a href="https://discord.com">Discord</a> & <a hre
 - [x] Start MongoDB Stuff (Creating Schemas, Using it for Creating accounts ETC)
 - [x] A Better ID System
 - [x] Correct Error codes
-- [ ] Encrypting User Data and messages, Username, ID ETC & Hashing Passwords, Emails and IPS
+- [x] Encrypting User Data and messages, Username, ID ETC & Hashing Passwords, Emails and IPS
 - [ ] API Endpoints for Creating Accounts, Updating Accounts, Deleting Accounts ETC
 - [ ] Routing to Different servers
     - If you are in Canada, Route to a US server if there are no canada servers ETC
@@ -46,7 +46,7 @@ If you would like to contribute to the project fork the repo, Make your changes,
 
 # Security
 
-As of now User data is not encrypted/hashed. Please check [The RoadMap](#Roadmap) on progress
+As of 8/15/2022 User Data is encrypted and the password is Hashed. There is more that can be done though.
 
 [contributors-shield]: https://img.shields.io/github/contributors/Kastelll/backend.svg?style=for-the-badge
 [contributors-url]: https://github.com/Kastelll/backend/graphs/contributors

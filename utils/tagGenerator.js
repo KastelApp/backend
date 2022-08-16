@@ -5,13 +5,15 @@
 const tagGenerator = (tags = []) => {
     tags = tags.map(tag => Number(tag))
 
-    // push 0 and 10000 as they will be removed
-    tags.push(0, 10000)
+    const missing = [];
 
-    // Source: https://stackoverflow.com/questions/37277897/javascript-find-missing-number-in-array
-    const missing = Array.from(Array(Math.max(...tags)).keys()).map((n, i) => tags.indexOf(i) < 0 ? i : null).filter(f => f);
+    for (let i = 1; i <= 9999; i++) {
+        if (tags.indexOf(i) == -1) {
+          missing.push(i);
+        }
+      }
 
-    return String(missing[Math.floor(Math.random() * missing.length) + 1]).padStart(4, "0000")
+    return String(missing[Math.floor(Math.random() * missing.length)]).padStart(4, "0000")
 }
 
 module.exports = tagGenerator

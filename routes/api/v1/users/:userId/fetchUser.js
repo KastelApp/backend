@@ -1,10 +1,16 @@
 const userSchema = require("../../../../../utils/schemas/users/userSchema")
 const badgeSchema = require("../../../../../utils/schemas/users/badgeSchema")
+const { encrypt, decrypt } = require("../../../../../utils/classes/encryption")
+const user = require("../../../../../utils/middleware/user")
 
 module.exports = {
     path: "/",
     method: "get",
-    middleWare: [],
+    middleWare: [user({
+        botsAllowed: true,
+        loggedinAllowed: true,
+        needed_flags: [],
+    })],
     /**
      * @param {import("express").Request} req 
      * @param {import("express").Response} res 
@@ -28,7 +34,7 @@ module.exports = {
             return;
         }
 
-        const user = await userSchema.findById(userId);
+        const user = await userSchema.findById(encrypt(userId));
 
         if (!user) {
             res.status(404).send({
@@ -42,13 +48,13 @@ module.exports = {
             return;
         }
 
-        const badges = await badgeSchema.find({ user: user._id });
+        const badges = await badgeSchema.find({ user: encrypt(userId) });
 
 
         res.send({
-            id: user._id,
+            id: decrypt(user._id),
             avatar: (user?.avatar_url ?? null),
-            username: user.username,
+            username: decrypt(user.username),
             tag: user.tag,
             bot: (user?.bot ?? false),
             creation_date: user.created_date,

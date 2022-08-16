@@ -33,7 +33,7 @@ const thrandthr = (fipath, arr) => {
 }
 
 /**
- * Cuts the filePath, and adds the export path to make a propper route
+ * Cuts the filePath, and adds the export path to make a proper route
  * @param {String} filePath 
  * @param {String} exportPath 
  * @returns {String}
@@ -43,7 +43,7 @@ const cutter = (filePath, exportPath) => {
     const splitPath = filePath.split("/routes").pop().split("/");
 
     splitPath.shift(); // shift it once to remove the ('')
-    splitPath.pop(); // pop it to remove the .js file part (example.js)
+    splitPath.pop(); // pop it to remove the .js file part (file_name.js => file_name)
 
     return splitPath.length >= 1 ? `/${splitPath.join("/")}${exportPath.startsWith("/") ? exportPath : "/" + exportPath}` : `${exportPath}`;
 }
@@ -60,8 +60,6 @@ const routeHandler = (app) => {
         const route = require(fipaths[i]);
         const newPath = cutter(fipaths[i], route.path);
 
-        if (JSON.parse(process?.env?.routedebug)) logger.debug(newPath)
-
         if (!route?.method && route?.methods) {
             for (const method of route.methods) {
                 app[method](newPath, ...route.middleWare, (...args) => route.run(...args, app))
@@ -69,8 +67,6 @@ const routeHandler = (app) => {
         } else {
             app[route.method](newPath, ...route.middleWare, (...args) => route.run(...args, app))
         }
-
-        if (JSON.parse(process?.env?.logRoutes)) logger.loaded(`${newPath} (${route?.method || route?.methods.join(", ")})`)
     }
 
     return fipaths

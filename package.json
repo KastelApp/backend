@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "bcrypt": "^5.0.1",
+    "body-parser": "^1.19.2",
     "chalk": "^4.1.2",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -12,6 +13,7 @@
     "express": "^4.17.2",
     "express-session": "^1.17.3",
     "express-ws": "^5.0.2",
+    "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.4",
     "mongoose": "^6.5.0",
     "ms": "^2.1.3",

@@ -12,7 +12,6 @@ module.exports = {
         /**
          * @type {{email: String, username: String, tag: String, password: String, ip_verify: Boolean, ip_lock: Boolean, ips: Array<String>}}
          */
-        const {email, username, tag, password, ip_verify, ip_lock, ips} = req?.body
-
+        const { email, username, tag, password, ip_verify, ip_lock, ips, twofa, twofakey } = req?.body
     },
 }

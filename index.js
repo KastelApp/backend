@@ -1,19 +1,14 @@
-const processVersion = process.version.slice(process.version.startsWith("v") ? 1 : 0, (process.version.length - 2))
-
-if (processVersion < 16) {
-    throw new Error(`Kastel requires at least Node.js v16.0.0, You are running on ${process.version}`)
-}
-
 require("dotenv").config();
+require("./utils/dotenvParser").parse();
 
 // If the user wants to time the startup
-process?.env?.timeStartUp == "true" ? (timeStarted = Date.now()) : null
+process?.env?.timeStartUp ? (timeStarted = Date.now()) : null
 
 /* Misc Imports */
 const { default: mongoose } = require("mongoose");
 const chalk = require("chalk")
 
-if (JSON.parse(process?.env?.logLogo)) {
+if (process?.env?.logLogo) {
     console.log(chalk.yellow(`
 ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
 ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
@@ -32,40 +27,35 @@ const express = require('express');
 const expressWs = require("express-ws")
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
 
 /* Util Imports */
-const redis = require("./utils/redis");
+const redis = require("./utils/classes/redis");
 const routeHandler = require("./utils/routeHandler");
-const { setup } = require("./utils/idGen");
+const id = require("./utils/classes/idGen");
 const uriGenerator = require("./utils/uriGenerator");
-const log = require("./utils/logger");
+const logger = require("./utils/classes/logger");
 const fs = require("node:fs");
 
-global.logger = new log("default");
 
 /* Express Middleware stuff */
 const app = express()
 
 app.use(cors())
-    .use(express.json())
-    .use(express.urlencoded({ extended: true }))
-    .use(cookieParser());
+    .use(bodyParser.json())
+    .use(bodyParser.urlencoded({ extended: true }))
+    .use(cookieParser(process.env.cookieSecrets));
 
 /* Error Handling */
-process.on("uncaughtException", (err) => {
-    logger.important.error(`Unhandled Exception, (${err.stack})`)
-})
-
-process.on("unhandledRejection", (reason) => {
-    logger.important.error(`Unhandled Rejection, (${reason.stack})`)
-})
+process.on("uncaughtException", (err) => logger.important.error(`Unhandled Exception, (${err.stack})`))
+    .on("unhandledRejection", (reason) => logger.important.error(`Unhandled Rejection, (${reason.stack})`))
 
 /* Sets the users IP for later simpler use */
 /* Also Logs the requested path, Returns on favicon.ico as its no use logging it */
 app.use((req, res, next) => {
     req.clientIp = (req.headers["cf-connecting-ip"] || req.headers["x-forwarded-for"] || req.ip).replace("::ffff:", "");
 
-    if (req.path == "/favicon.ico") return res.send(fs.readFileSync("./assets/logo.jpeg"));
+    if (req.path == "/favicon.ico") return res.send(fs.readFileSync("./assets/logo.png"));
 
     logger.info(`${req.clientIp} Requested ${req.path} (${req.method})`)
 
@@ -84,7 +74,7 @@ app.all("*", (req, res) => {
         errors: [{
             code: "PATH_DOESNT_EXIST",
             message: "The path you have requested does not exist."
-            }]
+        }]
     })
 })
 
@@ -106,7 +96,7 @@ app.listen((process.env.port || 62250), async () => {
         process.exit();
     })
 
-    setup({ // sets up the new ID generator
+    id.setup({ // sets up the ID generator
         epoch: process.env.epoch,
         workerId: process.env.workerId,
         datacenterId: process.env.datacenterId,
@@ -116,5 +106,5 @@ app.listen((process.env.port || 62250), async () => {
         sequence_Bytes: process.env.sequence_Bytes,
     })
 
-    if (JSON.parse(process.env.timeStartUp)) logger.important.info(`Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(3)}s to Start Up`)
+    if (process.env.timeStartUp) logger.important.info(`Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(3)}s to Start Up`)
 })

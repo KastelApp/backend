@@ -1,5 +1,5 @@
 const { default: mongoose } = require("mongoose")
-const { generateId } = require("../../../utils/idGen")
+const { generateId } = require("../../../utils/classes/idGen")
 const lengthChecker = require("../../../utils/lengthChecker")
 const guildSchema = require("../../../utils/schemas/guilds/guildSchema")
 const inviteSchema = require("../../../utils/schemas/guilds/inviteSchema")
@@ -9,12 +9,20 @@ const guildMemberSchema = require("../../../utils/schemas/guilds/guildMemberSche
 const { hash } = require('bcrypt');
 const { BADGES, FLAGS } = require("../../../config")
 const tagGenerator = require("../../../utils/tagGenerator")
+const { important } = require("../../../utils/classes/logger")
+const { encrypt } = require("../../../utils/classes/encryption")
+const user = require("../../../utils/middleware/user")
+
 
 // This is a testing endpoint as of now. Code here can and will be completely changed.
 module.exports = {
     path: "/register",
     method: "post",
-    middleWare: [],
+    middleWare: [user({
+        botsAllowed: false,
+        loggedinAllowed: false,
+        needed_flags: [],
+    })],
     /**
      * @param {import("express").Request} req 
      * @param {import("express").Response} res 
@@ -58,9 +66,9 @@ module.exports = {
 
             const checks = {
                 age: lengthChecker({ length: 13, type: "more" })((new Date()?.getFullYear() - new Date(date_of_birth)?.getFullYear())),
-                email: await userSchema.findOne({ email }),
-                usernameTag: await userSchema.findOne({ username, tag }),
-                usernameslength: lengthChecker({ length: 9999, type: "more" })(await userSchema.countDocuments({ username })),
+                email: await userSchema.findOne({ email: encrypt(email) }),
+                usernameTag: await userSchema.findOne({ username: encrypt(username), tag }),
+                usernameslength: lengthChecker({ length: 5000, type: "more" })(await userSchema.countDocuments({ username: encrypt(username) })),
                 invite: invite ? await inviteSchema.findById(invite) : null,
                 // Flags/Badges
                 isBetaTester: (Math.random() < 0.05),
@@ -86,8 +94,16 @@ module.exports = {
             }
 
             if (checks.usernameTag) {
-                const userTags = (await userSchema.find({ username })).map((user) => user.tag);
-                tag = tagGenerator(userTags)
+                const userTags = (await userSchema.find({ username: encrypt(username) })).map((user) => user.tag),
+                    tag = tagGenerator(userTags)
+
+                if (await userSchema.findOne({ username: encrypt(username), tag })) return res.status(500).send({
+                    code: 500,
+                    errors: [{
+                        code: "TRY_AGAIN",
+                        message: "Please try again"
+                    }]
+                })
 
                 if (!tag) return res.status(500).send({
                     code: 500,
@@ -99,14 +115,14 @@ module.exports = {
             }
 
             const usr = new userSchema({
-                _id,
-                email,
-                username,
+                _id: encrypt(_id),
+                email: encrypt(email),
+                username: encrypt(username),
                 tag,
                 password: await hash(password, 10),
                 created_date: Date.now(),
-                date_of_birth: Number(new Date(date_of_birth)),
-                ips: [req.clientIp],
+                date_of_birth: encrypt(Number(new Date(date_of_birth))),
+                ips: [encrypt(req.clientIp)],
                 flags: [checks.isBetaTester ? FLAGS.BETA_TESTER : null].filter((x) => x !== null),
                 guilds: [],
                 dms: [],
@@ -119,7 +135,7 @@ module.exports = {
                 if (guild) {
                     const member = await guildMemberSchema.create({
                         _id: generateId(),
-                        user: usr._id,
+                        user: encrypt(usr._id),
                         roles: []
                     })
 
@@ -138,15 +154,16 @@ module.exports = {
             await usr.save();
 
             if (checks.userFlag) await badgeSchema.create({
-                user: usr._id,
+                user: encrypt(usr._id),
                 ...BADGES.ORIGINAL_USER
             })
 
 
             res.status(201).send(usr);
 
-        } catch (error) {
-            logger.error(`${req.clientIp} Encountered an error ${error.stack}`)
+        } catch (err) {
+            important.error(`${req.clientIp} Encountered an error ${err.stack}`);
+
             res.status(500).send({
                 code: 500,
                 errors: [{

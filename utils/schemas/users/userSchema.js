@@ -47,7 +47,7 @@ const userSchema = new Schema({
     },
 
     date_of_birth: {
-        type: Date,
+        type: String,
         required: false,
     },
 
@@ -61,7 +61,7 @@ const userSchema = new Schema({
         required: false,
     },
 
-    ip_verifiy: {
+    ip_verify: {
         type: Boolean,
         required: false,
     },

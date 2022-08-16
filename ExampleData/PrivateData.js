@@ -14,8 +14,8 @@ const PRIVATE_USER_DATA = { // OUT DATED, WILL BE UPDATED LATER
     created_date: 1658352496290,
     two_fa: true, // If the user must require a 2FA code on Login, Password Reset, Email Change ETC
     ip_lock: false, // If true will lock the account to one ip only (All API requests will Fail if its wrong). The only way to access it from a different IP is requesting it then clicking on the email that was sent
-    ip_verifiy: true, // If true and a Different IP is found trying to login will force them to verify by clicking the email that is sent to them
-    ips: ["127.0.0.1"], // Hashed IP Addresses, Only stored for @PRIVATE_USER_DATA#ip_lock @PRIVATE_USER_DATA#ip_verifiy
+    ip_verify: true, // If true and a Different IP is found trying to login will force them to verify by clicking the email that is sent to them
+    ips: ["127.0.0.1"], // Hashed IP Addresses, Only stored for @PRIVATE_USER_DATA#ip_lock @PRIVATE_USER_DATA#ip_verify
     badges: [{ // The Badges are kept UnEncrypted. There isn't much you can do with them.
         name: "Kastel Staff",
         short_description: "Moderates Kastel",
