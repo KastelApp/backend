@@ -1,25 +1,34 @@
+/*! 
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
+
 const { compare } = require("bcrypt");
 const { encrypt, decrypt } = require("../../../utils/classes/encryption");
 const token = require("../../../utils/classes/token");
-const badgeSchema = require("../../../utils/schemas/users/badgeSchema");
 const userSchema = require("../../../utils/schemas/users/userSchema")
 const { important } = require("../../../utils/classes/logger");
 const user = require("../../../utils/middleware/user");
 const logger = require("../../../utils/classes/logger");
+const speakeasy = require('speakeasy');
 
 module.exports = {
     path: "/login",
     method: "post",
     middleWare: [user({
-        botsAllowed: false,
-        loggedinAllowed: false,
-        needed_flags: [],
+        login: {
+            loginRequired: false,
+            loginAllowed: false,
+            loggedOutAllowed: true
+        }
     })],
-    /**
-     * @param {import("express").Request} req 
-     * @param {import("express").Response} res 
-     * @param {import("express").NextFunction} next 
-     */
+
     run: async (req, res, next) => {
         try {
             /**
@@ -45,11 +54,108 @@ module.exports = {
             const usr = await userSchema.findOne({ email: encrypt(email) });
 
             if (!usr) {
-                res.status(403).send({
-                    code: 403,
+                res.status(404).send({
+                    code: 404,
                     errors: [{
                         code: "ACCOUNT_NOT_FOUND",
                         message: "There was no account found with the provided email"
+                    }]
+                })
+
+                return;
+            }
+
+            if (usr.locked) {
+                res.status(403).send({
+                    code: 403,
+                    errors: [{
+                        code: "LOCKED_ACCOUNT",
+                        message: "Sorry, But the account you tried to login to is currently locked, Please contact Support."
+                    }]
+                })
+
+                return;
+            }
+
+            if (usr.banned) {
+                res.status(403).send({
+                    code: 403,
+                    errors: [{
+                        code: "ACCOUNT_BANNED",
+                        message: "The account you are trying to login to is currently banned",
+                        reason: usr?.ban_reason ?? "N/A"
+                    }]
+                })
+
+                return;
+            }
+
+            if (usr.two_fa) {
+
+                if (!usr.two_fa_verified) {
+                    res.status(403).send({
+                        code: 403,
+                        errors: [{
+                            code: "TWO_FA_NOT_VERIFIED",
+                            message: "The account you are trying to login to does not have 2fa verified"
+                        }]
+                    })
+
+                    return;
+                }
+
+                if (!twofa) {
+                    res.status(403).send({
+                        code: 403,
+                        errors: [{
+                            code: "TWO_FA_CODE_REQURIED",
+                            message: "The account you are trying to login to has 2fa enabled, Please enter a code"
+                        }]
+                    })
+
+                    return;
+                }
+
+                if (!usr.twofa_secret) {
+                    res.status(500).send({
+                        code: 500,
+                        errors: [{
+                            code: "TWO_FA_SECRET_MISSING",
+                            message: "2FA's secret is missing, Please report this."
+                        }],
+                        responses: []
+                    })
+
+                    return;
+                }
+
+                const verified = speakeasy.totp.verify({
+                    secret: decrypt(usr.twofa_secret),
+                    encoding: "base32",
+                    token: twofa,
+                })
+
+                if (!verified) {
+                    res.status(401).send({
+                        code: 401,
+                        errors: [{
+                            code: "INVALID_TWO_FA_CODE",
+                            message: "The code you provided is invalid, Please try again."
+                        }],
+                        responses: []
+                    })
+
+                    return
+                }
+
+            }
+
+            if (!usr.password) {
+                res.send({
+                    code: 200,
+                    responses: [{
+                        code: "RESET_PASSWORD",
+                        message: "The account you are trying to login to has no password, This could be due to staff removing it (For a hacked account etc). Please reset the password to continue"
                     }]
                 })
 
@@ -68,28 +174,28 @@ module.exports = {
                 return;
             }
 
-            const badges = await badgeSchema.find({ user: usr._id });
-
             const signed = token.sign({
                 id: decrypt(usr._id),
                 username: decrypt(usr.username),
                 email: decrypt(usr.email),
                 bot: false,
                 flags: usr.flags,
-                badges: (badges?.map((bad) => bad.name) ?? [])
+                badges: usr.badges
             }, { expiresIn: "7d" })
 
             if (signed.hasError) {
 
                 logger.error(`${req.clientIp} Has Encountered an error`, signed.error)
 
-                return res.status(500).send({
+                res.status(500).send({
                     code: 500,
                     errors: [{
-                        code: "UNHANDLED_ERROR",
-
+                        code: "ERROR",
+                        message: `There was an error when trying to sign your token. Please contact Support.`
                     }]
                 })
+
+                return;
             }
 
             res.cookie("user", signed.data, {
@@ -97,7 +203,14 @@ module.exports = {
                 maxAge: 86400000 * 7
             })
 
-            res.send("OK")
+            res.send({
+                code: 200,
+                errors: [],
+                responses: [{
+                    code: "LOGGED_IN",
+                    message: "Logged in."
+                }]
+            })
 
         } catch (err) {
             important.error(`${req.clientIp} Encountered an error ${err.stack}`);
@@ -105,8 +218,8 @@ module.exports = {
             res.status(500).send({
                 code: 500,
                 errors: [{
-                    code: "UNHANDLED_ERROR",
-                    message: "There was a Unhandled error, Please report this."
+                    code: "ERROR",
+                    message: `There was an Error, Please contact Support.`
                 }]
             })
 

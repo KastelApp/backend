@@ -1,30 +1,37 @@
-require("dotenv").config();
-require("./utils/dotenvParser").parse();
+/*! 
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
+
+const config = require("./config");
 
 // If the user wants to time the startup
-process?.env?.timeStartUp ? (timeStarted = Date.now()) : null
+let timeStarted = config.Logger.timeStartUp ? (Date.now()) : null
 
 /* Misc Imports */
 const { default: mongoose } = require("mongoose");
 const chalk = require("chalk")
 
-if (process?.env?.logLogo) {
-    console.log(chalk.yellow(`
+if (config.Logger.logLogo) {
+    console.log(chalk.hex("#ca8911")(`
 ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
 ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
 █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
 ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
 ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
 ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
-A Privacy focused chatting app
-Running version ${process?.env?.kas_version ? `v${process?.env?.kas_version}` : "Unknown version"} of Kastel. Node.js version ${process.version}
-`))
+A Chatting Application
+Running version ${config.Misc.kas_version ? `v${config.Misc.kas_version}` : "Unknown version"} of Kastel's Backend. Node.js version ${process.version}\n`))
 }
-
 
 /* Express Imports */
 const express = require('express');
-const expressWs = require("express-ws")
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
@@ -32,11 +39,10 @@ const bodyParser = require("body-parser");
 /* Util Imports */
 const redis = require("./utils/classes/redis");
 const routeHandler = require("./utils/routeHandler");
-const id = require("./utils/classes/idGen");
 const uriGenerator = require("./utils/uriGenerator");
 const logger = require("./utils/classes/logger");
 const fs = require("node:fs");
-
+require("./utils/classes/snowflake"); // Imported so settings are setup
 
 /* Express Middleware stuff */
 const app = express()
@@ -44,14 +50,18 @@ const app = express()
 app.use(cors())
     .use(bodyParser.json())
     .use(bodyParser.urlencoded({ extended: true }))
-    .use(cookieParser(process.env.cookieSecrets));
+    .use(bodyParser.raw())
+    .use(cookieParser(config.Server.cookieSecrets))
+    .disable("x-powered-by");
 
 /* Error Handling */
-process.on("uncaughtException", (err) => logger.important.error(`Unhandled Exception, (${err.stack})`))
-    .on("unhandledRejection", (reason) => logger.important.error(`Unhandled Rejection, (${reason.stack})`))
+if (config.Logger.logErrors) {
+    process.on("uncaughtException", (err) => logger.important.error(`Unhandled Exception, (${err.stack})`))
+        .on("unhandledRejection", (reason) => logger.important.error(`Unhandled Rejection, (${reason.stack})`))
+}
 
 /* Sets the users IP for later simpler use */
-/* Also Logs the requested path, Returns on favicon.ico as its no use logging it */
+/* Also Logs the requested path */
 app.use((req, res, next) => {
     req.clientIp = (req.headers["cf-connecting-ip"] || req.headers["x-forwarded-for"] || req.ip).replace("::ffff:", "");
 
@@ -62,10 +72,11 @@ app.use((req, res, next) => {
     next();
 })
 
-expressWs(app) // Setup Websocket stuff
-routeHandler(app) // The route handler (Everything below comes after, Put routes above for them to come first)
+const routes = routeHandler(app) // The route handler (Everything below comes after, Put routes above for them to come first)
 
-/* If the path does not exist logs it */
+require("./test")(app);
+
+/* If the path does not exist */
 app.all("*", (req, res) => {
     logger.warn(`${req.clientIp} Requested a path that does not exist (${req.path})`)
 
@@ -76,14 +87,16 @@ app.all("*", (req, res) => {
             message: "The path you have requested does not exist."
         }]
     })
+
+    return;
 })
 
 
-app.listen((process.env.port || 62250), async () => {
-    logger.important.info(`Server Started On Port ${process.env.port || 3000}`);
+app.listen((config.Server.port || 62250), async () => {
+    logger.important.info(`Server Started On Port ${config.Server.port || 62250}`);
 
     await redis.createClient().then(() => logger.important.info("Redis connected!")).catch((e) => {
-        logger.important.error("Failed to connect to Redis,", e);
+        logger.important.error("Failed to connect to Redis", e);
         process.exit();
     })
 
@@ -94,17 +107,8 @@ app.listen((process.env.port || 62250), async () => {
     }).then(() => logger.important.info("MongoDB connected!")).catch((e) => {
         logger.important.error("Failed to connect to MongoDB", e);
         process.exit();
-    })
+    });
 
-    id.setup({ // sets up the ID generator
-        epoch: process.env.epoch,
-        workerId: process.env.workerId,
-        datacenterId: process.env.datacenterId,
-        workerId_Bytes: process.env.workerId_Bytes,
-        datacenterId_Bytes: process.env.datacenterId_Bytes,
-        sequence: process.env.sequence,
-        sequence_Bytes: process.env.sequence_Bytes,
-    })
-
-    if (process.env.timeStartUp) logger.important.info(`Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(3)}s to Start Up`)
+    if (config.Logger.logInfo) logger.important.info(`${config.Logger.timeStartUp ? `Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(2)}s to Start Up, ` : ""}Loaded ${routes.length} Routes, Running Version ${config.Misc.kas_version ? `v${config.Misc.kas_version}` : "Unknown version"}`)
+    if (!config.Logger.logInfo && config.Logger.timeStartUp) logger.important.info(`Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(3)}s to Start Up`)
 })

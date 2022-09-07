@@ -1,3 +1,14 @@
+/*! 
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
+
 const { model, Schema } = require("mongoose");
 const lengthChecker = require("../../lengthChecker");
 
@@ -9,8 +20,7 @@ const groupchatSchema = new Schema({
 
     users: [{
         type: String,
-        ref: "users",
-        validate: [lengthChecker({ length: 15, type: "LESS" }), '{PATH} exceeds the limit of 15']
+        ref: "users"
     }]
 });
 

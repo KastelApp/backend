@@ -1,170 +1,236 @@
+/*! 
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
+
 const path = require("node:path"),
     fs = require("node:fs"),
-    chalk = require("chalk")
+    chalk = require("chalk"),
+    {Logger: log} = require("../../config")
 
 const colors = {
     debug: chalk.magenta("Debug"),
-    info: chalk.blue("Info"),
-    warn: chalk.yellow("Warn"),
+    info: chalk.blue(" Info"),
+    log: chalk.blue("  Log"),
+    warn: chalk.yellow(" Warn"),
     error: chalk.red("Error"),
-    loaded: chalk.green("Loaded")
+    Load: chalk.green(" Load")
 }
 
-const format = process?.env?.loggerFormat ?? `[{DATE} {TYPE}] {MESSAGE}`
+const format = log.format?? `[{DATE} {TYPE}] {MESSAGE}`
+
+/**
+ * @typedef {Object} Important
+ * @property {logger.debug} debug
+ * @property {logger.info} info
+ * @property {logger.warn} warn
+ * @property {logger.error} error
+ * @property {logger.loaded} loaded
+ */
+
+/**
+ * @typedef {Object} Logger
+ * @property {logger.debug} debug
+ * @property {logger.info} info
+ * @property {logger.warn} warn
+ * @property {logger.error} error
+ * @property {logger.loaded} loaded
+ * @property {Important} important
+ */
+
 
 class logger {
 
     /**
      * Logs things for debug purposes
      * @param  {...String} msg What you want to log
+     * @returns {Logger} Logger for chaining
      */
     static debug(...msg) {
         const date = new Date().toLocaleString("US", {
             hour12: false,
         })
 
-        if (process.env.loggerEnabled) {
-            if (process.env.loggerLog) {
-                if (process.env.loggerColor) {
-                    console.log(format.replaceAll("{DATE}", (chalk.gray(date))).replaceAll("{TYPE}", (colors["debug"])).replaceAll("{MESSAGE}", chalk.cyan(msg.join(" "))))
+        if (log.loggerEnabled) {
+            if (log.log) {
+                if (log.color) {
+                    console.debug(format.replaceAll("{DATE}", (chalk.gray(date))).replaceAll("{TYPE}", (colors["debug"])).replaceAll("{MESSAGE}", chalk.cyan(msg.join(" "))))
                 } else {
-                    console.log(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", "Debug").replaceAll("{MESSAGE}", msg.join(" ")))
+                    console.debug(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", logger.lengthFixer("Debug")).replaceAll("{MESSAGE}", msg.join(" ")))
                 }
             }
 
-            if (process.env.loggerFilesEnabled) logger.write(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", "Debug").replaceAll("{MESSAGE}", msg.join(" ")))
+            if (log.saveInFiles) logger.write(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", "Debug").replaceAll("{MESSAGE}", msg.join(" ")))
         }
+
+        return logger
 
     }
 
     /**
      * 
      * @param  {...String} msg What you want to log
+     * @returns {Logger} Logger for chaining
      */
     static info(...msg) {
         const date = new Date().toLocaleString("US", {
             hour12: false,
         })
 
-        if (process.env.loggerEnabled) {
-            if (process.env.loggerLog) {
-                if (process.env.loggerColor) {
+        if (log.loggerEnabled) {
+            if (log.log) {
+                if (log.color) {
                     console.log(format.replaceAll("{DATE}", (chalk.gray(date))).replaceAll("{TYPE}", (colors["info"])).replaceAll("{MESSAGE}", chalk.cyan(msg.join(" "))))
                 } else {
-                    console.log(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", "Info").replaceAll("{MESSAGE}", msg.join(" ")))
+                    console.log(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", logger.lengthFixer("Info")).replaceAll("{MESSAGE}", msg.join(" ")))
                 }
             }
 
-            if (process.env.loggerFilesEnabled) logger.write(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", "Info").replaceAll("{MESSAGE}", msg.join(" ")))
+            if (log.saveInFiles) logger.write(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", "Info").replaceAll("{MESSAGE}", msg.join(" ")))
         }
 
+        return logger
     }
 
     /**
      * 
      * @param  {...String} msg What you want to log
+     * @returns {Logger} Logger for chaining
+     */
+    static log(...msg) {
+        const date = new Date().toLocaleString("US", {
+            hour12: false,
+        })
+
+        if (log.loggerEnabled) {
+            if (log.log) {
+                if (log.color) {
+                    console.log(format.replaceAll("{DATE}", (chalk.gray(date))).replaceAll("{TYPE}", (colors["log"])).replaceAll("{MESSAGE}", chalk.cyan(msg.join(" "))))
+                } else {
+                    console.log(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", logger.lengthFixer("Log")).replaceAll("{MESSAGE}", msg.join(" ")))
+                }
+            }
+
+            if (log.saveInFiles) logger.write(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", "Log").replaceAll("{MESSAGE}", msg.join(" ")))
+        }
+
+        return logger
+    }
+
+    /**
+     * 
+     * @param  {...String} msg What you want to log
+     * @returns {Logger} Logger for chaining
      */
     static warn(...msg) {
         const date = new Date().toLocaleString("US", {
             hour12: false,
         })
 
-        if (process.env.loggerEnabled) {
-            if (process.env.loggerLog) {
-                if (process.env.loggerColor) {
-                    console.log(format.replaceAll("{DATE}", (chalk.gray(date))).replaceAll("{TYPE}", (colors["warn"])).replaceAll("{MESSAGE}", chalk.cyan(msg.join(" "))))
+        if (log.loggerEnabled) {
+            if (log.log) {
+                if (log.color) {
+                    console.warn(format.replaceAll("{DATE}", (chalk.gray(date))).replaceAll("{TYPE}", (colors["warn"])).replaceAll("{MESSAGE}", chalk.cyan(msg.join(" "))))
                 } else {
-                    console.log(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", "Warn").replaceAll("{MESSAGE}", msg.join(" ")))
+                    console.warn(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", logger.lengthFixer("Warn")).replaceAll("{MESSAGE}", msg.join(" ")))
                 }
             }
 
-            if (process.env.loggerFilesEnabled) logger.write(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", "Warn").replaceAll("{MESSAGE}", msg.join(" ")))
+            if (log.saveInFiles) logger.write(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", "Warn").replaceAll("{MESSAGE}", msg.join(" ")))
         }
 
+        return logger
     }
 
     /**
      * 
      * @param  {...String} msg What you want to log
+     * @returns {Logger} Logger for chaining
      */
     static error(...msg) {
         const date = new Date().toLocaleString("US", {
             hour12: false,
         })
 
-        if (process.env.loggerEnabled) {
-            if (process.env.loggerLog) {
-                if (process.env.loggerColor) {
-                    console.log(format.replaceAll("{DATE}", (chalk.gray(date))).replaceAll("{TYPE}", (colors["error"])).replaceAll("{MESSAGE}", chalk.cyan(msg.join(" "))))
+        if (log.loggerEnabled) {
+            if (log.log) {
+                if (log.color) {
+                    console.error(format.replaceAll("{DATE}", (chalk.gray(date))).replaceAll("{TYPE}", (colors["error"])).replaceAll("{MESSAGE}", chalk.cyan(msg.join(" "))))
                 } else {
-                    console.log(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", "Error").replaceAll("{MESSAGE}", msg.join(" ")))
+                    console.error(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", logger.lengthFixer("Error")).replaceAll("{MESSAGE}", msg.join(" ")))
                 }
             }
 
-            if (process.env.loggerFilesEnabled) logger.write(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", "Error").replaceAll("{MESSAGE}", msg.join(" ")))
+            if (log.saveInFiles) logger.write(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", "Error").replaceAll("{MESSAGE}", msg.join(" ")))
         }
 
+        return logger
     }
 
     /**
      * 
      * @param  {...String} msg What you want to log
+     * @returns {Logger} Logger for chaining
      */
     static loaded(...msg) {
         const date = new Date().toLocaleString("US", {
             hour12: false,
         })
 
-        if (process.env.loggerEnabled) {
-            if (process.env.loggerLog) {
-                if (process.env.loggerColor) {
-                    console.log(format.replaceAll("{DATE}", (chalk.gray(date))).replaceAll("{TYPE}", (colors["loaded"])).replaceAll("{MESSAGE}", chalk.cyan(msg.join(" "))))
+        if (log.loggerEnabled) {
+            if (log.log) {
+                if (log.color) {
+                    console.log(format.replaceAll("{DATE}", (chalk.gray(date))).replaceAll("{TYPE}", (colors["Load"])).replaceAll("{MESSAGE}", chalk.cyan(msg.join(" "))))
                 } else {
-                    console.log(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", "Loaded").replaceAll("{MESSAGE}", msg.join(" ")))
+                    console.log(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", logger.lengthFixer("Load")).replaceAll("{MESSAGE}", msg.join(" ")))
                 }
             }
 
-            if (process.env.loggerFilesEnabled) logger.write(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", "Loaded").replaceAll("{MESSAGE}", msg.join(" ")))
+            if (log.saveInFiles) logger.write(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", "Load").replaceAll("{MESSAGE}", msg.join(" ")))
         }
 
+        return logger
     }
 
-    static logImportant(type, ...msg) {
+    /**
+     * @private
+     * @param {String} type The log type 
+     * @param  {...String} msg The message to log
+     * @returns {Logger} Logger for chaining
+     */
+    static customType(type, ...msg) {
         const date = new Date().toLocaleString("US", {
             hour12: false,
         })
 
-        if (process.env.loggerColor) {
+        if (log.color) {
             console.log(format.replaceAll("{DATE}", (chalk.gray(date))).replaceAll("{TYPE}", (colors[type.toLowerCase()])).replaceAll("{MESSAGE}", chalk.cyan(msg.join(" "))))
         } else {
-            console.log(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", type).replaceAll("{MESSAGE}", msg.join(" ")))
+            console.log(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", logger.lengthFixer(type)).replaceAll("{MESSAGE}", msg.join(" ")))
         }
 
-        if (process.env.loggerFilesEnabled) logger.write(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", type).replaceAll("{MESSAGE}", msg.join(" ")))
+        if (log.saveInFiles) logger.write(format.replaceAll("{DATE}", date).replaceAll("{TYPE}", type).replaceAll("{MESSAGE}", msg.join(" ")))
+
+        return logger
     }
 
+    /**
+     * @returns {Logger}
+     */
     static get important() {
         return {
-            /**
-             * @param  {...String} msg What you want to log
-             */
-            debug: (...msg) => logger.logImportant("Debug", msg),
-            /**
-             * @param  {...String} msg What you want to log
-             */
-            info: (...msg) => logger.logImportant("Info", msg),
-            /**
-             * @param  {...String} msg What you want to log
-             */
-            warn: (...msg) => logger.logImportant("Warn", msg),
-            /**
-             * @param  {...String} msg What you want to log
-             */
-            error: (...msg) => logger.logImportant("Error", msg),
-            /**
-             * @param  {...String} msg What you want to log
-             */
-            loaded: (...msg) => logger.logImportant("Loaded", msg),
+            debug: (...msg) => logger.customType("Debug", msg.join(" ")),
+            info: (...msg) => logger.customType("Info", msg.join(" ")),
+            log: (...msg) => logger.customType("Log", msg.join(" ")),
+            warn: (...msg) => logger.customType("Warn", msg.join(" ")),
+            error: (...msg) => logger.customType("Error", msg.join(" ")),
+            loaded: (...msg) => logger.customType("Load", msg.join(" ")),
         }
     }
 
@@ -176,7 +242,7 @@ class logger {
         try {
             const writeDate = new Date();
 
-            const filePath = path.join("./logs", `${writeDate.getFullYear()}-${writeDate.getMonth()}-${writeDate.getDate()}.log`)
+            const filePath = path.join(log.path, `${writeDate.getFullYear()}-${writeDate.getMonth()}-${writeDate.getDate()}.log`)
 
             if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, "")
 
@@ -185,6 +251,15 @@ class logger {
         } catch (err) {
             throw err;
         }
+    }
+
+    /**
+     * @private
+     * @param {String} type 
+     * @returns {String}
+     */
+    static lengthFixer(type) {
+        return type.padStart(5)
     }
 }
 

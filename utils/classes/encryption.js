@@ -1,26 +1,32 @@
-const inviteGenerator = require("../inviteGenerator")
-const crypto = require("crypto");
+/*! 
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
 
-const algorithm = process.env.algorithm || "aes-256-cbc";
-const initVector = process.env.initVector;
-const securityKey = process.env.securityKey;
+const crypto = require("crypto");
+const { Encryption } = require("../../config");
+
+const algorithm = Encryption.algorithm || "aes-256-cbc";
+const initVector = Encryption.initVector;
+const securityKey = Encryption.securityKey;
 
 class encryption {
     /**
      * Encrypt Data 
-     * @param {String} data 
-     * @returns 
+     * @param {String} data The String to encrypt 
+     * @returns {String} The encrypted string
      */
     static encrypt(data) {
         try {
             const cipher = crypto.createCipheriv(algorithm, securityKey, initVector);
 
-            const dd = {
-                data,
-                // secret: inviteGenerator(25)
-            }
-
-            return cipher.update(encryption.fixData(dd), "utf-8", "hex") + cipher.final("hex");
+            return cipher.update(encryption.fixData(data), "utf-8", "hex") + cipher.final("hex");
         } catch (er) {
             throw new Error(`Failed to encrypt\n${er}`)
         }
@@ -29,22 +35,31 @@ class encryption {
     /**
      * Decrypt data
      * @param {String} data
-     * @param {{ raw: boolean }} options 
-     * @returns {String}
+     * @returns {*} the decrypted data
      */
-    static decrypt(data, options = {
-        raw: false
-    }) {
+    static decrypt(data) {
         try {
             const decipher = crypto.createDecipheriv(algorithm, securityKey, initVector);
             const decrypted = decipher.update(data, "hex", "utf-8") + decipher.final("utf8");
-            const cleaned = encryption.cleanData(decrypted);
 
-            if (options.raw) return cleaned // also returns the secret
-            else return cleaned.data;
-
+            return encryption.cleanData(decrypted);
         } catch (er) {
-            throw new Error(`Failed to decrypt\n${er}`)
+            throw new Error(`Failed to decrypt (${er.message})`)
+        }
+    }
+
+    /**
+     * Checks if a string is encrypted or not
+     * @param {String} item 
+     * @returns {Boolean} If the string is encrypted or not
+     */
+    static isEncrypted(item) {
+        try {
+            encryption.decrypt(item)
+
+            return true;
+        } catch (e) {
+            return false;
         }
     }
 
@@ -62,7 +77,7 @@ class encryption {
 
         if (typeof data !== "string") throw new Error(`Failed to stringify data ${typeof data}, ${data}`)
 
-        return data
+        return data;
     }
 
     /**
@@ -72,9 +87,95 @@ class encryption {
         try {
             const dd = JSON.parse(data);
 
-            return dd
+            return dd;
         } catch (e) {
-            return data
+            return data;
+        }
+    }
+
+    /**
+     * @param {*} items
+     * @return {items} 
+     */
+    static completeDecryption(items) {
+        const decrypt = encryption.decrypt;
+        const completeDecrypt = encryption.completeDecryption;
+        const isEncrypted = encryption.isEncrypted;
+
+        if (typeof items == "string") {
+            return decrypt(items);
+        };
+
+        if (typeof items == "object") {
+            if (Array.isArray(items)) {
+                let newArray = []
+                for (let item of items) {
+                    if (typeof item == "function") continue; // Nothing currently requires a decryption with a function in it
+
+                    if (isEncrypted(item)) newArray.push(decrypt(item));
+                    else if (typeof item == "object" && !(items[item] instanceof Date)) {
+                        newArray.push(completeDecrypt(item));
+                    } else newArray.push(item);
+                }
+
+                return newArray;
+            } else {
+                let newObject = {};
+
+                for (const item in items) {
+                    if (typeof items[item] == "function") continue; // Nothing currently requires a decryption with a function in it
+
+                    if (isEncrypted(items[item])) newObject[item] = decrypt(items[item]);
+                    else if (typeof items[item] == "object" && !(items[item] instanceof Date)) {
+                        newObject[item] = completeDecrypt(items[item])
+                    } else newObject[item] = items[item]
+                }
+
+                return newObject;
+            }
+        }
+    }
+
+    /**
+     * @param {*} items
+     * @return {items} 
+     */
+    static completeEncryption(items) {
+        const encrypt = encryption.encrypt;
+        const completeEncrypt = encryption.completeEncryption;
+        const isEncrypted = encryption.isEncrypted;
+
+        if (typeof items == "string") {
+            return encrypt(items);
+        };
+
+        if (typeof items == "object") {
+            if (items instanceof Array) {
+                let newArray = []
+                for (let item of items) {
+                    if (typeof item == "function") continue; // Nothing currently requires a decryption with a function in it
+
+                    if (!isEncrypted(item)) newArray.push(encrypt(item));
+                    else if (typeof item == "object" && !(items[item] instanceof Date)) {
+                        newArray.push(completeEncrypt(item));
+                    } else newArray.push(item);
+                }
+
+                return newArray;
+            } else {
+                let newObject = {};
+
+                for (const item in items) {
+                    if (typeof items[item] == "function") continue; // Nothing currently requires a decryption with a function in it
+
+                    if (!isEncrypted(items[item])) newObject[item] = encrypt(items[item]);
+                    else if (typeof items[item] == "object" && !(items[item] instanceof Date)) {
+                        newObject[item] = completeEncrypt(items[item])
+                    } else newObject[item] = items[item]
+                }
+
+                return newObject;
+            }
         }
     }
 }

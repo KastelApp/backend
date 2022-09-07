@@ -1,13 +1,24 @@
+/*! 
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
+
 const { model, Schema } = require("mongoose");
 const lengthChecker = require("../../lengthChecker");
 
 const userSchema = new Schema({
-    _id: {
+    _id: { // Encrypted
         type: String,
         required: true
     },
 
-    email: {
+    email: { // Encrypted
         type: String,
         required: true,
         unique: true,
@@ -18,7 +29,7 @@ const userSchema = new Schema({
         required: false,
     },
 
-    username: {
+    username: { // Encrypted
         type: String,
         required: true,
         default: "Ghost",
@@ -35,9 +46,14 @@ const userSchema = new Schema({
         required: false,
     },
 
-    password: {
+    password: { // Hashed
         type: String,
         required: true,
+    },
+
+    phone_number: { // Encrypted
+        type: String,
+        required: false
     },
 
     created_date: {
@@ -46,19 +62,24 @@ const userSchema = new Schema({
         default: Date.now(),
     },
 
-    date_of_birth: {
+    date_of_birth: { // Encrypted
         type: String,
         required: false,
     },
 
     two_fa: {
-        type: String,
+        type: Boolean,
         required: false
     },
 
     two_fa_verified: {
         type: Boolean,
         required: false,
+    },
+
+    twofa_secret: { // Encrypted
+        type: String,
+        required: false
     },
 
     ip_verify: {
@@ -71,23 +92,26 @@ const userSchema = new Schema({
         required: false,
     },
 
-    ips: {
+    ips: { // Encrypted
         type: Array,
         required: false,
-        validate: [lengthChecker({ length: 5, type: "less" }), '{PATH} exceeds the limit of 5'],
         index: "ips"
     },
 
     flags: {
         type: Array,
         required: false,
-        validate: [lengthChecker({ length: 20, type: "less" }), '{PATH} exceeds the limit of 20']
+    },
+
+    badges: {
+        type: Number,
+        required: false,
+        default: 0
     },
 
     guilds: [{
         type: String,
         ref: "guilds",
-        validate: [lengthChecker({ length: 50, type: "less" }), '{PATH} exceeds the limit of 50']
     }],
 
     dms: [{

@@ -1,41 +1,46 @@
-const { default: mongoose } = require("mongoose")
-const { generateId } = require("../../../utils/classes/idGen")
+/*! 
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
+
+const { generate } = require("../../../utils/classes/snowflake")
 const lengthChecker = require("../../../utils/lengthChecker")
 const guildSchema = require("../../../utils/schemas/guilds/guildSchema")
 const inviteSchema = require("../../../utils/schemas/guilds/inviteSchema")
 const userSchema = require("../../../utils/schemas/users/userSchema")
-const badgeSchema = require("../../../utils/schemas/users/badgeSchema")
 const guildMemberSchema = require("../../../utils/schemas/guilds/guildMemberSchema")
 const { hash } = require('bcrypt');
-const { BADGES, FLAGS } = require("../../../config")
+const { BADGES, FLAGS } = require("../../../constants")
 const tagGenerator = require("../../../utils/tagGenerator")
 const { important } = require("../../../utils/classes/logger")
 const { encrypt } = require("../../../utils/classes/encryption")
 const user = require("../../../utils/middleware/user")
 
 
-// This is a testing endpoint as of now. Code here can and will be completely changed.
 module.exports = {
     path: "/register",
     method: "post",
     middleWare: [user({
-        botsAllowed: false,
-        loggedinAllowed: false,
-        needed_flags: [],
+        login: {
+            loginRequired: false,
+            loginAllowed: false,
+            loggedOutAllowed: true
+        }
     })],
-    /**
-     * @param {import("express").Request} req 
-     * @param {import("express").Response} res 
-     * @param {import("express").NextFunction} next 
-     */
-    run: async (req, res) => {
 
+    run: async (req, res) => {
         try {
 
             /**
              * @type {{username: String, email: String, password: String, date_of_birth: Date, invite: String}} 
              */
-            const { username, email, password, date_of_birth, invite } = req?.body
+            const { username, email, password, date_of_birth, invite } = req?.body;
 
             if (!username || !email || !password || !date_of_birth || (new Date(date_of_birth) == "Invalid Date")) {
                 res.status(400).send({
@@ -56,20 +61,20 @@ module.exports = {
                         code: "INVALID_DATE_OF_BIRTH",
                         message: "The provided Date of Birth is Invalid"
             } : null].filter((x) => x !== null)
-                })
+                });
 
                 return;
             }
 
-            const _id = generateId();
-            let tag = _id.slice((_id.length - 4)) == "0000" ? "0001" : _id.slice((_id.length - 4))
+            const _id = generate();
+            let tag = _id.slice((_id.length - 4)) == "0000" ? "0001" : _id.slice((_id.length - 4));
 
             const checks = {
                 age: lengthChecker({ length: 13, type: "more" })((new Date()?.getFullYear() - new Date(date_of_birth)?.getFullYear())),
                 email: await userSchema.findOne({ email: encrypt(email) }),
                 usernameTag: await userSchema.findOne({ username: encrypt(username), tag }),
                 usernameslength: lengthChecker({ length: 5000, type: "more" })(await userSchema.countDocuments({ username: encrypt(username) })),
-                invite: invite ? await inviteSchema.findById(invite) : null,
+                invite: (invite ? await inviteSchema.findById(invite) : null),
                 // Flags/Badges
                 isBetaTester: (Math.random() < 0.05),
                 userFlag: lengthChecker({ length: 1000, type: "less" })(await userSchema.countDocuments())
@@ -94,25 +99,30 @@ module.exports = {
             }
 
             if (checks.usernameTag) {
-                const userTags = (await userSchema.find({ username: encrypt(username) })).map((user) => user.tag),
-                    tag = tagGenerator(userTags)
+                const userTags = (await userSchema.find({ username: encrypt(username) })).map((user) => user.tag);
+
+                tag = tagGenerator(userTags);
 
                 if (await userSchema.findOne({ username: encrypt(username), tag })) return res.status(500).send({
                     code: 500,
                     errors: [{
                         code: "TRY_AGAIN",
                         message: "Please try again"
-                    }]
-                })
+                    }],
+                });
 
-                if (!tag) return res.status(500).send({
-                    code: 500,
-                    errors: [{
-                        code: "NO_TAGS",
-                        message: "Sorry, No tags were able to be made for this username. Please try again."
-                    }]
-                })
-            }
+                if (!tag) {
+                    res.status(500).send({
+                        code: 500,
+                        errors: [{
+                            code: "NO_TAGS",
+                            message: "Sorry, No tags were able to be made for this username. Please try again."
+                        }],
+                    });
+
+                    return;
+                };
+            };
 
             const usr = new userSchema({
                 _id: encrypt(_id),
@@ -126,18 +136,18 @@ module.exports = {
                 flags: [checks.isBetaTester ? FLAGS.BETA_TESTER : null].filter((x) => x !== null),
                 guilds: [],
                 dms: [],
-                groupChats: []
-            })
+                groupChats: [],
+            });
 
             if (checks.invite) {
                 const guild = await guildSchema.findById(checks.invite.guild);
 
                 if (guild) {
                     const member = await guildMemberSchema.create({
-                        _id: generateId(),
-                        user: encrypt(usr._id),
-                        roles: []
-                    })
+                        _id: generate(),
+                        user: usr._id,
+                        roles: [],
+                    });
 
                     guild.members.push(member._id);
                     usr.guilds.push(guild._id);
@@ -145,21 +155,25 @@ module.exports = {
                     await inviteSchema.findByIdAndUpdate(invite, {
                         $inc: {
                             uses: 1
-                        }
-                    })
-                    await guild.save()
-                }
-            }
+                        },
+                    });
+
+                    await guild.save();
+                };
+            };
+
+            if (checks.userFlag) usr.badges = BADGES.ORIGINAL_USER;
 
             await usr.save();
 
-            if (checks.userFlag) await badgeSchema.create({
-                user: encrypt(usr._id),
-                ...BADGES.ORIGINAL_USER
-            })
-
-
-            res.status(201).send(usr);
+            res.status(201).send({
+                code: 201,
+                errors: [],
+                responses: [{
+                    code: "ACCOUNT_CREATED",
+                    message: "Account created."
+                }],
+            });
 
         } catch (err) {
             important.error(`${req.clientIp} Encountered an error ${err.stack}`);
@@ -167,10 +181,12 @@ module.exports = {
             res.status(500).send({
                 code: 500,
                 errors: [{
-                    code: "UNHANDLED_ERROR",
-                    message: "There was a Unhandled error, Please report this."
-                }]
-            })
+                    code: "ERROR",
+                    message: `There was an Error, Please contact Support.`
+                }],
+            });
+
+            return;
         }
     },
 }

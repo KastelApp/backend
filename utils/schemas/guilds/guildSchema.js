@@ -1,3 +1,14 @@
+/*! 
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
+
 const { model, Schema } = require("mongoose");
 const lengthChecker = require("../../lengthChecker");
 
@@ -18,37 +29,22 @@ const guildSchema = new Schema({
         required: false
     },
 
-    public: {
-        type: Boolean,
-        required: false
-    },
-
-    verified: {
-        type: Boolean,
-        required: false
-    },
-
-    partnered: {
-        type: Boolean,
-        required: false
-    },
-
-    under_investigation: {
-        type: Boolean,
-        required: false
+    flags: {
+        type: Number,
+        required: false,
+        default: 0
     },
 
     owner: {
         type: String,
         required: true,
-        ref: "users"
+        ref: "guildMembers"
     },
 
     co_owners: [{
         type: String,
         required: false,
-        ref: "users",
-        validate: [lengthChecker({ length: 3, type: "less" }), '{PATH} exceeds the limit of 3']
+        ref: "guildMembers"
     }],
 
     channels: [{

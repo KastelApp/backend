@@ -1,21 +1,39 @@
+/*! 
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
+
 const userSchema = require("../../../../../utils/schemas/users/userSchema")
-const badgeSchema = require("../../../../../utils/schemas/users/badgeSchema")
 const { encrypt, decrypt } = require("../../../../../utils/classes/encryption")
 const user = require("../../../../../utils/middleware/user")
+const schemaData = require("../../../../../utils/schemaData")
 
+/**
+ * @typedef {Object} ExportObject
+ * @property {String} path The path the user will access the run function at
+ * @property {'get'|'GET'|'delete'|'DELETE'|'head'|'HEAD'|'options'|'OPTIONS'|'post'|'POST'|'put'|'PUT'|'patch'|'PATCH'|'purge'|'PURGE'} method The method the user requires
+ * @property {('get'|'GET'|'delete'|'DELETE'|'head'|'HEAD'|'options'|'OPTIONS'|'post'|'POST'|'put'|'PUT'|'patch'|'PATCH'|'purge'|'PURGE')[]} [methods] The method the user requires
+ * @property {Function[]} middleWare The middleware functions
+ * @property {(req: import('express').Request, res: import('express').Response, next: import('express').NextFunction) => {}} run The Req, Res and Next Functions 
+ */
+
+/**
+ * @type {ExportObject}
+ */
 module.exports = {
-    path: "/",
+    path: "/fetch",
     method: "get",
     middleWare: [user({
-        botsAllowed: true,
-        loggedinAllowed: true,
-        needed_flags: [],
+        login: {
+            loginRequired: true,
+        }
     })],
-    /**
-     * @param {import("express").Request} req 
-     * @param {import("express").Response} res 
-     * @param {import("express").NextFunction} next 
-     */
     run: async (req, res, next) => {
         /**
          * @type {String}
@@ -48,17 +66,11 @@ module.exports = {
             return;
         }
 
-        const badges = await badgeSchema.find({ user: encrypt(userId) });
-
-
         res.send({
-            id: decrypt(user._id),
-            avatar: (user?.avatar_url ?? null),
-            username: decrypt(user.username),
-            tag: user.tag,
-            bot: (user?.bot ?? false),
-            creation_date: user.created_date,
-            badges: (badges?.map((bad) => bad.name) ?? [])
+            code: 200,
+            errors: [],
+            responses: [],
+            data: schemaData("user", user.toJSON())
         })
 
     },

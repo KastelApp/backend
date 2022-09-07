@@ -1,3 +1,14 @@
+/*! 
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
+
 const { model, Schema } = require("mongoose");
 
 const inviteSchema = new Schema({
@@ -30,6 +41,11 @@ const inviteSchema = new Schema({
     creator: {
         type: String,
         ref: "guildMembers"
+    },
+
+    deleteable: { // Used for vanity URLs, Makes them undeleteable (Useful for guilds with more then one)
+        type: Boolean,
+        default: true
     }
 })
 

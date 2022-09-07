@@ -1,4 +1,16 @@
+/*! 
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
+
 const redis = require("redis");
+const { config } = require("../../config");
 
 /**
  * @type {import('redis').RedisClientType}
@@ -20,8 +32,8 @@ class Redis {
 
         return new Promise((resolve, reject) => {
             redisClient = redis.createClient({
-                url: `redis://default:${process.env.rpassword}@${process.env.rhost}:${process.env.rport}`,
-                database: process.env.rdb,
+                url: `redis://default:${config.Redis.password}@${config.Redis.host}:${config.Redis.port}`,
+                database: config.Redis.db,
             });
 
             redisClient.on("ready", () => resolve(redisClient));

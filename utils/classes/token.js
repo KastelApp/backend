@@ -1,11 +1,30 @@
+/*! 
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
+
 const jwt = require('jsonwebtoken');
 const ms = require("ms");
+const { Encryption } = require('../../config');
+
+/**
+ * @typedef {Object} SignedObject
+ * @property {Boolean} hasError If there was a error while signing/verifying
+ * @property {Error} error The error if there is one
+ * @property {*} data The signed jwt token
+ */
 
 class token {
     /**
      * Create a token
      * @param {String} data 
-     * @returns 
+     * @returns {SignedObject}
      */
     static sign(data, options = {
         expiresIn: "7d"
@@ -18,7 +37,7 @@ class token {
                 data: null
             }
 
-            const signed = jwt.sign(data, process.env.jwtKey, { ...options })
+            const signed = jwt.sign(data, Encryption.jwtKey, { ...options })
 
             return {
                 hasError: false,
@@ -34,6 +53,11 @@ class token {
         }
     }
 
+    /**
+     * Verify and return a token
+     * @param {String} data 
+     * @returns {SignedObject}
+     */
     static verify(data, options) {
         try {
 
@@ -43,7 +67,7 @@ class token {
                 data: null
             }
 
-            const verified = jwt.verify(data, process.env.jwtKey, { ...options })
+            const verified = jwt.verify(data, Encryption.jwtKey, { ...options })
 
             return {
                 hasError: false,

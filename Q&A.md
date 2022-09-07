@@ -3,7 +3,7 @@ These are just some questions I think should be answered. Make an Issue on Githu
 
 ## What is Kastel?
 
-Kastel is an open-source private chatting app, like <a href="https://discord.com">Discord</a> & <a href="https://guilded.gg">Guilded</a>, but all messages will be encrypted and privacy will be key. Its currently in development, If you would like to help checkout our todo list in the Readme file.
+Kastel is an chatting app, like <a href="https://discord.com">Discord</a> & <a href="https://guilded.gg">Guilded</a>, but open-source. Everything will be encrypted with AES making it secure. Its currently in development, If you would like to help checkout our roadmap list in the Readme file.
 
 ## What is Kastel made in?
 
@@ -11,7 +11,7 @@ Kastel is made using <a href="https://expressjs.com">ExpressJS</a> as a backend.
 
 ## Will there be bots?
 
-Yes, Bots are Planned. The ideal release of bots will most likely be in API v3. API v2 will most likely be the start. Released to a few people, then public in API v3. The bots will be mostly the same as users. They will not be able to do most things, i.e Creating Servers, Adding Friends, Joining Servers (Like a normal user), Inviting Bots to Servers ETC.
+Yes, Bots are Planned. The ideal release of bots will most likely be in API v3. API v2 will most likely be the start. Released to a few people, then public in API v3. The bots will be mostly the same as users. They will not be able to do most things, i.e Creating Guilds, Adding Friends, Joining Guilds (Like a normal user), Inviting Bots to Guilds ETC.
 
 ## Will there be ADs or Monthly/Yearly Subscriptions (Like Discord Nitro)
 

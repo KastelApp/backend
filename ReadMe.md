@@ -11,42 +11,55 @@
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 
-Kastel Is a Chatting App like <a href="https://discord.com">Discord</a> & <a href="https://guilded.gg">Guilded</a>, Though its Open Sourced. With Encrypted Chat and No selling of User Data.
+Kastel Is a Chatting App like <a href="https://discord.com">Discord</a> & <a href="https://guilded.gg">Guilded</a>, Though its Open Sourced & Data is encrypted
 
 ## Roadmap
-- [x] Route Handler/Loader (Loads Routes, Set Routes ETC.)
-- [x] Start MongoDB Stuff (Creating Schemas, Using it for Creating accounts ETC)
-- [x] A Better ID System
+### Misc
 - [x] Correct Error codes
-- [x] Encrypting User Data and messages, Username, ID ETC & Hashing Passwords, Emails and IPS
-- [ ] API Endpoints for Creating Accounts, Updating Accounts, Deleting Accounts ETC
+- [ ] Docker File to easily run the backend
+- [x] A Snowflake ID System
 - [ ] Routing to Different servers
     - If you are in Canada, Route to a US server if there are no canada servers ETC
-- [ ] Docker File to easily run the backend
-- [ ] Advanced Caching system using redis
-    - Caching system to make API requests faster
-- [ ] User creation from CLI
-    - Useful for creating the first account
 - [ ] Rewrite to TS
     - This project would be much better in TS, I currently do not have the time to set TS up but if you would like to I would love it.
-
-# License
-
-Please read the license that can be found in [LICENSE.md](https://github.com/Kastelll/backend/blob/stable/LICENSE.md)
-
-# Contributing
-
-If you would like to contribute to the project fork the repo, Make your changes, Test the code (Verify it works), Make a pull request to the development branch and wait for it to be merged :)
+- [ ] Different ways to login besides a password
+    - I want Users to pick how they login, Allowing them to remove their password and login with other sites, Below are some Ideas
+        - Google
+        - Github
+        - Apple
+### Database Related
+- [x] Start MongoDB Stuff (Creating Schemas, Using it for Creating accounts ETC)
+- [x] Encrypting User Data and messages, Username, ID ETC & Hashing Passwords, Emails and IPS
+### Caching Related
+- [ ] Advanced Caching system using redis
+    - Caching system to make API requests faster
+### Route Related
+- [x] API Endpoints for Creating Accounts, Updating Accounts, Deleting Accounts ETC
+- [x] Route Handler/Loader (Loads Routes, Set Routes ETC.)
+### CLI Related
+- [ ] User creation from CLI
+    - Useful for creating the first account
 
 # Credits
 
 [Robin][robin-github] - For Helping with the Schemas & giving tips about Schemas.
 
-[NukeZzZin][discord-id-gen] - For the ID Generator (From NPM Package - discord-snowflake-id-js)
+# Contributing
 
-# Security
+If you want to contribute fork the development branch, make your changes, verify it works then create a pull request with the changed things, In the Pull request explain what you changed and why you changed it. If you want to make more then one change please do it in one pull request unless they are big things (Like changing Packages, Completely refactoring code etc etc)
 
-As of 8/15/2022 User Data is encrypted and the password is Hashed. There is more that can be done though.
+
+# User Security
+
+As of 8/15/2022 User Data Is Encrypted with AES (AES is the default) As seen in the [User Schema](/utils/schemas/users/userSchema.js) What is Encrypted or hashed is pointed out. If it doesn't have a '// Encrypted' or '// Hashed' next to it means it isn't hashed or encrypted. If you got any questions please email 'security@kastelapp.com' for more info.
+
+## Maintainers
+
+[Darker-Ink](https://github.com/Darker-Ink)
+
+# License
+
+This project is licensed under the GPL-3.0 License, For more info please check [LICENSE.md](/LICENSE.md)
 
 [contributors-shield]: https://img.shields.io/github/contributors/Kastelll/backend.svg?style=for-the-badge
 [contributors-url]: https://github.com/Kastelll/backend/graphs/contributors
@@ -57,5 +70,4 @@ As of 8/15/2022 User Data is encrypted and the password is Hashed. There is more
 [issues-shield]: https://img.shields.io/github/issues/Kastelll/backend.svg?style=for-the-badge
 [issues-url]: https://github.com/Kastelll/backend/issues
 [robin-github]: https://github.com/Robin-Sch
-[discord-id-gen]: https://www.npmjs.com/package/discord-snowflake-id-js
 </div>
