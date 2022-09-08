@@ -186,15 +186,15 @@ const user = (options = {
         } catch (er) {
             logger.error(`${req.clientIp} has encounted an error while accessing ${req.path}\n ${er.stack}`);
 
-            if (er.message.toLowerCase() == ("cannot set headers after they are sent to the client")) return;
-
-            res.status(500).send({
-                code: 500,
-                errors: [{
-                    code: "ERROR",
-                    message: `There was an Error, Please contact Support.`
-                }]
-            })
+            if (!res.headersSent) {
+                res.status(500).send({
+                    code: 500,
+                    errors: [{
+                        code: "ERROR",
+                        message: `There was an Error, Please contact Support.`
+                    }]
+                })
+            }
 
             return;
         }

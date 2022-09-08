@@ -20,10 +20,11 @@
         "ws": "^8.8.1"
     },
     "devDependencies": {
+        "eslint": "^8.23.0",
         "nodemon": "^2.0.15"
     },
     "scripts": {
-        "start": "node index.js"
+        "start": "node src/index.js"
     },
     "keywords": [
         "chatting"

@@ -11,11 +11,7 @@ const { userSchema } = require("../../../../utils/schemas/schemas");
 
 /**
  * @typedef {Object} Query
- * @property {Boolean} [include_members=false] If the user wants to include members
- * @property {Boolean} [include_invites=false] If the user wants to include invites
- * @property {Boolean} [include_bans=false] If the user wants to include bans
- * @property {Boolean} [include_channels=false] If the user wants to include channels
- * @property {Boolean} [include_roles=false] If the user wants to include roles
+ * @property {Array<'members'|'roles'|'channels'|'invites'|'bans'} [include] What the user wants to include
  */
 
 new Route(__dirname, "/fetch", "GET", [userMiddleware({
@@ -27,23 +23,9 @@ new Route(__dirname, "/fetch", "GET", [userMiddleware({
     /**
      * @type {Query}
      */
-    let query = defaultManager({
-        include_members: false,
-        include_invites: false,
-        include_bans: false,
-        include_channels: false,
-        include_roles: false
-    }, req.query)
+    let query = defaultManager(["members", "roles", "channels", "invites", "bans"], req?.query?.include?.split(","))
 
-    for (const key in req.query) {
-        try {
-            const parsed = JSON.parse(req.query[key])
-
-            query[key] = parsed
-        } catch (er) {
-            query[key] = req.query[key]
-        }
-    }
+    console.log(query)
 
     const usr = await userSchema.findById(encrypt(req.user.id));
 

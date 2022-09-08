@@ -1,27 +1,27 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
  * GPL 3.0 Licensed
  */
 
-const fs = require("node:fs");
-const path = require("node:path");
+const fs = require('node:fs');
+const path = require('node:path');
 
 /**
  * Goes through each DIR and adds them to the Array.
- * @param {String} fipath 
- * @param {string[]} arr 
+ * @param {String} fipath
+ * @param {string[]} arr
  * @returns {string[]}
  */
 const thrandthr = (fipath, arr) => {
     const dirArray = (arr || []);
 
-    const filePath = (fipath || path.join(__dirname, "..", "routes"));
+    const filePath = (fipath || path.join(__dirname, '..', 'routes'));
 
     const fileInfo = fs.statSync(filePath);
 
@@ -41,7 +41,7 @@ const thrandthr = (fipath, arr) => {
     }
 
     return dirArray;
-}
+};
 
 /**
  * Requires all the routes.
@@ -55,6 +55,6 @@ const routeLoader = () => {
     }
 
     return fipaths;
-}
+};
 
 module.exports = routeLoader;
