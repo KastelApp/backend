@@ -1,8 +1,8 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═l╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
@@ -16,61 +16,61 @@ const guilds = {
     type: Array,
     data: {
         id: {
-            name: "_id",
+            name: '_id',
             expected: String,
-            default: null
+            default: null,
         },
         name: {
-            name: "name",
+            name: 'name',
             expected: String,
-            default: "Unknown Guild Name"
+            default: 'Unknown Guild Name',
         },
         description: {
-            name: "description",
+            name: 'description',
             expected: String,
-            default: null
+            default: null,
         },
         flags: {
-            name: "flags",
+            name: 'flags',
             expected: Number,
-            default: 0
+            default: 0,
         },
         owner: {
-            name: "owner",
+            name: 'owner',
             extended: true,
-            extends: "guildMember"
+            extends: 'guildMember',
         },
         co_owners: {
-            name: "co_owners",
+            name: 'co_owners',
             extended: true,
-            extends: "guildMembers"
+            extends: 'guildMembers',
         },
         channels: {
-            name: "channels",
+            name: 'channels',
             extended: true,
-            extends: "channels"
+            extends: 'channels',
         },
         roles: {
-            name: "roles",
+            name: 'roles',
             extended: true,
-            extends: "roles"
+            extends: 'roles',
         },
         bans: {
-            name: "bans",
+            name: 'bans',
             extended: true,
-            extends: "bans"
+            extends: 'bans',
         },
         members: {
-            name: "members",
+            name: 'members',
             extended: true,
-            extends: "guildMembers"
+            extends: 'guildMembers',
         },
         invites: {
-            name: "invites",
+            name: 'invites',
             extended: true,
-            extends: "invites"
-        }
-    }
-}
+            extends: 'invites',
+        },
+    },
+};
 
-module.exports = guilds
+module.exports = guilds;

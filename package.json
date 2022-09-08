@@ -24,7 +24,8 @@
         "nodemon": "^2.0.15"
     },
     "scripts": {
-        "start": "node src/index.js"
+        "start": "node src/index.js",
+        "lint": "eslint 'src/**'"
     },
     "keywords": [
         "chatting"

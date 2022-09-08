@@ -5,16 +5,16 @@ const template = {
     type: String,
     data: {
         example: {
-            name: "_example",
+            name: '_example',
             expected: String,
-            default: "This is an Example"
+            default: 'This is an Example',
         },
         extended_example: {
-            name: "_extended",
+            name: '_extended',
             extended: true,
-            extends: "template2"
-        }
-    }
-}
+            extends: 'template2',
+        },
+    },
+};
 
-module.exports = template
+module.exports = template;

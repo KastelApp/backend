@@ -1,38 +1,39 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
  * GPL 3.0 Licensed
  */
 
-const userSchema = require("../../../../../utils/schemas/users/userSchema")
-const { encrypt, decrypt } = require("../../../../../utils/classes/encryption")
-const user = require("../../../../../utils/middleware/user")
-const schemaData = require("../../../../../utils/schemaData")
-const Route = require("../../../../../utils/classes/Route")
+const userSchema = require('../../../../../utils/schemas/users/userSchema');
+const { encrypt } = require('../../../../../utils/classes/encryption');
+const userMiddleware = require('../../../../../utils/middleware/user');
+const schemaData = require('../../../../../utils/schemaData');
+const Route = require('../../../../../utils/classes/Route');
 
-new Route(__dirname, "/fetch", "GET", [user({
+new Route(__dirname, '/fetch', 'GET', [userMiddleware({
     login: {
         loginRequired: true,
-    }
+    },
 })], async (req, res) => {
     /**
      * @type {String}
      */
-    const userId = req?.params?.userId
+    const userId = req?.params?.userId;
 
     if (!userId) {
         res.status(400).send({
             code: 400,
             errors: [{
-                code: "MISSING_USER_ID",
-                message: "No User id provided"
-                 }]
-        })
+                code: 'MISSING_USER_ID',
+                message: 'No User id provided',
+            }],
+            responses: [],
+        });
 
         return;
     }
@@ -43,10 +44,11 @@ new Route(__dirname, "/fetch", "GET", [user({
         res.status(404).send({
             code: 404,
             errors: [{
-                code: "NO_USER_FOUND",
-                message: "No user was found with the provided id"
-                 }]
-        })
+                code: 'NO_USER_FOUND',
+                message: 'No user was found with the provided id',
+            }],
+            responses: [],
+        });
 
         return;
     }
@@ -55,7 +57,7 @@ new Route(__dirname, "/fetch", "GET", [user({
         code: 200,
         errors: [],
         responses: [],
-        data: schemaData("user", user.toJSON())
-    })
+        data: schemaData('user', user.toJSON()),
+    });
 
-})
+});

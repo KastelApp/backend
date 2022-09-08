@@ -1,48 +1,48 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
  * GPL 3.0 Licensed
  */
 
-const { model, Schema } = require("mongoose");
+const { model, Schema } = require('mongoose');
 
 const fileSchema = new Schema({
     _id: {
         type: String,
-        required: true
+        required: true,
     },
 
     message: {
         type: String,
         required: true,
-        ref: "messages"
+        ref: 'messages',
     },
 
     name: {
         type: String,
         required: true,
-        default: "Unknown"
+        default: 'Unknown',
     },
 
     cdn_token: {
         type: String,
-        required: true
+        required: true,
     },
 
     type: {
         type: String,
-        required: true
+        required: true,
     },
 
     deleted: {
         type: Boolean,
-        required: false
-    }
-})
+        required: false,
+    },
+});
 
 module.exports = model('files', fileSchema);

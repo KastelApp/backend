@@ -1,6 +1,6 @@
-/*!
+/* !
  * This source code is taken and edited from https://github.com/discordjs/discord.js
- * It is Licensed under the Apache License that can be found here http://www.apache.org/licenses/LICENSE-2.0  
+ * It is Licensed under the Apache License that can be found here http://www.apache.org/licenses/LICENSE-2.0
  */
 
 'use strict';

@@ -1,81 +1,80 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
  * GPL 3.0 Licensed
  */
 
-const { model, Schema } = require("mongoose");
-const lengthChecker = require("../../lengthChecker");
+const { model, Schema } = require('mongoose');
 
 const guildSchema = new Schema({
     _id: {
         type: String,
-        required: true
+        required: true,
     },
 
     name: {
         type: String,
         required: true,
-        default: "Unknown Guild"
+        default: 'Unknown Guild',
     },
 
     description: {
         type: String,
-        required: false
+        required: false,
     },
 
     flags: {
         type: Number,
         required: false,
-        default: 0
+        default: 0,
     },
 
     owner: {
         type: String,
         required: true,
-        ref: "guildMembers"
+        ref: 'guildMembers',
     },
 
     co_owners: [{
         type: String,
         required: false,
-        ref: "guildMembers"
+        ref: 'guildMembers',
     }],
 
     channels: [{
         type: String,
         required: false,
-        ref: "channels"
+        ref: 'channels',
     }],
 
     roles: [{
         type: String,
         required: false,
-        ref: "roles"
+        ref: 'roles',
     }],
 
     invites: [{
         type: String,
         required: false,
-        ref: "invites"
+        ref: 'invites',
     }],
 
     bans: [{
         type: String,
         required: false,
-        ref: "bans"
+        ref: 'bans',
     }],
 
     members: [{
         type: String,
         required: false,
-        ref: "guildMembers",
-    }]
-})
+        ref: 'guildMembers',
+    }],
+});
 
 module.exports = model('guilds', guildSchema);

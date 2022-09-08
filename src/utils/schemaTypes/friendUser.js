@@ -1,8 +1,8 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
@@ -16,31 +16,31 @@ const friendUser = {
     type: Object,
     data: {
         id: {
-            name: "_id",
+            name: '_id',
             expected: String,
-            default: null
+            default: null,
         },
         username: {
-            name: "username",
+            name: 'username',
             expected: String,
-            default: "Unknown Username"
+            default: 'Unknown Username',
         },
         tag: {
-            name: "tag",
+            name: 'tag',
             expected: String,
-            default: "0000"
+            default: '0000',
         },
         creation_date: {
-            name: "created_date",
+            name: 'created_date',
             expected: Date,
-            default: Date.now()
+            default: Date.now(),
         },
         badges: {
-            name: "badges",
+            name: 'badges',
             expected: Number,
-            default: 0
-        }
-    }
-}
+            default: 0,
+        },
+    },
+};
 
-module.exports = friendUser
+module.exports = friendUser;

@@ -1,8 +1,8 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
@@ -16,8 +16,8 @@
 /**
  * @type {RouteItem[]}
  */
-let routes = []
-const vaildMethods = ['get', 'delete', 'head', 'options', 'post', 'put', 'patch', 'purge', 'all']
+let routes = [];
+const vaildMethods = ['get', 'delete', 'head', 'options', 'post', 'put', 'patch', 'purge', 'all'];
 const pathToRegexp = require('path-to-regexp');
 
 /**
@@ -31,10 +31,10 @@ new Route(__dirname, "/test", "GET", async (req, res, next) => {
 class Route {
     /**
      * @param {String} dir The DIR of the file
-     * @param {String} route The route the user will access from 
+     * @param {String} route The route the user will access from
      * @param {Methods} method The Method(s) the path accepts
      * @param {RunCallBack|(RunCallBack|Function)[]} middleware The middleware
-     * @param {RunCallBack} run The Req, Res and Next Functions 
+     * @param {RunCallBack} run The Req, Res and Next Functions
      */
     constructor(dir, route, method, middleware, run) {
 
@@ -50,29 +50,27 @@ class Route {
          */
         this._path = this.cutter(this._dir, route);
 
-        this._middleware = typeof middleware !== "object" ? typeof middleware == "function" ? [] : middleware : middleware;
+        this._middleware = typeof middleware !== 'object' ? typeof middleware == 'function' ? [] : middleware : middleware;
 
         /**
          * @type {RunCallBack}
          * @private
          */
-        this._run = typeof run == "undefined" ? typeof middleware !== "object" ? typeof middleware == "function" ? middleware : run : run : run;
+        this._run = typeof run == 'undefined' ? typeof middleware !== 'object' ? typeof middleware == 'function' ? middleware : run : run : run;
 
         /**
          * @type {Methods}
          * @private
          */
-        this._method = method
+        this._method = method;
 
         if (Array.isArray(this._method)) {
             for (let i = 0; i < this._method.length; i++) {
                 if (!vaildMethods.includes(this._method[i].toLowerCase()))
-                    throw new Error(`${this._path} Has an Invalid Method (${this._method[i]})`)
+                    {throw new Error(`${this._path} Has an Invalid Method (${this._method[i]})`);}
             }
-        } else {
-            if (!vaildMethods.includes(this._method.toLowerCase()))
-                throw new Error(`${this._path} Has an Invalid Method (${this._method})`)
-        }
+        } else if (!vaildMethods.includes(this._method.toLowerCase()))
+                {throw new Error(`${this._path} Has an Invalid Method (${this._method})`);}
 
         routes.push({
             method: this._method,
@@ -80,8 +78,8 @@ class Route {
             regex: new RegExp(pathToRegexp(this._path)),
             run: this._run,
             middleware: this._middleware,
-            Route: this
-        })
+            Route: this,
+        });
     }
 
     /**
@@ -90,7 +88,7 @@ class Route {
      * @returns {String} The route
      */
     get route() {
-        return this._path
+        return this._path;
     }
 
     /**
@@ -98,41 +96,41 @@ class Route {
      * @returns {Methods} The method(s) the route uses
      */
     get methods() {
-        return this._method
+        return this._method;
     }
 
     /**
      * @public
-     * @param {import('express').Request} req 
-     * @param {import('express').Response} res 
+     * @param {import('express').Request} req
+     * @param {import('express').Response} res
      * @param {import('express').NextFunction} next
      * @returns {void}
      */
     run(req, res, next) {
-        this._run(req, res, next)
+        this._run(req, res, next);
     }
 
     /**
      * Cuts the filePath, and adds the export path to make a proper route
      * @private
-     * @param {String} filePath The full file path (/home/darkerink/kastel/routes/tests/cool.js) 
+     * @param {String} filePath The full file path (/home/darkerink/kastel/routes/tests/cool.js)
      * @param {String} exportPath The exported path (cool_test)
      * @returns {String} The cut path (/tests/cool_test)
      */
     cutter(filePath, exportPath) {
 
-        const splitPath = filePath.split("/routes").pop()
+        const splitPath = filePath.split('/routes').pop();
 
-        return `${splitPath}${exportPath.startsWith("/") ? exportPath : "/" + exportPath}`
+        return `${splitPath}${exportPath.startsWith('/') ? exportPath : '/' + exportPath}`;
     }
 
     /**
      * Sets all the routes
-     * @param {import('express').Application} app 
+     * @param {import('express').Application} app
      */
     static setRoutes(app) {
         if (!app)
-            throw new Error("Please provide the Express Application")
+            {throw new Error('Please provide the Express Application');}
 
         for (let i = 0; i < routes.length; i++) {
             const route = routes[i];
@@ -140,14 +138,14 @@ class Route {
 
             if (Array.isArray(route.method)) {
                 for (let j = 0; i < route.method.length; i++)
-                    app[(route.method[j].toLowerCase())](route.path, ...route.middleware, (...args) => route.run(...args))
+                    {app[(route.method[j].toLowerCase())](route.path, ...route.middleware, (...args) => route.run(...args));}
 
             } else {
-                app[(route.method.toLowerCase())](route.path, ...route.middleware, (...args) => route.run(...args))
+                app[(route.method.toLowerCase())](route.path, ...route.middleware, (...args) => route.run(...args));
             }
         }
 
-        routes = null
+        routes = null;
     }
 
 }
@@ -177,4 +175,4 @@ class Route {
  * @typedef {'all'|'ALL'|'get'|'GET'|'delete'|'DELETE'|'head'|'HEAD'|'options'|'OPTIONS'|'post'|'POST'|'put'|'PUT'|'patch'|'PATCH'|'purge'|'PURGE'|('get'|'GET'|'delete'|'DELETE'|'head'|'HEAD'|'options'|'OPTIONS'|'post'|'POST'|'put'|'PUT'|'patch'|'PATCH'|'purge'|'PURGE'|'all'|'ALL')[]} Methods
  */
 
-module.exports = Route
+module.exports = Route;

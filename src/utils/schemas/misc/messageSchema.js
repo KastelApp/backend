@@ -1,56 +1,56 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
  * GPL 3.0 Licensed
  */
 
-const { model, Schema } = require("mongoose");
-const { ALLOWED_MENTIONS } = require("../../../constants");
+const { model, Schema } = require('mongoose');
+const { ALLOWED_MENTIONS } = require('../../../constants');
 
 const messageSchema = new Schema({
     _id: {
         type: String,
-        required: true
+        required: true,
     },
 
     author: {
         type: String,
         required: true,
-        ref: "users"
+        ref: 'users',
     },
 
     content: {
         type: String,
-        required: true
+        required: true,
     },
 
     allowed_mentions: {
         type: Number,
         required: false,
-        default: ALLOWED_MENTIONS.ALL
+        default: ALLOWED_MENTIONS.ALL,
     },
 
     created_date: {
         type: Date,
         required: true,
-        default: Date.now()
+        default: Date.now(),
     },
 
     updated_date: {
         type: Date,
         required: true,
-        default: Date.now()
+        default: Date.now(),
     },
 
     channel: {
         type: String,
         required: true,
-        ref: "channels"
+        ref: 'channels',
     },
 
     // Files and Embeds are currently in BETA
@@ -63,6 +63,6 @@ const messageSchema = new Schema({
     // embeds: []
 
 
-})
+});
 
 module.exports = model('messages', messageSchema);

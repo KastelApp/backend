@@ -1,15 +1,15 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
  * GPL 3.0 Licensed
  */
 
-const { ALLOWED_MENTIONS } = require("../../constants")
+const { ALLOWED_MENTIONS } = require('../../constants');
 
 /**
  * @type {import('./SchemaTypes').Schema}
@@ -18,42 +18,42 @@ const role = {
     type: Object,
     data: {
         id: {
-            name: "_id",
+            name: '_id',
             expected: String,
-            default: null
+            default: null,
         },
         name: {
-            name: "name",
+            name: 'name',
             expected: String,
-            default: "Unknown Role Name"
+            default: 'Unknown Role Name',
         },
         allowed_nsfw: {
-            name: "allowed_nsfw",
+            name: 'allowed_nsfw',
             expected: Boolean,
-            default: false
+            default: false,
         },
         deleteable: {
-            name: "deleteable",
+            name: 'deleteable',
             expected: Boolean,
-            default: true
+            default: true,
         },
         allowed_mentions: {
-            name: "allowed_mentions",
+            name: 'allowed_mentions',
             expected: Number,
-            default: ALLOWED_MENTIONS.ALL
+            default: ALLOWED_MENTIONS.ALL,
         },
         hoisted: {
-            name: "hoisted",
+            name: 'hoisted',
             expected: Boolean,
-            default: false
+            default: false,
         },
         color: {
-            name: "color",
+            name: 'color',
             expected: String,
-            default: "#fff"
-        }
+            default: '#fff',
+        },
 
-    }
-}
+    },
+};
 
-module.exports = role
+module.exports = role;

@@ -1,15 +1,15 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
  * GPL 3.0 Licensed
  */
 
-const { CHANNEL_TYPES, ALLOWED_MENTIONS } = require("../../constants")
+const { CHANNEL_TYPES, ALLOWED_MENTIONS } = require('../../constants');
 
 /**
  * @type {import('./SchemaTypes').Schema}
@@ -18,51 +18,51 @@ const channel = {
     type: Object,
     data: {
         id: {
-            name: "_id",
+            name: '_id',
             expected: String,
-            default: null
+            default: null,
         },
         name: {
-            name: "name",
+            name: 'name',
             expected: String,
-            default: "Unknown Channel Name"
+            default: 'Unknown Channel Name',
         },
         description: {
-            name: "description",
+            name: 'description',
             expected: String,
-            default: null
+            default: null,
         },
         type: {
-            name: "type",
+            name: 'type',
             expected: Number,
-            default: CHANNEL_TYPES.GUILD_TEXT
+            default: CHANNEL_TYPES.GUILD_TEXT,
         },
         nsfw: {
-            name: "nsfw",
+            name: 'nsfw',
             expected: Boolean,
-            default: false
+            default: false,
         },
         allowed_mentions: {
-            name: "allowed_mentions",
+            name: 'allowed_mentions',
             expected: Number,
-            default: ALLOWED_MENTIONS.ALL
+            default: ALLOWED_MENTIONS.ALL,
         },
         parent: {
-            name: "parent",
+            name: 'parent',
             expected: String,
-            default: null
+            default: null,
         },
         children: {
-            name: "children",
+            name: 'children',
             expected: Array,
-            default: null
+            default: null,
         },
         position: {
-            name: "position",
+            name: 'position',
             expected: Number,
-            default: 0
-        }
-    }
-}
+            default: 0,
+        },
+    },
+};
 
-module.exports = channel
+module.exports = channel;

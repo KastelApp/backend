@@ -1,15 +1,15 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
  * GPL 3.0 Licensed
  */
 
-const { Snowflake: snow } = require("../../config");
+const { Snowflake: snow } = require('../../config');
 
 /**
  * @typedef {Object} SnowflakeSettings
@@ -37,7 +37,7 @@ const settings = {
     workerShift: BigInt((snow.sequence_Bytes || 15)),
     dataCenterShift: (BigInt((snow.sequence_Bytes || 15)) + BigInt((snow.workerId_Bytes || 6))),
     timeShift: (BigInt((snow.sequence_Bytes || 15)) + BigInt((snow.workerId_Bytes || 6)) + BigInt((snow.datacenterId_Bytes || 7))),
-}
+};
 
 // Some Ideas are taken from the NPM Package Discord.js
 
@@ -49,8 +49,7 @@ class Snowflake {
      * @returns {String} The Snowflake ID
      */
     static generate(timestamp = Date.now()) {
-        if (typeof timestamp !== 'number' || isNaN(timestamp))
-            throw new TypeError(`'timestamp' expected to be number but got ${isNaN(timestamp) ? 'NaN' : typeof timestamp}`)
+        if (typeof timestamp !== 'number' || isNaN(timestamp)) { throw new TypeError(`'timestamp' expected to be number but got ${isNaN(timestamp) ? 'NaN' : typeof timestamp}`); }
 
 
         timestamp = BigInt(timestamp);
@@ -62,19 +61,18 @@ class Snowflake {
 
     /**
      * Generates a {@link Array} of Snowflake IDs
-     * @see {@link Snowflake.generate SnowFlake Generator} 
-     * @param {Number} [amount=5] The amount of Ids you want to generate 
+     * @see {@link Snowflake.generate SnowFlake Generator}
+     * @param {Number} [amount=5] The amount of Ids you want to generate
      * @returns {string[]} The Ids
      */
     static massGenerate(amount = 5) {
-        if (typeof amount !== 'number' || isNaN(amount))
-            throw new TypeError(`'amount' expected to be number but got ${isNaN(amount) ? 'NaN' : typeof amount}`)
+        if (typeof amount !== 'number' || isNaN(amount)) { throw new TypeError(`'amount' expected to be number but got ${isNaN(amount) ? 'NaN' : typeof amount}`); }
 
 
-        let ids = [];
+        const ids = [];
 
         for (let i = 0; i < amount; i++) {
-            ids.push(Snowflake.generate())
+            ids.push(Snowflake.generate());
         }
 
         return ids;
@@ -98,4 +96,4 @@ class Snowflake {
     }
 }
 
-module.exports = Snowflake
+module.exports = Snowflake;

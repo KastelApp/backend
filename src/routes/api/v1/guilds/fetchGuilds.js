@@ -1,12 +1,12 @@
-const Route = require("../../../../utils/classes/Route")
+const Route = require('../../../../utils/classes/Route');
 const {
     encrypt,
-    completeDecryption
-} = require("../../../../utils/classes/encryption");
-const defaultManager = require("../../../../utils/defaultManager");
-const userMiddleware = require("../../../../utils/middleware/user");
-const schemaData = require("../../../../utils/schemaData");
-const { userSchema } = require("../../../../utils/schemas/schemas");
+    completeDecryption,
+} = require('../../../../utils/classes/encryption');
+const defaultManager = require('../../../../utils/defaultManager');
+const userMiddleware = require('../../../../utils/middleware/user');
+const schemaData = require('../../../../utils/schemaData');
+const { userSchema } = require('../../../../utils/schemas/schemas');
 
 
 /**
@@ -14,7 +14,7 @@ const { userSchema } = require("../../../../utils/schemas/schemas");
  * @property {Array<'members'|'roles'|'channels'|'invites'|'bans'} [include] What the user wants to include
  */
 
-new Route(__dirname, "/fetch", "GET", [userMiddleware({
+new Route(__dirname, '/fetch', 'GET', [userMiddleware({
     login: {
         loginRequired: true,
     },
@@ -23,9 +23,9 @@ new Route(__dirname, "/fetch", "GET", [userMiddleware({
     /**
      * @type {Query}
      */
-    let query = defaultManager(["members", "roles", "channels", "invites", "bans"], req?.query?.include?.split(","))
+    const query = defaultManager([], req?.query?.include?.split(','));
 
-    console.log(query)
+    console.log(query);
 
     const usr = await userSchema.findById(encrypt(req.user.id));
 
@@ -33,71 +33,71 @@ new Route(__dirname, "/fetch", "GET", [userMiddleware({
         res.status(500).send({
             code: 500,
             errors: [{
-                code: "ERROR",
-                message: "There was an error while trying to fetch your account. Please report this."
-                }],
-            responses: []
-        })
+                code: 'ERROR',
+                message: 'There was an error while trying to fetch your account. Please report this.',
+            }],
+            responses: [],
+        });
 
         return;
     }
 
-    await usr.populate("guilds")
+    await usr.populate('guilds');
 
-    const readyGuilds = []
+    const readyGuilds = [];
 
     for (const guild of usr.guilds) {
-        if (query.include_members) {
-            await guild.populate("members")
+        if (query.include.includes('members')) {
+            await guild.populate('members');
             for (const guildMember of guild.members) {
-                await guildMember.populate("user")
-                await guildMember.populate("roles")
+                await guildMember.populate('user');
+                await guildMember.populate('roles');
             }
-        } else guild.members = []
+        } else { guild.members = []; }
 
-        if (query.include_bans) {
-            await guild.populate("bans")
+        if (query.include.includes('bans')) {
+            await guild.populate('bans');
             for (const ban of guild.bans) {
-                await ban.populate("user")
-                await ban.populate("banner")
+                await ban.populate('user');
+                await ban.populate('banner');
             }
-        } else guild.bans = []
+        } else { guild.bans = []; }
 
-        if (query.include_channels) {
-            await guild.populate("channels")
-        } else guild.channels = []
+        if (query.include.includes('channels')) {
+            await guild.populate('channels');
+        } else { guild.channels = []; }
 
-        if (query.include_invites) {
-            await guild.populate("invites");
+        if (query.include.includes('invites')) {
+            await guild.populate('invites');
 
             for (const invite of guild.invites) {
-                await invite.populate("creator")
+                await invite.populate('creator');
             }
-        } else guild.invites = []
+        } else { guild.invites = []; }
 
-        if (query.include_roles) {
-            await guild.populate("roles")
-        } else guild.roles = []
+        if (query.include.includes('roles')) {
+            await guild.populate('roles');
+        } else { guild.roles = []; }
 
         if (guild.co_owners.length !== 0) {
-            await guild.populate("co_owners")
+            await guild.populate('co_owners');
             for (const coOwner of guild.co_owners) {
-                await coOwner.populate("user")
-                await coOwner.populate("roles")
+                await coOwner.populate('user');
+                await coOwner.populate('roles');
             }
         }
 
-        await (await (await guild.populate("owner")).owner.populate("user")).populate("roles");
+        await (await (await guild.populate('owner')).owner.populate('user')).populate('roles');
 
-        readyGuilds.push(guild.toJSON())
+        readyGuilds.push(guild.toJSON());
     }
 
-    const guildData = schemaData("guilds", completeDecryption(readyGuilds))
+    const guildData = schemaData('guilds', completeDecryption(readyGuilds));
 
     res.send({
         code: 200,
         errors: [],
         responses: [],
-        data: guildData
-    })
-})
+        data: guildData,
+    });
+});

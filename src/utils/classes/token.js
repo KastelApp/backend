@@ -1,8 +1,8 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
@@ -10,7 +10,6 @@
  */
 
 const jwt = require('jsonwebtoken');
-const ms = require("ms");
 const { Encryption } = require('../../config');
 
 /**
@@ -23,65 +22,69 @@ const { Encryption } = require('../../config');
 class token {
     /**
      * Create a token
-     * @param {String} data 
+     * @param {String} data
      * @returns {SignedObject}
      */
     static sign(data, options = {
-        expiresIn: "7d"
+        expiresIn: '7d',
     }) {
         try {
 
-            if (!data) return {
-                hasError: false,
-                error: null,
-                data: null
+            if (!data) {
+                return {
+                    hasError: false,
+                    error: null,
+                    data: null,
+                };
             }
 
-            const signed = jwt.sign(data, Encryption.jwtKey, { ...options })
+            const signed = jwt.sign(data, Encryption.jwtKey, { ...options });
 
             return {
                 hasError: false,
                 error: null,
-                data: signed
-            }
+                data: signed,
+            };
         } catch (e) {
             return {
                 hasError: true,
                 error: e,
-                data: null
-            }
+                data: null,
+            };
         }
     }
 
     /**
      * Verify and return a token
-     * @param {String} data 
+     * @param {String} data
      * @returns {SignedObject}
      */
     static verify(data, options) {
         try {
 
-            if (!data) return {
-                hasError: false,
-                error: null,
-                data: null
+            if (!data) {
+                return {
+                    hasError: false,
+                    error: null,
+                    data: null,
+                };
             }
 
-            const verified = jwt.verify(data, Encryption.jwtKey, { ...options })
+            const verified = jwt.verify(data, Encryption.jwtKey, { ...options });
 
             return {
                 hasError: false,
                 error: null,
-                data: verified
-            }
+                data: verified,
+            };
         } catch (e) {
             return {
                 hasError: true,
                 error: e,
-                data: null
-            }
+                data: null,
+            };
         }
     }
 }
 
-module.exports = token
+module.exports = token;

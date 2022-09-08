@@ -1,21 +1,20 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
  * GPL 3.0 Licensed
  */
 
-const { model, Schema } = require("mongoose");
-const lengthChecker = require("../../lengthChecker");
+const { model, Schema } = require('mongoose');
 
 const userSchema = new Schema({
     _id: { // Encrypted
         type: String,
-        required: true
+        required: true,
     },
 
     email: { // Encrypted
@@ -32,13 +31,13 @@ const userSchema = new Schema({
     username: { // Encrypted
         type: String,
         required: true,
-        default: "Ghost",
+        default: 'Ghost',
     },
 
     tag: {
         type: String,
         required: true,
-        default: "0000",
+        default: '0000',
     },
 
     avatar_url: {
@@ -53,7 +52,7 @@ const userSchema = new Schema({
 
     phone_number: { // Encrypted
         type: String,
-        required: false
+        required: false,
     },
 
     created_date: {
@@ -69,7 +68,7 @@ const userSchema = new Schema({
 
     two_fa: {
         type: Boolean,
-        required: false
+        required: false,
     },
 
     two_fa_verified: {
@@ -79,7 +78,7 @@ const userSchema = new Schema({
 
     twofa_secret: { // Encrypted
         type: String,
-        required: false
+        required: false,
     },
 
     ip_verify: {
@@ -95,7 +94,7 @@ const userSchema = new Schema({
     ips: { // Encrypted
         type: Array,
         required: false,
-        index: "ips"
+        index: 'ips',
     },
 
     flags: {
@@ -106,29 +105,29 @@ const userSchema = new Schema({
     badges: {
         type: Number,
         required: false,
-        default: 0
+        default: 0,
     },
 
     guilds: [{
         type: String,
-        ref: "guilds",
+        ref: 'guilds',
     }],
 
     dms: [{
         type: String,
         required: false,
-        ref: "dms"
+        ref: 'dms',
     }],
 
     groupchats: [{
         type: String,
         required: false,
-        ref: "groupchats"
+        ref: 'groupchats',
     }],
 
     bots: [{
         type: String,
-        ref: "users"
+        ref: 'users',
     }],
 
     banned: {
@@ -158,8 +157,8 @@ const userSchema = new Schema({
 
     bot: {
         type: Boolean,
-        required: false
-    }
+        required: false,
+    },
 });
 
-module.exports = model("users", userSchema);
+module.exports = model('users', userSchema);

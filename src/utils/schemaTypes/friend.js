@@ -1,8 +1,8 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
@@ -16,26 +16,26 @@ const friend = {
     type: Object,
     data: {
         sender: {
-            name: "sender",
+            name: 'sender',
             extended: true,
-            extends: "friendUser"
+            extends: 'friendUser',
         },
         receiver: {
-            name: "receiver",
+            name: 'receiver',
             extended: true,
-            extends: "friendUser"
+            extends: 'friendUser',
         },
         nickname: {
-            name: "nickname",
+            name: 'nickname',
             expected: String,
-            default: null
+            default: null,
         },
         accepted: {
-            name: "accepted",
+            name: 'accepted',
             expected: Boolean,
-            default: false
-        }
-    }
-}
+            default: false,
+        },
+    },
+};
 
-module.exports = friend
+module.exports = friend;

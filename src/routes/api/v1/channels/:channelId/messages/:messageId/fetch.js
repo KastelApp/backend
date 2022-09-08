@@ -1,13 +1,13 @@
-const Route = require("../../../../../../../utils/classes/Route")
-const userMiddleware = require("../../../../../../../utils/middleware/user")
+const Route = require('../../../../../../../utils/classes/Route');
+const userMiddleware = require('../../../../../../../utils/middleware/user');
 
-new Route(__dirname, "/fetch", "GET", [userMiddleware({
+new Route(__dirname, '/fetch', 'GET', [userMiddleware({
     login: {
         loginRequired: true,
-    }
+    },
 })], async (req, res) => {
     /**
      * @type {{channelId: String, messageId: String}}
      */
-    const { channelId, messageId } = req.params
-})
+    const { channelId, messageId } = req.params;
+});

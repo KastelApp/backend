@@ -1,16 +1,16 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
  * GPL 3.0 Licensed
  */
 
-const redis = require("redis");
-const { config } = require("../../config");
+const redis = require('redis');
+const { config } = require('../../config');
 
 /**
  * @type {import('redis').RedisClientType}
@@ -36,16 +36,16 @@ class Redis {
                 database: config.Redis.db,
             });
 
-            redisClient.on("ready", () => resolve(redisClient));
-            redisClient.on("error", (e) => reject(e));
+            redisClient.on('ready', () => resolve(redisClient));
+            redisClient.on('error', (e) => reject(e));
 
             redisClient.connect();
-        })
+        });
     }
 
     /**
      * Set a key in the redis client
-     * @param {String} key The key to set 
+     * @param {String} key The key to set
      * @param {String} item The item to set
      * @returns {Promise<"OK">}
      */
@@ -53,16 +53,16 @@ class Redis {
         Redis.clientCheck(true);
 
         return new Promise((resolve, reject) => {
-            if (!item) reject("No item provided");
-            if (typeof item == "object") item = JSON.stringify(item);
+            if (!item) reject('No item provided');
+            if (typeof item == 'object') item = JSON.stringify(item);
 
-            redisClient.set(key, item).then((v) => resolve(v)).catch((e) => reject(e))
+            redisClient.set(key, item).then((v) => resolve(v)).catch((e) => reject(e));
         });
     }
 
     /**
      * Gets a key from the database and returns it
-     * @param {String} key 
+     * @param {String} key
      * @returns {Promise<String>}
      */
     static get(key) {
@@ -73,7 +73,7 @@ class Redis {
 
     /**
      * Gets a json key from the database and returns it
-     * @param {String} key 
+     * @param {String} key
      * @returns {Promise<String>}
      */
     static jsonGet(key) {
@@ -84,7 +84,7 @@ class Redis {
 
     /**
      * Set a key in the redis client
-     * @param {String} key The key to set 
+     * @param {String} key The key to set
      * @param {Object} item The item to set
      * @returns {Promise<"OK">}
      */
@@ -92,24 +92,15 @@ class Redis {
         Redis.clientCheck(true);
 
         return new Promise((resolve, reject) => {
-            if (!item) reject("No item provided");
+            if (!item) reject('No item provided');
 
-            redisClient.json.set(key, "$", item).then((v) => resolve(v)).catch((e) => reject(e))
+            redisClient.json.set(key, '$', item).then((v) => resolve(v)).catch((e) => reject(e));
         });
     }
 
-
-    // N/A, Not Finished.
-    static search() {
-        Redis.clientCheck(true);
-
-        return new Promise((resolve, reject) => {})
-    }
-
-
     /**
      * Deletes a key from the database
-     * @param {String} key 
+     * @param {String} key
      * @returns {Promise<Boolean>}
      */
     static delete(key) {
@@ -129,12 +120,12 @@ class Redis {
 
     /**
      * @private
-     * @param {Boolean} boolean if boolean is true then it will throw a error if redisClient is null or will do nothing if its the redis client 
+     * @param {Boolean} boolean if boolean is true then it will throw a error if redisClient is null or will do nothing if its the redis client
      */
     static clientCheck(boolean) {
-        if (!redisClient && boolean == true) throw new Error("Please create the client.");
+        if (!redisClient && boolean == true) throw new Error('Please create the client.');
 
-        if (redisClient && boolean == false) throw new Error("The client is already created.");
+        if (redisClient && boolean == false) throw new Error('The client is already created.');
     }
 
     /**
@@ -145,4 +136,4 @@ class Redis {
     }
 }
 
-module.exports = Redis
+module.exports = Redis;

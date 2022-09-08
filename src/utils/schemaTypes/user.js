@@ -1,8 +1,8 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
@@ -16,61 +16,61 @@ const user = {
     type: Object,
     data: {
         id: {
-            name: "_id",
+            name: '_id',
             expected: String,
-            default: null
+            default: null,
         },
         email: {
-            name: "email",
+            name: 'email',
             expected: String,
-            default: null
+            default: null,
         },
         username: {
-            name: "username",
+            name: 'username',
             expected: String,
-            default: "Unknown Username"
+            default: 'Unknown Username',
         },
         tag: {
-            name: "tag",
+            name: 'tag',
             expected: String,
-            default: "0000"
+            default: '0000',
         },
         creation_date: {
-            name: "created_date",
+            name: 'created_date',
             expected: Date,
-            default: Date.now()
+            default: Date.now(),
         },
         two_fa: {
-            name: "two_fa",
+            name: 'two_fa',
             expected: Boolean,
-            default: false
+            default: false,
         },
         two_fa_verified: {
-            name: "two_fa_verified",
+            name: 'two_fa_verified',
             expected: Boolean,
-            default: false
+            default: false,
         },
         ip_verify: {
-            name: "ip_verify",
+            name: 'ip_verify',
             expected: Boolean,
-            default: false
+            default: false,
         },
         ip_lock: {
-            name: "ip_lock",
+            name: 'ip_lock',
             expected: Boolean,
-            default: false
+            default: false,
         },
         badges: {
-            name: "badges",
+            name: 'badges',
             expected: Number,
-            default: 0
+            default: 0,
         },
         flags: {
-            name: "flags",
+            name: 'flags',
             expected: Number,
-            default: 0
-        }
-    }
-}
+            default: 0,
+        },
+    },
+};
 
-module.exports = user
+module.exports = user;

@@ -1,26 +1,26 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
  * GPL 3.0 Licensed
  */
 
-const { model, Schema } = require("mongoose");
+const { model, Schema } = require('mongoose');
 
 const giftSchema = new Schema({
     _id: { // The gift token/id
         type: String,
-        required: true
+        required: true,
     },
 
     user: {
         type: String,
         required: true,
-        ref: "users",
+        ref: 'users',
     },
 
     type: {
@@ -41,8 +41,8 @@ const giftSchema = new Schema({
     used_by: {
         type: String,
         required: true,
-        ref: "users"
-    }
+        ref: 'users',
+    },
 });
 
-module.exports = model("gifts", giftSchema);
+module.exports = model('gifts', giftSchema);

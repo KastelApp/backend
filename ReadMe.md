@@ -36,13 +36,10 @@ Kastel Is a Chatting App like <a href="https://discord.com">Discord</a> & <a hre
 ### Route Related
 - [x] API Endpoints for Creating Accounts, Updating Accounts, Deleting Accounts ETC
 - [x] Route Handler/Loader (Loads Routes, Set Routes ETC.)
-### CLI Related
-- [ ] User creation from CLI
-    - Useful for creating the first account
 
 # Credits
 
-[Robin][robin-github] - For Helping with the Schemas & giving tips about Schemas.
+[Robin][robin-github] - For Helping with the Schemas & giving tips about them.
 
 # Contributing
 

@@ -10,10 +10,10 @@
 /**
  * @typedef {Object} Schema
  * @property {ObjectConstructor|ArrayConstructor} type The Type the Schema is
- * @property {{[key: string]: SchemaDataOptions}} data The Data that the schema should be expecting 
+ * @property {{[key: string]: SchemaDataOptions}} data The Data that the schema should be expecting
  */
 
 /**
  * @type {Schema}
  */
-module.exports = {}
+module.exports = {};

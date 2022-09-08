@@ -1,15 +1,15 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
  * GPL 3.0 Licensed
  */
 
-const { model, Schema } = require("mongoose");
+const { model, Schema } = require('mongoose');
 
 const dmSchema = new Schema({
     _id: {
@@ -20,14 +20,14 @@ const dmSchema = new Schema({
     creator: { // First User
         type: String,
         required: true,
-        ref: "users",
+        ref: 'users',
     },
 
     receiver: { // Second User
         type: String,
         required: true,
-        ref: "users"
-    }
+        ref: 'users',
+    },
 });
 
-module.exports = model("dm", dmSchema);
+module.exports = model('dm', dmSchema);

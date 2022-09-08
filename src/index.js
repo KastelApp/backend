@@ -83,6 +83,7 @@ app.all('*', (req, res) => {
             code: 'PATH_DOESNT_EXIST',
             message: 'The path you have requested does not exist.',
         }],
+        responses: [],
     });
 
     return;

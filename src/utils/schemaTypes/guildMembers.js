@@ -1,8 +1,8 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
@@ -16,26 +16,26 @@ const guildMembers = {
     type: Array,
     data: {
         id: {
-            name: "_id",
+            name: '_id',
             expected: String,
-            default: null
+            default: null,
         },
         user: {
-            name: "user",
+            name: 'user',
             extended: true,
-            extends: "friendUser"
+            extends: 'friendUser',
         },
         roles: {
-            name: "roles",
+            name: 'roles',
             extended: true,
-            extends: "roles"
+            extends: 'roles',
         },
         nickname: {
-            name: "nickname",
+            name: 'nickname',
             expected: String,
-            default: null
-        }
-    }
-}
+            default: null,
+        },
+    },
+};
 
-module.exports = guildMembers
+module.exports = guildMembers;

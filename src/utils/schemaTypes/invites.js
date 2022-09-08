@@ -1,8 +1,8 @@
-/*! 
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
@@ -16,36 +16,36 @@ const invites = {
     type: Array,
     data: {
         id: {
-            name: "_id",
+            name: '_id',
             expected: String,
-            default: null
+            default: null,
         },
         expires: {
-            name: "expires",
+            name: 'expires',
             expected: Date,
-            default: null
+            default: null,
         },
         uses: {
-            name: "uses",
+            name: 'uses',
             expected: Number,
-            default: 0
+            default: 0,
         },
         max_uses: {
-            name: "max_uses",
+            name: 'max_uses',
             expected: Number,
-            default: null
+            default: null,
         },
         creator: {
-            name: "creator",
+            name: 'creator',
             extended: true,
-            extends: "guildMember"
+            extends: 'guildMember',
         },
         deleteable: {
-            name: "deleteable",
+            name: 'deleteable',
             expected: Boolean,
-            default: true
-        }
-    }
-}
+            default: true,
+        },
+    },
+};
 
-module.exports = invites
+module.exports = invites;

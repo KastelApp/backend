@@ -1,60 +1,60 @@
 /**
  * @type {Config}
  */
- module.exports.config = this
+ module.exports.config = this;
 
  /**
   * @type {Server}
   */
  module.exports.Server = {
      port: 62250,
-     cookieSecrets: ["cs5x6jmJ8U3WJ31eWWyg9Kch1UNFzYhd"],
-     domain: "kastelapp.org",
-     workerId: 1
- }
- 
+     cookieSecrets: ['cs5x6jmJ8U3WJ31eWWyg9Kch1UNFzYhd'],
+     domain: 'kastelapp.org',
+     workerId: 1,
+ };
+
  /**
   * @type {Encryption}
   */
  module.exports.Encryption = {
-     algorithm: "aes-256-cbc",
-     initVector: "*&1a1oxm&y%bfcco",
-     securityKey: "csimhui!55gsiw7x21g@9m#x2nfp8@ct",
-     jwtKey: "tvi7#te-y#u2u4xtdzc1owe83fh2*7i^j1q9w9nkf&2hkq`pdzdarkersuxyn8y5joa$ts^6e-$g#2hjk&w@tgurj@in3w1flvk",
- }
- 
+     algorithm: 'aes-256-cbc',
+     initVector: '*&1a1oxm&y%bfcco',
+     securityKey: 'csimhui!55gsiw7x21g@9m#x2nfp8@ct',
+     jwtKey: 'tvi7#te-y#u2u4xtdzc1owe83fh2*7i^j1q9w9nkf&2hkq`pdzdarkersuxyn8y5joa$ts^6e-$g#2hjk&w@tgurj@in3w1flvk',
+ };
+
  /**
   * @type {Ws}
   */
  module.exports.Ws = {
-     url: "wss://ws.kastelapp.org",
-     user: "Kastel-Worker-0",
-     password: ""
- }
- 
+     url: 'wss://ws.kastelapp.org',
+     user: 'Kastel-Worker-0',
+     password: '',
+ };
+
  /**
   * @type {Redis}
   */
  module.exports.Redis = {
-     host: "127.0.0.1",
-     port: "6379",
-     password: "",
-     db: ""
- }
- 
+     host: '127.0.0.1',
+     port: '6379',
+     password: '',
+     db: '',
+ };
+
  /**
   * @type {MongoDB}
   */
  module.exports.MongoDB = {
-     user: "",
-     host: "127.0.0.1",
-     port: "27017",
-     password: "",
-     database: "",
-     authSource: "",
-     uri: "mongodb://127.0.0.1:27017/kastel"
- }
- 
+     user: '',
+     host: '127.0.0.1',
+     port: '27017',
+     password: '',
+     database: '',
+     authSource: '',
+     uri: 'mongodb://127.0.0.1:27017/kastel',
+ };
+
  /**
   * @type {Logger}
   */
@@ -62,15 +62,15 @@
      loggerEnabled: false,
      timeStartUp: true,
      saveInFiles: true,
-     path: "./logs",
-     format: "[{DATE} {TYPE}] {MESSAGE}",
+     path: './logs',
+     format: '[{DATE} {TYPE}] {MESSAGE}',
      color: true,
      logRoutes: false,
      logLogo: true,
      logErrors: false,
      logInfo: true,
- }
- 
+ };
+
  /**
   * @type {Snowflake}
   */
@@ -80,17 +80,17 @@
      datacenterId: 1,
      workerId_Bytes: 6,
      datacenterId_Bytes: 5,
-     sequence_Bytes: 12
- }
- 
+     sequence_Bytes: 12,
+ };
+
  /**
   * @type {Misc}
   */
  module.exports.Misc = {
      // Do Not Touch Please (o.o)
-     kas_version: 0.3
- }
- 
+     kas_version: 0.3,
+ };
+
  /**
   * @typedef {Object} Server
   * @property {number|string} [port=62250] The port the server will run on
@@ -98,7 +98,7 @@
   * @property {string} domain The main domain of the server
   * @property {number} [workerId=0] The Worker ID
   */
- 
+
  /**
   * @typedef {Object} Encryption
   * @property {string} [algorithm=aes-256-cbc]
@@ -106,14 +106,14 @@
   * @property {string} securityKey
   * @property {string} jwtKey
   */
- 
+
  /**
   * @typedef {Object} Ws
   * @property {string} url The Url to connect to the WS Server **include ws:\/\/ or wss:\/\/**
   * @property {string} user The user you will be connecting as
   * @property {string} password The password to verify the user
   */
- 
+
  /**
   * @typedef {Object} Redis
   * @property {string} host
@@ -121,7 +121,7 @@
   * @property {string} [password]
   * @property {number|string} db
   */
- 
+
  /**
   * @typedef {Object} MongoDB
   * @property {string} user
@@ -132,7 +132,7 @@
   * @property {string} authSource
   * @property {string} uri
   */
- 
+
  /**
   * @typedef {Object} Logger
   * @property {Boolean} loggerEnabled If the logger is enabled (Important stuff will still be logged)
@@ -146,7 +146,7 @@
   * @property {Boolean} logErrors If you want to catch errors or just have nodejs handle it
   * @property {Boolean} logInfo If you want some useful info logged in the console when the server is started up
   */
- 
+
  /**
   * @typedef {Object} Snowflake
   * @property {number} [epoch=1641016800000]
@@ -156,12 +156,12 @@
   * @property {number} [datacenterId_Bytes=5]
   * @property {number} [sequence_Bytes=12]
   */
- 
+
  /**
   * @typedef {Object} Misc
   * @property {Number} kas_version The version Kastel is running
   */
- 
+
  /**
   * @typedef {Object} Config
   * @property {Server} Server
