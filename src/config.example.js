@@ -84,14 +84,6 @@
  };
 
  /**
-  * @type {Misc}
-  */
- module.exports.Misc = {
-     // Do Not Touch Please (o.o)
-     kas_version: 0.3,
- };
-
- /**
   * @typedef {Object} Server
   * @property {number|string} [port=62250] The port the server will run on
   * @property {string[]} cookieSecrets The secrets for cookies (First one is to sign the rest are to verify)
@@ -158,11 +150,6 @@
   */
 
  /**
-  * @typedef {Object} Misc
-  * @property {Number} kas_version The version Kastel is running
-  */
-
- /**
   * @typedef {Object} Config
   * @property {Server} Server
   * @property {Encryption} Encryption
@@ -171,5 +158,4 @@
   * @property {MongoDB} MongoDB
   * @property {Logger} Logger
   * @property {Snowflake} Snowflake
-  * @property {Misc} Misc
   */

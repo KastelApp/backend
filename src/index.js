@@ -27,7 +27,7 @@ if (config.Logger.logLogo) {
 ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
 ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
 A Chatting Application
-Running version ${config.Misc.kas_version ? `v${config.Misc.kas_version}` : 'Unknown version'} of Kastel's Backend. Node.js version ${process.version}\n`));
+Running version ${config.Constants.version ? `v${config.Constants.version}` : 'Unknown version'} of Kastel's Backend. Node.js version ${process.version}\n`));
 }
 
 /* Express Imports */
@@ -107,6 +107,6 @@ app.listen((config.Server.port || 62250), async () => {
         process.exit();
     });
 
-    if (config.Logger.logInfo) logger.important.info(`${config.Logger.timeStartUp ? `Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(2)}s to Start Up, ` : ''}Loaded ${routeLoader.length} Routes, Running Version ${config.Misc.kas_version ? `v${config.Misc.kas_version}` : 'Unknown version'}`);
+    if (config.Logger.logInfo) logger.important.info(`${config.Logger.timeStartUp ? `Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(2)}s to Start Up, ` : ''}Loaded ${routeLoader.length} Routes, Running Version ${config.Constants.version ? `v${config.Constants.version}` : 'Unknown version'}`);
     if (!config.Logger.logInfo && config.Logger.timeStartUp) logger.important.info(`Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(3)}s to Start Up`);
 });

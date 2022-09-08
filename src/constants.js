@@ -70,3 +70,5 @@ module.exports.FLAGS = {
     FRIEND_BAN: 1 << 13,
     GROUPCHAT_BAN: 1 << 14,
 };
+
+module.exports.version = require('../package.json').version;
