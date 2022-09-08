@@ -26,7 +26,11 @@ class encryption {
         try {
             const cipher = crypto.createCipheriv(algorithm, securityKey, initVector);
 
-            return cipher.update(encryption.fixData(data), "utf-8", "hex") + cipher.final("hex");
+            const dd = {
+                data
+            }
+
+            return cipher.update(encryption.fixData(dd), "utf-8", "hex") + cipher.final("hex");
         } catch (er) {
             throw new Error(`Failed to encrypt\n${er}`)
         }
@@ -37,12 +41,15 @@ class encryption {
      * @param {String} data
      * @returns {*} the decrypted data
      */
-    static decrypt(data) {
+    static decrypt(data, raw = false) {
         try {
             const decipher = crypto.createDecipheriv(algorithm, securityKey, initVector);
             const decrypted = decipher.update(data, "hex", "utf-8") + decipher.final("utf8");
+            const cleaned = encryption.cleanData(decrypted)
 
-            return encryption.cleanData(decrypted);
+            if (raw) return cleaned
+
+            return cleaned.data
         } catch (er) {
             throw new Error(`Failed to decrypt (${er.message})`)
         }
@@ -69,11 +76,9 @@ class encryption {
     static fixData(data) {
         if (typeof data == "object") data = JSON.stringify(data);
 
-        if (typeof data == "number") data = String(data);
-
         if (typeof data == "undefined") data = "";
 
-        if (typeof data !== "string") String(data);
+        if (typeof data !== "string") data = String(data);
 
         if (typeof data !== "string") throw new Error(`Failed to stringify data ${typeof data}, ${data}`)
 
@@ -97,9 +102,9 @@ class encryption {
      * @param {*} items
      * @return {items} 
      */
-    static completeDecryption(items) {
-        const decrypt = encryption.decrypt;
-        const completeDecrypt = encryption.completeDecryption;
+    static completeDecryption(items, raw = false) {
+        const decrypt = (item) => encryption.decrypt(item, raw);
+        const completeDecrypt = (item) => encryption.completeDecryption(item, raw);
         const isEncrypted = encryption.isEncrypted;
 
         if (typeof items == "string") {

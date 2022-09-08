@@ -67,8 +67,8 @@ const user = {
         },
         flags: {
             name: "flags",
-            expected: Array,
-            default: []
+            expected: Number,
+            default: 0
         }
     }
 }

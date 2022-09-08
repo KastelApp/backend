@@ -24,6 +24,9 @@ const { Snowflake: snow } = require("../../config");
  * @property {BigInt} timeShift
  */
 
+/**
+ * @type {SnowflakeSettings}
+ */
 const settings = {
     epoch: BigInt(new Date(Number((snow.epoch || 1641016800000))).getTime()),
     start: BigInt(Date.now()),

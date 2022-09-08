@@ -58,21 +58,6 @@ module.exports.CHANNEL_TYPES = {
 
 // Unlike badges flags will actually let you do more stuff or restirct you for doing stuff
 module.exports.FLAGS = {
-    BETA_TESTER: "BETA_TESTER",
-    STAFF: "STAFF",
-    BOT: "BOT",
-    VERIFIED_BOT: "VERIFIED_BOT",
-    SYSTEM: "SYSTEM",
-    GHOST: "GHOST",
-    SPAMMER: "SPAMMER",
-    TOS: "BROKE_TOS",
-    GUILD_BAN: "CREATING_GUILDS_BAN",
-    FRIEND_BAN: "ADDING_FRIENDS_BAN",
-    GROUPCHAT_BAN: "CREATING_GROUP_CHATS_BAN"
-}
-
-// Will be used soon
-module.exports.BIT_FLAGS = {
     GHOST: 1 << 0,
     SYSTEM: 1 << 1,
     STAFF: 1 << 2,

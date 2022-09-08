@@ -38,10 +38,11 @@ const bodyParser = require("body-parser");
 
 /* Util Imports */
 const redis = require("./utils/classes/redis");
-const routeHandler = require("./utils/routeHandler");
+const routeLoader = require("./utils/routeHandler")()
 const uriGenerator = require("./utils/uriGenerator");
 const logger = require("./utils/classes/logger");
 const fs = require("node:fs");
+const Route = require("./utils/classes/Route")
 require("./utils/classes/snowflake"); // Imported so settings are setup
 
 /* Express Middleware stuff */
@@ -53,6 +54,9 @@ app.use(cors())
     .use(bodyParser.raw())
     .use(cookieParser(config.Server.cookieSecrets))
     .disable("x-powered-by");
+
+
+Route.setRoutes(app)
 
 /* Error Handling */
 if (config.Logger.logErrors) {
@@ -71,10 +75,6 @@ app.use((req, res, next) => {
 
     next();
 })
-
-const routes = routeHandler(app) // The route handler (Everything below comes after, Put routes above for them to come first)
-
-require("./test")(app);
 
 /* If the path does not exist */
 app.all("*", (req, res) => {
@@ -109,6 +109,6 @@ app.listen((config.Server.port || 62250), async () => {
         process.exit();
     });
 
-    if (config.Logger.logInfo) logger.important.info(`${config.Logger.timeStartUp ? `Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(2)}s to Start Up, ` : ""}Loaded ${routes.length} Routes, Running Version ${config.Misc.kas_version ? `v${config.Misc.kas_version}` : "Unknown version"}`)
+    if (config.Logger.logInfo) logger.important.info(`${config.Logger.timeStartUp ? `Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(2)}s to Start Up, ` : ""}Loaded ${routeLoader.length} Routes, Running Version ${config.Misc.kas_version ? `v${config.Misc.kas_version}` : "Unknown version"}`)
     if (!config.Logger.logInfo && config.Logger.timeStartUp) logger.important.info(`Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(3)}s to Start Up`)
 })

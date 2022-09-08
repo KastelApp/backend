@@ -4,7 +4,7 @@
  */
 
 'use strict';
-const { BIT_FLAGS } = require('../../../constants');
+const { FLAGS } = require('../../../constants');
 const BitField = require('./BitField');
 
 /**
@@ -41,6 +41,6 @@ class UserFlags extends BitField {}
  * * `CREATING_GROUP_CHATS_BAN`
  * @type {Object}
  */
-UserFlags.BITFIELDS = BIT_FLAGS;
+UserFlags.BITFIELDS = FLAGS;
 
 module.exports = UserFlags;

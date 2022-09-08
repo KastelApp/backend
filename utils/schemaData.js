@@ -64,7 +64,10 @@ const schemaData = (type, data) => {
                     const tpData = tp.data[item2]
                     if (tpData.name == key) {
                         const gotItem = item[key]
-                        const arewethere = (Object.keys(tp.data).filter((x) => tp.data[x].name == key)[0] || key)
+                        const arewethere = (Object.keys(tp.data).find((x) => tp.data[x].name == key) || key)
+
+                        console.log(arewethere)
+
                         if (!tpData.extended) {
                             if (!(typeof gotItem == ((tpData.expected.name).toLowerCase())) && !(gotItem instanceof tpData.expected)) newObject[arewethere] = tpData.default
                             else newObject[arewethere] = gotItem
@@ -75,6 +78,10 @@ const schemaData = (type, data) => {
             }
             newArray.push(newObject)
         }
+
+        // turn the for loop above into more simple
+        
+
         return newArray
     }
 }

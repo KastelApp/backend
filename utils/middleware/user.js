@@ -9,6 +9,7 @@
  * GPL 3.0 Licensed
  */
 
+const UserFlags = require("../classes/BitFields/flags");
 const { encrypt } = require("../classes/encryption");
 const logger = require("../classes/logger")
 const token = require("../classes/token");
@@ -151,8 +152,9 @@ const user = (options = {
             }
 
             for (const flag of options.flags) {
+                const usersFlags = new UserFlags((usr.flags || 0))
 
-                if (flag.required && !usr.flags.includes(flag.flag)) {
+                if (flag.required && !usersFlags.has(flag.flag)) {
                     res.status(401).send({
                         code: 401,
                         errors: [{
@@ -164,7 +166,7 @@ const user = (options = {
                     return;
                 }
 
-                if (!flag.allowed && usr.flags.includes(flag.flag)) {
+                if (!flag.allowed && usersFlags.has(flag.flag)) {
                     res.status(403).send({
                         code: 403,
                         errors: [{
@@ -216,7 +218,7 @@ const user = (options = {
 
 /**
  * @typedef {Object} FlagOptions
- * @property {String} flag
+ * @property {Number} flag
  * @property {Boolean} required
  * @property {Boolean} allowed
  */

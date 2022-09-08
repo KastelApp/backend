@@ -21,20 +21,16 @@ const tagGenerator = require("../../../utils/tagGenerator")
 const { important } = require("../../../utils/classes/logger")
 const { encrypt } = require("../../../utils/classes/encryption")
 const user = require("../../../utils/middleware/user")
+const Route = require("../../../utils/classes/Route")
 
-
-module.exports = {
-    path: "/register",
-    method: "post",
-    middleWare: [user({
+new Route(__dirname, "/register", "POST", [user({
         login: {
             loginRequired: false,
             loginAllowed: false,
             loggedOutAllowed: true
         }
     })],
-
-    run: async (req, res) => {
+    async (req, res) => {
         try {
 
             /**
@@ -48,19 +44,19 @@ module.exports = {
                     errors: [!username ? {
                         code: "MISSING_USERNAME",
                         message: "No username provided"
-                } : null, !email ? {
+            } : null, !email ? {
                         code: "MISSING_EMAIL",
                         message: "No email provided."
-                } : null, !password ? {
+            } : null, !password ? {
                         code: "MISSING_PASSWORD",
                         message: "No Password provided"
-                } : null, !date_of_birth ? {
+            } : null, !date_of_birth ? {
                         code: "MISSING_DATE_OF_BIRTH",
                         message: "No Date of birth provided"
-         } : new Date(date_of_birth) == "Invalid Date" ? {
+     } : new Date(date_of_birth) == "Invalid Date" ? {
                         code: "INVALID_DATE_OF_BIRTH",
                         message: "The provided Date of Birth is Invalid"
-            } : null].filter((x) => x !== null)
+        } : null].filter((x) => x !== null)
                 });
 
                 return;
@@ -86,13 +82,13 @@ module.exports = {
                     errors: [checks.age ? null : {
                         code: "TOO_YOUNG",
                         message: "The age provided is under 13. Kastel is a 13+ only application."
-                }, checks.email ? {
+            }, checks.email ? {
                         code: "EMAIL_IN_USE",
                         message: "The email that was provided is already in use."
-                } : null, checks.usernameslength ? {
+            } : null, checks.usernameslength ? {
                         code: "MAX_USERNAMES",
                         message: `Max amount of '${username}' usernames`
-                } : null].filter((x) => x !== null)
+            } : null].filter((x) => x !== null)
                 })
 
                 return;
@@ -108,7 +104,7 @@ module.exports = {
                     errors: [{
                         code: "TRY_AGAIN",
                         message: "Please try again"
-                    }],
+                }],
                 });
 
                 if (!tag) {
@@ -117,7 +113,7 @@ module.exports = {
                         errors: [{
                             code: "NO_TAGS",
                             message: "Sorry, No tags were able to be made for this username. Please try again."
-                        }],
+                    }],
                     });
 
                     return;
@@ -133,7 +129,7 @@ module.exports = {
                 created_date: Date.now(),
                 date_of_birth: encrypt(Number(new Date(date_of_birth))),
                 ips: [encrypt(req.clientIp)],
-                flags: [checks.isBetaTester ? FLAGS.BETA_TESTER : null].filter((x) => x !== null),
+                flags: FLAGS.BETA_TESTER,
                 guilds: [],
                 dms: [],
                 groupChats: [],
@@ -172,7 +168,7 @@ module.exports = {
                 responses: [{
                     code: "ACCOUNT_CREATED",
                     message: "Account created."
-                }],
+            }],
             });
 
         } catch (err) {
@@ -183,10 +179,10 @@ module.exports = {
                 errors: [{
                     code: "ERROR",
                     message: `There was an Error, Please contact Support.`
-                }],
+            }],
             });
 
             return;
         }
-    },
-}
+    }
+)

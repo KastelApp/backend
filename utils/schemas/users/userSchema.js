@@ -99,7 +99,7 @@ const userSchema = new Schema({
     },
 
     flags: {
-        type: Array,
+        type: Number,
         required: false,
     },
 

@@ -17,19 +17,16 @@ const { important } = require("../../../utils/classes/logger");
 const user = require("../../../utils/middleware/user");
 const logger = require("../../../utils/classes/logger");
 const speakeasy = require('speakeasy');
+const Route = require("../../../utils/classes/Route");
 
-module.exports = {
-    path: "/login",
-    method: "post",
-    middleWare: [user({
+new Route(__dirname, "/login", "POST", [user({
         login: {
             loginRequired: false,
             loginAllowed: false,
             loggedOutAllowed: true
         }
     })],
-
-    run: async (req, res, next) => {
+    async (req, res) => {
         try {
             /**
              * @type {{email: String, password: String, twofa: String}} 
@@ -83,7 +80,9 @@ module.exports = {
                     errors: [{
                         code: "ACCOUNT_BANNED",
                         message: "The account you are trying to login to is currently banned",
-                        reason: usr?.ban_reason ?? "N/A"
+                        data: {
+                            reason: usr?.ban_reason ?? "N/A"
+                        }
                     }]
                 })
 
@@ -91,7 +90,6 @@ module.exports = {
             }
 
             if (usr.two_fa) {
-
                 if (!usr.two_fa_verified) {
                     res.status(403).send({
                         code: 403,
@@ -153,6 +151,7 @@ module.exports = {
             if (!usr.password) {
                 res.send({
                     code: 200,
+                    errors: [],
                     responses: [{
                         code: "RESET_PASSWORD",
                         message: "The account you are trying to login to has no password, This could be due to staff removing it (For a hacked account etc). Please reset the password to continue"
@@ -224,5 +223,6 @@ module.exports = {
             })
 
         }
-    },
-}
+
+    }
+)

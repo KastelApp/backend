@@ -13,28 +13,14 @@ const user = require("../../../../../utils/middleware/user");
 const schemaData = require("../../../../../utils/schemaData");
 const { encrypt, completeDecryption } = require("../../../../../utils/classes/encryption");
 const { friendSchema, userSchema } = require("../../../../../utils/schemas/schemas");
+const Route = require("../../../../../utils/classes/Route");
 
-/**
- * @typedef {Object} ExportObject
- * @property {String} path The path the user will access the run function at
- * @property {'get'|'GET'|'delete'|'DELETE'|'head'|'HEAD'|'options'|'OPTIONS'|'post'|'POST'|'put'|'PUT'|'patch'|'PATCH'|'purge'|'PURGE'} [method] The method the user requires
- * @property {('get'|'GET'|'delete'|'DELETE'|'head'|'HEAD'|'options'|'OPTIONS'|'post'|'POST'|'put'|'PUT'|'patch'|'PATCH'|'purge'|'PURGE')[]} [methods] The method the user requires
- * @property {Function[]} middleWare The middleware functions
- * @property {(req: import('express').Request, res: import('express').Response, next: import('express').NextFunction) => {}} run The Req, Res and Next Functions 
- */
-
-/**
- * @type {ExportObject}
- */
-module.exports = {
-    path: "/",
-    method: "get",
-    middleWare: [user({
+new Route(__dirname, "/", "GET", [user({
         login: {
             loginRequired: true,
         },
     })],
-    run: async (req, res, next) => {
+    async (req, res) => {
         const usr = await userSchema.findById(encrypt(req?.user?.id));
 
         if (!usr) {
@@ -44,7 +30,7 @@ module.exports = {
                 errors: [{
                     code: "ERROR",
                     message: "There was an error while trying to fetch your account. Please report this."
-                }],
+            }],
                 responses: []
             })
 
@@ -55,13 +41,13 @@ module.exports = {
         const newData = schemaData("user", decryptedData)
 
         let friendArray = [
-            ...(await friendSchema.find({
+        ...(await friendSchema.find({
                 sender: usr._id,
             })),
-            ...(await friendSchema.find({
+        ...(await friendSchema.find({
                 receiver: usr._id
             }))
-        ]
+    ]
 
         let friends = []
 
@@ -81,4 +67,4 @@ module.exports = {
             }
         })
     }
-}
+)

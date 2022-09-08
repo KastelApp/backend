@@ -16,7 +16,7 @@
 /**
  * @type {RouteItem[]}
  */
-const routes = []
+let routes = []
 const vaildMethods = ['get', 'delete', 'head', 'options', 'post', 'put', 'patch', 'purge', 'all']
 const pathToRegexp = require('path-to-regexp');
 
@@ -33,7 +33,7 @@ class Route {
      * @param {String} dir The DIR of the file
      * @param {String} route The route the user will access from 
      * @param {Methods} method The Method(s) the path accepts
-     * @param {RunCallBack[]|Function[]} middleware The middleware
+     * @param {RunCallBack|(RunCallBack|Function)[]} middleware The middleware
      * @param {RunCallBack} run The Req, Res and Next Functions 
      */
     constructor(dir, route, method, middleware, run) {
@@ -121,12 +121,9 @@ class Route {
      */
     cutter(filePath, exportPath) {
 
-        const splitPath = filePath.split("/routes").pop().split("/");
+        const splitPath = filePath.split("/routes").pop()
 
-        splitPath.shift();
-        splitPath.pop();
-
-        return splitPath.length >= 1 ? `/${splitPath.join("/")}${exportPath.startsWith("/") ? exportPath : "/" + exportPath}` : `${exportPath}`;
+        return `${splitPath}${exportPath.startsWith("/") ? exportPath : "/" + exportPath}`
     }
 
     /**
@@ -140,6 +137,7 @@ class Route {
         for (let i = 0; i < routes.length; i++) {
             const route = routes[i];
 
+
             if (Array.isArray(route.method)) {
                 for (let j = 0; i < route.method.length; i++)
                     app[(route.method[j].toLowerCase())](route.path, ...route.middleware, (...args) => route.run(...args))
@@ -148,11 +146,10 @@ class Route {
                 app[(route.method.toLowerCase())](route.path, ...route.middleware, (...args) => route.run(...args))
             }
         }
+
+        routes = null
     }
 
-    static get routes() {
-        return routes
-    }
 }
 
 /**
