@@ -78,7 +78,7 @@ const ratelimit = (options = {
                 return next();
             }
 
-            const userRateLimit = await cache.get('ratelimits:users', user.id);
+            const userRateLimit = await cache.get('ratelimits:users', user?.id);
             const ipRateLimit = await cache.get('ratelimits:ips', ip);
 
             res.setHeader('X-RateLimit-Limit', options.requests.max);
