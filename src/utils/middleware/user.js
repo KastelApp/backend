@@ -60,8 +60,8 @@ const user = (options = {
                 flags: [],
                 login: {
                     loginRequired: false,
-                    loginAllowed: true,
-                    loggedOutAllowed: true,
+                    loginAllowed: false,
+                    loggedOutAllowed: false,
                 },
             }, options);
 

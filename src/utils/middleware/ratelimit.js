@@ -201,7 +201,7 @@ const ratelimit = (options = {
                 /**
                  * @type {RateLimitObject[]}
                  */
-                const ipParsed = completeDecryption(JSON.parse(userRateLimit));
+                const ipParsed = completeDecryption(JSON.parse(ipRateLimit));
 
                 const routeData = ipParsed.find((v) => {
                     if (new RegExp(v.regex).test(req.path) && req.method.toLowerCase() == v.method) return true;
