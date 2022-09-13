@@ -59,9 +59,9 @@ const user = (options = {
                 }],
                 flags: [],
                 login: {
-                    loginRequired: false,
-                    loginAllowed: false,
-                    loggedOutAllowed: false,
+                    loginRequired: options?.login?.loginRequired ? true : false,
+                    loginAllowed: options?.login?.loginRequired ? true : false,
+                    loggedOutAllowed: options?.login?.loginRequired ? false : true,
                 },
             }, options);
 
