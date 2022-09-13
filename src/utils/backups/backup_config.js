@@ -9,6 +9,7 @@
  * GPL 3.0 Licensed
  */
 
+
 /**
  * @type {Config}
  */
@@ -23,8 +24,8 @@ module.exports.Server = {
     domain: 'kastelapp.org',
     workerId: 1,
     cache: {
-        clearInterval: 10800000, // three hours
-        clearOnStart: true,
+        clearInterval: 1000 * 60 * 60 * 6, // six hours
+        clearOnStart: false,
     },
 };
 
@@ -100,7 +101,7 @@ module.exports.Snowflake = {
     sequence_Bytes: 12,
 };
 
-module.exports.Constants = require('./backup_constants');
+module.exports.Constants = require('./constants');
 
 /**
  * @typedef {Object} Server

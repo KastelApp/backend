@@ -24,8 +24,8 @@ module.exports.Server = {
     domain: 'kastelapp.org',
     workerId: 1,
     cache: {
-        clearInterval: 10800000, // three hours
-        clearOnStart: true,
+        clearInterval: 1000 * 60 * 60 * 6, // six hours
+        clearOnStart: false,
     },
 };
 
