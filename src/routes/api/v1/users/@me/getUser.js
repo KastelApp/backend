@@ -14,10 +14,16 @@ const schemaData = require('../../../../../utils/schemaData');
 const { encrypt, completeDecryption } = require('../../../../../utils/classes/encryption');
 const { friendSchema, userSchema } = require('../../../../../utils/schemas/schemas');
 const Route = require('../../../../../utils/classes/Route');
+const ratelimit = require('../../../../../utils/middleware/ratelimit');
 
 new Route(__dirname, '/', 'GET', [user({
         login: {
             loginRequired: true,
+        },
+    }), ratelimit({
+        requests: {
+            max: 50,
+            reset: 1000 * 60 * 5,
         },
     })],
     async (req, res) => {
@@ -64,6 +70,7 @@ new Route(__dirname, '/', 'GET', [user({
             data: {
                 ...newData,
                 friends,
+                flags: null,
             },
         });
     },

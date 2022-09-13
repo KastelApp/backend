@@ -12,12 +12,12 @@
 /**
  * @typedef {Object} LengthOptions
  * @property {Number} length
- * @property {"less"|"more"|"equal"|"equals"|"LESS"|"MORE"|"EQUAL"|"EQUALS"|"==="|"=="|"=>"|"<="} type
+ * @property {'less'|'more'|'equal'|'equals'|'LESS'|'MORE'|'EQUAL'|'EQUALS'|'==='|'=='|'=>'|'<='} type
  */
 
 /**
  * Check the length of the item
- * @typedef {Function} lengthChecker
+ * @callback lengthChecker
  * @param {*} val The value to check the length of
  * @returns {Boolean} Returns an {@link Boolean} depending on the {@link LengthOptions}
  */

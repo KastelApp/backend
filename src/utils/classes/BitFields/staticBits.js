@@ -88,7 +88,7 @@ class Bits {
      * @returns {BitFieldResolvable}
      */
     static resolve(bitfields, bit) {
-        const defaultBit = 0;
+        const defaultBit = typeof bit == 'bigint' ? 0n : 0;
 
         if (typeof defaultBit === typeof bit && bit >= defaultBit) return bit;
 

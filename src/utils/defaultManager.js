@@ -15,7 +15,7 @@
  * Manages Defaults
  * @param {*} defaults
  * @param {*} provided
- * @returns {defaults ~ provided} The defaults and provided mixed
+ * @returns {*} The defaults and provided mixed
  */
 const defaultManager = (defaults, provided) => {
     if (typeof defaults == 'string') {
@@ -55,6 +55,9 @@ const defaultManager = (defaults, provided) => {
 
         return tempObject;
     }
+
+    if (!provided) return defaults;
+    else return provided;
 };
 
 module.exports = defaultManager;

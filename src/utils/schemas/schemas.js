@@ -7,6 +7,7 @@ const roleSchema = require('./guilds/roleSchema');
 const webhookSchema = require('./guilds/webhookSchema');
 const fileSchema = require('./misc/fileSchema');
 const messageSchema = require('./misc/messageSchema');
+const settingSchema = require('./misc/settingSchema');
 const dmSchema = require('./privateMessages/dmSchema');
 const groupchatSchema = require('./privateMessages/groupchatSchema');
 const friendSchema = require('./users/friendSchema');
@@ -28,4 +29,5 @@ module.exports = {
     friendSchema,
     giftSchema,
     userSchema,
+    settingSchema,
 };

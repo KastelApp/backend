@@ -10,13 +10,18 @@
  */
 
 /**
- * @type {import('./SchemaTypes').Schema}
+ * @type {import("../../..").Schema}
  */
 const user = {
     type: Array,
     data: {
         id: {
             name: '_id',
+            expected: String,
+            default: null,
+        },
+        avatar_hash: {
+            name: 'avatar_hash',
             expected: String,
             default: null,
         },
@@ -52,11 +57,6 @@ const user = {
         },
         ip_verify: {
             name: 'ip_verify',
-            expected: Boolean,
-            default: false,
-        },
-        ip_lock: {
-            name: 'ip_lock',
             expected: Boolean,
             default: false,
         },

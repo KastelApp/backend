@@ -65,7 +65,6 @@ new Route(__dirname, '/fetch', 'POST', async (req, res) => {
                 banned: usr.banned ?? false,
                 locked: usr.locked ?? false,
                 account_deletion_in_progress: usr.account_deletion_in_progress ?? false,
-                show_ads: usr.show_ads ?? false,
             },
         });
     } catch (er) {

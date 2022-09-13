@@ -21,18 +21,24 @@ const {
     decrypt,
 } = require('../../../../../utils/classes/encryption');
 const Route = require('../../../../../utils/classes/Route');
+const ratelimit = require('../../../../../utils/middleware/ratelimit');
 
 
 new Route(__dirname, '/', 'patch', [userMiddleware({
     login: {
         loginRequired: true,
     },
+}), ratelimit({
+    requests: {
+        max: 15,
+        reset: 1000 * 60 * 15,
+    },
 })], async (req, res) => {
 
     /**
      * @type {UserUpdatingData}
      */
-    const { email, username, tag, newPassword, password, ip_verify, ip_lock, ips, code } = req.body;
+    const { email, username, tag, newPassword, password, ip_verify, ips, code } = req.body;
 
     const user = await userSchema.findById(encrypt(req.user.id));
 
@@ -51,9 +57,9 @@ new Route(__dirname, '/', 'patch', [userMiddleware({
 
     const usr = await completeDecryption(user.toJSON());
 
-    if (typeof email !== 'undefined' || typeof ip_verify !== 'undefined' || typeof ip_lock !== 'undefined' || typeof ips !== 'undefined') {
+    if (typeof email !== 'undefined' || typeof ip_verify !== 'undefined' || typeof ips !== 'undefined') {
 
-        if (usr.email !== email || newPassword || usr.ip_verify !== ip_verify || usr.ip_lock !== ip_lock || usr.ips !== ips) {
+        if (usr.email !== email || newPassword || usr.ip_verify !== ip_verify || usr.ips !== ips) {
             if (!password) {
                 res.status(401).send({
                     code: 401,
@@ -157,7 +163,6 @@ new Route(__dirname, '/', 'patch', [userMiddleware({
         ips: updatedIps,
         tag: (String(Number((tag ?? usr.tag) ?? '1'))).padStart(4, '0'),
         ip_verify: (ip_verify ?? usr.ip_verify) ?? false,
-        ip_lock: (ip_lock ?? usr.ip_lock) ?? false,
     };
 
     const decrypted = completeEncryption({
@@ -251,7 +256,6 @@ new Route(__dirname, '/', 'patch', [userMiddleware({
  * @property {String} password For most of these options the user requires to send the password
  * @property {String} code The TwoFa code
  * @property {Boolean} ip_verify If they want the ips to be verified
- * @property {Boolean} ip_lock If they want the ips to be locked
  * @property {String[]} ips The ips the user wants to allow on the account
  */
 
@@ -263,5 +267,4 @@ new Route(__dirname, '/', 'patch', [userMiddleware({
  * @property {String[]} ips The ips the user wants to allow on the account
  * @property {String|Number} tag The new tag they want
  * @property {Boolean} ip_verify If they want the ips to be verified
- * @property {Boolean} ip_lock If they want the ips to be locked
  */

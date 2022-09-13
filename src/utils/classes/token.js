@@ -14,7 +14,6 @@ const { Encryption } = require('../../config');
 
 /**
  * @typedef {Object} SignedObject
- * @property {Boolean} hasError If there was a error while signing/verifying
  * @property {Error} error The error if there is one
  * @property {*} data The signed jwt token
  */
@@ -32,7 +31,6 @@ class token {
 
             if (!data) {
                 return {
-                    hasError: false,
                     error: null,
                     data: null,
                 };
@@ -41,13 +39,11 @@ class token {
             const signed = jwt.sign(data, Encryption.jwtKey, { ...options });
 
             return {
-                hasError: false,
                 error: null,
                 data: signed,
             };
         } catch (e) {
             return {
-                hasError: true,
                 error: e,
                 data: null,
             };
@@ -64,7 +60,6 @@ class token {
 
             if (!data) {
                 return {
-                    hasError: false,
                     error: null,
                     data: null,
                 };
@@ -73,13 +68,11 @@ class token {
             const verified = jwt.verify(data, Encryption.jwtKey, { ...options });
 
             return {
-                hasError: false,
                 error: null,
                 data: verified,
             };
         } catch (e) {
             return {
-                hasError: true,
                 error: e,
                 data: null,
             };

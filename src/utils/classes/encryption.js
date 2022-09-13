@@ -107,37 +107,56 @@ class encryption {
         const completeDecrypt = (item) => encryption.completeDecryption(item, raw);
         const isEncrypted = encryption.isEncrypted;
 
+        if (typeof items == 'undefined') {
+            return null;
+        }
+
         if (typeof items == 'string') {
             return decrypt(items);
         }
 
-        if (typeof items == 'object') {
-            if (Array.isArray(items)) {
-                const newArray = [];
-                for (const item of items) {
-                    if (typeof item == 'function') continue; // Nothing currently requires a decryption with a function in it
+        if (Array.isArray(items)) {
+            const newArray = [];
 
-                    if (isEncrypted(item)) {newArray.push(decrypt(item));}
-                    else if (typeof item == 'object' && !(items[item] instanceof Date)) {
-                        newArray.push(completeDecrypt(item));
-                    } else {newArray.push(item);}
+            for (const item of items) {
+                if (item == true || item == false || item == null || typeof item == 'number' || (typeof item == 'object' ? item instanceof Date ? true : false : false)) {
+                    newArray.push(item);
+                    continue;
                 }
 
-                return newArray;
-            } else {
-                const newObject = {};
-
-                for (const item in items) {
-                    if (typeof items[item] == 'function') continue; // Nothing currently requires a decryption with a function in it
-
-                    if (isEncrypted(items[item])) {newObject[item] = decrypt(items[item]);}
-                    else if (typeof items[item] == 'object' && !(items[item] instanceof Date)) {
-                        newObject[item] = completeDecrypt(items[item]);
-                    } else {newObject[item] = items[item];}
+                if (typeof item == 'object') {
+                    newArray.push(completeDecrypt(item));
+                } else if (isEncrypted(item)) {
+                    newArray.push(completeDecrypt(item));
+                } else {
+                    newArray.push(item);
                 }
-
-                return newObject;
             }
+
+            return newArray;
+        } else if (typeof items == 'object' && !Array.isArray(items)) {
+            const newObject = {};
+
+            for (const i in items) {
+                const item = items[i];
+
+                if (item == true || item == false || item == null || typeof item == 'number' || (typeof item == 'object' ? item instanceof Date ? true : false : false)) {
+                    newObject[i] = item;
+                    continue;
+                }
+
+                const encrypted = isEncrypted(item);
+
+                if (typeof item == 'object') {
+                    newObject[i] = completeDecrypt(item);
+                } else if (encrypted) {
+                    newObject[i] = completeDecrypt(item);
+                } else {
+                    newObject[i] = item;
+                }
+            }
+
+            return newObject;
         }
     }
 
@@ -150,37 +169,56 @@ class encryption {
         const completeEncrypt = encryption.completeEncryption;
         const isEncrypted = encryption.isEncrypted;
 
+        if (typeof items == 'undefined') {
+            return null;
+        }
+
         if (typeof items == 'string') {
             return encrypt(items);
         }
 
-        if (typeof items == 'object') {
-            if (items instanceof Array) {
-                const newArray = [];
-                for (const item of items) {
-                    if (typeof item == 'function') continue; // Nothing currently requires a decryption with a function in it
+        if (items instanceof Date) {
+            return encrypt(Number(items));
+        }
 
-                    if (!isEncrypted(item)) {newArray.push(encrypt(item));}
-                    else if (typeof item == 'object' && !(items[item] instanceof Date)) {
-                        newArray.push(completeEncrypt(item));
-                    } else {newArray.push(item);}
+        if (Array.isArray(items)) {
+            const newArray = [];
+
+            for (const item of items) {
+                if (item == true || item == false || item == null || typeof item == 'number' || (typeof item == 'object' ? item instanceof Date ? true : false : false)) {
+                    newArray.push(item);
+                    continue;
                 }
 
-                return newArray;
-            } else {
-                const newObject = {};
-
-                for (const item in items) {
-                    if (typeof items[item] == 'function') continue; // Nothing currently requires a decryption with a function in it
-
-                    if (!isEncrypted(items[item])) {newObject[item] = encrypt(items[item]);}
-                    else if (typeof items[item] == 'object' && !(items[item] instanceof Date)) {
-                        newObject[item] = completeEncrypt(items[item]);
-                    } else {newObject[item] = items[item];}
+                if (!isEncrypted(item)) {
+                    newArray.push(completeEncrypt(item));
+                } else {
+                    newArray.push(completeEncrypt(item));
                 }
-
-                return newObject;
             }
+
+            return newArray;
+        } else if (typeof items == 'object' && !Array.isArray(items)) {
+            const newObject = {};
+
+            for (const i in items) {
+                const item = items[i];
+
+                const encrypted = isEncrypted(item);
+
+                if (!encrypted) {
+                    if (item == true || item == false || item == null || typeof item == 'number' || (typeof item == 'object' ? item instanceof Date ? true : false : false)) {
+                        newObject[i] = item;
+                        continue;
+                    } else {
+                        newObject[i] = (completeEncrypt(item));
+                    }
+                } else {
+                    newObject[i] = (completeEncrypt(item));
+                }
+            }
+
+            return newObject;
         }
     }
 }

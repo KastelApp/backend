@@ -1,3 +1,15 @@
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
+
+
 /**
  * @type {Config}
  */
@@ -11,6 +23,10 @@ module.exports.Server = {
     cookieSecrets: ['cs5x6jmJ8U3WJ31eWWyg9Kch1UNFzYhd', 'tests'],
     domain: 'kastelapp.org',
     workerId: 1,
+    cache: {
+        clearInterval: 10800000, // three hours
+        clearOnStart: true,
+    },
 };
 
 /**
@@ -93,6 +109,7 @@ module.exports.Constants = require('./constants');
  * @property {string[]} cookieSecrets The secrets for cookies (First one is to sign the rest are to verify)
  * @property {string} domain The main domain of the server
  * @property {number} [workerId=0] The Worker ID
+ * @property {{clearInterval: number, clearOnStart: boolean}} cache
  */
 
 /**

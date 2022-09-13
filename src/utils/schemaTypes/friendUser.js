@@ -10,13 +10,18 @@
  */
 
 /**
- * @type {import('./SchemaTypes').Schema}
+ * @type {import("../../..").Schema}
  */
 const friendUser = {
     type: Object,
     data: {
         id: {
             name: '_id',
+            expected: String,
+            default: null,
+        },
+        avatar_hash: {
+            name: 'avatar_hash',
             expected: String,
             default: null,
         },

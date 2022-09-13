@@ -12,7 +12,7 @@
 const { CHANNEL_TYPES, ALLOWED_MENTIONS } = require('../../constants');
 
 /**
- * @type {import('./SchemaTypes').Schema}
+ * @type {import("../../..").Schema}
  */
 const channels = {
     type: Array,
@@ -59,6 +59,11 @@ const channels = {
         },
         position: {
             name: 'position',
+            expected: Number,
+            default: 0,
+        },
+        permissions: {
+            name: 'permissions',
             expected: Number,
             default: 0,
         },

@@ -40,7 +40,7 @@ const userSchema = new Schema({
         default: '0000',
     },
 
-    avatar_url: {
+    avatar_hash: {
         type: String,
         required: false,
     },
@@ -86,11 +86,6 @@ const userSchema = new Schema({
         required: false,
     },
 
-    ip_lock: {
-        type: Boolean,
-        required: false,
-    },
-
     ips: { // Encrypted
         type: Array,
         required: false,
@@ -105,7 +100,6 @@ const userSchema = new Schema({
     badges: {
         type: Number,
         required: false,
-        default: 0,
     },
 
     guilds: [{
@@ -146,11 +140,6 @@ const userSchema = new Schema({
     },
 
     account_deletion_in_progress: {
-        type: Boolean,
-        required: false,
-    },
-
-    show_ads: {
         type: Boolean,
         required: false,
     },

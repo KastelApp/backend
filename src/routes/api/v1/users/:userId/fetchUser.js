@@ -14,10 +14,16 @@ const { encrypt } = require('../../../../../utils/classes/encryption');
 const userMiddleware = require('../../../../../utils/middleware/user');
 const schemaData = require('../../../../../utils/schemaData');
 const Route = require('../../../../../utils/classes/Route');
+const ratelimit = require('../../../../../utils/middleware/ratelimit');
 
 new Route(__dirname, '/fetch', 'GET', [userMiddleware({
     login: {
         loginRequired: true,
+    },
+}), ratelimit({
+    requests: {
+        max: 50,
+        reset: 1000 * 60 * 5,
     },
 })], async (req, res) => {
     /**

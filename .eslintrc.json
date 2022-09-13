@@ -29,8 +29,8 @@
 		"no-var": "error",
 		"object-curly-spacing": ["error", "always"],
 		"prefer-const": "error",
-		"quotes": ["error", "single"],
-		"semi": ["error", "always"],
+		"quotes": ["warn", "single"],
+		"semi": ["warn", "always"],
 		"space-before-blocks": "error",
 		"space-before-function-paren": ["error", {
 			"anonymous": "never",
@@ -41,7 +41,8 @@
 		"space-infix-ops": "error",
 		"space-unary-ops": "error",
 		"spaced-comment": "error",
-		"yoda": "error"
+		"yoda": "error",
+		"no-unused-vars": "warn"
 	},
 	"globals": {
 		"BigInt": true

@@ -56,6 +56,12 @@ const roleSchema = new Schema({
         type: String,
         required: false,
     },
+
+    permissions: {
+        type: Number,
+        required: true,
+        default: 0,
+    },
 });
 
 module.exports = model('roles', roleSchema);

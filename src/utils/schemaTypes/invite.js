@@ -10,7 +10,7 @@
  */
 
 /**
- * @type {import('./SchemaTypes').Schema}
+ * @type {import("../../..").Schema}
  */
 const invite = {
     type: Object,

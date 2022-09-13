@@ -16,8 +16,8 @@ const path = require('node:path'),
 
 const colors = {
     debug: chalk.magenta('Debug'),
-    info: chalk.blue(' Info'),
-    log: chalk.blue('  Log'),
+    info: chalk.cyan(' Info'),
+    log: chalk.cyan('  Log'),
     warn: chalk.yellow(' Warn'),
     error: chalk.red('Error'),
     Load: chalk.green(' Load'),
@@ -44,7 +44,6 @@ const format = log.format ?? '[{DATE} {TYPE}] {MESSAGE}';
  * @property {Important} important
  */
 
-
 class logger {
 
     /**
@@ -60,7 +59,7 @@ class logger {
         if (log.loggerEnabled) {
             if (log.log) {
                 if (log.color) {
-                    console.debug(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors['debug'])).replaceAll('{MESSAGE}', chalk.cyan(msg.join(' '))));
+                    console.debug(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors['debug'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
                 } else {
                     console.debug(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', logger.lengthFixer('Debug')).replaceAll('{MESSAGE}', msg.join(' ')));
                 }
@@ -86,7 +85,7 @@ class logger {
         if (log.loggerEnabled) {
             if (log.log) {
                 if (log.color) {
-                    console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors['info'])).replaceAll('{MESSAGE}', chalk.cyan(msg.join(' '))));
+                    console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors['info'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
                 } else {
                     console.log(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', logger.lengthFixer('Info')).replaceAll('{MESSAGE}', msg.join(' ')));
                 }
@@ -111,7 +110,7 @@ class logger {
         if (log.loggerEnabled) {
             if (log.log) {
                 if (log.color) {
-                    console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors['log'])).replaceAll('{MESSAGE}', chalk.cyan(msg.join(' '))));
+                    console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors['log'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
                 } else {
                     console.log(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', logger.lengthFixer('Log')).replaceAll('{MESSAGE}', msg.join(' ')));
                 }
@@ -136,7 +135,7 @@ class logger {
         if (log.loggerEnabled) {
             if (log.log) {
                 if (log.color) {
-                    console.warn(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors['warn'])).replaceAll('{MESSAGE}', chalk.cyan(msg.join(' '))));
+                    console.warn(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors['warn'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
                 } else {
                     console.warn(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', logger.lengthFixer('Warn')).replaceAll('{MESSAGE}', msg.join(' ')));
                 }
@@ -161,7 +160,7 @@ class logger {
         if (log.loggerEnabled) {
             if (log.log) {
                 if (log.color) {
-                    console.error(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors['error'])).replaceAll('{MESSAGE}', chalk.cyan(msg.join(' '))));
+                    console.error(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors['error'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
                 } else {
                     console.error(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', logger.lengthFixer('Error')).replaceAll('{MESSAGE}', msg.join(' ')));
                 }
@@ -186,7 +185,7 @@ class logger {
         if (log.loggerEnabled) {
             if (log.log) {
                 if (log.color) {
-                    console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors['Load'])).replaceAll('{MESSAGE}', chalk.cyan(msg.join(' '))));
+                    console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors['Load'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
                 } else {
                     console.log(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', logger.lengthFixer('Load')).replaceAll('{MESSAGE}', msg.join(' ')));
                 }
@@ -210,14 +209,14 @@ class logger {
         });
 
         if (log.color) {
-            console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors[type.toLowerCase()])).replaceAll('{MESSAGE}', chalk.cyan(msg.join(' '))));
+            console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors[type.toLowerCase()])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
         } else {
             console.log(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', logger.lengthFixer(type)).replaceAll('{MESSAGE}', msg.join(' ')));
         }
 
         if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', type).replaceAll('{MESSAGE}', msg.join(' ')));
 
-        return logger;
+        return logger.important;
     }
 
     /**
@@ -241,7 +240,9 @@ class logger {
     static write(...logs) {
         const writeDate = new Date();
 
-        const filePath = path.join(log.path, `${writeDate.getFullYear()}-${writeDate.getMonth()}-${writeDate.getDate()}.log`);
+        const filePath = path.join(__dirname, '../../../', log.path, `${writeDate.getFullYear()}-${writeDate.getMonth()}-${writeDate.getDate()}.log`);
+
+        if (!fs.existsSync(path.join(__dirname, '../../../', log.path))) fs.mkdirSync(path.join(__dirname, '../../', log.path));
 
         if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, '');
 

@@ -189,9 +189,9 @@ new Route(__dirname, '/login', 'POST', [user({
                 badges: usr.badges,
             }, { expiresIn: '7d' });
 
-            if (signed.hasError) {
+            if (signed.error) {
 
-                logger.error(`${req.clientIp} Has Encountered an error`, signed.error);
+                logger.error(`${req.clientIp} Has Encountered an error\n ${signed.error}`);
 
                 res.status(500).send({
                     code: 500,
@@ -220,7 +220,7 @@ new Route(__dirname, '/login', 'POST', [user({
             });
 
         } catch (err) {
-            important.error(`${req.clientIp} Encountered an error ${err.stack}`);
+            important.error(`${req.clientIp} Encountered an error\n ${err.stack}`);
 
             res.status(500).send({
                 code: 500,

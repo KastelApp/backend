@@ -10,28 +10,32 @@
  */
 
 
-const types = require('./schemaTypes/exports');
+const schemaExports = require('./schemaTypes/exports');
 
 /**
  * Goes through data from MongoDB and returns new changed Data
- * @param {String} type
+ * @param {import('../..').SchemaTypes} type
  * @param {*} data
- * @returns {data} The changed Schema Data (_id => id, created_date => creation_date)
+ * @returns {*} The changed Schema Data (_id => id, created_date => creation_date)
  */
 const schemaData = (type, data) => {
 
     /**
      * @type {import('./schemaTypes/SchemaTypes').Schema}
      */
-    const tp = types[type];
+    const tp = schemaExports[type];
 
-    if (!tp) { throw new Error(`Unknown Type: ${type}`); }
+    if (!tp) {
+        throw new Error(`Unknown Type: ${type}`);
+    }
 
-    if (!(data instanceof tp.type)) { throw new TypeError(`${type} Expected ${tp.type.name} got ${typeof data}`); }
+    if (!(data instanceof tp.type)) {
+        throw new TypeError(`${type} Expected ${tp.type.name} got ${data == null ? 'Null' : typeof data}`);
+    }
 
-
-    if (tp.type == Object && Array.isArray(data)) { throw new TypeError(`${type} Expected ${tp.type.name} got Array`); }
-
+    if (tp.type == Object && Array.isArray(data)) {
+        throw new TypeError(`${type} Expected ${tp.type.name} got Array`);
+    }
 
     if (tp.type == Object) {
         const newObject = {};
@@ -41,8 +45,15 @@ const schemaData = (type, data) => {
 
             if (!tpData.extended) {
 
-                if (!(typeof gotItem == ((tpData.expected.name).toLowerCase())) && !(gotItem instanceof tpData.expected)) newObject[item] = tpData.default;
-                else newObject[item] = gotItem;
+                if (!(typeof gotItem == ((tpData.expected.name).toLowerCase())) && !(gotItem instanceof tpData.expected)) {
+                    if ((tpData.expected.name).toLowerCase() == 'date' && typeof gotItem == 'number') {
+                        newObject[item] = gotItem;
+                    } else {
+                        newObject[item] = tpData.default;
+                    }
+                } else {
+                    newObject[item] = gotItem;
+                }
             } else if (tpData.extended) { newObject[item] = schemaData(tpData.extends, gotItem); }
         }
 
@@ -63,7 +74,11 @@ const schemaData = (type, data) => {
 
                         if (!tpData.extended) {
                             if (!(typeof gotItem == ((tpData.expected.name).toLowerCase())) && !(gotItem instanceof tpData.expected)) {
-                                newObject[arewethere] = tpData.default;
+                                if ((tpData.expected.name).toLowerCase() == 'date' && typeof gotItem == 'number') {
+                                    newObject[arewethere] = gotItem;
+                                } else {
+                                    newObject[arewethere] = tpData.default;
+                                }
                             } else {
                                 newObject[arewethere] = gotItem;
                             }

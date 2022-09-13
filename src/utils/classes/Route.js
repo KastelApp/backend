@@ -10,15 +10,16 @@
  */
 
 
-// TODO: Make Dynamic types for params & Make a new Handler to use this & Port all old Routes to use this
-
+// TODO: Make Dynamic types for params
 
 /**
- * @type {RouteItem[]}
+ * @type {import('../../..').RouteItem[]}
  */
-let routes = [];
+const routes = [];
 const vaildMethods = ['get', 'delete', 'head', 'options', 'post', 'put', 'patch', 'purge', 'all'];
 const pathToRegexp = require('path-to-regexp');
+const fs = require('node:fs');
+const path = require('node:path');
 
 /**
  * A Class for handling routes better and easier
@@ -32,9 +33,9 @@ class Route {
     /**
      * @param {String} dir The DIR of the file
      * @param {String} route The route the user will access from
-     * @param {Methods} method The Method(s) the path accepts
-     * @param {RunCallBack|(RunCallBack|Function)[]} middleware The middleware
-     * @param {RunCallBack} run The Req, Res and Next Functions
+     * @param {import('../../..').Methods} method The Method(s) the path accepts
+     * @param {import('../../..').RunCallBack|(import('../../..').RunCallBack|Function)[]} middleware The middleware
+     * @param {import('../../..').RunCallBack} run The Req, Res and Next Functions
      */
     constructor(dir, route, method, middleware, run) {
 
@@ -53,24 +54,26 @@ class Route {
         this._middleware = typeof middleware !== 'object' ? typeof middleware == 'function' ? [] : middleware : middleware;
 
         /**
-         * @type {RunCallBack}
+         * @type {import('../../..').RunCallBack}
          * @private
          */
         this._run = typeof run == 'undefined' ? typeof middleware !== 'object' ? typeof middleware == 'function' ? middleware : run : run : run;
 
         /**
-         * @type {Methods}
+         * @type {import('../../..').Methods}
          * @private
          */
         this._method = method;
 
         if (Array.isArray(this._method)) {
             for (let i = 0; i < this._method.length; i++) {
-                if (!vaildMethods.includes(this._method[i].toLowerCase()))
-                    {throw new Error(`${this._path} Has an Invalid Method (${this._method[i]})`);}
+                if (!vaildMethods.includes(this._method[i].toLowerCase())) {
+                    throw new Error(`${this._path} Has an Invalid Method (${this._method[i]})`);
+                }
             }
-        } else if (!vaildMethods.includes(this._method.toLowerCase()))
-                {throw new Error(`${this._path} Has an Invalid Method (${this._method})`);}
+        } else if (!vaildMethods.includes(this._method.toLowerCase())) {
+            throw new Error(`${this._path} Has an Invalid Method (${this._method})`);
+        }
 
         routes.push({
             method: this._method,
@@ -93,7 +96,7 @@ class Route {
 
     /**
      * @public
-     * @returns {Methods} The method(s) the route uses
+     * @returns {import('../../..').Methods} The method(s) the route uses
      */
     get methods() {
         return this._method;
@@ -129,50 +132,68 @@ class Route {
      * @param {import('express').Application} app
      */
     static setRoutes(app) {
-        if (!app)
-            {throw new Error('Please provide the Express Application');}
+        if (!app) {
+            throw new Error('Please provide the Express Application');
+        }
 
         for (let i = 0; i < routes.length; i++) {
             const route = routes[i];
 
 
             if (Array.isArray(route.method)) {
-                for (let j = 0; i < route.method.length; i++)
-                    {app[(route.method[j].toLowerCase())](route.path, ...route.middleware, (...args) => route.run(...args));}
-
+                for (let j = 0; i < route.method.length; i++) {
+                    app[(route.method[j].toLowerCase())](route.path, ...route.middleware, (...args) => route.run(...args, app.cache));
+                }
             } else {
-                app[(route.method.toLowerCase())](route.path, ...route.middleware, (...args) => route.run(...args));
+                app[(route.method.toLowerCase())](route.path, ...route.middleware, (...args) => route.run(...args, app.cache));
             }
         }
 
-        routes = null;
+        return routes;
+    }
+
+    /**
+     * Goes through each DIR and adds them to the Array.
+     * @param {String} fipath
+     * @param {string[]} arr
+     * @returns {string[]}
+     */
+    static throughAndThrough(fipath, arr) {
+        const dirArray = (arr || []);
+
+        const filePath = fipath;
+
+        const fileInfo = fs.statSync(filePath);
+
+        if (fileInfo.isDirectory()) {
+            const files = fs.readdirSync(filePath);
+            for (let i = 0; i < files.length; i++) {
+                const fi = fs.statSync(path.join(filePath, files[i]));
+
+                if (fi.isDirectory()) {
+                    Route.throughAndThrough(path.join(filePath, files[i]), dirArray);
+                } else {
+                    dirArray.push(path.join(filePath, files[i]));
+                }
+            }
+        } else {
+            dirArray.push(filePath);
+        }
+
+        return dirArray;
+    }
+
+    static loadRoutes(routePath) {
+        const fipaths = Route.throughAndThrough(routePath, []);
+
+        for (let i = 0; i < fipaths.length; i++) {
+            require(fipaths[i]);
+        }
+
+        return fipaths;
     }
 
 }
 
-/**
- * @typedef {Object} RouteItem
- * @property {String} path The normal path with params
- * @property {RegExp} regex The paths RegExp
- * @property {Methods} method The methods
- * @property {RunCallBack} run The run function
- * @property {RunCallBack[]|Function[]} middleware The middleware
- * @property {Route} Route The Route Class
- */
-
-/**
- * @typedef {Object} RunFunction
- * @property {import('express').Request} req
- * @property {import('express').Response} res
- * @property {import('express').NextFunction} next
- */
-
-/**
- * @typedef {(req: import('express').Request, res: import('express').Response, next: import('express').NextFunction) => {}} RunCallBack
- */
-
-/**
- * @typedef {'all'|'ALL'|'get'|'GET'|'delete'|'DELETE'|'head'|'HEAD'|'options'|'OPTIONS'|'post'|'POST'|'put'|'PUT'|'patch'|'PATCH'|'purge'|'PURGE'|('get'|'GET'|'delete'|'DELETE'|'head'|'HEAD'|'options'|'OPTIONS'|'post'|'POST'|'put'|'PUT'|'patch'|'PATCH'|'purge'|'PURGE'|'all'|'ALL')[]} Methods
- */
-
 module.exports = Route;
+module.exports.routes = routes;

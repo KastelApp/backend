@@ -67,6 +67,12 @@ const channelSchema = new Schema({
         type: Number,
         required: true,
     },
+
+    permissions: {
+        type: Number,
+        required: true,
+        default: 0,
+    },
 });
 
 module.exports = model('channels', channelSchema);

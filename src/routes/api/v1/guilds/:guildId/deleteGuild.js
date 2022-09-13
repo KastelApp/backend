@@ -20,4 +20,6 @@ new Route(__dirname, '/delete', 'DELETE', [userMiddleware({
      * @type {String}
      */
     const guildId = req.params.guildId;
+
+    res.send(`WIP, You sent ${guildId}`);
 });

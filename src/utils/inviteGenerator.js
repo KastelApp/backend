@@ -17,9 +17,9 @@ const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789';
  * @returns {String} The new Invite
  */
 const inviteGenerator = (length = 15) => {
-    if (typeof length !== 'number' || isNaN(Number(length)))
-        {throw new TypeError(`"length" argument is expected to be a number, Got ${isNaN(Number(length) ? 'NaN' : typeof length)}`);}
-
+    if (typeof length !== 'number' || isNaN(Number(length))) {
+        throw new TypeError(`"length" argument is expected to be a number, Got ${isNaN(Number(length) ? 'NaN' : typeof length)}`);
+    }
 
     let invite = '';
 

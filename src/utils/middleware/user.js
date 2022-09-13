@@ -9,6 +9,7 @@
  * GPL 3.0 Licensed
  */
 
+const UserBadges = require('../classes/BitFields/badges');
 const UserFlags = require('../classes/BitFields/flags');
 const { encrypt } = require('../classes/encryption');
 const logger = require('../classes/logger');
@@ -66,8 +67,8 @@ const user = (options = {
 
             const verifiedToken = token.verify(req?.signedCookies['user']);
 
-            if (verifiedToken.hasError) {
-                logger.error(`${req.clientIp} Has Encountered an error`, verifiedToken.error);
+            if (verifiedToken.error) {
+                logger.error(`${req.clientIp} Has Encountered an error\n ${verifiedToken.error}`);
 
                 res.status(500).send({
                     code: 500,
@@ -157,9 +158,9 @@ const user = (options = {
                 return;
             }
 
-            for (const flag of options.flags) {
-                const usersFlags = new UserFlags((usr.flags || 0));
+            const usersFlags = new UserFlags((usr.flags || 0));
 
+            for (const flag of options.flags) {
                 if (flag.required && !usersFlags.has(flag.flag)) {
                     res.status(401).send({
                         code: 401,
@@ -187,7 +188,13 @@ const user = (options = {
                 }
             }
 
-            req.user = verifiedToken.data;
+            req.user = {
+                ...verifiedToken.data,
+                badges: new UserBadges(verifiedToken.data.badges).toArray(),
+                flags: new UserFlags(verifiedToken.data.flags).toArray(),
+                bit_badges: verifiedToken.data.badges,
+                bit_flags: verifiedToken.data.flags,
+            };
 
             next();
 

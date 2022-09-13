@@ -16,7 +16,7 @@ const inviteSchema = require('../../../utils/schemas/guilds/inviteSchema');
 const userSchema = require('../../../utils/schemas/users/userSchema');
 const guildMemberSchema = require('../../../utils/schemas/guilds/guildMemberSchema');
 const { hash } = require('bcrypt');
-const { BADGES, FLAGS } = require('../../../constants');
+const { BADGES, FLAGS, SETTINGS } = require('../../../constants');
 const tagGenerator = require('../../../utils/tagGenerator');
 const { important } = require('../../../utils/classes/logger');
 const { encrypt } = require('../../../utils/classes/encryption');
@@ -72,9 +72,8 @@ new Route(__dirname, '/register', 'POST', [user({
                 usernameTag: await userSchema.findOne({ username: encrypt(username), tag }),
                 usernameslength: lengthChecker({ length: 5000, type: 'more' })(await userSchema.countDocuments({ username: encrypt(username) })),
                 invite: (invite ? await inviteSchema.findById(invite) : null),
-                // Flags/Badges
-                isBetaTester: (Math.random() < 0.05),
-                userFlag: lengthChecker({ length: 1000, type: 'less' })(await userSchema.countDocuments()),
+                isBetaTester: (Math.random() < SETTINGS.BETA_FLAG),
+                userFlag: lengthChecker({ length: SETTINGS.MAX.OG_BADGES, type: 'less' })(await userSchema.countDocuments()),
             };
 
             if (!checks.age || checks.agetwo || checks.email || checks.usernameslength) {
@@ -178,7 +177,7 @@ new Route(__dirname, '/register', 'POST', [user({
             });
 
         } catch (err) {
-            important.error(`${req.clientIp} Encountered an error ${err.stack}`);
+            important.error(`${req.clientIp} Encountered an error\n ${err.stack}`);
 
             if (!res.headersSent) {
                 res.status(500).send({

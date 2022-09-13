@@ -1,15 +1,6 @@
-# Dir's
 node_modules/
 logs/
-test*/
-.vscode
-
-# Anything
-
-# DotEnv is deprecated but we still ignore it
-.env 
-
-# Files
-test*.*
+.vscode/
+tests/
 
 config.js

@@ -12,7 +12,7 @@
 const { ALLOWED_MENTIONS } = require('../../constants');
 
 /**
- * @type {import('./SchemaTypes').Schema}
+ * @type {import("../../..").Schema}
  */
 const role = {
     type: Object,
@@ -50,9 +50,13 @@ const role = {
         color: {
             name: 'color',
             expected: String,
-            default: '#fff',
+            default: '#ff7f50',
         },
-
+        permissions: {
+            name: 'permissions',
+            expected: Number,
+            default: 0,
+        },
     },
 };
 

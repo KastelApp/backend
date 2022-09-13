@@ -29,14 +29,9 @@ const { Snowflake: snow } = require('../../config');
  */
 const settings = {
     epoch: BigInt(new Date(Number((snow.epoch || 1641016800000))).getTime()),
-    start: BigInt(Date.now()),
-    increment: 0,
-    workerId: (-1n ^ (-1n << BigInt((snow.workerId_Bytes || 6)))),
-    sequenceMask: (-1n ^ (-1n << BigInt((snow.sequence_Bytes || 15)))),
-    datacenterId: (-1n ^ (-1n << BigInt((snow.datacenterId_Bytes || 7)))),
-    workerShift: BigInt((snow.sequence_Bytes || 15)),
-    dataCenterShift: (BigInt((snow.sequence_Bytes || 15)) + BigInt((snow.workerId_Bytes || 6))),
+    increment: 0n,
     timeShift: (BigInt((snow.sequence_Bytes || 15)) + BigInt((snow.workerId_Bytes || 6)) + BigInt((snow.datacenterId_Bytes || 7))),
+    workerId_DataCenterId: (BigInt((snow.workerId || 1)) << BigInt((snow.sequence_Bytes || 15))) | (BigInt((snow.datacenterId || 0)) << (BigInt((snow.sequence_Bytes || 15)) + BigInt((snow.workerId_Bytes || 6)))),
 };
 
 // Some Ideas are taken from the NPM Package Discord.js
@@ -49,14 +44,15 @@ class Snowflake {
      * @returns {String} The Snowflake ID
      */
     static generate(timestamp = Date.now()) {
-        if (typeof timestamp !== 'number' || isNaN(timestamp)) { throw new TypeError(`'timestamp' expected to be number but got ${isNaN(timestamp) ? 'NaN' : typeof timestamp}`); }
+        if (typeof timestamp !== 'number' || isNaN(timestamp)) {
+            throw new TypeError(`'timestamp' expected to be number but got ${isNaN(timestamp) ? 'NaN' : typeof timestamp}`);
+        }
 
+        const timeShift = (BigInt(BigInt(timestamp) - settings.epoch) << settings.timeShift);
 
-        timestamp = BigInt(timestamp);
+        if (settings.increment >= 4095n) settings.increment = 0n;
 
-        if (settings.increment >= 4095) settings.increment = 0;
-
-        return ((BigInt(timestamp - settings.epoch) << settings.timeShift) | ((BigInt((snow.datacenterId || 0)) << settings.dataCenterShift) | (BigInt((snow.workerId || 1)) << settings.workerShift)) | BigInt(settings.increment++)).toString();
+        return (timeShift | settings.workerId_DataCenterId | settings.increment++).toString();
     }
 
     /**
@@ -66,12 +62,13 @@ class Snowflake {
      * @returns {string[]} The Ids
      */
     static massGenerate(amount = 5) {
-        if (typeof amount !== 'number' || isNaN(amount)) { throw new TypeError(`'amount' expected to be number but got ${isNaN(amount) ? 'NaN' : typeof amount}`); }
-
+        if (typeof amount !== 'number' || isNaN(amount)) {
+            throw new TypeError(`'amount' expected to be number but got ${isNaN(amount) ? 'NaN' : typeof amount}`);
+        }
 
         const ids = [];
 
-        for (let i = 0; i < amount; i++) {
+        for (let i = 0; i < Number(amount); i++) {
             ids.push(Snowflake.generate());
         }
 

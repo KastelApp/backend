@@ -1,5 +1,5 @@
 /**
- * @type {import('./SchemaTypes').Schema}
+ * @type {import("../../..").Schema}
  */
 const template = {
     type: String,
