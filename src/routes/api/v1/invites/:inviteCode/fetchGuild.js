@@ -7,8 +7,7 @@ const { inviteSchema } = require('../../../../../utils/schemas/schemas');
 
 new Route(__dirname, '/fetch', 'GET', [userMiddleware({
     login: {
-        loginRequired: false,
-        loggedOutAllowed: true,
+        loginRequired: true,
     },
 })], async (req, res, next, cache) => {
     /**

@@ -20,7 +20,7 @@ new Route(__dirname, '/fetch', 'GET', [userMiddleware({
      */
     const query = defaultManager([], req.query?.include?.split(','));
 
-    const cache = await redis.keys(`guilds:${guildId}`, 'invites');
+    const cache = await redis.keys(`guilds:${guildId}:invites`);
 
     let invites = [];
 

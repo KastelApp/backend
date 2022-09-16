@@ -106,6 +106,23 @@ module.exports.PERMISSIONS = {
     BYPASS_SLOWMODE: 1n << 16n,
     MANAGE_CHANNEL: 1n << 17n,
     CHANGE_NICKNAME: 1n << 18n,
+    MANAGE_WEBHOOKS: 1n << 19n,
+    VIEW_AUDIT_LOG: 1n << 20n,
+};
+
+module.exports.RELATIONSHIP_TYPES = {
+    FRIEND: 1,
+    BLOCKED: 2,
+    INCOMING_FRIEND_REQUEST: 3,
+    OUTGOING_FRIEND_REQUEST: 4,
+};
+
+module.exports.RELATIONSHIP_FLAGS = {
+    MATUAL_FRIEND: 1 << 0,
+};
+
+module.exports.AUDIT_LOG_ACTIONS = {
+
 };
 
 this.BADGES.ALL = Object.values(this.BADGES).reduce((a, p) => a | p, 0);

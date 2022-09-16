@@ -30,3 +30,9 @@ export type RouteItem = {
 export type Methods = 'all' | 'ALL' | 'get' | 'GET' | 'delete' | 'DELETE' | 'head' | 'HEAD' | 'options' | 'OPTIONS' | 'post' | 'POST' | 'put' | 'PUT' | 'patch' | 'PATCH' | 'purge' | 'PURGE' | ('get' | 'GET' | 'delete' | 'DELETE' | 'head' | 'HEAD' | 'options' | 'OPTIONS' | 'post' | 'POST' | 'put' | 'PUT' | 'patch' | 'PATCH' | 'purge' | 'PURGE' | 'all' | 'ALL')[]
 
 export type RunCallBack = (req: express.Request, res: express.Response, next: express.NextFunction, redis: cache) => {}
+
+declare global {
+    
+}
+
+export {}

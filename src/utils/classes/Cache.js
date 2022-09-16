@@ -263,6 +263,14 @@ class Cache {
         });
     }
 
+    delete(key) {
+        return new Promise((resolve, reject) => {
+            this._redis.del(key)
+                .catch((er) => reject(er))
+                .then((x) => resolve(x));
+        });
+    }
+
     /**
      * Clears the Cache of everything, Useful for starting it up.
      * @param {string|string[]} ignore What Vars to ignore

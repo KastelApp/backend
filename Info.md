@@ -29,3 +29,9 @@ If No Co-Owners are in the guild then any Admin is able to try and re-claim the 
 The New Member channel is a Special channel users with the MANAGE_CHANNELS permission can make on a guild, This channel unlike others can be set to only be viewed for a certain amount of time after a member joins the guild, This can be from 1 hour all the way up to 7 days.
 
 Only New Members and users with the MANAGE_CHANNELS permission can see the channel. It acts like a normal channel in every other way.
+
+# **Invites**
+
+## **Never Expires**
+
+A Never expiring Invite is not really a thing in Kastel, We have it where after 3 months a invite expires. Though this will be changed at a later point to actually allow for never ending invites as it is now we do not support them. Please check back soon though

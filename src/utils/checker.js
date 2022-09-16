@@ -121,6 +121,7 @@ if (nodeVersion < requiredVersion) {
     // We will only Warn the user they are running an outdated version
     // Mainly in case its like one version out of date (Normally it won't cause a ton of issues)
     console.warn(`${colors('red', '[WARNING]')} ${colors('blue', 'You are using a out of date Node.Js Version, Please update else you may run into errors.')}`);
+    console.warn(`${colors('red', '[WARNING]')} ${colors('blue', `You are using Node.Js Version ${nodeVersion}, Kastel requires Node.Js Version ${requiredVersion} or higher`)}`);
 }
 
 for (const p in paths) {

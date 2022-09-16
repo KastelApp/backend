@@ -80,13 +80,14 @@ module.exports.Logger = {
     timeStartUp: true,
     saveInFiles: true,
     path: './logs',
-    format: '[{DATE} {TYPE}] {MESSAGE}',
+    format: '[{DATE} {LEVEL}] {MESSAGE}',
     color: true,
     log: true,
     logRoutes: false,
     logLogo: true,
     logErrors: true,
     logInfo: true,
+    type: 'en-US',
 };
 
 /**
@@ -99,6 +100,13 @@ module.exports.Snowflake = {
     workerId_Bytes: 6,
     datacenterId_Bytes: 5,
     sequence_Bytes: 12,
+};
+
+module.exports.Regexs = {
+    // Source: https://regexr.com/2rhq7
+    email: new RegExp(/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/),
+    // Source: https://regexr.com/3bfsi
+    password: new RegExp(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/),
 };
 
 module.exports.Constants = require('./constants');
@@ -160,6 +168,7 @@ module.exports.Constants = require('./constants');
  * @property {Boolean} logLogo If you want to log the Kastel logo
  * @property {Boolean} logErrors If you want to catch errors or just have nodejs handle it
  * @property {Boolean} logInfo If you want some useful info logged in the console when the server is started up
+ * @property {string} type The format for the date (i.e dd/mm/yyyy)
  */
 
 /**

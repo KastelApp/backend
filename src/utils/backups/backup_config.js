@@ -75,18 +75,19 @@ module.exports.MongoDB = {
 /**
  * @type {Logger}
  */
-module.exports.Logger = {
+ module.exports.Logger = {
     loggerEnabled: true,
     timeStartUp: true,
     saveInFiles: true,
     path: './logs',
-    format: '[{DATE} {TYPE}] {MESSAGE}',
+    format: '[{DATE} {LEVEL}] {MESSAGE}',
     color: true,
     log: true,
     logRoutes: false,
     logLogo: true,
     logErrors: true,
     logInfo: true,
+    type: 'en-US',
 };
 
 /**
@@ -160,6 +161,7 @@ module.exports.Constants = require('./constants');
  * @property {Boolean} logLogo If you want to log the Kastel logo
  * @property {Boolean} logErrors If you want to catch errors or just have nodejs handle it
  * @property {Boolean} logInfo If you want some useful info logged in the console when the server is started up
+ * @property {string} type The format for the date (i.e dd/mm/yyyy)
  */
 
 /**

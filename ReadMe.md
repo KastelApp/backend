@@ -20,8 +20,8 @@ Kastel Is a Chatting App like <a href="https://discord.com">Discord</a> & <a hre
 - [x] A Snowflake ID System
 - [ ] Routing to Different servers
     - If you are in Canada, Route to a US server if there are no canada servers ETC
-- [ ] Rewrite to TS
-    - This project would be much better in TS, I currently do not have the time to set TS up but if you would like to I would love it.
+- [ ] Rewrite to TS & Fastify
+    - I have plans on Rewriting most of this project into TS and Using Fastify instead of Express.JS, When this will happen I'm not sure.
 - [ ] Different ways to login besides a password
     - I want Users to pick how they login, Allowing them to remove their password and login with other sites, Below are some Ideas
         - Google

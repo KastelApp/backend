@@ -23,7 +23,7 @@ const colors = {
     Load: chalk.green(' Load'),
 };
 
-const format = log.format ?? '[{DATE} {TYPE}] {MESSAGE}';
+const format = log.format ?? '[{DATE} {LEVEL}] {MESSAGE}';
 
 /**
  * @typedef {Object} Important
@@ -52,20 +52,20 @@ class logger {
      * @returns {Logger} Logger for chaining
      */
     static debug(...msg) {
-        const date = new Date().toLocaleString('US', {
+        const date = new Date().toLocaleString(log.type, {
             hour12: false,
         });
 
         if (log.loggerEnabled) {
             if (log.log) {
                 if (log.color) {
-                    console.debug(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors['debug'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
+                    console.debug(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{LEVEL}', (colors['debug'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
                 } else {
-                    console.debug(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', logger.lengthFixer('Debug')).replaceAll('{MESSAGE}', msg.join(' ')));
+                    console.debug(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', logger.lengthFixer('Debug')).replaceAll('{MESSAGE}', msg.join(' ')));
                 }
             }
 
-            if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', 'Debug').replaceAll('{MESSAGE}', msg.join(' ')));
+            if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', 'Debug').replaceAll('{MESSAGE}', msg.join(' ')));
         }
 
         return logger;
@@ -78,20 +78,20 @@ class logger {
      * @returns {Logger} Logger for chaining
      */
     static info(...msg) {
-        const date = new Date().toLocaleString('US', {
+        const date = new Date().toLocaleString(log.type, {
             hour12: false,
         });
 
         if (log.loggerEnabled) {
             if (log.log) {
                 if (log.color) {
-                    console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors['info'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
+                    console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{LEVEL}', (colors['info'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
                 } else {
-                    console.log(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', logger.lengthFixer('Info')).replaceAll('{MESSAGE}', msg.join(' ')));
+                    console.log(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', logger.lengthFixer('Info')).replaceAll('{MESSAGE}', msg.join(' ')));
                 }
             }
 
-            if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', 'Info').replaceAll('{MESSAGE}', msg.join(' ')));
+            if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', 'Info').replaceAll('{MESSAGE}', msg.join(' ')));
         }
 
         return logger;
@@ -103,20 +103,20 @@ class logger {
      * @returns {Logger} Logger for chaining
      */
     static log(...msg) {
-        const date = new Date().toLocaleString('US', {
+        const date = new Date().toLocaleString(log.type, {
             hour12: false,
         });
 
         if (log.loggerEnabled) {
             if (log.log) {
                 if (log.color) {
-                    console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors['log'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
+                    console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{LEVEL}', (colors['log'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
                 } else {
-                    console.log(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', logger.lengthFixer('Log')).replaceAll('{MESSAGE}', msg.join(' ')));
+                    console.log(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', logger.lengthFixer('Log')).replaceAll('{MESSAGE}', msg.join(' ')));
                 }
             }
 
-            if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', 'Log').replaceAll('{MESSAGE}', msg.join(' ')));
+            if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', 'Log').replaceAll('{MESSAGE}', msg.join(' ')));
         }
 
         return logger;
@@ -128,20 +128,20 @@ class logger {
      * @returns {Logger} Logger for chaining
      */
     static warn(...msg) {
-        const date = new Date().toLocaleString('US', {
+        const date = new Date().toLocaleString(log.type, {
             hour12: false,
         });
 
         if (log.loggerEnabled) {
             if (log.log) {
                 if (log.color) {
-                    console.warn(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors['warn'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
+                    console.warn(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{LEVEL}', (colors['warn'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
                 } else {
-                    console.warn(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', logger.lengthFixer('Warn')).replaceAll('{MESSAGE}', msg.join(' ')));
+                    console.warn(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', logger.lengthFixer('Warn')).replaceAll('{MESSAGE}', msg.join(' ')));
                 }
             }
 
-            if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', 'Warn').replaceAll('{MESSAGE}', msg.join(' ')));
+            if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', 'Warn').replaceAll('{MESSAGE}', msg.join(' ')));
         }
 
         return logger;
@@ -153,20 +153,20 @@ class logger {
      * @returns {Logger} Logger for chaining
      */
     static error(...msg) {
-        const date = new Date().toLocaleString('US', {
+        const date = new Date().toLocaleString(log.type, {
             hour12: false,
         });
 
         if (log.loggerEnabled) {
             if (log.log) {
                 if (log.color) {
-                    console.error(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors['error'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
+                    console.error(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{LEVEL}', (colors['error'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
                 } else {
-                    console.error(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', logger.lengthFixer('Error')).replaceAll('{MESSAGE}', msg.join(' ')));
+                    console.error(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', logger.lengthFixer('Error')).replaceAll('{MESSAGE}', msg.join(' ')));
                 }
             }
 
-            if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', 'Error').replaceAll('{MESSAGE}', msg.join(' ')));
+            if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', 'Error').replaceAll('{MESSAGE}', msg.join(' ')));
         }
 
         return logger;
@@ -178,20 +178,20 @@ class logger {
      * @returns {Logger} Logger for chaining
      */
     static loaded(...msg) {
-        const date = new Date().toLocaleString('US', {
+        const date = new Date().toLocaleString(log.type, {
             hour12: false,
         });
 
         if (log.loggerEnabled) {
             if (log.log) {
                 if (log.color) {
-                    console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors['Load'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
+                    console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{LEVEL}', (colors['Load'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
                 } else {
-                    console.log(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', logger.lengthFixer('Load')).replaceAll('{MESSAGE}', msg.join(' ')));
+                    console.log(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', logger.lengthFixer('Load')).replaceAll('{MESSAGE}', msg.join(' ')));
                 }
             }
 
-            if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', 'Load').replaceAll('{MESSAGE}', msg.join(' ')));
+            if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', 'Load').replaceAll('{MESSAGE}', msg.join(' ')));
         }
 
         return logger;
@@ -199,22 +199,22 @@ class logger {
 
     /**
      * @private
-     * @param {String} type The log type
+     * @param {String} level The log level
      * @param  {...String} msg The message to log
      * @returns {Logger} Logger for chaining
      */
-    static customType(type, ...msg) {
-        const date = new Date().toLocaleString('US', {
+    static customLevel(level, ...msg) {
+        const date = new Date().toLocaleString(log.type, {
             hour12: false,
         });
 
         if (log.color) {
-            console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{TYPE}', (colors[type.toLowerCase()])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
+            console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{LEVEL}', (colors[level.toLowerCase()])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
         } else {
-            console.log(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', logger.lengthFixer(type)).replaceAll('{MESSAGE}', msg.join(' ')));
+            console.log(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', logger.lengthFixer(level)).replaceAll('{MESSAGE}', msg.join(' ')));
         }
 
-        if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{TYPE}', type).replaceAll('{MESSAGE}', msg.join(' ')));
+        if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', level).replaceAll('{MESSAGE}', msg.join(' ')));
 
         return logger.important;
     }
@@ -224,12 +224,12 @@ class logger {
      */
     static get important() {
         return {
-            debug: (...msg) => logger.customType('Debug', msg.join(' ')),
-            info: (...msg) => logger.customType('Info', msg.join(' ')),
-            log: (...msg) => logger.customType('Log', msg.join(' ')),
-            warn: (...msg) => logger.customType('Warn', msg.join(' ')),
-            error: (...msg) => logger.customType('Error', msg.join(' ')),
-            loaded: (...msg) => logger.customType('Load', msg.join(' ')),
+            debug: (...msg) => logger.customLevel('Debug', msg.join(' ')),
+            info: (...msg) => logger.customLevel('Info', msg.join(' ')),
+            log: (...msg) => logger.customLevel('Log', msg.join(' ')),
+            warn: (...msg) => logger.customLevel('Warn', msg.join(' ')),
+            error: (...msg) => logger.customLevel('Error', msg.join(' ')),
+            loaded: (...msg) => logger.customLevel('Load', msg.join(' ')),
         };
     }
 
@@ -251,11 +251,11 @@ class logger {
 
     /**
      * @private
-     * @param {String} type
+     * @param {String} level
      * @returns {String}
      */
-    static lengthFixer(type) {
-        return type.padStart(5);
+    static lengthFixer(level) {
+        return level.padStart(5);
     }
 }
 

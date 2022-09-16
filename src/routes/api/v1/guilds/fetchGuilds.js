@@ -125,6 +125,7 @@ new Route(__dirname, '/fetch', 'GET', [userMiddleware({
                 bans: [],
                 channels: [],
                 roles: [],
+                invites: [],
                 member_count: guild.members.length,
             });
 

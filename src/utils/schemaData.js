@@ -90,8 +90,11 @@ const schemaData = (type, data) => {
             }
             newArray.push(newObject);
         }
+
         return newArray;
     }
+
+    return data;
 };
 
 module.exports = schemaData;

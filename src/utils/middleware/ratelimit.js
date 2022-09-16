@@ -220,7 +220,7 @@ const ratelimit = (options = {
                                 requests: [{
                                     increment: 1,
                                     date: Date.now(),
-                                  }],
+                                }],
                             };
 
                             const parsedFiltered = ipParsed.filter((x) => x.id !== routeData.id);
@@ -235,7 +235,7 @@ const ratelimit = (options = {
                                 errors: [{
                                     code: 'RATELIMIT_REACHED',
                                     message: `It seems you haved reached the rate limit of this endpoint, Please wait (${ms(((firstRequest.date - Date.now()) + options.requests.reset), { long:true })}) before accessing this endpoint Again.`,
-                                      }],
+                                }],
                                 responses: [],
                             });
 
