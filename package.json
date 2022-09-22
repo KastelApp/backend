@@ -26,7 +26,8 @@
     },
     "scripts": {
         "start": "node src/index.js",
-        "lint": "eslint 'src/**'"
+        "lint": "eslint 'src/**'",
+        "dev-db": "bash tests/start.sh"
     },
     "keywords": [
         "chatting"
