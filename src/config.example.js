@@ -54,7 +54,7 @@ module.exports.Ws = {
 module.exports.Redis = {
     host: '127.0.0.1',
     port: '6379',
-    user: 'default',
+    user: '',
     password: '',
     db: '',
 };

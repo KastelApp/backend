@@ -38,7 +38,7 @@ class Cache {
          * @readonly
          * @type {string}
          */
-        this._user = (user ? user : 'default');
+        this._user = (user ? user : '');
         /**
          * @private
          * @readonly
