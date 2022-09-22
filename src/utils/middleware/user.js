@@ -65,7 +65,7 @@ const user = (options = {
                 },
             }, options);
 
-            const verifiedToken = token.verify(req?.signedCookies['user']);
+            const verifiedToken = token.verify(req?.headers['authorization']);
 
             if (verifiedToken.error) {
                 logger.error(`${req.clientIp} Has Encountered an error\n ${verifiedToken.error}`);
