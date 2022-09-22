@@ -205,11 +205,6 @@ new Route(__dirname, '/login', 'POST', [user({
                 return;
             }
 
-            res.cookie('user', signed.data, {
-                signed: true,
-                maxAge: 86400000 * 7,
-            });
-
             res.send({
                 code: 200,
                 errors: [],
@@ -217,6 +212,14 @@ new Route(__dirname, '/login', 'POST', [user({
                     code: 'LOGGED_IN',
                     message: 'Logged in.',
                 }],
+                data: {
+                    token: signed.data,
+                    user: {
+                        id: decrypt(usr._id),
+                        username: decrypt(usr.username),
+                        email: decrypt(usr.email),
+                    },
+                },
             });
 
         } catch (err) {
