@@ -242,7 +242,7 @@ class logger {
 
         const filePath = path.join(__dirname, '../../../', log.path, `${writeDate.getFullYear()}-${writeDate.getMonth()}-${writeDate.getDate()}.log`);
 
-        if (!fs.existsSync(path.join(__dirname, '../../../', log.path))) fs.mkdirSync(path.join(__dirname, '../../', log.path));
+        if (!fs.existsSync(path.join(__dirname, '../../../', log.path))) fs.mkdirSync(path.join(__dirname, '../../../', log.path));
 
         if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, '');
 
