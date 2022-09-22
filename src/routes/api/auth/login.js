@@ -218,6 +218,7 @@ new Route(__dirname, '/login', 'POST', [user({
                         id: decrypt(usr._id),
                         username: decrypt(usr.username),
                         email: decrypt(usr.email),
+                        avatar_hash: usr.avatar_hash,
                     },
                 },
             });
