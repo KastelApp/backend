@@ -48,7 +48,7 @@ If you want to contribute fork the development branch, make your changes, verify
 
 # User Security
 
-As of 8/15/2022 User Data Is Encrypted with AES (AES is the default) As seen in the [User Schema](/utils/schemas/users/userSchema.js) What is Encrypted or hashed is pointed out. If it doesn't have a '// Encrypted' or '// Hashed' next to it means it isn't hashed or encrypted. If you got any questions please email 'security@kastelapp.com' for more info.
+As of 8/15/2022 User Data Is Encrypted with AES (AES is the default) As seen in the [User Schema](/src/utils/schemas/users/userSchema.js) What is Encrypted or hashed is pointed out. If it doesn't have a '// Encrypted' or '// Hashed' next to it means it isn't hashed or encrypted. If you got any questions please email 'security@kastelapp.com' for more info.
 
 ## Maintainers
 
