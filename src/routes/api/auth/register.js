@@ -38,7 +38,7 @@ new Route(__dirname, '/register', 'POST', [user({
              */
             const { username, email, password, date_of_birth, invite } = req.body;
 
-            if (!username || !email || !password || !date_of_birth || (new Date(date_of_birth) == 'Invalid Date')) {
+            if (!username || !email || !password || date_of_birth && (new Date(date_of_birth) == 'Invalid Date')) {
                 res.status(400).send({
                     code: 400,
                     errors: [!username ? {
@@ -50,10 +50,7 @@ new Route(__dirname, '/register', 'POST', [user({
             } : null, !password ? {
                         code: 'MISSING_PASSWORD',
                         message: 'No Password provided',
-            } : null, !date_of_birth ? {
-                        code: 'MISSING_DATE_OF_BIRTH',
-                        message: 'No Date of birth provided',
-     } : new Date(date_of_birth) == 'Invalid Date' ? {
+            } : null, new Date(date_of_birth) == 'Invalid Date' ? {
                         code: 'INVALID_DATE_OF_BIRTH',
                         message: 'The provided Date of Birth is Invalid',
         } : null].filter((x) => x !== null),
@@ -76,7 +73,7 @@ new Route(__dirname, '/register', 'POST', [user({
                 userFlag: lengthChecker({ length: SETTINGS.MAX.OG_BADGES, type: 'less' })(await userSchema.countDocuments()),
             };
 
-            if (!checks.age || checks.agetwo || checks.email || checks.usernameslength) {
+            if (date_of_birth && !checks.age || checks.email || checks.usernameslength) {
                 res.status(403).send({
                     code: 403,
                     errors: [checks.age ? null : {
@@ -132,8 +129,8 @@ new Route(__dirname, '/register', 'POST', [user({
                 tag,
                 password: await hash(password, 10),
                 created_date: Date.now(),
-                date_of_birth: encrypt(Number(new Date(date_of_birth))),
-                ips: [encrypt(req.clientIp)],
+                date_of_birth: encrypt(Number(new Date((date_of_birth || Date.now())))),
+                ips: [],
                 flags: FLAGS.BETA_TESTER,
                 guilds: [],
                 dms: [],
