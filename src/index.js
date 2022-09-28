@@ -29,7 +29,7 @@ if (config.Logger.logLogo) {
 ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
 A Chatting Application
 Running version ${config.Constants.version ? `v${config.Constants.version}` : 'Unknown version'} of Kastel's Backend. Node.js version ${process.version}\n`));
-};
+}
 
 /* Express Imports */
 const express = require('express');
@@ -61,7 +61,7 @@ if (config.Logger.logErrors) {
     process
         .on('uncaughtException', (err) => logger.important.error(`Unhandled Exception, \n${err.stack}`))
         .on('unhandledRejection', (reason) => logger.important.error(`Unhandled Rejection, \n${reason.stack}`));
-};
+}
 
 /* Sets the users IP for later simpler use */
 /* Also Logs the requested path */
