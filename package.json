@@ -27,7 +27,10 @@
     "scripts": {
         "start": "node src/index.js",
         "lint": "eslint 'src/**'",
-        "dev-db": "bash tests/start.sh"
+        "db_check": "if [ ! -d db ]; then mkdir db; echo \"DB Directory created\"; else echo \"DB Directory exists\"; fi",
+        "db_redis_start": "redis-server --port 6379 --daemonize yes --dir /Kastel/db/redis",
+        "db_mongo_start": "mongod --dbpath /Kastel/db/mongo --port 27017 --fork --logpath /Kastel/db/mongo/mongo.log",
+        "db": "npm run db_check && npm run db_redis_start & npm run db_mongo_start & sleep 5 && npm run start"
     },
     "keywords": [
         "chatting"
