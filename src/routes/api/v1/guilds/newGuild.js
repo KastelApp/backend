@@ -9,6 +9,7 @@ const {
 const {
     encrypt,
     decrypt,
+    completeDecryption
 } = require('../../../../utils/classes/encryption');
 const {
     userSchema,
@@ -145,6 +146,7 @@ new Route(__dirname, '/new', 'POST', [userMiddleware({
         responses: [{
             code: 'GUILD_CREATED',
             message: 'The guild has been created.',
+            data: completeDecryption(guildData),
         }],
     });
 
