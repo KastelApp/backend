@@ -1,0 +1,51 @@
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
+
+/**
+ * @type {import("../../..").Schema}
+ */
+const invites = {
+    type: Array,
+    data: {
+        id: {
+            name: '_id',
+            expected: String,
+            default: null,
+        },
+        expires: {
+            name: 'expires',
+            expected: Date,
+            default: null,
+        },
+        uses: {
+            name: 'uses',
+            expected: Number,
+            default: 0,
+        },
+        max_uses: {
+            name: 'max_uses',
+            expected: Number,
+            default: null,
+        },
+        creator: {
+            name: 'creator',
+            extended: true,
+            extends: 'guildMember',
+        },
+        deleteable: {
+            name: 'deleteable',
+            expected: Boolean,
+            default: true,
+        },
+    },
+};
+
+module.exports = invites;

@@ -1,10 +1,6 @@
-# Dir's
 node_modules/
 logs/
-ignoredTestingData/
+.vscode/
+tests/
 
-# Anything
-*fakeData*
-
-# Files
-.env
+config.js
