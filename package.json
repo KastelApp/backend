@@ -22,7 +22,7 @@
     "devDependencies": {
         "@types/express": "^4.17.14",
         "eslint": "^8.23.0",
-        "nodemon": "^2.0.15"
+        "nodemon": "^2.0.20"
     },
     "scripts": {
         "start": "node src/index.js",
