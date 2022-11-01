@@ -49,7 +49,7 @@ class Route {
          * @type {String}
          * @private
          */
-        this._path = this.cutter(this._dir, route);
+        this._path = this.cutter(this._dir.replaceAll('%', ':'), route);
 
         this._middleware = typeof middleware !== 'object' ? typeof middleware == 'function' ? [] : middleware : middleware;
 
@@ -122,9 +122,15 @@ class Route {
      */
     cutter(filePath, exportPath) {
 
-        const splitPath = filePath.split('/routes').pop();
+        if (process.platform === 'win32') {
+            const splitPath = filePath.split('\\routes').pop().replace(/\\/g, '/').split('/').slice(0, -1).join('/');
 
-        return `${splitPath}${exportPath.startsWith('/') ? exportPath : '/' + exportPath}`;
+            return `${splitPath}${exportPath.startsWith('/') ? exportPath : '/' + exportPath}`;
+        } else {
+            const splitPath = filePath.split('/routes').pop().split('/').slice(0, -1).join('/');
+
+            return `${splitPath}${exportPath.startsWith('/') ? exportPath : '/' + exportPath}`;
+        }
     }
 
     /**
