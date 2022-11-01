@@ -1,3 +1,14 @@
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
+
 const Route = require('../../../../utils/classes/Route');
 const { generate } = require('../../../../utils/classes/snowflake');
 const {
@@ -9,7 +20,7 @@ const {
 const {
     encrypt,
     decrypt,
-    completeDecryption
+    completeDecryption,
 } = require('../../../../utils/classes/encryption');
 const {
     userSchema,

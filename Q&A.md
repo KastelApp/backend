@@ -11,14 +11,8 @@ Kastel is made using <a href="https://expressjs.com">ExpressJS</a> as a backend.
 
 ## Will there be bots?
 
-Yes, Bots are Planned. The ideal release of bots will most likely be in API v3. API v2 will most likely be the start. Released to a few people, then public in API v3. The bots will be mostly the same as users. They will not be able to do most things, i.e Creating Guilds, Adding Friends, Joining Guilds (Like a normal user), Inviting Bots to Guilds ETC.
+Bots are planned, but not for a while. No ETA on when they will be added.
 
-## Will there be ADs or Monthly/Yearly Subscriptions (Like Discord Nitro)
+## Will there be Monthly/Yearly Subscriptions
 
-### Monthly/Yearly Subscriptions
-
-I want to do Monthly Subscriptions. Of course, they will not be required whatsoever. If you don't have the subscriptions though, Kastel won't be almost any different. I want to do a few things like allow larger uploads, animated guild icons and more.
-
-### ADs
-
-Will there be Ads? Yes and No. Ads will not be forced onto users. It will be completely optional, defaulting to disabled. If users do have ads on for a certain amount of time, there could be a possibility of giving them a free month of the Monthly Subscription.
+Yes, there will be. Though it will be completely optional. You can use Kastel for free, but if you want to support the project you can buy a subscription.
