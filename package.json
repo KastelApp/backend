@@ -30,16 +30,18 @@
         "db_check": "if [ ! -d db ]; then mkdir db; echo \"DB Directory created\"; else echo \"DB Directory exists\"; fi",
         "db_redis_start": "redis-server --port 6379 --daemonize yes --dir /Kastel/db/redis",
         "db_mongo_start": "mongod --dbpath /Kastel/db/mongo --port 27017 --fork --logpath /Kastel/db/mongo/mongo.log",
-        "db": "npm run db_check && npm run db_redis_start & npm run db_mongo_start & sleep 5 && npm run start"
+        "db": "yarn run db_check && yarn run db_redis_start & yarn run db_mongo_start & sleep 5 && yarn run start"
     },
     "keywords": [
         "chatting"
     ],
     "engines": {
-        "node": "^17.x.x",
+        "node": "^19.x.x",
         "npm": "^8.x.x"
     },
     "author": "DarkerInk",
     "license": "GPL-3.0-or-later",
-    "types": "index.d.ts"
+    "types": "index.d.ts",
+    "repository": "https://github.com/Kastelll/backend",
+    "packageManager": "yarn@3.2.4"
 }

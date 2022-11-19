@@ -11,16 +11,26 @@
 
 const path = require('node:path'),
     fs = require('node:fs'),
+    zlib = require('node:zlib'),
     chalk = require('chalk'),
     { Logger: log } = require('../../config');
 
-const colors = {
-    debug: chalk.magenta('Debug'),
-    info: chalk.cyan(' Info'),
-    log: chalk.cyan('  Log'),
-    warn: chalk.yellow(' Warn'),
-    error: chalk.red('Error'),
-    Load: chalk.green(' Load'),
+const level_colors = {
+    debug: (chalk?.[log.colors.level.debug] ? chalk[log.colors.level.debug]('Debug') : chalk.hex(log.colors.level.debug)('Debug')) || chalk.hex('#FF00FF')('Debug'),
+    info: (chalk?.[log.colors.level.info] ? chalk[log.colors.level.info](' Info') : chalk.hex(log.colors.level.info)(' Info')) || chalk.hex('#00FFFF')(' Info'),
+    log: (chalk?.[log.colors.level.log] ? chalk[log.colors.level.log]('  Log') : chalk.hex(log.colors.level.log)('  Log')) || chalk.hex('#00FFFF')('  Log'),
+    warn: (chalk?.[log.colors.level.warn] ? chalk[log.colors.level.warn](' Warn') : chalk.hex(log.colors.level.warn)(' Warn')) || chalk.hex('#FFFF00')(' Warn'),
+    error: (chalk?.[log.colors.level.error] ? chalk[log.colors.level.error]('Error') : chalk.hex(log.colors.level.error)('Error')) || chalk.hex('#FF0000')('Error'),
+    load: (chalk?.[log.colors.level.load] ? chalk[log.colors.level.load](' Load') : chalk.hex(log.colors.level.load)(' Load')) || chalk.hex('#00FF00')(' Load'),
+};
+
+const message_colors = {
+    debug: (chalk?.[log.colors.message.debug] ? chalk[log.colors.message.debug] : chalk.hex(log.colors.message.debug)) || chalk.hex('#FF00FF'),
+    info: (chalk?.[log.colors.message.info] ? chalk[log.colors.message.info] : chalk.hex(log.colors.message.info)) || chalk.hex('#00FFFF'),
+    log: (chalk?.[log.colors.message.log] ? chalk[log.colors.message.log] : chalk.hex(log.colors.message.log)) || chalk.hex('#00FFFF'),
+    warn: (chalk?.[log.colors.message.warn] ? chalk[log.colors.message.warn] : chalk.hex(log.colors.message.warn)) || chalk.hex('#FFFF00'),
+    error: (chalk?.[log.colors.message.error] ? chalk[log.colors.message.error] : chalk.hex(log.colors.message.error)) || chalk.hex('#FF0000'),
+    load: (chalk?.[log.colors.message.load] ? chalk[log.colors.message.load] : chalk.hex(log.colors.message.load)) || chalk.hex('#00FF00'),
 };
 
 const format = log.format ?? '[{DATE} {LEVEL}] {MESSAGE}';
@@ -52,24 +62,7 @@ class logger {
      * @returns {Logger} Logger for chaining
      */
     static debug(...msg) {
-        const date = new Date().toLocaleString(log.type, {
-            hour12: false,
-        });
-
-        if (log.loggerEnabled) {
-            if (log.log) {
-                if (log.color) {
-                    console.debug(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{LEVEL}', (colors['debug'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
-                } else {
-                    console.debug(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', logger.lengthFixer('Debug')).replaceAll('{MESSAGE}', msg.join(' ')));
-                }
-            }
-
-            if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', 'Debug').replaceAll('{MESSAGE}', msg.join(' ')));
-        }
-
-        return logger;
-
+        logger.customLevel('debug', false, ...msg);
     }
 
     /**
@@ -78,23 +71,7 @@ class logger {
      * @returns {Logger} Logger for chaining
      */
     static info(...msg) {
-        const date = new Date().toLocaleString(log.type, {
-            hour12: false,
-        });
-
-        if (log.loggerEnabled) {
-            if (log.log) {
-                if (log.color) {
-                    console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{LEVEL}', (colors['info'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
-                } else {
-                    console.log(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', logger.lengthFixer('Info')).replaceAll('{MESSAGE}', msg.join(' ')));
-                }
-            }
-
-            if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', 'Info').replaceAll('{MESSAGE}', msg.join(' ')));
-        }
-
-        return logger;
+        logger.customLevel('info', false, ...msg);
     }
 
     /**
@@ -103,23 +80,7 @@ class logger {
      * @returns {Logger} Logger for chaining
      */
     static log(...msg) {
-        const date = new Date().toLocaleString(log.type, {
-            hour12: false,
-        });
-
-        if (log.loggerEnabled) {
-            if (log.log) {
-                if (log.color) {
-                    console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{LEVEL}', (colors['log'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
-                } else {
-                    console.log(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', logger.lengthFixer('Log')).replaceAll('{MESSAGE}', msg.join(' ')));
-                }
-            }
-
-            if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', 'Log').replaceAll('{MESSAGE}', msg.join(' ')));
-        }
-
-        return logger;
+        logger.customLevel('log', false, ...msg);
     }
 
     /**
@@ -128,23 +89,7 @@ class logger {
      * @returns {Logger} Logger for chaining
      */
     static warn(...msg) {
-        const date = new Date().toLocaleString(log.type, {
-            hour12: false,
-        });
-
-        if (log.loggerEnabled) {
-            if (log.log) {
-                if (log.color) {
-                    console.warn(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{LEVEL}', (colors['warn'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
-                } else {
-                    console.warn(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', logger.lengthFixer('Warn')).replaceAll('{MESSAGE}', msg.join(' ')));
-                }
-            }
-
-            if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', 'Warn').replaceAll('{MESSAGE}', msg.join(' ')));
-        }
-
-        return logger;
+        logger.customLevel('warn', false, ...msg);
     }
 
     /**
@@ -153,23 +98,7 @@ class logger {
      * @returns {Logger} Logger for chaining
      */
     static error(...msg) {
-        const date = new Date().toLocaleString(log.type, {
-            hour12: false,
-        });
-
-        if (log.loggerEnabled) {
-            if (log.log) {
-                if (log.color) {
-                    console.error(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{LEVEL}', (colors['error'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
-                } else {
-                    console.error(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', logger.lengthFixer('Error')).replaceAll('{MESSAGE}', msg.join(' ')));
-                }
-            }
-
-            if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', 'Error').replaceAll('{MESSAGE}', msg.join(' ')));
-        }
-
-        return logger;
+        logger.customLevel('error', false, ...msg);
     }
 
     /**
@@ -178,23 +107,7 @@ class logger {
      * @returns {Logger} Logger for chaining
      */
     static loaded(...msg) {
-        const date = new Date().toLocaleString(log.type, {
-            hour12: false,
-        });
-
-        if (log.loggerEnabled) {
-            if (log.log) {
-                if (log.color) {
-                    console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{LEVEL}', (colors['Load'])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
-                } else {
-                    console.log(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', logger.lengthFixer('Load')).replaceAll('{MESSAGE}', msg.join(' ')));
-                }
-            }
-
-            if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', 'Load').replaceAll('{MESSAGE}', msg.join(' ')));
-        }
-
-        return logger;
+        logger.customLevel('Load', false, ...msg);
     }
 
     /**
@@ -203,20 +116,22 @@ class logger {
      * @param  {...String} msg The message to log
      * @returns {Logger} Logger for chaining
      */
-    static customLevel(level, ...msg) {
-        const date = new Date().toLocaleString(log.type, {
+    static customLevel(level, importa, ...msg) {
+        const date = new Date().toLocaleString(log.date_type, {
             hour12: false,
         });
 
-        if (log.color) {
-            console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{LEVEL}', (colors[level.toLowerCase()])).replaceAll('{MESSAGE}', chalk.blue(msg.join(' '))));
-        } else {
-            console.log(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', logger.lengthFixer(level)).replaceAll('{MESSAGE}', msg.join(' ')));
+        if (log.log || importa) {
+            if (log.color) {
+                console.log(format.replaceAll('{DATE}', (chalk.gray(date))).replaceAll('{LEVEL}', (level_colors[level.toLowerCase()])).replaceAll('{MESSAGE}', message_colors[level.toLowerCase()](msg.join(' '))));
+            } else {
+                console.log(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', logger.lengthFixer(level)).replaceAll('{MESSAGE}', msg.join(' ')));
+            }
         }
 
         if (log.saveInFiles) logger.write(format.replaceAll('{DATE}', date).replaceAll('{LEVEL}', level).replaceAll('{MESSAGE}', msg.join(' ')));
 
-        return logger.important;
+        return importa ? logger.important : logger;
     }
 
     /**
@@ -224,12 +139,12 @@ class logger {
      */
     static get important() {
         return {
-            debug: (...msg) => logger.customLevel('Debug', msg.join(' ')),
-            info: (...msg) => logger.customLevel('Info', msg.join(' ')),
-            log: (...msg) => logger.customLevel('Log', msg.join(' ')),
-            warn: (...msg) => logger.customLevel('Warn', msg.join(' ')),
-            error: (...msg) => logger.customLevel('Error', msg.join(' ')),
-            loaded: (...msg) => logger.customLevel('Load', msg.join(' ')),
+            debug: (...msg) => logger.customLevel('Debug', true, msg.join(' ')),
+            info: (...msg) => logger.customLevel('Info', true, msg.join(' ')),
+            log: (...msg) => logger.customLevel('Log', true, msg.join(' ')),
+            warn: (...msg) => logger.customLevel('Warn', true, msg.join(' ')),
+            error: (...msg) => logger.customLevel('Error', true, msg.join(' ')),
+            loaded: (...msg) => logger.customLevel('Load', true, msg.join(' ')),
         };
     }
 
@@ -238,15 +153,33 @@ class logger {
      * @param  {...String} logs
      */
     static write(...logs) {
-        const writeDate = new Date();
-
-        const filePath = path.join(__dirname, '../../../', log.path, `${writeDate.getFullYear()}-${writeDate.getMonth()}-${writeDate.getDate()}.log`);
 
         if (!fs.existsSync(path.join(__dirname, '../../../', log.path))) fs.mkdirSync(path.join(__dirname, '../../../', log.path));
+        if (!fs.existsSync(path.join(__dirname, '../../../', log.path, 'latest.log'))) fs.appendFileSync(path.join(__dirname, '../../../', log.path, 'latest.log'), '');
 
-        if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, '');
+        const latest = fs.statSync(path.join(__dirname, '../../../', log.path, 'latest.log'));
 
-        fs.appendFileSync(filePath, fs.readFileSync(filePath, 'utf-8') ? '\n' + logs.join(' ') : logs.join(' '), 'utf-8');
+        if (new Date(latest.birthtime).toLocaleDateString() !== new Date().toLocaleDateString()) {
+            const oldDate = new Date(latest.birthtime).toLocaleDateString(log.date_type).split('/').map((x) => x.padStart(2, '0')).join('-');
+
+            const oldFile = fs.createReadStream(path.join(__dirname, '../../../', log.path, 'latest.log'));
+
+            if (latest.size !== 0) {
+                oldFile.pipe(zlib.createGzip()).pipe(fs.createWriteStream(path.join(__dirname, '../../../', log.path, `${oldDate}.log.gz`)));
+
+                oldFile.on('end', () => {
+                    fs.unlink(path.join(__dirname, '../../../', log.path, 'latest.log'), () => {
+                        fs.writeFileSync(path.join(__dirname, '../../../', log.path, 'latest.log'), logs.join(' '), 'utf-8');
+                    });
+                });
+            } else {
+                fs.unlinkSync(path.join(__dirname, '../../../', log.path, 'latest.log'));
+                fs.writeFileSync(path.join(__dirname, '../../../', log.path, 'latest.log'), logs.join(' '), 'utf-8');
+            }
+        } else {
+            fs.appendFileSync(path.join(__dirname, '../../../', log.path, 'latest.log'), fs.readFileSync(path.join(__dirname, '../../../', log.path, 'latest.log'), 'utf-8') ? '\n' + logs.join(' ') : logs.join(' '), 'utf-8');
+        }
+
     }
 
     /**
@@ -256,6 +189,10 @@ class logger {
      */
     static lengthFixer(level) {
         return level.padStart(5);
+    }
+
+    static get Settings() {
+        return log;
     }
 }
 

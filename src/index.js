@@ -28,7 +28,7 @@ if (config.Logger.logLogo) {
 ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
 ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
 A Chatting Application
-Running version ${config.Constants.version ? `v${config.Constants.version}` : 'Unknown version'} of Kastel's Backend. Node.js version ${process.version}\n`));
+Running version ${config.Constants.PRIVATE.version ? `v${config.Constants.PRIVATE.version}` : 'Unknown version'} of Kastel's Backend. Node.js version ${process.version}\n`));
 }
 
 /* Express Imports */
@@ -59,8 +59,8 @@ app.use(cors())
 /* Error Handling */
 if (config.Logger.logErrors) {
     process
-        .on('uncaughtException', (err) => logger.important.error(`Unhandled Exception, \n${err.stack}`))
-        .on('unhandledRejection', (reason) => logger.important.error(`Unhandled Rejection, \n${reason.stack}`));
+        .on('uncaughtException', (err) => logger.error(`Unhandled Exception, \n${err.stack}`))
+        .on('unhandledRejection', (reason) => logger.error(`Unhandled Rejection, \n${reason?.stack ? reason.stack : reason}`));
 }
 
 /* Sets the users IP for later simpler use */
@@ -123,6 +123,6 @@ app.listen((config.Server.port || 62250), async () => {
         process.exit();
     });
 
-    if (config.Logger.logInfo) logger.important.info(`${config.Logger.timeStartUp ? `Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(2)}s to Start Up, ` : ''}Loaded ${Routes.length} Routes, Running Version ${config.Constants.version ? `v${config.Constants.version}` : 'Unknown version'}, Cleared ${cleared.length} keys from cache`);
+    if (config.Logger.logInfo) logger.important.info(`${config.Logger.timeStartUp ? `Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(2)}s to Start Up, ` : ''}Loaded ${Routes.length} Routes, Running Version ${config.Constants.PRIVATE.version ? `v${config.Constants.PRIVATE.version}` : 'Unknown version'}, Cleared ${cleared.length} keys from cache`);
     if (!config.Logger.logInfo && config.Logger.timeStartUp) logger.important.info(`Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(3)}s to Start Up`);
 });

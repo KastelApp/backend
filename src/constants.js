@@ -131,4 +131,7 @@ this.GUILD_FLAGS.ALL = Object.values(this.GUILD_FLAGS).reduce((a, p) => a | p, 0
 this.FLAGS.ALL = Object.values(this.FLAGS).reduce((a, p) => a | p, 0);
 this.PERMISSIONS.ALL = Object.values(this.PERMISSIONS).reduce((a, p) => a | p, 0n);
 
-module.exports.version = require('../package.json').version;
+module.exports.PRIVATE = {
+    version: require('../package.json').version,
+    node_version: 19,
+};

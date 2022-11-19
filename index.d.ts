@@ -42,8 +42,4 @@ export type Methods = 'all' | 'ALL' | 'get' | 'GET' | 'delete' | 'DELETE' | 'hea
 
 export type RunCallBack = (req: express.Request, res: express.Response, next: express.NextFunction, redis: cache) => {}
 
-declare global {
-    
-}
-
-export {}
+export type ChalkColors = 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white' | 'gray' | 'grey' | 'black' | 'redBright' | 'greenBright' | 'yellowBright' | 'blueBright' | 'magentaBright' | 'cyanBright' | 'whiteBright' | 'blackBright'

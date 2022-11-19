@@ -1,6 +1,9 @@
 node_modules/
 logs/
 .vscode/
-tests/
-
 config.js
+packge-lock.json
+yarn.lock
+Test.js
+.yarn
+.yarnrc.yml
