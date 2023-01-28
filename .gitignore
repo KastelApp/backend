@@ -1,9 +1,4 @@
-node_modules/
-logs/
-.vscode/
-config.js
-packge-lock.json
-yarn.lock
-Test.js
 .yarn
-.yarnrc.yml
+config.ts
+dist
+node_modules
