@@ -11,7 +11,7 @@
 
 import { Route } from '@kastelll/packages';
 
-new Route('/', 'get', [], (req, res) => {
+new Route('/', 'GET', [], (req, res) => {
     res.send({
         Code: 200,
         Message: {
