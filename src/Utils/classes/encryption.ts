@@ -9,20 +9,20 @@
  * GPL 3.0 Licensed
  */
 
-const crypto = require('crypto');
-const { Encryption } = require('../../config');
+import crypto from 'crypto';
+import { Encryption as En } from '../../Config';
 
-const algorithm = Encryption.algorithm || 'aes-256-cbc';
-const initVector = Encryption.initVector;
-const securityKey = Encryption.securityKey;
+const algorithm = En.algorithm;
+const initVector = En.initVector;
+const securityKey = En.securityKey;
 
-class encryption {
+class Encryption {
     /**
      * Encrypt Data
      * @param {String} data The String to encrypt
      * @returns {String} The encrypted string
      */
-    static encrypt(data) {
+    static encrypt(data: string): string {
         try {
             const cipher = crypto.createCipheriv(algorithm, securityKey, initVector);
 
@@ -30,7 +30,7 @@ class encryption {
                 data,
             };
 
-            return cipher.update(encryption.fixData(dd), 'utf-8', 'hex') + cipher.final('hex');
+            return cipher.update(Encryption.fixData(dd), 'utf-8', 'hex') + cipher.final('hex');
         } catch (er) {
             throw new Error(`Failed to encrypt\n${er}`);
         }
@@ -41,16 +41,16 @@ class encryption {
      * @param {String} data
      * @returns {*} the decrypted data
      */
-    static decrypt(data, raw = false) {
+    static decrypt(data: string, raw = false): any {
         try {
             const decipher = crypto.createDecipheriv(algorithm, securityKey, initVector);
             const decrypted = decipher.update(data, 'hex', 'utf-8') + decipher.final('utf8');
-            const cleaned = encryption.cleanData(decrypted);
+            const cleaned = Encryption.cleanData(decrypted);
 
             if (raw) return cleaned;
 
             return cleaned.data;
-        } catch (er) {
+        } catch (er: any) {
             throw new Error(`Failed to decrypt (${er.message})`);
         }
     }
@@ -60,9 +60,9 @@ class encryption {
      * @param {String} item
      * @returns {Boolean} If the string is encrypted or not
      */
-    static isEncrypted(item) {
+    static isEncrypted(item: string): boolean {
         try {
-            encryption.decrypt(item);
+            Encryption.decrypt(item);
 
             return true;
         } catch (e) {
@@ -73,7 +73,7 @@ class encryption {
     /**
      * @private
      */
-    static fixData(data) {
+    static fixData(data: any): string {
         if (typeof data == 'object') data = JSON.stringify(data);
 
         if (typeof data == 'undefined') data = '';
@@ -88,7 +88,7 @@ class encryption {
     /**
      * @private
      */
-    static cleanData(data) {
+    static cleanData(data: string): any {
         try {
             const dd = JSON.parse(data);
 
@@ -102,10 +102,10 @@ class encryption {
      * @param {*} items
      * @return {items}
      */
-    static completeDecryption(items, raw = false) {
-        const decrypt = (item) => encryption.decrypt(item, raw);
-        const completeDecrypt = (item) => encryption.completeDecryption(item, raw);
-        const isEncrypted = encryption.isEncrypted;
+    static completeDecryption(items: any, raw = false): any {
+        const decrypt = (item: string) => Encryption.decrypt(item, raw);
+        const completeDecrypt = (item: string) => Encryption.completeDecryption(item, raw);
+        const isEncrypted = Encryption.isEncrypted;
 
         if (typeof items == 'undefined') {
             return null;
@@ -116,7 +116,7 @@ class encryption {
         }
 
         if (Array.isArray(items)) {
-            const newArray = [];
+            const newArray: any[] = [];
 
             for (const item of items) {
                 if (item == true || item == false || item == null || typeof item == 'number' || (typeof item == 'object' ? item instanceof Date ? true : false : false)) {
@@ -135,7 +135,9 @@ class encryption {
 
             return newArray;
         } else if (typeof items == 'object' && !Array.isArray(items)) {
-            const newObject = {};
+            const newObject: {
+                [key: string]: any;
+            } = {};
 
             for (const i in items) {
                 const item = items[i];
@@ -164,10 +166,10 @@ class encryption {
      * @param {*} items
      * @return {items}
      */
-    static completeEncryption(items) {
-        const encrypt = encryption.encrypt;
-        const completeEncrypt = encryption.completeEncryption;
-        const isEncrypted = encryption.isEncrypted;
+    static completeEncryption(items: any): any {
+        const encrypt = Encryption.encrypt;
+        const completeEncrypt = Encryption.completeEncryption;
+        const isEncrypted = Encryption.isEncrypted;
 
         if (typeof items == 'undefined') {
             return null;
@@ -178,11 +180,12 @@ class encryption {
         }
 
         if (items instanceof Date) {
-            return encrypt(Number(items));
+            const numberedDate = items.getTime();
+            return encrypt(String(numberedDate));
         }
 
         if (Array.isArray(items)) {
-            const newArray = [];
+            const newArray: any[] = [];
 
             for (const item of items) {
                 if (item == true || item == false || item == null || typeof item == 'number' || (typeof item == 'object' ? item instanceof Date ? true : false : false)) {
@@ -199,7 +202,9 @@ class encryption {
 
             return newArray;
         } else if (typeof items == 'object' && !Array.isArray(items)) {
-            const newObject = {};
+            const newObject: {
+                [key: string]: any;
+            } = {};
 
             for (const i in items) {
                 const item = items[i];
@@ -223,4 +228,6 @@ class encryption {
     }
 }
 
-module.exports = encryption;
+export default Encryption;
+
+export { Encryption}

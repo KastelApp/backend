@@ -9,55 +9,66 @@
  * GPL 3.0 Licensed
  */
 
-const { ALLOWED_MENTIONS } = require('../../constants');
+import { AllowedMentions } from "../../Constants";
+import { Schema } from "../../Types/Schema";
 
 /**
  * @type {import("../../..").Schema}
  */
-const roles = {
-    type: Array,
-    data: {
-        id: {
-            name: '_id',
-            expected: String,
-            default: null,
-        },
-        name: {
-            name: 'name',
-            expected: String,
-            default: 'Unknown Role Name',
-        },
-        allowed_nsfw: {
-            name: 'allowed_nsfw',
-            expected: Boolean,
-            default: false,
-        },
-        deleteable: {
-            name: 'deleteable',
-            expected: Boolean,
-            default: true,
-        },
-        allowed_mentions: {
-            name: 'allowed_mentions',
-            expected: Number,
-            default: ALLOWED_MENTIONS.ALL,
-        },
-        hoisted: {
-            name: 'hoisted',
-            expected: Boolean,
-            default: false,
-        },
-        color: {
-            name: 'color',
-            expected: String,
-            default: '#ff7f50',
-        },
-        permissions: {
-            name: 'permissions',
-            expected: Number,
-            default: 0,
-        },
+const Roles: Schema = {
+  type: Array,
+  data: {
+    id: {
+      name: "_id",
+      expected: String,
+      default: null,
+      extended: false,
     },
+    Name: {
+      name: "Name",
+      expected: String,
+      default: "Unknown Role Name",
+      extended: false,
+    },
+    AllowedNsfw: {
+      name: "AllowedNsfw",
+      expected: Boolean,
+      default: false,
+      extended: false,
+    },
+    Deleteable: {
+      name: "Deleteable",
+      expected: Boolean,
+      default: true,
+      extended: false,
+    },
+    AllowedMentions: {
+      name: "AllowedMentions",
+      expected: Number,
+      default: AllowedMentions.All,
+      extended: false,
+    },
+    Hoisted: {
+      name: "Hoisted",
+      expected: Boolean,
+      default: false,
+      extended: false,
+    },
+    Color: {
+      name: "Color",
+      expected: Number,
+      default: 16744272,
+      extended: false,
+    },
+    Permissions: {
+      name: "Permissions",
+      expected: Number,
+      default: 0,
+      extended: false,
+    },
+  },
 };
 
-module.exports = roles;
+export default Roles;
+
+export { Roles };

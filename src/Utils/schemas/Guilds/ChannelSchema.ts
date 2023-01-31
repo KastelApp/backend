@@ -17,63 +17,63 @@ const ChannelSchema = new Schema({
         required: true,
     },
 
-    guild: { // Allow easier deletion of role schemas when a guild owner deletes their guild
+    Guild: { // Allow easier deletion of role schemas when a guild owner deletes their guild
         type: String,
         required: true,
-        ref: 'guilds',
+        ref: 'Guilds',
     },
 
-    name: {
+    Name: {
         type: String,
         required: true,
     },
 
-    description: {
+    Description: {
         type: String,
         required: false,
     },
 
-    type: {
+    Type: {
         type: Number,
         required: true,
         default: 2,
     },
 
-    nsfw: {
+    Nsfw: {
         type: Boolean,
         required: false,
     },
 
-    allowed_mentions: {
+    AllowedMentions: {
         type: Number,
         required: false,
         default: 0,
     },
 
-    parent: {
+    Parent: {
         type: String,
         required: false,
-        ref: 'channels',
+        ref: 'Channels',
     },
 
-    children: [{
+    Children: [{
         type: String,
         required: false,
-        ref: 'channels',
+        ref: 'Channels',
     }],
 
-    position: {
+    Position: {
         type: Number,
         required: true,
     },
 
-    permissions: {
+    Permissions: {
         type: Number,
         required: true,
         default: 0,
     },
 });
 
-export default model('channels', ChannelSchema);
+export default model('Channels', ChannelSchema);
 
 export { ChannelSchema }

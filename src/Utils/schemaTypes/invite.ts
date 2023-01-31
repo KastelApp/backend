@@ -9,43 +9,52 @@
  * GPL 3.0 Licensed
  */
 
+import { Schema } from "../../Types/Schema";
+
 /**
  * @type {import("../../..").Schema}
  */
-const invite = {
+const Invite: Schema = {
     type: Object,
     data: {
         id: {
             name: '_id',
             expected: String,
             default: null,
+            extended: false
         },
-        expires: {
-            name: 'expires',
+        Expires: {
+            name: 'Expires',
             expected: Date,
             default: null,
+            extended: false
         },
-        uses: {
-            name: 'uses',
+        Uses: {
+            name: 'Uses',
             expected: Number,
             default: 0,
+            extended: false
         },
-        max_uses: {
-            name: 'max_uses',
+        MaxUses: {
+            name: 'MaxUses',
             expected: Number,
             default: null,
+            extended: false
         },
-        creator: {
-            name: 'creator',
+        Creator: {
+            name: 'Creator',
             extended: true,
-            extends: 'guildMember',
+            extends: 'GuildMember',
         },
-        deleteable: {
-            name: 'deleteable',
+        Deleteable: {
+            name: 'Deleteable',
             expected: Boolean,
             default: true,
+            extended: false
         },
     },
 };
 
-module.exports = invite;
+export default Invite;
+
+export { Invite }

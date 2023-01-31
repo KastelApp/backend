@@ -9,65 +9,78 @@
  * GPL 3.0 Licensed
  */
 
-const { CHANNEL_TYPES, ALLOWED_MENTIONS } = require('../../constants');
+import {  ChannelTypes, AllowedMentions  } from '../../Constants';
+import { Schema } from '../../Types/Schema';
 
 /**
  * @type {import("../../..").Schema}
  */
-const channel = {
+const Channel: Schema = {
     type: Object,
     data: {
         id: {
             name: '_id',
             expected: String,
             default: null,
+            extended: false
         },
-        name: {
-            name: 'name',
+        Name: {
+            name: 'Name',
             expected: String,
             default: 'Unknown Channel Name',
+            extended: false
         },
-        description: {
-            name: 'description',
+        Description: {
+            name: 'Description',
             expected: String,
             default: null,
+            extended: false
         },
-        type: {
-            name: 'type',
+        Type: {
+            name: 'Type',
             expected: Number,
-            default: CHANNEL_TYPES.GUILD_TEXT,
+            default: ChannelTypes.GuildText,
+            extended: false
         },
-        nsfw: {
-            name: 'nsfw',
+        Nsfw: {
+            name: 'Nsfw',
             expected: Boolean,
             default: false,
+            extended: false
         },
-        allowed_mentions: {
-            name: 'allowed_mentions',
+        AllowedMentions: {
+            name: 'AllowedMentions',
             expected: Number,
-            default: ALLOWED_MENTIONS.ALL,
+            default: AllowedMentions.All,
+            extended: false
         },
-        parent: {
-            name: 'parent',
+        Parent: {
+            name: 'Parent',
             expected: String,
             default: null,
+            extended: false
         },
-        children: {
-            name: 'children',
+        Children: {
+            name: 'Children',
             expected: Array,
             default: null,
+            extended: false
         },
-        position: {
-            name: 'position',
+        Position: {
+            name: 'Position',
             expected: Number,
             default: 0,
+            extended: false
         },
-        permissions: {
-            name: 'permissions',
+        Permissions: {
+            name: 'Permissions',
             expected: Number,
             default: 0,
+            extended: false
         },
     },
 };
 
-module.exports = channel;
+export default Channel;
+
+export { Channel }

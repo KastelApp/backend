@@ -17,47 +17,47 @@
  * @param {*} provided
  * @returns {*} The defaults and provided mixed
  */
-const defaultManager = (defaults, provided) => {
-    if (typeof defaults == 'string') {
-        if (!provided) return defaults;
-        else return provided;
+const defaultManager = (defaults: any, provided?: any): any => {
+    if (typeof defaults === 'string') {
+      if (!provided) return defaults;
+      else return provided;
     }
-
-    if (typeof defaults == 'object' && !Array.isArray(defaults)) {
-        const tempObject = {};
-
-        for (const item in defaults) {
-            if (typeof defaults[item] == 'object' && !Array.isArray(defaults[item])) {
-                for (const item2 in defaults[item]) {
-                    if (typeof tempObject[item] == 'undefined') tempObject[item] = {};
-
-                    if (typeof provided?.[item]?.[item2] == 'undefined') {
-                        tempObject[item][item2] = defaults[item][item2];
-                    } else {
-                        tempObject[item][item2] = provided[item][item2];
-                    }
-
-                }
-            } else if (typeof defaults[item] == 'object' && Array.isArray(defaults[item])) {
-
-                if (typeof provided?.[item] == 'undefined') {
-                    tempObject[item] = defaults[item];
-                } else {
-                    tempObject[item] = provided[item];
-                }
-
-            } else if (typeof provided?.[item] == 'undefined') {
-                tempObject[item] = defaults[item];
+  
+    if (typeof defaults === 'object' && !Array.isArray(defaults)) {
+      const tempObject: any = {};
+  
+      for (const item in defaults) {
+        if (typeof defaults[item] === 'object' && !Array.isArray(defaults[item])) {
+          for (const item2 in defaults[item]) {
+            if (typeof tempObject[item] === 'undefined') tempObject[item] = {};
+  
+            if (typeof provided?.[item]?.[item2] === 'undefined') {
+              tempObject[item][item2] = defaults[item][item2];
             } else {
-                tempObject[item] = provided?.[item];
+              tempObject[item][item2] = provided[item][item2];
             }
+          }
+        } else if (typeof defaults[item] === 'object' && Array.isArray(defaults[item])) {
+          if (typeof provided?.[item] === 'undefined') {
+            tempObject[item] = defaults[item];
+          } else {
+            tempObject[item] = provided[item];
+          }
+        } else if (typeof provided?.[item] === 'undefined') {
+          tempObject[item] = defaults[item];
+        } else {
+          tempObject[item] = provided?.[item];
         }
-
-        return tempObject;
+      }
+  
+      return tempObject;
     }
-
+  
     if (!provided) return defaults;
     else return provided;
-};
+  };
+  
 
-module.exports = defaultManager;
+export default defaultManager;
+
+export { defaultManager }

@@ -17,43 +17,43 @@ const MessageSchema = new Schema({
         required: true,
     },
 
-    author: {
+    Author: {
         type: String,
         required: true,
-        ref: 'users',
+        ref: 'Users',
     },
 
-    content: {
+    Content: {
         type: String,
         required: true,
     },
 
-    allowed_mentions: {
+    AllowedMentions: {
         type: Number,
         required: false,
         default: 0,
     },
 
-    created_date: {
+    CreatedDate: {
         type: Date,
         required: true,
         default: Date.now(),
     },
 
-    updated_date: {
+    UpdatedDate: {
         type: Date,
         required: true,
         default: Date.now(),
     },
 
-    channel: {
+    Channel: {
         type: String,
         required: true,
-        ref: 'channels',
+        ref: 'Channels',
     },
 
 });
 
-export default model('messages', MessageSchema);
+export default model('Messages', MessageSchema);
 
 export { MessageSchema }

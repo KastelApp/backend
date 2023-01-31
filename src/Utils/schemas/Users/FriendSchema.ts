@@ -12,34 +12,34 @@
 import { model, Schema } from 'mongoose';
 
 const FriendSchema = new Schema({
-    sender: {
+    Sender: {
         type: String,
         required: true,
         ref: 'users',
     },
 
-    receiver: {
+    Receiver: {
         type: String,
         required: true,
         ref: 'users',
     },
 
-    senderNickname: {
+    SenderNickname: {
         type: String,
         required: false,
     },
 
-    receiverNickname: {
+    ReceiverNickname: {
         type: String,
         required: false,
     },
 
-    accepted: {
+    Accepted: {
         type: Boolean,
         required: false,
     },
 });
 
-export default model('friends', FriendSchema);
+export default model('Friends', FriendSchema);
 
 export { FriendSchema }

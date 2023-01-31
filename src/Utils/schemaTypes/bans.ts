@@ -9,43 +9,51 @@
  * GPL 3.0 Licensed
  */
 
+import { Schema } from "../../Types/Schema";
+
 /**
  * @type {import("../../..").Schema}
  */
-const bans = {
+const Bans: Schema = {
     type: Array,
     data: {
         id: {
             name: '_id',
             expected: String,
             default: null,
+            extended: false
         },
-        user: {
-            name: 'user',
-            extended: true,
-            extends: 'friendUser',
+        User: {
+            name: 'User',
+            extends: 'FriendUser',
+            extended: true
         },
-        banner: {
-            name: 'banner',
-            extended: true,
-            extends: 'friendUser',
+        Banner: {
+            name: 'Banner',
+            extends: 'FriendUser',
+            extended: true
         },
-        reason: {
-            name: 'reason',
+        Reason: {
+            name: 'Reason',
             expected: String,
             default: 'N/A',
+            extended: false
         },
-        ban_date: {
-            name: 'banned_date',
-            expected: Date,
+        BanDate: {
+            name: 'BannedDate',
+            expected: Number,
             default: Date.now(),
+            extended: false
         },
-        unban_date: {
-            name: 'unban_date',
-            expected: Date,
+        UnbanDate: {
+            name: 'UnbanDate',
+            expected: Number,
             default: null,
+            extended: false
         },
     },
 };
 
-module.exports = bans;
+export default Bans;
+
+export { Bans }

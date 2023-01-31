@@ -9,17 +9,16 @@
  * GPL 3.0 Licensed
  */
 
-require('./utils/checker.js');
-const config = require('./config');
+const timeStarted = Date.now();
 
-// If the user wants to time the startup
-const timeStarted = config.Logger.timeStartUp ? (Date.now()) : null;
+import { Config } from './Config';
+import Constants, { Relative } from './Constants'
 
 /* Misc Imports */
-const { default: mongoose } = require('mongoose');
-const chalk = require('chalk');
+import mongoose from 'mongoose';
+import chalk from 'chalk';
 
-if (config.Logger.logLogo) {
+if (Config.Logger.logLogo) {
     console.log(chalk.hex('#ca8911')(`
 ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
 ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
@@ -28,22 +27,21 @@ if (config.Logger.logLogo) {
 ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
 ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
 A Chatting Application
-Running version ${config.Constants.PRIVATE.version ? `v${config.Constants.PRIVATE.version}` : 'Unknown version'} of Kastel's Backend. Node.js version ${process.version}\n`));
+Running version ${Relative.Version ? `v${Relative.Version}` : 'Unknown version'} of Kastel's Backend. Node.js version ${process.version}\n`));
 }
 
 /* Express Imports */
-const express = require('express');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
-const bodyParser = require('body-parser');
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import bodyParser from 'body-parser';
 
 /* Util Imports */
-const uriGenerator = require('./utils/uriGenerator');
-const logger = require('./utils/classes/logger');
-const Route = require('./utils/classes/Route');
-const Routes = Route.loadRoutes(require('node:path').join(__dirname, 'routes'));
-const Cache = require('./utils/classes/Cache');
-require('./utils/classes/snowflake'); // Imported so settings are setup
+import { uriGenerator } from './utils/uriGenerator';
+import { Route } from '@kastelll/packages';
+import { join } from 'node:path';
+const Routes = Route.loadRoutes(join(__dirname, 'routes'));
+import { Cache } from './utils/classes/Cache';
 
 /* Express Middleware stuff */
 const app = express();
@@ -52,23 +50,23 @@ app.use(cors())
     .use(bodyParser.json())
     .use(bodyParser.urlencoded({ extended: true }))
     .use(bodyParser.raw())
-    .use(cookieParser(config.Server.cookieSecrets))
+    .use(cookieParser(Config.Server.cookieSecrets))
     .disable('x-powered-by');
 
 
 /* Error Handling */
-if (config.Logger.logErrors) {
+if (Config.Logger.logErrors) {
     process
-        .on('uncaughtException', (err) => logger.error(`Unhandled Exception, \n${err.stack}`))
-        .on('unhandledRejection', (reason) => logger.error(`Unhandled Rejection, \n${reason?.stack ? reason.stack : reason}`));
+        .on('uncaughtException', (err) => console.error(`Unhandled Exception, \n${err.stack}`))
+        .on('unhandledRejection', (reason: any) => console.error(`Unhandled Rejection, \n${reason?.stack ? reason.stack : reason}`));
 }
 
 /* Sets the users IP for later simpler use */
 /* Also Logs the requested path */
 app.use((req, res, next) => {
-    req.clientIp = (req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || req.ip).replace('::ffff:', '');
+    req.clientIp = ((req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || req.ip) as string).replace('::ffff:', '');
 
-    logger.info(`${req.clientIp} Requested ${req.path} (${req.method})`);
+    console.info(`${req.clientIp} Requested ${req.path} (${req.method})`);
 
     next();
 });
@@ -77,7 +75,7 @@ Route.setRoutes(app);
 
 /* If the path does not exist */
 app.all('*', (req, res) => {
-    logger.warn(`${req.clientIp} Requested ${req.path} That does does not exist with the method ${req.method}`);
+    console.warn(`${req.clientIp} Requested ${req.path} That does does not exist with the method ${req.method}`);
 
     res.status(404).send({
         code: 404,
@@ -92,37 +90,36 @@ app.all('*', (req, res) => {
 });
 
 
-app.listen((config.Server.port || 62250), async () => {
-    logger.important.info(`Server Started On Port ${config.Server.port || 62250}`);
+app.listen((Config.Server.port || 62250), async () => {
+    console.info(`Server Started On Port ${Config.Server.port || 62250}`);
 
-    const cache = new Cache(config.Redis.host, config.Redis.port, config.Redis.user, config.Redis.password, config.Redis.db);
+    const cache = new Cache(Config.Redis.host, Config.Redis.port, Config.Redis.user, Config.Redis.password, Config.Redis.db);
 
-    await cache.connect().then(() => logger.important.info('Redis connected!')).catch((e) => {
-        logger.important.error('Failed to connect to Redis', e);
+    await cache.connect().then(() => console.info('Redis connected!')).catch((e) => {
+        console.error('Failed to connect to Redis', e);
         process.exit();
     });
 
     let cleared = [];
 
-    if (config.Server.cache.clearOnStart) cleared = await cache.clear('ratelimits');
+    if (Config.Server.cache.clearOnStart) cleared = await cache.clear('ratelimits');
 
     setInterval(async () => {
         // NOTE WE ARE NOT CLEARING RATELIMITS WE ARE CLEARING EVERYTHING BUT RATELIMITS
+        // This is because we want to keep the ratelimits in cache so we can check them
         const clearedKeys = await cache.clear('ratelimits');
-        logger.important.info(`Cleared ${clearedKeys.length} keys from Cache`);
-    }, (config.Server.cache.clearInterval || 10800000));
+        console.info(`Cleared ${clearedKeys.length} keys from Cache`);
+    }, (Config.Server.cache.clearInterval || 10800000));
 
     app.cache = cache;
 
-    await mongoose.connect(uriGenerator(), {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        keepAlive: true,
-    }).then(() => logger.important.info('MongoDB connected!')).catch((e) => {
-        logger.important.error('Failed to connect to MongoDB', e);
+    mongoose.set('strictQuery', true);
+
+    mongoose.connect(uriGenerator()).then(() => console.info('MongoDB connected!')).catch((e) => {
+        console.error('Failed to connect to MongoDB', e);
         process.exit();
     });
 
-    if (config.Logger.logInfo) logger.important.info(`${config.Logger.timeStartUp ? `Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(2)}s to Start Up, ` : ''}Loaded ${Routes.length} Routes, Running Version ${config.Constants.PRIVATE.version ? `v${config.Constants.PRIVATE.version}` : 'Unknown version'}, Cleared ${cleared.length} keys from cache`);
-    if (!config.Logger.logInfo && config.Logger.timeStartUp) logger.important.info(`Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(3)}s to Start Up`);
+    if (Config.Logger.logInfo) console.info(`${Config.Logger.timeStartUp ? `Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(2)}s to Start Up, ` : ''}Loaded ${Routes.length} Routes, Running Version ${Constants.Relative.Version ? `v${Constants.Relative.Version}` : 'Unknown version'}, Cleared ${cleared.length} keys from cache`);
+    if (!Config.Logger.logInfo && Config.Logger.timeStartUp) console.info(`Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(3)}s to Start Up`);
 });

@@ -17,30 +17,30 @@ const GuildMemberSchema = new Schema({
         required: true,
     },
 
-    guild: { // Allow easier deletion of guild member schemas when a guild owner deletes their guild
+    Guild: { // Allow easier deletion of guild member schemas when a guild owner deletes their guild
         type: String,
         required: true,
-        ref: 'guilds',
+        ref: 'Guilds',
     },
 
-    user: {
+    User: {
         type: String,
         required: true,
-        ref: 'users',
+        ref: 'Users',
     },
 
-    roles: [{
+    Roles: [{
         type: String,
         required: false,
-        ref: 'roles',
+        ref: 'Roles',
     }],
 
-    nickname: {
+    Nickname: {
         type: String,
         required: false,
     },
 });
 
-export default model('guildMembers', GuildMemberSchema);
+export default model('GuildMembers', GuildMemberSchema);
 
 export { GuildMemberSchema }

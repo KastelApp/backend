@@ -9,33 +9,39 @@
  * GPL 3.0 Licensed
  */
 
+import { Schema } from "../../Types/Schema";
+
 /**
  * @type {import("../../..").Schema}
  */
-const friends = {
+const Friends: Schema = {
     type: Array,
     data: {
-        sender: {
-            name: 'sender',
+        Sender: {
+            name: 'Sender',
             extended: true,
-            extends: 'friendUser',
+            extends: 'FriendUser',
         },
-        receiver: {
-            name: 'receiver',
+        Receiver: {
+            name: 'Receiver',
             extended: true,
-            extends: 'friendUser',
+            extends: 'FriendUser',
         },
-        nickname: {
-            name: 'nickname',
+        Nickname: {
+            name: 'Nickname',
             expected: String,
             default: null,
+            extended: false,
         },
-        accepted: {
-            name: 'accepted',
+        Accepted: {
+            name: 'Accepted',
             expected: Boolean,
             default: false,
+            extended: false,
         },
     },
 };
 
-module.exports = friends;
+export default Friends;
+
+export { Friends }

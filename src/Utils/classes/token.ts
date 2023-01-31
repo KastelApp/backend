@@ -9,24 +9,23 @@
  * GPL 3.0 Licensed
  */
 
-const jwt = require('jsonwebtoken');
-const { Encryption } = require('../../config');
+import jwt from 'jsonwebtoken';
+import { Encryption } from '../../Config';
 
-/**
- * @typedef {Object} SignedObject
- * @property {Error} error The error if there is one
- * @property {*} data The signed jwt token
- */
+interface SignedObject {
+    error: Error | null;
+    data: any;
+}
 
-class token {
+class Token {
     /**
      * Create a token
      * @param {String} data
      * @returns {SignedObject}
      */
-    static sign(data, options = {
+    static sign(data: string, options = {
         expiresIn: '7d',
-    }) {
+    }): SignedObject {
         try {
 
             if (!data) {
@@ -42,7 +41,7 @@ class token {
                 error: null,
                 data: signed,
             };
-        } catch (e) {
+        } catch (e: any) {
             return {
                 error: e,
                 data: null,
@@ -55,7 +54,7 @@ class token {
      * @param {String} data
      * @returns {SignedObject}
      */
-    static verify(data, options) {
+    static verify(data: string, options?: any): SignedObject {
         try {
 
             if (!data) {
@@ -71,7 +70,7 @@ class token {
                 error: null,
                 data: verified,
             };
-        } catch (e) {
+        } catch (e: any) {
             return {
                 error: e,
                 data: null,
@@ -80,4 +79,6 @@ class token {
     }
 }
 
-module.exports = token;
+export default Token;
+
+export { Token }

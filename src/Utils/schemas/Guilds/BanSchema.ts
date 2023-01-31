@@ -17,41 +17,41 @@ const BanSchema = new Schema({
         required: true,
     },
 
-    guild: { // Allow easier deletion of role schemas when a guild owner deletes their guild
+    Guild: { // Allow easier deletion of role schemas when a guild owner deletes their guild
         type: String,
         required: true,
-        ref: 'guilds',
+        ref: 'Guilds',
     },
 
-    user: {
+    User: {
         type: String,
-        ref: 'users',
-        required: true,
-    },
-
-    banner: {
-        type: String,
-        ref: 'users',
+        ref: 'Users',
         required: true,
     },
 
-    reason: {
+    Banner: {
+        type: String,
+        ref: 'Users',
+        required: true,
+    },
+
+    Reason: {
         type: String,
         required: false,
     },
 
-    banned_date: {
-        type: Date,
+    BannedDate: {
+        type: Number,
         required: true,
         default: Date.now(),
     },
 
-    unban_date: {
-        type: Date,
+    UnbanDate: {
+        type: Number,
         required: false,
     },
 });
 
-export default model('bans', BanSchema);
+export default model('Bans', BanSchema);
 
 export { BanSchema }

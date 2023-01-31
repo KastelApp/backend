@@ -17,38 +17,38 @@ const InviteSchema = new Schema({
         required: true,
     },
 
-    guild: {
+    Guild: {
         type: String,
         required: true,
         ref: 'guilds',
     },
 
-    expires: {
+    Expires: {
         type: Date,
         required: false,
     },
 
-    uses: {
+    Uses: {
         type: Number,
         required: false,
     },
 
-    max_uses: {
+    MaxUses: {
         type: Number,
         required: false,
     },
 
-    creator: {
+    Creator: {
         type: String,
-        ref: 'guildMembers',
+        ref: 'GuildMembers',
     },
 
-    deleteable: { // Used for vanity URLs, Makes them undeleteable (Useful for guilds with more then one)
+    Deleteable: { // Used for vanity URLs, Makes them undeleteable (Useful for guilds with more then one)
         type: Boolean,
         default: true,
     },
 });
 
-export default model('invites', InviteSchema);
+export default model('Invites', InviteSchema);
 
 export { InviteSchema }

@@ -17,31 +17,31 @@ const GiftSchema = new Schema({
         required: true,
     },
 
-    user: {
+    User: {
         type: String,
         required: true,
-        ref: 'users',
+        ref: 'Users',
     },
 
-    type: {
+    Type: {
         type: Number,
         required: true,
     },
 
-    max_age: {
+    MaxAge: {
         type: Date,
         required: true,
     },
 
-    gift_length: {
+    GiftLength: {
         type: Date,
         required: true,
     },
 
-    used_by: {
+    UsedBy: {
         type: String,
         required: true,
-        ref: 'users',
+        ref: 'Users',
     },
 });
 

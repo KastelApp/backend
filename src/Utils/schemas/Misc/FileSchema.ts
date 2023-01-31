@@ -17,34 +17,34 @@ const FileSchema = new Schema({
         required: true,
     },
 
-    message: {
+    Message: {
         type: String,
         required: true,
-        ref: 'messages',
+        ref: 'Messages',
     },
 
-    name: {
+    Name: {
         type: String,
         required: true,
         default: 'Unknown',
     },
 
-    cdn_token: {
+    CdnToken: {
         type: String,
         required: true,
     },
 
-    type: {
+    Type: {
         type: String,
         required: true,
     },
 
-    deleted: {
+    Deleted: {
         type: Boolean,
         required: false,
     },
 });
 
-export default model('files', FileSchema);
+export default model('Files', FileSchema);
 
 export { FileSchema }

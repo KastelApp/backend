@@ -17,17 +17,17 @@ const GroupchatSchema = new Schema({
         required: true,
     },
 
-    users: [{
+    Users: [{
         type: String,
         ref: 'users',
     }],
 
-    owner: {
+    Owner: {
         type: String,
         ref: 'users',
     },
 });
 
-export default model('groupchats', GroupchatSchema);
+export default model('Groupchats', GroupchatSchema);
 
 export { GroupchatSchema }

@@ -9,43 +9,53 @@
  * GPL 3.0 Licensed
  */
 
+import { Schema } from "../../Types/Schema";
+
 /**
  * @type {import("../../..").Schema}
  */
-const friendUser = {
+const FriendUser: Schema = {
     type: Object,
     data: {
         id: {
             name: '_id',
             expected: String,
             default: null,
+            extended: false
         },
-        avatar_hash: {
-            name: 'avatar_hash',
+        AvatarHash: {
+            name: 'AvatarHash',
             expected: String,
             default: null,
+            extended: false
         },
-        username: {
-            name: 'username',
+        Username: {
+            name: 'Username',
             expected: String,
             default: 'Unknown Username',
+            extended: false
         },
-        tag: {
-            name: 'tag',
+        Tag: {
+            name: 'Tag',
             expected: String,
             default: '0000',
+            extended: false
         },
-        creation_date: {
-            name: 'created_date',
-            expected: Date,
+        CreationDate: {
+            name: 'CreationDate',
+            expected: Number,
             default: Date.now(),
+            extended: false
         },
-        badges: {
-            name: 'badges',
+        Flags: {
+            name: 'Flags',
             expected: Number,
             default: 0,
-        },
+            extended: false
+        }
     },
 };
 
-module.exports = friendUser;
+export default FriendUser;
+
+export { FriendUser }

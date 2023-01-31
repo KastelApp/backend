@@ -12,24 +12,24 @@
 import { model, Schema } from 'mongoose';
 
 const SettingSchema = new Schema({
-    user: {
+    User: {
         type: String,
-        ref: 'users',
+        ref: 'Users',
         required: true,
     },
 
-    status: {
+    Status: {
         type: String,
         required: false,
     },
 
-    presence: {
+    Presence: {
         type: Number,
         required: true,
         default: 0,
     },
 });
 
-export default model('settings', SettingSchema);
+export default model('Settings', SettingSchema);
 
 export { SettingSchema }

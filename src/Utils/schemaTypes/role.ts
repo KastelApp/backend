@@ -9,55 +9,66 @@
  * GPL 3.0 Licensed
  */
 
-const { ALLOWED_MENTIONS } = require('../../constants');
+import {  AllowedMentions  } from '../../Constants';
+import { Schema } from '../../Types/Schema';
 
 /**
  * @type {import("../../..").Schema}
  */
-const role = {
+const Role: Schema = {
     type: Object,
     data: {
         id: {
             name: '_id',
             expected: String,
             default: null,
+            extended: false
         },
-        name: {
-            name: 'name',
+        Name: {
+            name: 'Name',
             expected: String,
             default: 'Unknown Role Name',
+            extended: false
         },
-        allowed_nsfw: {
-            name: 'allowed_nsfw',
+        AllowedNsfw: {
+            name: 'AllowedNsfw',
             expected: Boolean,
             default: false,
+            extended: false
         },
-        deleteable: {
-            name: 'deleteable',
+        Deleteable: {
+            name: 'Deleteable',
             expected: Boolean,
             default: true,
+            extended: false
         },
-        allowed_mentions: {
-            name: 'allowed_mentions',
+        AllowedMentions: {
+            name: 'AllowedMentions',
             expected: Number,
-            default: ALLOWED_MENTIONS.ALL,
+            default: AllowedMentions.All,
+            extended: false
         },
-        hoisted: {
-            name: 'hoisted',
+        Hoisted: {
+            name: 'Hoisted',
             expected: Boolean,
             default: false,
+            extended: false
         },
-        color: {
-            name: 'color',
-            expected: String,
-            default: '#ff7f50',
+        Color: {
+            name: 'Color',
+            expected: Number,
+            default: 16744272,
+            extended: false
         },
-        permissions: {
-            name: 'permissions',
+        Permissions: {
+            name: 'Permissions',
             expected: Number,
             default: 0,
+            extended: false
         },
     },
 };
 
-module.exports = role;
+export default Role;
+
+export { Role }

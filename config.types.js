@@ -44,12 +44,12 @@
 
 /**
  * @typedef {Object} ColorChoices The colors that can be used for log types (Can be hex)
- * @property {import('./').ChalkColors} debug The color of the debug messages
- * @property {import('./').ChalkColors} info The color of the info messages
- * @property {import('./').ChalkColors} log The color of the log messages
- * @property {import('./').ChalkColors} warn The color of the warn messages
- * @property {import('./').ChalkColors} error The color of the error messages
- * @property {import('./').ChalkColors} loaded The color of the loaded messages
+ * @property {import('./src/Types').ChalkColors} debug The color of the debug messages
+ * @property {import('./src/Types').ChalkColors} info The color of the info messages
+ * @property {import('./src/Types').ChalkColors} log The color of the log messages
+ * @property {import('./src/Types').ChalkColors} warn The color of the warn messages
+ * @property {import('./src/Types').ChalkColors} error The color of the error messages
+ * @property {import('./src/Types').ChalkColors} loaded The color of the loaded messages
  */
 
 /**

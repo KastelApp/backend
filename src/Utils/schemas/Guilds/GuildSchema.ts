@@ -17,66 +17,66 @@ const GuildSchema = new Schema({
         required: true,
     },
 
-    name: {
+    Name: {
         type: String,
         required: true,
         default: 'Unknown Guild',
     },
 
-    description: {
+    Description: {
         type: String,
         required: false,
     },
 
-    flags: {
+    Flags: {
         type: Number,
         required: false,
         default: 0,
     },
 
-    owner: {
+    Owner: {
         type: String,
         required: true,
-        ref: 'guildMembers',
+        ref: 'GuildMembers',
     },
 
-    co_owners: [{
+    CoOwners: [{
         type: String,
         required: false,
-        ref: 'guildMembers',
+        ref: 'GuildMembers',
     }],
 
-    channels: [{
+    Channels: [{
         type: String,
         required: false,
-        ref: 'channels',
+        ref: 'Channels',
     }],
 
-    roles: [{
+    Roles: [{
         type: String,
         required: false,
-        ref: 'roles',
+        ref: 'Roles',
     }],
 
-    invites: [{
+    Invites: [{
         type: String,
         required: false,
-        ref: 'invites',
+        ref: 'Invites',
     }],
 
-    bans: [{
+    Bans: [{
         type: String,
         required: false,
         ref: 'bans',
     }],
 
-    members: [{
+    Members: [{
         type: String,
         required: false,
-        ref: 'guildMembers',
+        ref: 'GuildMembers',
     }],
 });
 
-export default model('guilds', GuildSchema);
+export default model('Guilds', GuildSchema);
 
 export { GuildSchema }

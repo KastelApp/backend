@@ -17,19 +17,19 @@ const DmSchema = new Schema({
         required: true,
     },
 
-    creator: { // First User
+    Creator: { // First User
         type: String,
         required: true,
         ref: 'users',
     },
 
-    receiver: { // Second User
+    Receiver: { // Second User
         type: String,
         required: true,
         ref: 'users',
     },
 });
 
-export default model('dm', DmSchema);
+export default model('Dm', DmSchema);
 
 export { DmSchema }

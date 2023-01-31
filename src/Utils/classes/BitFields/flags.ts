@@ -1,46 +1,72 @@
-/* !
- * This source code is taken and edited from https://github.com/discordjs/discord.js
- * It is Licensed under the Apache License that can be found here http://www.apache.org/licenses/LICENSE-2.0
- */
+import { Flags } from '../../../Constants'
 
-'use strict';
-const { FLAGS } = require('../../../constants');
-const BitField = require('./BitField');
+class FlagFields {
+    bits: number
+    constructor(bits: number) {
+        this.bits = bits
+    }
 
-/**
- * Data structure that makes it easy to interact with the Flags bitfields.
- * @extends {BitField}
- */
-class UserFlags extends BitField {}
+    has(bit: number) {
+        return (this.bits & bit) === bit
+    }
 
-/**
- * @name UserFlags
- * @kind constructor
- * @memberof UserFlags
- * @param {BitFieldResolvable} [bits=0] Bit(s) to read from
- */
+    add(bit: number): this {
+        if (this.has(bit)) return this
+        this.bits |= bit
+        return this
+    }
 
-/**
- * Bitfield of the packed bits
- * @type {number}
- * @name UserFlags#bitfield
- */
+    remove(bit: number): this {
+        if (!this.has(bit)) return this
+        this.bits ^= bit
+        return this
+    }
 
-/**
- * Numeric user flags. All available properties:
- * * `BETA_TESTER`
- * * `STAFF`
- * * `BOT`
- * * `VERIFIED_BOT`
- * * `SYSTEM`
- * * `GHOST`
- * * `SPAMMER`
- * * `BROKE_TOS`
- * * `CREATING_GUILDS_BAN`
- * * `ADDING_FRIENDS_BAN`
- * * `CREATING_GROUP_CHATS_BAN`
- * @type {Object}
- */
-UserFlags.BITFIELDS = FLAGS;
+    serialize(): number {
+        return this.bits
+    }
 
-module.exports = UserFlags;
+    toJSON(): Record<keyof typeof Flags, boolean> {
+        return Object.keys(Flags).reduce((obj, key) => {
+            obj[key as keyof typeof Flags] = this.has(Flags[key as keyof typeof Flags])
+            return obj
+        }, {} as Record<keyof typeof Flags, boolean>)
+    }
+
+    toArray(): string[] {
+        return Object.keys(Flags).reduce((arr, key) => {
+            if (this.has(Flags[key as keyof typeof Flags])) arr.push(key)
+            return arr
+        }, [] as string[])
+    }
+
+    hasString(bit: keyof typeof Flags) {
+        return this.has(Flags[bit as keyof typeof Flags])
+    }
+
+    static deserialize(bits: number): FlagFields {
+        return new FlagFields(bits)
+    }
+
+    static get FlagFields(): typeof Flags {
+        return Flags
+    }
+
+    static get FlagFieldsArray(): (keyof typeof Flags)[] {
+        return Object.keys(Flags) as (keyof typeof Flags)[]
+    }
+
+    // Private flags is anything under 1 << 15
+    static get PrivateFlags(): (keyof typeof Flags)[] {
+        return Object.keys(Flags).filter(key => Flags[key as keyof typeof Flags] < 1 << 15) as (keyof typeof Flags)[]
+    }
+
+    // Public flags is anything above 1 << 15
+    static get PublicFlags(): (keyof typeof Flags)[] {
+        return Object.keys(Flags).filter(key => Flags[key as keyof typeof Flags] >= 1 << 15) as (keyof typeof Flags)[]
+    }
+}
+
+export default FlagFields
+
+export { FlagFields }

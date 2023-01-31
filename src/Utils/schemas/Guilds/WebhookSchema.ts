@@ -17,37 +17,37 @@ const WebhookSchema = new Schema({
         required: true,
     },
 
-    guild: { // Allow easier deletion of role schemas when a guild owner deletes their guild
+    Guild: { // Allow easier deletion of role schemas when a guild owner deletes their guild
         type: String,
         required: true,
         ref: 'guilds',
     },
 
-    channel: {
+    Channel: {
         type: String,
         required: true,
-        ref: 'channels',
+        ref: 'Channels',
     },
 
-    username: {
+    Username: {
         type: String,
         required: true,
         username: 'Ghost',
     },
 
-    token: {
+    Token: {
         type: String,
         required: true,
         unqiue: true,
     },
 
-    allowed_mentions: {
+    AllowedMentions: {
         type: Number,
         required: false,
         default: 0,
     },
 });
 
-export default model('webhooks', WebhookSchema);
+export default model('Webhooks', WebhookSchema);
 
 export { WebhookSchema }

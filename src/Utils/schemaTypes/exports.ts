@@ -9,38 +9,57 @@
  * GPL 3.0 Licensed
  */
 
-const user = require('./user');
-const friend = require('./friend');
-const friends = require('./friends');
-const friendUser = require('./friendUser');
-const ban = require('./ban');
-const bans = require('./bans');
-const channel = require('./channel');
-const channels = require('./channels');
-const guild = require('./guild');
-const guilds = require('./guilds');
-const guildMember = require('./guildMember');
-const guildMembers = require('./guildMembers');
-const invite = require('./invite');
-const invites = require('./invites');
-const role = require('./role');
-const roles = require('./roles');
+import { User } from "./User";
+import { Friend } from "./Friend";
+import { Friends } from "./friends";
+import { FriendUser } from "./friendUser";
+import { Ban } from "./ban";
+import { Bans } from "./bans";
+import { Channel } from "./channel";
+import { Channels } from "./channels";
+import { Guild } from "./guild";
+import { Guilds } from "./guilds";
+import { GuildMember } from "./guildMember";
+import { GuildMembers } from "./guildMembers";
+import { Invite } from "./invite";
+import { Invites } from "./invites";
+import { Role } from "./role";
+import { Roles } from "./roles";
 
-module.exports = {
-    user,
-    friend,
-    friends,
-    friendUser,
-    ban,
-    bans,
-    channel,
-    channels,
-    guild,
-    guilds,
-    guildMember,
-    guildMembers,
-    invite,
-    invites,
-    role,
-    roles,
+export default {
+  User,
+  Friend,
+  Friends,
+  FriendUser,
+  Ban,
+  Bans,
+  Channel,
+  Channels,
+  Guild,
+  Guilds,
+  GuildMember,
+  GuildMembers,
+  Invite,
+  Invites,
+  Role,
+  Roles,
+};
+
+export {
+  User,
+  Friend,
+  Friends,
+  FriendUser,
+  Ban,
+  Bans,
+  Channel,
+  Channels,
+  Guild,
+  Guilds,
+  GuildMember,
+  GuildMembers,
+  Invite,
+  Invites,
+  Role,
+  Roles,
 };

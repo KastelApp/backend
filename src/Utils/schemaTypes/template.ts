@@ -9,18 +9,21 @@
  * GPL 3.0 Licensed
  */
 
+import { Schema } from "../../Types/Schema";
+
 /**
  * @type {import("../../..").Schema}
  */
-const template = {
-    type: String,
+const Template: Schema = {
+    type: Object,
     data: {
         example: {
             name: '_example',
             expected: String,
             default: 'This is an Example',
+            extended: false
         },
-        extended_example: {
+        ExtendedExample: {
             name: '_extended',
             extended: true,
             extends: 'template2',
@@ -28,4 +31,6 @@ const template = {
     },
 };
 
-module.exports = template;
+export default Template;
+
+export { Template }

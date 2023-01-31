@@ -16,9 +16,9 @@ const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789';
  * @param {Number} [length=15] The length
  * @returns {String} The new Invite
  */
-const inviteGenerator = (length = 15) => {
+const inviteGenerator = (length = 15): string => {
     if (typeof length !== 'number' || isNaN(Number(length))) {
-        throw new TypeError(`"length" argument is expected to be a number, Got ${isNaN(Number(length) ? 'NaN' : typeof length)}`);
+        throw new TypeError(`"length" argument is expected to be a number, Got ${typeof length}`);
     }
 
     let invite = '';
@@ -30,4 +30,6 @@ const inviteGenerator = (length = 15) => {
     return invite;
 };
 
-module.exports = inviteGenerator;
+export default inviteGenerator;
+
+export { inviteGenerator };

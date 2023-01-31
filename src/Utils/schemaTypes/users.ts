@@ -9,68 +9,65 @@
  * GPL 3.0 Licensed
  */
 
+import { Schema } from "../../Types/Schema";
+
 /**
  * @type {import("../../..").Schema}
  */
-const user = {
+const User: Schema = {
     type: Array,
     data: {
         id: {
             name: '_id',
             expected: String,
             default: null,
+            extended: false
         },
-        avatar_hash: {
-            name: 'avatar_hash',
+        AvatarHash: {
+            name: 'AvatarHash',
             expected: String,
             default: null,
+            extended: false
         },
-        email: {
-            name: 'email',
+        Email: {
+            name: 'Email',
             expected: String,
             default: null,
+            extended: false
         },
-        username: {
-            name: 'username',
+        Username: {
+            name: 'Username',
             expected: String,
             default: 'Unknown Username',
+            extended: false
         },
-        tag: {
-            name: 'tag',
+        Tag: {
+            name: 'Tag',
             expected: String,
             default: '0000',
+            extended: false
         },
-        creation_date: {
-            name: 'created_date',
-            expected: Date,
-            default: Date.now(),
-        },
-        two_fa: {
-            name: 'two_fa',
+        TwoFa: {
+            name: 'TwoFa',
             expected: Boolean,
             default: false,
+            extended: false
         },
-        two_fa_verified: {
-            name: 'two_fa_verified',
+        TwoFaVerified: {
+            name: 'TwoFaVerified',
             expected: Boolean,
             default: false,
+            extended: false
         },
-        ip_verify: {
-            name: 'ip_verify',
-            expected: Boolean,
-            default: false,
-        },
-        badges: {
-            name: 'badges',
+        Flags: {
+            name: 'Flags',
             expected: Number,
             default: 0,
-        },
-        flags: {
-            name: 'flags',
-            expected: Number,
-            default: 0,
+            extended: false
         },
     },
 };
 
-module.exports = user;
+export default User;
+
+export { User };

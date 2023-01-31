@@ -9,33 +9,39 @@
  * GPL 3.0 Licensed
  */
 
+import { Schema } from "../../Types/Schema";
+
 /**
  * @type {import("../../..").Schema}
  */
-const guildMembers = {
+const GuildMembers: Schema = {
     type: Array,
     data: {
         id: {
             name: '_id',
             expected: String,
             default: null,
+            extended: false
         },
-        user: {
-            name: 'user',
+        User: {
+            name: 'User',
             extended: true,
-            extends: 'friendUser',
+            extends: 'FriendUser',
         },
-        roles: {
-            name: 'roles',
+        Roles: {
+            name: 'Roles',
             extended: true,
-            extends: 'roles',
+            extends: 'Roles',
         },
-        nickname: {
-            name: 'nickname',
+        Nickname: {
+            name: 'Nickname',
             expected: String,
             default: null,
+            extended: false
         },
     },
 };
 
-module.exports = guildMembers;
+export default GuildMembers;
+
+export { GuildMembers }

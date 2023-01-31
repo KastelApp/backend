@@ -9,24 +9,26 @@
  * GPL 3.0 Licensed
  */
 
-const { config } = require('../config');
+import { MongoDB } from '../Config';
 
 /**
  * Generates a MongoDB URI
  * @returns {String} The MongoDB URI
  */
-const uriGenerator = () => {
+const uriGenerator = (): string => {
 
-    if (config.MongoDB.uri) return config.MongoDB.uri;
+    if (MongoDB.uri) return MongoDB.uri;
 
-    const user = config.MongoDB.user;
-    const host = config.MongoDB.host;
-    const port = config.MongoDB.port;
-    const password = config.MongoDB.password;
-    const database = config.MongoDB.database || user;
-    const authSource = config.MongoDB.authSource;
+    const user = MongoDB.user;
+    const host = MongoDB.host;
+    const port = MongoDB.port;
+    const password = MongoDB.password;
+    const database = MongoDB.database || user;
+    const authSource = MongoDB.authSource;
 
     return `mongodb://${user}${password ? `:${encodeURIComponent(password)}` : ''}@${host}${port ? `:${port}` : ''}/${database}${authSource ? `?authSource=${authSource}` : ''}`;
 };
 
-module.exports = uriGenerator;
+export default uriGenerator;
+
+export { uriGenerator }

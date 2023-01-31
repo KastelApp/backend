@@ -13,152 +13,124 @@ import { model, Schema } from 'mongoose';
 
 const UserSchema = new Schema({
   _id: {
-    // Encrypted
     type: String,
     required: true,
   },
 
-  email: {
-    // Encrypted
+  Email: {
     type: String,
     required: true,
     unique: true,
   },
 
-  email_verified: {
+  EmailVerified: {
     type: Boolean,
     required: false,
   },
 
-  username: {
-    // Encrypted
+  Username: {
     type: String,
     required: true,
     default: 'Ghost',
   },
 
-  tag: {
+  Tag: {
     type: String,
     required: true,
     default: '0000',
   },
 
-  avatar_hash: {
+  AvatarHash: {
     type: String,
     required: false,
   },
 
-  password: {
-    // Hashed
+  Password: {
     type: String,
     required: true,
   },
 
-  phone_number: {
-    // Encrypted
+  PhoneNumber: {
     type: String,
     required: false,
   },
 
-  created_date: {
-    type: Date,
-    required: true,
-    default: Date.now(),
+  TwoFa: {
+    type: Boolean,
+    required: false,
   },
 
-  date_of_birth: {
-    // Encrypted
+  TwoFaVerified: {
+    type: Boolean,
+    required: false,
+  },
+
+  TwoFaSecret: {
     type: String,
     required: false,
   },
 
-  two_fa: {
-    type: Boolean,
-    required: false,
-  },
-
-  two_fa_verified: {
-    type: Boolean,
-    required: false,
-  },
-
-  twofa_secret: {
-    // Encrypted
-    type: String,
-    required: false,
-  },
-
-  ip_verify: {
-    type: Boolean,
-    required: false,
-  },
-
-  ips: {
+  Ips: {
     type: Array,
     required: false,
   },
 
-  flags: {
+  Flags: {
     type: Number,
     required: false,
   },
 
-  badges: {
-    type: Number,
-    required: false,
-  },
-
-  guilds: [
+  Guilds: [
     {
       type: String,
-      ref: 'guilds',
+      ref: 'Guilds',
     },
   ],
 
-  dms: [
+  Dms: [
     {
       type: String,
       required: false,
-      ref: 'dms',
+      ref: 'Dms',
     },
   ],
 
-  groupchats: [
+  GroupChats: [
     {
       type: String,
       required: false,
-      ref: 'groupchats',
+      ref: 'Groupchats',
     },
   ],
 
-  bots: [
+  Bots: [
     {
       type: String,
-      ref: 'users',
+      ref: 'Users',
     },
   ],
 
-  banned: {
+  Banned: {
     type: Boolean,
     required: false,
   },
 
-  ban_reason: {
+  BanReason: {
     type: String,
     required: false,
   },
 
-  locked: {
+  Locked: {
     type: Boolean,
     required: false,
   },
 
-  account_deletion_in_progress: {
+  AccountDeletionInProgress: {
     type: Boolean,
     required: false,
   },
 
-  bot: {
+  Bot: {
     type: Boolean,
     required: false,
   },
@@ -166,6 +138,6 @@ const UserSchema = new Schema({
 
 
 
-export default model('users', UserSchema);
+export default model('Users', UserSchema);
 
 export { UserSchema };

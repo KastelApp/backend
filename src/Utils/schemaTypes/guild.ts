@@ -9,68 +9,76 @@
  * GPL 3.0 Licensed
  */
 
+import { Schema } from "../../Types/Schema";
+
 /**
  * @type {import("../../..").Schema}
  */
-const guild = {
+const Guild: Schema = {
     type: Object,
     data: {
         id: {
             name: '_id',
             expected: String,
             default: null,
+            extended: false
         },
-        name: {
-            name: 'name',
+        Name: {
+            name: 'Name',
             expected: String,
             default: 'Unknown Guild Name',
+            extended: false
         },
-        description: {
-            name: 'description',
+        Description: {
+            name: 'Description',
             expected: String,
             default: null,
+            extended: false
         },
-        flags: {
-            name: 'flags',
+        Flags: {
+            name: 'Flags',
             expected: Number,
             default: 0,
+            extended: false
         },
-        owner: {
-            name: 'owner',
+        Owner: {
+            name: 'Owner',
             extended: true,
-            extends: 'guildMember',
+            extends: 'GuildMember',
         },
-        co_owners: {
-            name: 'co_owners',
+        CoOwners: {
+            name: 'CoOwners',
             extended: true,
-            extends: 'guildMembers',
+            extends: 'GuildMembers',
         },
-        channels: {
-            name: 'channels',
+        Channels: {
+            name: 'Channels',
             extended: true,
-            extends: 'channels',
+            extends: 'Channels',
         },
-        roles: {
-            name: 'roles',
+        Roles: {
+            name: 'Roles',
             extended: true,
-            extends: 'roles',
+            extends: 'Roles',
         },
-        bans: {
-            name: 'bans',
+        Bans: {
+            name: 'Bans',
             extended: true,
-            extends: 'bans',
+            extends: 'Bans',
         },
-        members: {
-            name: 'members',
+        Members: {
+            name: 'Members',
             extended: true,
-            extends: 'guildMembers',
+            extends: 'GuildMembers',
         },
-        invites: {
-            name: 'invites',
+        Invites: {
+            name: 'Invites',
             extended: true,
-            extends: 'invites',
+            extends: 'Invites',
         },
     },
 };
 
-module.exports = guild;
+export default Guild;
+
+export { Guild }

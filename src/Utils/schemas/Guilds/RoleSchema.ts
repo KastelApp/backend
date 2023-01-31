@@ -17,52 +17,52 @@ const RoleSchema = new Schema({
         required: true,
     },
 
-    guild: { // Allow easier deletion of role schemas when a guild owner deletes their guild
+    Guild: { // Allow easier deletion of role schemas when a guild owner deletes their guild
         type: String,
         required: true,
         ref: 'guilds',
     },
 
-    name: {
+    Name: {
         type: String,
         required: true,
         default: 'Unknown Role',
     },
 
-    allowed_nsfw: {
+    AllowedNsfw: {
         type: Boolean,
         required: false,
     },
 
-    deleteable: {
+    Deleteable: {
         type: Boolean,
         required: true,
         default: true,
     },
 
-    allowed_mentions: {
+    AllowedMentions: {
         type: Number,
         required: false,
         default: 0,
     },
 
-    hoisted: {
+    Hoisted: {
         type: Boolean,
         required: false,
     },
 
-    color: {
+    Color: {
         type: String,
         required: false,
     },
 
-    permissions: {
+    Permissions: {
         type: Number,
         required: true,
         default: 0,
     },
 });
 
-export default model('roles', RoleSchema);
+export default model('Roles', RoleSchema);
 
 export { RoleSchema }

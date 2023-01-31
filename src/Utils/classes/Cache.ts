@@ -9,13 +9,21 @@
  * GPL 3.0 Licensed
  */
 
-const redis = require('redis');
-const logger = require('./logger');
+import * as redis from 'redis';
 
 /**
  * Caching System to make HTTP requests faster
  */
-class Cache {
+export class Cache {
+    redis!: redis.RedisClientType;
+    pingInterval: any;
+    lastPing: any;
+    waitingOnPing: boolean;
+    host: string;
+    port: number;
+    password: string;
+    user: string;
+    database: number;
     /**
      * The Caching Settings
      * @param {string} [host=127.0.0.1] The Redis Host
@@ -24,107 +32,87 @@ class Cache {
      * @param {string} [password=null] The Password (If one is required if not put null)
      * @param {number|string} [database] The Database (Default is 0)
      */
-    constructor(host, port, user, password, database) {
+    constructor(host: string, port: number | string, user: string, password: string, database: number | string) {
 
-        /**
-         * @private
-         * @readonly
-         * @type {string}
-         */
-        this._host = (host ? host : '127.0.0.1');
-        /**
-         * @private
-         * @readonly
-         * @type {number}
-         */
-        this._port = Number(port ? port : 6379);
-        /**
-         * @private
-         * @readonly
-         * @type {string}
-         */
-        this._password = (password ? password : '');
-        /**
-         * @private
-         * @readonly
-         * @type {string}
-         */
-        this._user = (user ? user : '');
-        /**
-         * @private
-         * @readonly
-         * @type {number}
-         */
-        this._database = Number(database ? database : 0);
+        this.host = (host ? host : '127.0.0.1');
 
-        if (isNaN(this._port) || isNaN(this._database)) {
-            const typeIssues = `${isNaN(this._port) ? isNaN(this._database) ? '"port" and "database" is expected to be numbers got NaN' : '"port" is expected to be number, got NaN' : isNaN(this._database) ? '"database" is expected to be number, got NaN' : 'Unknown Type Issue'}`;
+        this.port = Number(port ? port : 6379);
+
+        this.password = (password ? password : '');
+
+        this.user = (user ? user : '');
+
+        this.database = Number(database ? database : 0);
+
+        if (isNaN(this.port) || isNaN(this.database)) {
+            const typeIssues = `${isNaN(this.port) ? isNaN(this.database) ? '"port" and "database" is expected to be numbers got NaN' : '"port" is expected to be number, got NaN' : isNaN(this.database) ? '"database" is expected to be number, got NaN' : 'Unknown Type Issue'}`;
             throw new TypeError(typeIssues);
         }
 
-        /**
-         * @private
-         * @type {redis.RedisClientType}
-         */
-        this._redis;
+        Object.defineProperty(this, 'redis', {
+            value: undefined,
+            writable: true,
+            enumerable: false,
+            configurable: false
+        });
 
         /**
          * @private
          * @type {setInterval}
          */
-        this._pingInterval;
+        this.pingInterval;
 
         /**
          * @private
          * @type {number}
          */
-        this._lastPing = null;
+        this.lastPing = null;
 
         /**
          * @private
          * @type {boolean}
          */
-        this._waitingOnPing = false;
+        this.waitingOnPing = false;
     }
 
     /**
      * Connect to the Redis Client
      * @returns {Promise<redis.RedisClientType>} The Redis Client
      */
-    connect() {
+    connect(): Promise<redis.RedisClientType> {
         return new Promise((resolve, reject) => {
-            if (this._redis) {
+            if (this.redis) {
                 reject('You are already connected to redis');
             }
 
-            this._redis = redis.createClient({
-                url: `redis://${this._user}:${encodeURIComponent(this._password)}@${this._host}:${this._port}`,
-                database: this._database,
+            this.redis = redis.createClient({
+                url: `redis://${this.user}:${encodeURIComponent(this.password)}@${this.host}:${this.port}`,
+                database: this.database,
             });
 
-            this._redis.on('ready', () => {
-                resolve(this._redis);
+            this.redis.on('ready', () => {
+                resolve(this.redis);
 
-                this._pingInterval = setInterval(() => {
-                    if (Math.floor(Date.now() - this._lastPing) > 15000 && this._lastPing) {
-                        logger.error(`Redis Failed to respond to an ping, Exiting... (Last Ping: ${(new Date(this._lastPing)).toLocaleString()})`);
+                this.pingInterval = setInterval(() => {
+                    if (Math.floor(Date.now() - this.lastPing) > 15000 && this.lastPing) {
+                        console.error(`Redis Failed to respond to an ping, Exiting... (Last Ping: ${(new Date(this.lastPing)).toLocaleString()})`);
                         process.exit();
-                    } else if (this._waitingOnPing == false) {
-                        this._waitingOnPing = true;
-                        this._redis.ping().then((x) => {
-                            if (process.env.rd) logger.debug('Redis Info', x, x == 'PONG');
-                            if (x == 'PONG') this._lastPing = Date.now();
-                            this._waitingOnPing = false;
+                    } else if (this.waitingOnPing == false) {
+                        this.waitingOnPing = true;
+                        this.redis.ping().then((x) => {
+                            if (process.env.rd) console.debug('Redis Info', x, x == 'PONG');
+                            if (x == 'PONG') this.lastPing = Date.now();
+                            this.waitingOnPing = false;
                         });
                     } else {
-                        if (process.env.rd) logger.debug('Currently waiting on a ping to finish.');
+                        if (process.env.rd) console.debug('Currently waiting on a ping to finish.');
                         return;
                     }
                 }, 5000);
             });
-            this._redis.on('error', (e) => reject(e));
+            this.redis.on('error', (e) => reject(e));
 
-            this._redis.connect();
+            this.redis.connect();
         });
     }
 
@@ -134,9 +122,9 @@ class Cache {
      * @param {string} [key] The key you want to check is cached
      * @returns {Promise<Boolean>} If its cached or not
      */
-    isCached(variable, key) {
+    isCached(variable: string, key?: string): Promise<boolean> {
         return new Promise((resolve) => {
-            this._redis.get(`${key ? `${variable}:${key}` : variable}`)
+            this.redis.get(`${key ? `${variable}:${key}` : variable}`)
                 .then((x) => {
                     if (x) resolve(true);
                     else resolve(false);
@@ -145,14 +133,8 @@ class Cache {
         });
     }
 
-    /**
-     * Set a item into the database
-     * @param {string} variable The variable (variable:key) or just the key you want to set
-     * @param {string} [key] The key you want to set or the item you want to set with the variable
-     * @param {string} [item] The item you want to set
-     * @param {*} options Redis options if any
-     */
-    set(variable, key, item, ...options) {
+
+    set(variable: string, key: string, item?: string): Promise<'OK'> {
 
         if ((key && item) && typeof item !== 'string') {
             if (typeof item == 'object') item = JSON.stringify(item);
@@ -163,101 +145,30 @@ class Cache {
         }
 
         return new Promise((resolve, reject) => {
-            this._redis
-                .set(`${key && item ? `${variable}:${key}` : variable}`, `${item ? item : key}`, { ...options })
-                .then(() => resolve())
+            this.redis
+                .set(`${key && item ? `${variable}:${key}` : variable}`, `${item ? item : key}`)
+                .then(() => resolve('OK'))
                 .catch((e) => reject(e));
         });
     }
 
-    /**
-     * Gets a key if its cached
-     * @param {string} variable The variable (variable:key) or just the key you want to get
-     * @param {string} [key] The key you want to get
-     * @returns {Promise<string>} The Data returned
-     */
-    get(variable, key) {
+    get(variable: string, key?: string): Promise<string | null> {
         return new Promise((resolve, reject) => {
-            this._redis.get(`${key ? `${variable}:${key}` : variable}`)
+            this.redis.get(`${key ? `${variable}:${key}` : variable}`)
                 .then((x) => resolve(x))
                 .catch((e) => reject(e));
         });
     }
 
-    /**
-     * Like Cache.keys and Cache.get
-     * @param {string} key The key you want to get
-     * @returns {Promise<string>} The Data returned
-     */
-    sget(key) {
+    keys(variable: string): Promise<string[]> {
         return new Promise((resolve, reject) => {
-            if (!key) reject('Please provide a key');
-
-            this._redis.keys(key)
-                .then((x) => {
-                    const resolveAble = [];
-                    if (x && x.length > 0) {
-                        if (x.length == 1) {
-                            this._redis.get(x[0]).then((y) => {
-                                resolve(y);
-                            });
-                        } else {
-                            for (const k of x) {
-                                this._redis.get(k).then((y) => resolveAble.push(y));
-                            }
-                            resolve(resolveAble);
-                        }
-                    }
-                })
-                .catch((e) => reject(e));
-        });
-    }
-
-    /**
-     * Like Cache.keys and Cache.get
-     * @param {string} key The key you want to get
-     * @returns {Promise<string>} The Data returned
-     */
-    kget(key) {
-        return new Promise((resolve, reject) => {
-            if (!key) reject('Please provide a key');
-
-            this._redis.keys(key)
-                .then((x) => {
-                    const obj = {};
-
-                    for (const k of x) {
-                        obj[k] = k.split(':');
-                    }
-
-                    resolve(obj);
-                })
-                .catch((e) => reject(e));
-        });
-    }
-
-    /**
-     * Get all the keys from a variable or without one
-     * @param {string} [variable] The variable you want to fetch as if any
-     * @returns {Promise<string[]>} the keys that were gotten
-     */
-    keys(variable) {
-        return new Promise((resolve, reject) => {
-            this._redis.keys(`${variable ? `${variable}:*` : '*'}`)
+            this.redis.keys(`${variable ? `${variable}:*` : '*'}`)
                 .then((x) => resolve(x))
                 .catch((er) => reject(er));
         });
     }
 
-    /**
-     * Re-Sets a item into the database
-     * @param {string} variable The variable (variable:key) or just the key you want to set
-     * @param {string} [key] The key you want to set or the item you want to set with the variable
-     * @param {string} [item] The item you want to set
-     * @param {*} options Redis options if any
-     * @returns {Promise<'OK'>} if it was re-set or not
-     */
-    reset(variable, key, item) {
+    reset(variable: string, key?: string, item?: string) {
         return new Promise((resolve, reject) => {
             const multi = {
                 key: (key && item ? `${variable}:${key}` : variable),
@@ -269,14 +180,14 @@ class Cache {
                 else multi.item = String(multi.item);
             }
 
-            this._redis.del(multi.key).catch((er) => reject(er));
-            this._redis.set(multi.key, multi.item).then((x) => resolve(x)).catch((er) => reject(er));
+            this.redis.del(multi.key).catch((er) => reject(er));
+            this.redis.set(multi.key, multi.item).then((x) => resolve(x)).catch((er) => reject(er));
         });
     }
 
-    delete(key) {
+    delete(key: string): Promise<number | void> {
         return new Promise((resolve, reject) => {
-            this._redis.del(key)
+            this.redis.del(key)
                 .catch((er) => reject(er))
                 .then((x) => resolve(x));
         });
@@ -287,77 +198,36 @@ class Cache {
      * @param {string|string[]} ignore What Vars to ignore
      * @returns {Promise<string[]>} The Array of keys that were deleted
      */
-    clear(ignore) {
+    clear(ignore?: string | string[]): Promise<string[]> {
         return new Promise((resolve, reject) => {
-            this._redis.keys('*').then((x) => {
-                for (const key of x) {
+            this.redis.keys('*').then((RedisKeys) => {
+                for (const key of RedisKeys) {
                     if (Array.isArray(ignore)) {
                         const keys = key.split(':')[0];
-                        if (ignore.includes(keys)) continue;
+                        if (ignore.includes(keys as string)) continue;
                     } else if (typeof ignore == 'string') {
                         if (key.split(':')[0] == ignore) continue;
                     }
 
-                    this._redis.del(key);
+                    this.redis.del(key);
                 }
                 if (ignore) {
-                    const n = [];
+                    const NotIgnored: string[] = [];
 
-                    for (const e of x) {
+                    for (const e of RedisKeys) {
                         if (Array.isArray(ignore)) {
                             const keys = e.split(':')[0];
-                            if (ignore.includes(keys)) continue;
+                            if (ignore.includes(keys as string)) continue;
                         } else if (typeof ignore == 'string') {
                             if (e.split(':')[0] == ignore) continue;
                         }
-                        n.push(e);
+                        NotIgnored.push(e);
                     }
-                    resolve(n);
+                    resolve(NotIgnored);
                 } else {
-                    resolve(x);
+                    resolve(RedisKeys);
                 }
             }).catch((er) => reject(er));
         });
     }
-
-    /**
-     * Returns the Host used to connected to the redis client
-     * @returns {string} The host
-     */
-    get host() {
-        return this._host;
-    }
-
-    /**
-     * Returns the Port
-     * @returns {number} The port
-     */
-    get port() {
-        return this._port;
-    }
-
-    /**
-     * Returns the User if any
-     * @returns {string} The user
-     */
-    get user() {
-        return this._user;
-    }
-
-    /**
-     * @returns {number} The Database
-     */
-    get database() {
-        return this._database;
-    }
-
-    /**
-     * @private
-     * @returns {string} The Password
-     */
-    get password() {
-        return this._password;
-    }
 }
-
-module.exports = Cache;

@@ -9,15 +9,15 @@
  * GPL 3.0 Licensed
  */
 
-const Route = require('../utils/classes/Route');
+import { Route } from '@kastelll/packages';
 
-new Route(__dirname, '/', 'get', (req, res) => {
+new Route('/', 'get', [], (req, res) => {
     res.send({
-        code: 200,
-        errors: [],
-        responses: [{
-            code: 'OK',
-            message: `Welcome to Kastels API v${require('../../package.json').version}`,
-        }],
+        Code: 200,
+        Message: {
+            Status: 'OK',
+            Message: 'Welcome to the Kastel API',
+            LatestVersion: 1
+        }
     });
 });
