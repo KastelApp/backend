@@ -17,14 +17,14 @@ import { MongoDB } from '../Config';
  */
 const uriGenerator = (): string => {
 
-    if (MongoDB.uri) return MongoDB.uri;
+    if (MongoDB.Uri) return MongoDB.Uri;
 
-    const user = MongoDB.user;
-    const host = MongoDB.host;
-    const port = MongoDB.port;
-    const password = MongoDB.password;
-    const database = MongoDB.database || user;
-    const authSource = MongoDB.authSource;
+    const user = MongoDB.User;
+    const host = MongoDB.Host;
+    const port = MongoDB.Port;
+    const password = MongoDB.Password;
+    const database = MongoDB.Database || user;
+    const authSource = MongoDB.AuthSource;
 
     return `mongodb://${user}${password ? `:${encodeURIComponent(password)}` : ''}@${host}${port ? `:${port}` : ''}/${database}${authSource ? `?authSource=${authSource}` : ''}`;
 };

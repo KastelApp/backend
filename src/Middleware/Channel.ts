@@ -15,10 +15,12 @@ import { NextFunction, Request, Response } from "express";
 
 // N/A What this will be used for
 
-const channel = () => {
+const Channel = () => {
     return (req: Request, res: Response, next: NextFunction) => {
         next();
     };
 };
 
-module.exports = channel;
+export default Channel;
+
+export { Channel };

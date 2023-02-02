@@ -28,6 +28,12 @@ const SettingSchema = new Schema({
         required: true,
         default: 0,
     },
+
+    Tokens: {
+        type: Array,
+        required: true,
+        default: [],
+    }
 });
 
 export default model('Settings', SettingSchema);

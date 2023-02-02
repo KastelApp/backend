@@ -12,9 +12,7 @@
 import {  AllowedMentions  } from '../../Constants';
 import { Schema } from '../../Types/Schema';
 
-/**
- * @type {import("../../..").Schema}
- */
+
 const Role: Schema = {
     type: Object,
     data: {

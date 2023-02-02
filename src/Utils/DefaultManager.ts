@@ -24,33 +24,33 @@ const defaultManager = (defaults: any, provided?: any): any => {
     }
   
     if (typeof defaults === 'object' && !Array.isArray(defaults)) {
-      const tempObject: any = {};
+      const TempObject: any = {};
   
       for (const item in defaults) {
         if (typeof defaults[item] === 'object' && !Array.isArray(defaults[item])) {
           for (const item2 in defaults[item]) {
-            if (typeof tempObject[item] === 'undefined') tempObject[item] = {};
+            if (typeof TempObject[item] === 'undefined') TempObject[item] = {};
   
             if (typeof provided?.[item]?.[item2] === 'undefined') {
-              tempObject[item][item2] = defaults[item][item2];
+              TempObject[item][item2] = defaults[item][item2];
             } else {
-              tempObject[item][item2] = provided[item][item2];
+              TempObject[item][item2] = provided[item][item2];
             }
           }
         } else if (typeof defaults[item] === 'object' && Array.isArray(defaults[item])) {
           if (typeof provided?.[item] === 'undefined') {
-            tempObject[item] = defaults[item];
+            TempObject[item] = defaults[item];
           } else {
-            tempObject[item] = provided[item];
+            TempObject[item] = provided[item];
           }
         } else if (typeof provided?.[item] === 'undefined') {
-          tempObject[item] = defaults[item];
+          TempObject[item] = defaults[item];
         } else {
-          tempObject[item] = provided?.[item];
+          TempObject[item] = provided?.[item];
         }
       }
   
-      return tempObject;
+      return TempObject;
     }
   
     if (!provided) return defaults;

@@ -25,6 +25,7 @@ import { Invite } from "./invite";
 import { Invites } from "./invites";
 import { Role } from "./role";
 import { Roles } from "./roles";
+import { Settings } from './Settings';
 
 export default {
   User,
@@ -43,6 +44,7 @@ export default {
   Invites,
   Role,
   Roles,
+  Settings,
 };
 
 export {
@@ -62,4 +64,5 @@ export {
   Invites,
   Role,
   Roles,
+  Settings,
 };

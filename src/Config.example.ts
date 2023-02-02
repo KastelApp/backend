@@ -9,91 +9,92 @@
  * GPL 3.0 Licensed
  */
 
-import { Encryption, Logger, MongoDB, Redis, Server, Snowflake, Ws } from "./Types/Config";
+import type { Encryption, Logger, MongoDB, Redis, Server, Snowflake, Ws } from "./Types/Config";
 
 
 const Server: Server = {
-    port: 62250,
-    cookieSecrets: [''],
-    domain: '',
-    workerId: 1,
-    cache: {
-        clearInterval: 1000 * 60 * 60 * 6, // six hours
-        clearOnStart: false,
+    Port: 62250,
+    CookieSecrets: [''],
+    Domain: '',
+    WorkerId: 1,
+    Cache: {
+        ClearInterval: 1000 * 60 * 60 * 6, // six hours
+        ClearOnStart: false,
     },
+    StrictRouting: true,
 };
 
 const Encryption: Encryption = {
-    algorithm: '',
-    initVector: '',
-    securityKey: '',
-    jwtKey: '',
+    Algorithm: '',
+    InitVector: '',
+    SecurityKey: '',
+    JwtKey: '',
 };
 
 const Ws: Ws = {
-    url: 'wss://ws.kastelapp.org',
-    user: 'Kastel-Worker-0',
-    password: '',
+    Url: '',
+    User: '0',
+    Password: '',
 };
 
 const Redis: Redis = {
-    host: '',
-    port: '',
-    user: '',
-    password: '',
-    db: '',
+    Host: '',
+    Port: '',
+    User: '',
+    Password: '',
+    Db: '',
 };
 
 const MongoDB: MongoDB = {
-    user: 'canary',
-    host: '',
-    port: '',
-    password: '',
-    database: 'kastel',
-    authSource: '',
-    uri: '',
+    User: '',
+    Host: '',
+    Port: '80',
+    Password: '',
+    Database: 'kastel',
+    AuthSource: '',
+    Uri: '',
 };
 
 const Logger: Logger = {
-    loggerEnabled: true,
-    timeStartUp: true,
-    saveInFiles: true,
-    path: './logs',
-    format: '[{DATE} {LEVEL}] {MESSAGE}',
-    color: true,
-    log: true,
-    logRoutes: false,
-    logLogo: true,
-    logErrors: true,
-    logInfo: true,
-    date_type: 'en-US',
-    colors: {
-        level: {
-            debug: 'magenta',
-            info: 'cyan',
-            log: 'cyan',
-            warn: 'yellow',
-            error: 'red',
-            loaded: 'green',
+    LoggerEnabled: true,
+    TimeStartUp: true,
+    SaveInFiles: true,
+    Path: './logs',
+    Format: '[{DATE} {LEVEL}] {MESSAGE}',
+    Color: true,
+    Log: true,
+    LogRoutes: false,
+    LogLogo: true,
+    LogErrors: true,
+    LogInfo: true,
+    DateType: 'en-US',
+    Colors: {
+        Level: {
+            Debug: 'magenta',
+            Info: 'cyan',
+            Log: 'cyan',
+            Warn: 'yellow',
+            Error: 'red',
+            Loaded: 'green',
         },
-        message: {
-            debug: 'magenta',
-            info: '#FFC0CB',
-            log: 'pink',
-            warn: 'yellow',
-            error: 'red',
-            loaded: 'green',
+        Message: {
+            Debug: 'magenta',
+            Info: '#FFC0CB',
+            Log: 'pink',
+            Warn: 'yellow',
+            Error: 'red',
+            Loaded: 'green',
         },
     },
 };
 
 const Snowflake: Snowflake = {
-    epoch: 1641016800000,
-    workerId: 0,
-    datacenterId: 1,
-    workerId_Bytes: 6,
-    datacenterId_Bytes: 5,
-    sequence_Bytes: 12,
+    Epoch: 1641016800000,
+    WorkerId: 0,
+    DatacenterId: 1,
+    WorkerIdBytes: 6,
+    DatacenterIdBytes: 5,
+    SequenceBytes: 12,
 };
 
 const Regexs: {

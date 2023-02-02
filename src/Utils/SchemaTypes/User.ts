@@ -11,9 +11,7 @@
 
 import { Schema } from "../../Types/Schema";
 
-/**
- * @type {import("../../..").Schema}
- */
+
 const User: Schema = {
     type: Object,
     data: {

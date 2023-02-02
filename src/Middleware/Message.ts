@@ -14,7 +14,7 @@ import { NextFunction, Request, Response } from "express";
 
 // N/A What this will be used for
 
-const message = () => {
+const Message = () => {
     /**
      * @param {import("express").Request} req
      * @param {import("express").Response} res
@@ -25,4 +25,7 @@ const message = () => {
     };
 };
 
-module.exports = message;
+
+export default Message;
+
+export { Message };

@@ -9,27 +9,32 @@
  * GPL 3.0 Licensed
  */
 
+const crypto = require('crypto');
 const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789';
 
 /**
  * Generates a random invite with a selected length
- * @param {Number} [length=15] The length
+ * @param {Number} [Length=15] The length
  * @returns {String} The new Invite
  */
-const inviteGenerator = (length = 15): string => {
-    if (typeof length !== 'number' || isNaN(Number(length))) {
-        throw new TypeError(`"length" argument is expected to be a number, Got ${typeof length}`);
+const InviteGenerator = (Length: number = 15): string => {
+    if (typeof Length !== 'number' || isNaN(Number(Length))) {
+        throw new TypeError(`"length" argument is expected to be a number, Got ${typeof Length}`);
     }
 
-    let invite = '';
+    let Invite = '';
 
-    for (let i = 0; i < Number(length); i++) {
-        invite += chars[Math.floor(Math.random() * chars.length)];
+    for (let i = 0; i < Number(Length); i++) {
+        const randomByte = crypto.randomBytes(1);
+        
+        const randomIndex = randomByte[0] % chars.length;
+        
+        Invite += chars[randomIndex];
     }
 
-    return invite;
+    return Invite;
 };
 
-export default inviteGenerator;
+export default InviteGenerator;
 
-export { inviteGenerator };
+export { InviteGenerator };

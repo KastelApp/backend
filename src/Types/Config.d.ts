@@ -1,82 +1,83 @@
 export interface Server {
-  port?: number | string;
-  cookieSecrets: string[];
-  domain: string;
-  workerId?: number;
-  cache: {
-    clearInterval: number;
-    clearOnStart: boolean;
+  Port?: number | string;
+  CookieSecrets: string[];
+  Domain: string;
+  WorkerId?: number;
+  Cache: {
+    ClearInterval: number;
+    ClearOnStart: boolean;
   };
+  StrictRouting: boolean; // if true then you cannot do like /users/@me/ you have to do /users/@me
 }
 
 export interface Encryption {
-  algorithm?: string;
-  initVector: string;
-  securityKey: string;
-  jwtKey: string;
+  Algorithm: string;
+  InitVector: string;
+  SecurityKey: string;
+  JwtKey: string;
 }
 
 export interface Ws {
-  url: string;
-  user: string;
-  password: string;
+  Url: string;
+  User: string;
+  Password: string;
 }
 
 export interface Redis {
-  host?: string;
-  port?: number | string;
-  user?: string;
-  password?: string;
-  db?: number | string;
+  Host: string;
+  Port: number | string;
+  User: string;
+  Password: string;
+  Db: number | string;
 }
 
 export interface MongoDB {
-  user: string;
-  host: string;
-  port: string | number;
-  password: string;
-  database: string;
-  authSource: string;
-  uri: string;
+  User: string;
+  Host: string;
+  Port: string | number;
+  Password: string;
+  Database: string;
+  AuthSource: string;
+  Uri: string;
 }
 
 export interface ColorChoices {
-  debug: string;
-  info: string;
-  log: string;
-  warn: string;
-  error: string;
-  loaded: string;
+  Debug: string;
+  Info: string;
+  Log: string;
+  Warn: string;
+  Error: string;
+  Loaded: string;
 }
 
 export interface Colors {
-  level: ColorChoices;
-  message: ColorChoices;
+  Level: ColorChoices;
+  Message: ColorChoices;
 }
 
 export interface Logger {
-  loggerEnabled: boolean;
-  timeStartUp: boolean;
-  saveInFiles: boolean;
-  path: string;
-  format: string;
-  color: boolean;
-  log: boolean;
-  logRoutes: boolean;
-  logLogo: boolean;
-  logErrors: boolean;
-  logInfo: boolean;
-  date_type: string;
-  colors: Colors;
+  LoggerEnabled: boolean;
+  TimeStartUp: boolean;
+  SaveInFiles: boolean;
+  Path: string;
+  Format: string;
+  Color: boolean;
+  Log: boolean;
+  LogRoutes: boolean;
+  LogLogo: boolean;
+  LogErrors: boolean;
+  LogInfo: boolean;
+  DateType: string;
+  Colors: Colors;
 }
 
 export interface Snowflake {
-  epoch?: number;
-  workerId?: number;
-  datacenterId?: number;
-  workerId_Bytes?: number;
-  datacenterId_Bytes?: number;
-  sequence_Bytes?: number;
+  Epoch?: number;
+  WorkerId?: number;
+  DatacenterId?: number;
+  WorkerIdBytes?: number;
+  DatacenterIdBytes?: number;
+  SequenceBytes?: number;
 }
 
 export interface Config {

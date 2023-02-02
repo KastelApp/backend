@@ -12,9 +12,7 @@
 import {  ChannelTypes, AllowedMentions  } from '../../Constants';
 import { Schema } from '../../Types/Schema';
 
-/**
- * @type {import("../../..").Schema}
- */
+
 const Channels: Schema = {
     type: Array,
     data: {

@@ -14,10 +14,12 @@ import { NextFunction, Request, Response } from "express";
 
 // N/A What this will be used for
 
-const guild = () => {
+const Guild = () => {
     return (req: Request, res: Response, next: NextFunction) => {
         next();
     };
 };
 
-module.exports = guild;
+export default Guild;
+
+export { Guild };

@@ -9,26 +9,18 @@
  * GPL 3.0 Licensed
  */
 
-import Encryption from "./Encryption";
+import { Route } from '@kastelll/packages';
 
-
-class Token {
-
-    static GenerateToken(UserId: string): string {
-        return Encryption.encrypt(UserId);
-    }
-
-
-    static ValidateToken(Token: string): boolean {
-        return Encryption.decrypt(Token);
-    }
-
-    static DecodeToken(Token: string): string {
-        return Encryption.decrypt(Token);
-    }
-
-}
-
-export default Token;
-
-export { Token }
+new Route('/', 'GET', [], (req, res) => {
+    res.send({
+        Code: 200,
+        Message: {
+            Status: 'OK',
+            Message: 'Welcome to the Kastel API',
+            LatestVersions: {
+                API: 1,
+                Ws: 1
+            }
+        }
+    });
+});

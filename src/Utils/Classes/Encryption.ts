@@ -12,9 +12,9 @@
 import crypto from 'crypto';
 import { Encryption as En } from '../../Config';
 
-const algorithm = En.algorithm;
-const initVector = En.initVector;
-const securityKey = En.securityKey;
+const algorithm = En.Algorithm;
+const initVector = En.InitVector;
+const securityKey = En.SecurityKey;
 
 class Encryption {
     /**

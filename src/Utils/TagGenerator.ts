@@ -19,20 +19,20 @@
  * @param {(string|number)[]} [tags=[]]
  * @returns {Tag}
  */
-const tagGenerator = (tags: (string | number)[]): string => {
+const TagGenerator = (tags: (string | number)[]): string => {
     tags = tags.map(tag => Number(tag));
 
-    const missing: number[] = [];
+    const Missing: number[] = [];
 
     for (let i = 1; i <= 9999; i++) {
         if (tags.indexOf(i) == -1) {
-            missing.push(i);
+            Missing.push(i);
         }
     }
 
-    return String(missing[Math.floor(Math.random() * missing.length)]).padStart(4, '0000');
+    return String(Missing[Math.floor(Math.random() * Missing.length)]).padStart(4, '0000');
 };
 
-export default tagGenerator;
+export default TagGenerator;
 
-export { tagGenerator }
+export { TagGenerator }

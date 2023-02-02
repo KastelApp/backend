@@ -10,8 +10,9 @@
  */
 
 import { HTTPErrors, Route } from '@kastelll/packages';
+import User from '../Utils/Classes/User';
 
-new Route('/errors', 'get', [], (req, res) => {
+new Route('/tests', 'get', [], (req, res) => {
     const errors = new HTTPErrors(52512);
 
     errors.addError({
@@ -24,6 +25,12 @@ new Route('/errors', 'get', [], (req, res) => {
             message: "The password is invalid!"
         }
     })
+
+    const user = new User('123');
+
+    user.SetFailed(errors.code);
+
+    user.flush();
 
     res.json(errors.toJSON())
 });

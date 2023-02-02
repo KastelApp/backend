@@ -11,48 +11,35 @@
 
 import { Schema } from "../../Types/Schema";
 
-
-const Invites: Schema = {
-    type: Array,
+const Settings: Schema = {
+    type: Object,
     data: {
-        id: {
-            name: '_id',
+        User: {
+            name: 'User',
+            extended: true,
+            extends: 'User',
+        },
+        Status: {
+            name: 'Status',
             expected: String,
             default: null,
             extended: false
         },
-        Expires: {
-            name: 'Expires',
-            expected: Date,
-            default: null,
-            extended: false
-        },
-        Uses: {
-            name: 'Uses',
+        Presence: {
+            name: 'Presence',
             expected: Number,
             default: 0,
             extended: false
         },
-        MaxUses: {
-            name: 'MaxUses',
-            expected: Number,
-            default: null,
+        Tokens: {
+            name: 'Tokens',
+            expected: Array,
+            default: [],
             extended: false
-        },
-        Creator: {
-            name: 'Creator',
-            extended: true,
-            extends: 'GuildMember',
-        },
-        Deleteable: {
-            name: 'Deleteable',
-            expected: Boolean,
-            default: true,
-            extended: false
-        },
+        }
     },
 };
 
-export default Invites;
+export default Settings;
 
-export { Invites }
+export { Settings }

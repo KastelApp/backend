@@ -20,9 +20,12 @@ import { NextFunction, Request, Response } from "express";
 // If Someone keeps hitting the max limit in a certain amount of time make the limit lower
 // and the reset time longer
 
-const ratelimit = () => {
+const Ratelimit = () => {
     return async (req: Request, res: Response, next: NextFunction) => {
         next();
     };
 };
-module.exports = ratelimit;
+
+export default Ratelimit;
+
+export { Ratelimit };

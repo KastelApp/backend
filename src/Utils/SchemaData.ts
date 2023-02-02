@@ -19,6 +19,7 @@ const schemaData = (type: keyof typeof schemaExports, data: any): any => {
 
     if (tp.type === Object) {
         const newObject: { [key: string]: any } = {};
+
         for (const item in tp.data) {
             const tpData = tp.data[item];
 
@@ -38,7 +39,9 @@ const schemaData = (type: keyof typeof schemaExports, data: any): any => {
                 } else {
                     newObject[item] = gotItem;
                 }
-            } else if (tpData.extended) { newObject[item] = schemaData(tpData.extends as keyof typeof schemaExports, gotItem); }
+            } else if (tpData.extended) {
+                newObject[item] = schemaData(tpData.extends as keyof typeof schemaExports, gotItem);
+            }
         }
 
         return newObject;
@@ -59,6 +62,7 @@ const schemaData = (type: keyof typeof schemaExports, data: any): any => {
 
                     if (tpData.name === key) {
                         const gotItem = item[key];
+
                         const arewethere = (Object.keys(tp.data).find((x) => tp?.data[x]?.name === key) || key);
 
                         if (!tpData.extended) {
