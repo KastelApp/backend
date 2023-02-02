@@ -1,5 +1,5 @@
 class Base64 {
-  Encode(string: string): string {
+  static Encode(string: string): string {
     // Convert the string to base64
     const base64 = Buffer.from(string).toString("base64");
 
@@ -7,7 +7,7 @@ class Base64 {
     return base64.replace(/\+/g, "F").replace(/\//g, "q").replace(/=+$/, "zT");
   }
 
-  Decode(string: string): string {
+  static Decode(string: string): string {
     // Replace F with +, q with /, and zT with =
     const base64 = string
       .replace(/F/g, "+")

@@ -11,6 +11,8 @@
 
 import Encryption from "./Encryption";
 
+// NOTE: Please PLEASE do not use this vanilla token system, Please create your own token system, this is just a example 
+// This is very insecure, and should not be used in production
 
 class Token {
 
@@ -23,8 +25,14 @@ class Token {
         return Encryption.decrypt(Token);
     }
 
-    static DecodeToken(Token: string): string {
-        return Encryption.decrypt(Token);
+    static DecodeToken(Token: string): {
+        Snowflake: string,
+        Timestamp: number
+    } {
+        return {
+            Snowflake: Encryption.decrypt(Token),
+            Timestamp: Date.now()
+        }
     }
 
 }
