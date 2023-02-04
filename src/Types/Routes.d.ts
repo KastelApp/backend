@@ -33,7 +33,7 @@ export type Methods =
 
 export interface UserMiddleware {
   AllowedRequesters: 'Bot' | 'User' | 'All'; // The type of user that can access the endpoint (Default: 'All')
-  Flags: (keyof typeof Flags)[]; // The flags required to access the endpoint (Default: null)
+  Flags?: (keyof typeof Flags)[]; // The flags required to access the endpoint (Default: null)
   // If you need to be logged in to access the endpoint
   AccessType: "All" | "LoggedIn" | "LoggedOut";
   DisallowedFlags?: (keyof typeof Flags)[]; // The flags that are not allowed to access the endpoint (Default: null)

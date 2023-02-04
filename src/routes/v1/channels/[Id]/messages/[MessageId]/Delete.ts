@@ -1,3 +1,10 @@
 import { Route } from '@kastelll/packages';
+import User from '../../../../../../Middleware/User';
 
-new Route('/', 'DELETE', [], async (req, res) => {});
+new Route('/', 'DELETE', [
+    User({
+        AccessType: 'LoggedIn',
+        AllowedRequesters: 'All',
+        Flags: []
+    })
+], async (req, res) => {});

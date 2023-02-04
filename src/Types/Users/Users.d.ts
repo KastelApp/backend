@@ -24,6 +24,7 @@ export interface LessUser { // Less user is just less data but important data
     Locked: boolean;
     AccountDeletionInProgress: boolean;
     Token: string;
+    Bot: boolean;
 }
 
 export interface PopulatedUser {

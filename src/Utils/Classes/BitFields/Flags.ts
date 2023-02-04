@@ -12,28 +12,28 @@
 import { Flags } from '../../../Constants'
 
 class FlagFields {
-    bits: number
+    bits: bigint
     constructor(bits: number) {
-        this.bits = bits
+        this.bits = BigInt(bits)
     }
 
-    has(bit: number) {
+    has(bit: bigint) {
         return (this.bits & bit) === bit
     }
 
-    add(bit: number): this {
+    add(bit: bigint): this {
         if (this.has(bit)) return this
         this.bits |= bit
         return this
     }
 
-    remove(bit: number): this {
+    remove(bit: bigint): this {
         if (!this.has(bit)) return this
         this.bits ^= bit
         return this
     }
 
-    serialize(): number {
+    serialize(): bigint {
         return this.bits
     }
 
@@ -55,8 +55,8 @@ class FlagFields {
         return this.has(Flags[bit as keyof typeof Flags])
     }
 
-    static deserialize(bits: number): FlagFields {
-        return new FlagFields(bits)
+    static deserialize(bits: bigint): FlagFields {
+        return new FlagFields(Number(bits))
     }
 
     static get FlagFields(): typeof Flags {
@@ -67,18 +67,18 @@ class FlagFields {
         return Object.keys(Flags) as (keyof typeof Flags)[]
     }
 
-    // Private flags is anything under 1 << 15
+    // Private flags is anything above 1n << 25n
     static get PrivateFlags(): (keyof typeof Flags)[] {
-        return Object.keys(Flags).filter(key => Flags[key as keyof typeof Flags] < 1 << 15) as (keyof typeof Flags)[]
+        return Object.keys(Flags).filter(key => Flags[key as keyof typeof Flags] >= 1n << 25n) as (keyof typeof Flags)[]
     }
 
-    // Public flags is anything above 1 << 15
+    // Public flags is anything under 1n << 25n
     static get PublicFlags(): (keyof typeof Flags)[] {
-        return Object.keys(Flags).filter(key => Flags[key as keyof typeof Flags] >= 1 << 15) as (keyof typeof Flags)[]
+        return Object.keys(Flags).filter(key => Flags[key as keyof typeof Flags] < 1n << 25n) as (keyof typeof Flags)[]
     }
 
-    static RemovePrivateFlags(flags: number): number {
-        return flags & ~(1 << 15 - 1)
+    static RemovePrivateFlags(flags: bigint): bigint {
+        return flags & ((1n << 25n) - 1n)
     }
 }
 

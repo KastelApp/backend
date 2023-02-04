@@ -9,6 +9,7 @@
  * GPL 3.0 Licensed
  */
 
+import { RelationshipFlags } from "../../Constants";
 import type { Schema } from "../../Types/Schema";
 
 const Friends: Schema = {
@@ -30,10 +31,10 @@ const Friends: Schema = {
             default: null,
             extended: false,
         },
-        Accepted: {
-            name: 'Accepted',
-            expected: Boolean,
-            default: false,
+        Flags: {
+            name: 'Flags',
+            expected: Number,
+            default: RelationshipFlags.Friend,
             extended: false,
         },
     },

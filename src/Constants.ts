@@ -69,28 +69,28 @@ const Presence = {
 };
 
 const Flags = {
-  Ghost: 1 << 0,
-  System: 1 << 1,
-  Staff: 1 << 2,
-  BetaTester: 1 << 3,
-  Bot: 1 << 4,
-  VerifiedBot: 1 << 5,
-  Spammer: 1 << 10,
-  Tos: 1 << 11,
-  GuildBan: 1 << 12,
-  FriendBan: 1 << 13,
-  GroupchatBan: 1 << 14,
-  GhostBadge: 1 << 15,
-  SponsorBadge: 1 << 16,
-  StaffBadge: 1 << 17,
-  DeveloperBadge: 1 << 18,
-  VerifiedBotDeveloperBadge: 1 << 19,
-  OriginalUserBadge: 1 << 20,
-  PartnerBadge: 1 << 21,
-  ModeratorBadge: 1 << 22,
-  MinorBugHunterBadge: 1 << 23,
-  IntermediateBugHunterBadge : 1 << 24,
-  MajorBugHunterBadge: 1 << 25,
+  StaffBadge: 1n << 0n,
+  GhostBadge: 1n << 1n,
+  SponsorBadge: 1n << 2n,
+  DeveloperBadge: 1n << 3n,
+  VerifiedBotDeveloperBadge: 1n << 4n,
+  OriginalUserBadge: 1n << 5n,
+  PartnerBadge: 1n << 6n,
+  ModeratorBadge: 1n << 7n,
+  MinorBugHunterBadge: 1n << 8n,
+  IntermediateBugHunterBadge : 1n << 9n,
+  MajorBugHunterBadge: 1n << 10n,
+  Ghost: 1n << 25n,
+  System: 1n << 26n,
+  Staff: 1n << 27n,
+  BetaTester: 1n << 28n,
+  Bot: 1n << 29n,
+  VerifiedBot: 1n << 30n,
+  Spammer: 1n << 31n,
+  Tos: 1n << 32n,
+  GuildBan: 1n << 33n,
+  FriendBan: 1n << 34n,
+  GroupchatBan: 1n << 35n,
 };
 
 // These are BigInts since BigInt Bitfields don't loop around to One after 32 (1 << 32 loops 1 but 1n << 32n goes to 4294967296n)
@@ -120,9 +120,9 @@ const Permissions = {
 
 const RelationshipFlags = {
     Blocked: 1 << 0,
-    IncomingRequest: 1 << 1,
-    OutgoingRequest: 1 << 2,
-    Friend: 1 << 3,
+    FriendRequest: 1 << 1,
+    Friend: 1 << 2,
+    Denied: 1 << 3,
     // MutualFriend: 1 << 4, // Actually this could be done client side
 };
 

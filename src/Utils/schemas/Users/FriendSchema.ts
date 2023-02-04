@@ -34,8 +34,8 @@ const FriendSchema = new Schema({
         required: false,
     },
 
-    Accepted: {
-        type: Boolean,
+    Flags: {
+        type: Number,
         required: false,
     },
 });

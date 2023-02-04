@@ -9,37 +9,12 @@
  * GPL 3.0 Licensed
  */
 
-import { model, Schema } from 'mongoose';
+import { Route } from '@kastelll/packages';
+import User from '../../../../Middleware/User';
 
-const FriendSchema = new Schema({
-    Sender: {
-        type: String,
-        required: true,
-        ref: 'users',
-    },
-
-    Receiver: {
-        type: String,
-        required: true,
-        ref: 'users',
-    },
-
-    SenderNickname: {
-        type: String,
-        required: false,
-    },
-
-    ReceiverNickname: {
-        type: String,
-        required: false,
-    },
-
-    Flags: {
-        type: Number,
-        required: false,
-    },
-});
-
-export default model('Friends', FriendSchema);
-
-export { FriendSchema }
+new Route('/friends', 'GET', [User({
+    AccessType: 'LoggedIn',
+    AllowedRequesters: 'User',
+    Flags: []
+})], async (req, res) => {
+})

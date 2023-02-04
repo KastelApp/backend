@@ -221,6 +221,7 @@ const User = (options: UserMiddleware) => {
       req.user = {
         ...SchemaUserd,
         Token: AuthHeader,
+        Bot: false,
       } as LessUser;
 
       next();
