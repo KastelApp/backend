@@ -1,6 +1,6 @@
 import type { Request } from "express";
 
-const GetIp = (req: Request) => {
+const GetIp = (req: Request): string => {
   let Ip: string | undefined | string[] =
     req.headers["x-forwarded-for"] || req.headers["cf-connecting-ip"] || req.ip;
 

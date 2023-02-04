@@ -11,10 +11,6 @@
 
 import { MongoDB } from '../Config';
 
-/**
- * Generates a MongoDB URI
- * @returns {String} The MongoDB URI
- */
 const uriGenerator = (): string => {
 
     if (MongoDB.Uri) return MongoDB.Uri;

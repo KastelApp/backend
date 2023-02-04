@@ -1,5 +1,5 @@
 import schemaExports from './SchemaTypes/Exports';
-import { Schema } from '../Types/Schema'
+import type { Schema } from '../Types/Schema'
 
 const schemaData = (type: keyof typeof schemaExports, data: any): any => {
 
@@ -89,3 +89,7 @@ const schemaData = (type: keyof typeof schemaExports, data: any): any => {
 
     return data;
 };
+
+export default schemaData;
+
+export { schemaData };

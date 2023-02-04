@@ -9,9 +9,8 @@
  * GPL 3.0 Licensed
  */
 
-import {  ChannelTypes, AllowedMentions  } from '../../Constants';
-import { Schema } from '../../Types/Schema';
-
+import { ChannelTypes, AllowedMentions } from '../../Constants';
+import type { Schema } from '../../Types/Schema';
 
 const Channel: Schema = {
     type: Object,

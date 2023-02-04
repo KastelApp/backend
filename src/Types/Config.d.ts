@@ -89,3 +89,8 @@ export interface Config {
   Logger: Logger;
   Snowflake: Snowflake;
 }
+
+export interface Regexes {
+  password: RegExp;
+  email: RegExp;
+}

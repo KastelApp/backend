@@ -9,8 +9,7 @@
  * GPL 3.0 Licensed
  */
 
-import { Schema } from "../../Types/Schema";
-
+import type { Schema } from "../../Types/Schema";
 
 const GuildMember: Schema = {
     type: Object,

@@ -40,7 +40,7 @@
 		"useDefineForClassFields": true,
 		"allowJs": true,
 		"typeRoots": [
-			"./src/Types"
+			"./src/Types/**/*"
 		],
 		"skipLibCheck": true
 	},

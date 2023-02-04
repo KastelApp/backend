@@ -18,7 +18,14 @@ const Settings = {
     BanCount: Infinity,
     FriendCount: 100,
     MemberCount: 500,
+    UsernameLength: 32,
+    // The max amount of usernames, lets say the name is "cat" there can be 9999 accounts then once we
+    // hit the max nobody can switch tags, So we limit to 5k so people can switch tags
+    UsernameCount: 5000
   },
+  Min: {
+    UsernameLength: 2,
+  }
 };
 
 const AllowedMentions: {

@@ -9,10 +9,9 @@
  * GPL 3.0 Licensed
  */
 
-import { AllowedMentions } from '../../Constants';
-import type { Schema } from '../../Types/Schema';
+import type { Schema } from "../../Types/Schema";
 
-const Role: Schema = {
+const RawUser: Schema = {
     type: Object,
     data: {
         id: {
@@ -21,51 +20,81 @@ const Role: Schema = {
             default: null,
             extended: false
         },
-        Name: {
-            name: 'Name',
+        AvatarHash: {
+            name: 'AvatarHash',
             expected: String,
-            default: 'Unknown Role Name',
+            default: null,
             extended: false
         },
-        AllowedNsfw: {
-            name: 'AllowedNsfw',
+        Email: {
+            name: 'Email',
+            expected: String,
+            default: null,
+            extended: false
+        },
+        Username: {
+            name: 'Username',
+            expected: String,
+            default: 'Unknown Username',
+            extended: false
+        },
+        Tag: {
+            name: 'Tag',
+            expected: String,
+            default: '0000',
+            extended: false
+        },
+        TwoFa: {
+            name: 'TwoFa',
             expected: Boolean,
             default: false,
             extended: false
         },
-        Deleteable: {
-            name: 'Deleteable',
-            expected: Boolean,
-            default: true,
-            extended: false
-        },
-        AllowedMentions: {
-            name: 'AllowedMentions',
-            expected: Number,
-            default: AllowedMentions.All,
-            extended: false
-        },
-        Hoisted: {
-            name: 'Hoisted',
+        TwoFaVerified: {
+            name: 'TwoFaVerified',
             expected: Boolean,
             default: false,
             extended: false
         },
-        Color: {
-            name: 'Color',
-            expected: Number,
-            default: 16744272,
-            extended: false
-        },
-        Permissions: {
-            name: 'Permissions',
+        Flags: {
+            name: 'Flags',
             expected: Number,
             default: 0,
             extended: false
         },
+        Password: {
+            name: 'Password',
+            expected: String,
+            default: null,
+            extended: false
+        },
+        Banned: {
+            name: 'Banned',
+            expected: Boolean,
+            default: false,
+            extended: false
+        },
+        BannedReason: {
+            name: 'BannedReason',
+            expected: String,
+            default: null,
+            extended: false
+        },
+        Locked: {
+            name: 'Locked',
+            expected: Boolean,
+            default: false,
+            extended: false
+        },
+        AccountDeletionInProgress: {
+            name: 'AccountDeletionInProgress',
+            expected: Boolean,
+            default: false,
+            extended: false
+        }
     },
 };
 
-export default Role;
+export default RawUser;
 
-export { Role }
+export { RawUser }

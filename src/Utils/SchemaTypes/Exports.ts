@@ -26,6 +26,7 @@ import { Invites } from "./invites";
 import { Role } from "./role";
 import { Roles } from "./roles";
 import { Settings } from './Settings';
+import { RawUser } from './RawUser';
 
 export default {
   User,
@@ -45,6 +46,7 @@ export default {
   Role,
   Roles,
   Settings,
+  RawUser
 };
 
 export {
@@ -65,4 +67,5 @@ export {
   Role,
   Roles,
   Settings,
+  RawUser
 };

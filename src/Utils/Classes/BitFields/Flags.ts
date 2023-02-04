@@ -65,6 +65,10 @@ class FlagFields {
     static get PublicFlags(): (keyof typeof Flags)[] {
         return Object.keys(Flags).filter(key => Flags[key as keyof typeof Flags] >= 1 << 15) as (keyof typeof Flags)[]
     }
+
+    static RemovePrivateFlags(flags: number): number {
+        return flags & ~(1 << 15 - 1)
+    }
 }
 
 export default FlagFields

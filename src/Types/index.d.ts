@@ -10,11 +10,13 @@
  */
 
 import { Cache } from "../utils/classes/Cache";
+import { LessUser } from "./Users/Users";
 
 declare global {
   namespace Express {
     interface Request {
       clientIp: string;
+      user: LessUser
     }
 
     interface Application {

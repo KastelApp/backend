@@ -10,7 +10,7 @@
  */
 
 import { AllowedMentions } from "../../Constants";
-import { Schema } from "../../Types/Schema";
+import type { Schema } from "../../Types/Schema";
 
 const Roles: Schema = {
   type: Array,

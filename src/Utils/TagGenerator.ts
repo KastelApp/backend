@@ -9,16 +9,6 @@
  * GPL 3.0 Licensed
  */
 
-/**
- * The Generated Tag
- * @typedef {String} Tag
- */
-
-/**
- * Generator a tag while keeping it unqiue from other tags
- * @param {(string|number)[]} [tags=[]]
- * @returns {Tag}
- */
 const TagGenerator = (tags: (string | number)[]): string => {
     tags = tags.map(tag => Number(tag));
 

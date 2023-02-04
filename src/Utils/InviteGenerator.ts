@@ -14,8 +14,6 @@ const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789';
 
 /**
  * Generates a random invite with a selected length
- * @param {Number} [Length=15] The length
- * @returns {String} The new Invite
  */
 const InviteGenerator = (Length: number = 15): string => {
     if (typeof Length !== 'number' || isNaN(Number(Length))) {

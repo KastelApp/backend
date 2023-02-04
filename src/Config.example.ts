@@ -9,7 +9,7 @@
  * GPL 3.0 Licensed
  */
 
-import type { Encryption, Logger, MongoDB, Redis, Server, Snowflake, Ws } from "./Types/Config";
+import type { Encryption, Logger, MongoDB, Redis, Regexes, Server, Snowflake, Ws } from "./Types/Config";
 
 
 const Server: Server = {
@@ -97,9 +97,7 @@ const Snowflake: Snowflake = {
     SequenceBytes: 12,
 };
 
-const Regexs: {
-    [key: string]: RegExp;
-} = {
+const Regexs: Regexes = {
     // Source: https://regexr.com/2rhq7
     email: new RegExp(/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/),
     // Source: https://regexr.com/3bfsi

@@ -5,6 +5,7 @@
     "main": "src/index.js",
     "dependencies": {
         "@kastelll/packages": "^2.2.1",
+        "@types/bcrypt": "^5.0.0",
         "@types/cookie-parser": "^1.4.3",
         "@types/cors": "^2.8.13",
         "bcrypt": "^5.1.0",

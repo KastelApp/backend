@@ -9,14 +9,13 @@
  * GPL 3.0 Licensed
  */
 
-import { Schema } from "../../Types/Schema";
-
+import type { Schema } from "../../Types/Schema";
 
 const User: Schema = {
     type: Array,
     data: {
         id: {
-            name: '_id',
+            name: 'id',
             expected: String,
             default: null,
             extended: false

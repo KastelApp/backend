@@ -9,14 +9,13 @@
  * GPL 3.0 Licensed
  */
 
-import { Schema } from "../../Types/Schema";
-
+import type { Schema } from "../../Types/Schema";
 
 const User: Schema = {
     type: Object,
     data: {
         id: {
-            name: '_id',
+            name: 'id',
             expected: String,
             default: null,
             extended: false
@@ -31,6 +30,12 @@ const User: Schema = {
             name: 'Email',
             expected: String,
             default: null,
+            extended: false
+        },
+        EmailVerified: {
+            name: 'EmailVerified',
+            expected: Boolean,
+            default: false,
             extended: false
         },
         Username: {
@@ -57,12 +62,18 @@ const User: Schema = {
             default: false,
             extended: false
         },
-        Flags: {
+        PublicFlags: {
             name: 'Flags',
             expected: Number,
             default: 0,
             extended: false
         },
+        PhoneNumber: {
+            name: 'PhoneNumber',
+            expected: String,
+            default: null,
+            extended: false
+        }
     },
 };
 

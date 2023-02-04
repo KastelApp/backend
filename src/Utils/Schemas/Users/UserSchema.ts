@@ -128,12 +128,7 @@ const UserSchema = new Schema({
   AccountDeletionInProgress: {
     type: Boolean,
     required: false,
-  },
-
-  Bot: {
-    type: Boolean,
-    required: false,
-  },
+  }
 });
 
 
