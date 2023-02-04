@@ -1,3 +1,14 @@
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
+
 import { HTTPErrors, Route } from "@kastelll/packages";
 import User from "../../Middleware/User";
 import type { LessUser } from "../../Types/Users/Users";

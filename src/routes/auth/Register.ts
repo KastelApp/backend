@@ -1,3 +1,14 @@
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
+
 import { HTTPErrors, Route, Snowflake } from '@kastelll/packages';
 import Constants from '../../Constants';
 import Encryption from '../../Utils/Classes/Encryption';
