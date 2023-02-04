@@ -19,12 +19,12 @@ const GroupchatSchema = new Schema({
 
     Users: [{
         type: String,
-        ref: 'users',
+        ref: 'Users',
     }],
 
     Owner: {
         type: String,
-        ref: 'users',
+        ref: 'Users',
     },
 });
 

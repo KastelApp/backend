@@ -15,13 +15,13 @@ const FriendSchema = new Schema({
     Sender: {
         type: String,
         required: true,
-        ref: 'users',
+        ref: 'Users',
     },
 
     Receiver: {
         type: String,
         required: true,
-        ref: 'users',
+        ref: 'Users',
     },
 
     SenderNickname: {

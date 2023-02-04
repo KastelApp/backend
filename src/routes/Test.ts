@@ -12,7 +12,14 @@
 import { HTTPErrors, Route } from '@kastelll/packages';
 import User from '../Utils/Classes/User';
 
-new Route('/tests', 'get', [], (req, res) => {
+import { User as UserMiddleware } from '../Middleware/User'
+
+new Route('/tests', 'get', [
+    UserMiddleware({
+        AccessType: 'LoggedIn',
+        AllowedRequesters: 'User'
+    })
+], async (req, res) => {
     const errors = new HTTPErrors(52512);
 
     errors.addError({
@@ -26,11 +33,11 @@ new Route('/tests', 'get', [], (req, res) => {
         }
     })
 
-    const user = new User('123');
+    const user = new User(req.user.Token, req, res);
 
     user.SetFailed(errors.code);
 
-    user.flush();
+    console.log(await user.fetchFriends())
 
     res.json(errors.toJSON())
 });

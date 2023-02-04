@@ -9,25 +9,25 @@
  * GPL 3.0 Licensed
  */
 
-import type { Schema } from "../../Types/Schema";
+// import type { Schema } from "../../Types/Schema";
 
-const Template: Schema = {
-    type: Object,
-    data: {
-        example: {
-            name: '_example',
-            expected: String,
-            default: 'This is an Example',
-            extended: false
-        },
-        ExtendedExample: {
-            name: '_extended',
-            extended: true,
-            extends: 'template2',
-        },
-    },
-};
+// const Template: Schema = {
+//     type: Object,
+//     data: {
+//         example: {
+//             name: '_example',
+//             expected: String,
+//             default: 'This is an Example',
+//             extended: false
+//         },
+//         ExtendedExample: {
+//             name: '_extended',
+//             extended: true,
+//             extends: 'template2',
+//         },
+//     },
+// };
 
-export default Template;
+// export default Template;
 
-export { Template }
+// export { Template }

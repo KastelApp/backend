@@ -9,34 +9,39 @@
  * GPL 3.0 Licensed
  */
 
-import { RelationshipFlags } from "../../Constants";
 import type { Schema } from "../../Types/Schema";
 
 const Friends: Schema = {
     type: Array,
     data: {
+        Flags: {
+            name: 'Flags',
+            expected: Number,
+            default: 0,
+            extended: false
+        },
         Sender: {
             name: 'Sender',
+            extends: 'RawUser',
             extended: true,
-            extends: 'FriendUser',
         },
         Receiver: {
             name: 'Receiver',
+            extends: 'RawUser',
             extended: true,
-            extends: 'FriendUser',
         },
-        Nickname: {
-            name: 'Nickname',
+        SenderNickname: {
+            name: 'SenderNickname',
             expected: String,
             default: null,
             extended: false,
         },
-        Flags: {
-            name: 'Flags',
-            expected: Number,
-            default: RelationshipFlags.Friend,
+        ReceiverNickname: {
+            name: 'ReceiverNickname',
+            expected: String,
+            default: null,
             extended: false,
-        },
+        }
     },
 };
 

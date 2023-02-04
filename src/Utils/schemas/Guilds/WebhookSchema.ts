@@ -20,7 +20,7 @@ const WebhookSchema = new Schema({
     Guild: { // Allow easier deletion of role schemas when a guild owner deletes their guild
         type: String,
         required: true,
-        ref: 'guilds',
+        ref: 'Guilds',
     },
 
     Channel: {

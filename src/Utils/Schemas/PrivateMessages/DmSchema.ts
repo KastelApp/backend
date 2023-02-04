@@ -20,13 +20,13 @@ const DmSchema = new Schema({
     Creator: { // First User
         type: String,
         required: true,
-        ref: 'users',
+        ref: 'Users',
     },
 
     Receiver: { // Second User
         type: String,
         required: true,
-        ref: 'users',
+        ref: 'Users',
     },
 });
 

@@ -45,6 +45,6 @@ const GiftSchema = new Schema({
     },
 });
 
-export default model('gifts', GiftSchema);
+export default model('Gifts', GiftSchema);
 
 export { GiftSchema }

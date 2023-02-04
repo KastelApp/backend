@@ -9,6 +9,9 @@
  * GPL 3.0 Licensed
  */
 
+import schemaExports from '../Utils/SchemaTypes/Exports';
+
+
 interface SchemaDataOptionsBase {
   name: string;
   extended: true | false;
@@ -16,7 +19,7 @@ interface SchemaDataOptionsBase {
 
 interface SchemaDataOptionsWithExtends extends SchemaDataOptionsBase {
   extended: true;
-  extends: string;
+  extends: keyof typeof schemaExports;
 }
 
 interface SchemaDataOptionsWithoutExtends extends SchemaDataOptionsBase {

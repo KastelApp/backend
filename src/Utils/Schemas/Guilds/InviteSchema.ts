@@ -20,7 +20,7 @@ const InviteSchema = new Schema({
     Guild: {
         type: String,
         required: true,
-        ref: 'guilds',
+        ref: 'Guilds',
     },
 
     Expires: {

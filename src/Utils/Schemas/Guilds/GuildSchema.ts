@@ -67,7 +67,7 @@ const GuildSchema = new Schema({
     Bans: [{
         type: String,
         required: false,
-        ref: 'bans',
+        ref: 'Bans',
     }],
 
     Members: [{

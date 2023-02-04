@@ -46,7 +46,7 @@ export default {
   Role,
   Roles,
   Settings,
-  RawUser
+  RawUser,
 };
 
 export {
@@ -67,5 +67,5 @@ export {
   Role,
   Roles,
   Settings,
-  RawUser
+  RawUser,
 };
