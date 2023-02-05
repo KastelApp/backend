@@ -3,4 +3,4 @@ Config.ts
 dist
 node_modules
 
-Token.ts
+scripts/

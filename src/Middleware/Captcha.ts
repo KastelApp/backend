@@ -19,6 +19,12 @@ const Captcha = (options: Captcha) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     const CaptchaHeader = req.headers["cf-turnstile-response"];
 
+    if (!options.Enabled) {
+      next();
+
+      return;
+    }
+
     if (options.Enabled && options.BodyTrigger) {
       if (
         !Object.keys(req.body).some((key) =>
