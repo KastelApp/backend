@@ -1,3 +1,14 @@
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
+
 import { HTTPErrors, Route, Snowflake } from '@kastelll/packages';
 import { RelationshipFlags } from '../../../../Constants';
 import User from '../../../../Middleware/User';
@@ -106,8 +117,6 @@ new Route('/friend', 'POST', [
             }
         })
 
-        // res.send(`temp (friend request ${friend ? 'accepted' : 'denied'})`)
-
         if (friend) {
             res.send({
                 code: "FriendRequestAccepted",
@@ -158,4 +167,5 @@ new Route('/friend', 'POST', [
         message: 'Something went wrong.'
     })
 
+    return;
 });

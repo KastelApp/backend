@@ -17,16 +17,20 @@ import { SettingSchema, UserSchema } from "../../Utils/Schemas/Schemas";
 import { compareSync } from "bcrypt";
 import Token from "../../Utils/Classes/Token";
 import Encryption from "../../Utils/Classes/Encryption";
+import Captcha from "../../Middleware/Captcha";
+import Constants from "../../Constants";
 
 new Route(
   "/login",
   "POST",
   [
     User({
-      Flags: [],
       AccessType: "LoggedOut",
       AllowedRequesters: "User",
     }),
+    Captcha({
+      Enabled: Constants.Settings.Captcha.Login
+  })
   ],
   async (req, res) => {
     const { email, password }: { email: string; password: string } = req.body;

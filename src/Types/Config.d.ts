@@ -19,6 +19,8 @@ export interface Server {
     ClearOnStart: boolean;
   };
   StrictRouting: boolean; // if true then you cannot do like /users/@me/ you have to do /users/@me
+  TurnstileSecret: string | null; // cloudflare turnstile secret (for captchas)
+  CaptchaEnabled: boolean; // if true then some routes will require captcha (register, login, etc)
 }
 
 export interface Encryption {

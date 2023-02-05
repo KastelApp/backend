@@ -25,6 +25,13 @@ const Settings = {
   },
   Min: {
     UsernameLength: 2,
+  },
+  Captcha: { // The routes that have captcha (If you want them to have captcha)
+    Login: false,
+    Register: false,
+    ForgotPassword: false,
+    ChangePassword: false,
+    ChangeEmail: false,
   }
 };
 

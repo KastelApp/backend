@@ -1,5 +1,18 @@
+/* !
+ *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
+ *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
+ *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
+ *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
+ * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * Copyright(c) 2022-2023 DarkerInk
+ * GPL 3.0 Licensed
+ */
+
 import { HTTPErrors, Route } from "@kastelll/packages";
 import { compareSync, hashSync } from "bcrypt";
+import Constants from "../../../../Constants";
+import Captcha from "../../../../Middleware/Captcha";
 import User from "../../../../Middleware/User";
 import type { PopulatedUser, UserAtMe } from "../../../../Types/Users/Users";
 import FlagFields from "../../../../Utils/Classes/BitFields/Flags";
@@ -28,6 +41,13 @@ new Route(
       AllowedRequesters: "All",
       Flags: [],
     }),
+    Captcha({
+      Enabled: Constants.Settings.Captcha.ChangePassword || Constants.Settings.Captcha.ChangeEmail,
+      BodyTrigger: [
+        ...(Constants.Settings.Captcha.ChangePassword ? ["password"] : []),
+        ...(Constants.Settings.Captcha.ChangeEmail ? ["email"] : []),
+      ]
+    })
   ],
   async (req, res) => {
     const {

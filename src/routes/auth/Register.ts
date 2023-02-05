@@ -17,8 +17,18 @@ import { Config } from '../../Config';
 import { hashSync } from 'bcrypt';
 import Token from '../../Utils/Classes/Token';
 import TagGenerator from '../../Utils/TagGenerator';
+import User from '../../Middleware/User';
+import Captcha from '../../Middleware/Captcha';
 
-new Route('/register', 'POST', [], async (req, res) => {
+new Route('/register', 'POST', [
+    User({
+        AccessType: 'LoggedOut',
+        AllowedRequesters: 'User'
+    }),
+    Captcha({
+        Enabled: Constants.Settings.Captcha.Register
+    })
+], async (req, res) => {
     const { username, email, password }: { username: string, email: string; password: string, invite?: string } = req.body;
 
     if (!email || !password || !username) {

@@ -22,6 +22,8 @@ const Server: Server = {
         ClearOnStart: false,
     },
     StrictRouting: true,
+    CaptchaEnabled: false,
+    TurnstileSecret: null
 };
 
 const Encryption: Encryption = {

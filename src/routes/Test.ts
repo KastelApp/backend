@@ -13,11 +13,17 @@ import { HTTPErrors, Route } from '@kastelll/packages';
 import User from '../Utils/Classes/User';
 
 import { User as UserMiddleware } from '../Middleware/User'
+import Captcha from '../Middleware/Captcha';
 
-new Route('/tests', 'get', [
+new Route('/tests', 'POST', [
     UserMiddleware({
         AccessType: 'LoggedIn',
         AllowedRequesters: 'User'
+    }),
+    Captcha({
+        Enabled: true,
+        ExpectedAction: 'login',
+        BodyTrigger: ['username']
     })
 ], async (req, res) => {
     const errors = new HTTPErrors(52512);
@@ -39,5 +45,7 @@ new Route('/tests', 'get', [
 
     console.log(await user.fetchFriends())
 
-    res.json(errors.toJSON())
+    res.json({
+        message: 'You passed the captcha!'
+    })
 });

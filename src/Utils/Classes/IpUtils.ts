@@ -11,17 +11,23 @@
 
 import type { Request } from "express";
 
-const GetIp = (req: Request): string => {
-  let Ip: string | undefined | string[] =
-    req.headers["x-forwarded-for"] || req.headers["cf-connecting-ip"] || req.ip;
+class IpUtils {
+  static GetIp(req: Request): string {
+    let Ip: string | undefined | string[] =
+      req.headers["x-forwarded-for"] || req.headers["cf-connecting-ip"] || req.ip;
 
-  if (typeof Ip === "string") {
-    Ip = Ip.split(",")[0];
+    if (typeof Ip === "string") {
+      Ip = Ip.split(",")[0];
+    }
+
+    return (Ip as string).replace("::ffff:", "");
   }
 
-  return (Ip as string).replace("::ffff:", "");
-};
+  static IsLocalIp(ip: string): boolean {
+    return ip === "::1" || ip === "127.0.0.1" || ip === "localhost";
+  }
+}
 
-export default GetIp;
+export default IpUtils;
 
-export { GetIp };
+export { IpUtils };

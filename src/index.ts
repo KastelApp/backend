@@ -42,7 +42,8 @@ import { HTTPErrors, Route } from '@kastelll/packages';
 import { join } from 'node:path';
 const Routes = Route.loadRoutes(join(__dirname, 'routes'));
 import { Cache } from './utils/classes/Cache';
-import GetIp from './Utils/IpUtils';
+import { IpUtils } from './Utils/Classes/IpUtils';
+import Turnstile from './Utils/Classes/Turnstile';
 
 /* Express Middleware stuff */
 const app = express();
@@ -72,7 +73,8 @@ if (Config.Logger.LogErrors) {
 /* Sets the users IP for later simpler use */
 /* Also Logs the requested path */
 app.use((req, res, next) => {
-    req.clientIp = GetIp(req)
+    req.clientIp = IpUtils.GetIp(req);
+    req.captcha = new Turnstile();
 
     console.info(`[Stats] ${req.clientIp} Requested ${req.path} (${req.method})`);
 

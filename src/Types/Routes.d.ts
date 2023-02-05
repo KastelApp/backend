@@ -67,3 +67,10 @@ interface Options {
   requests: RequestOptions;
   flags: FlagOptions[];
 }
+
+export interface Captcha {
+  Enabled: boolean; // If the captcha is enabled
+  ExpectedAction?: string; // The expected action of the captcha (login, register, etc.) (done client side)
+  ExpectedCData?: string; // The expected cdata of the captcha (done client side) (session id stuffs)
+  BodyTrigger?: string[]; // The body key that triggers the captcha (like the username field or password field etc)
+}
