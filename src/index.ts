@@ -37,11 +37,11 @@ import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 
 /* Util Imports */
-import { uriGenerator } from './utils/uriGenerator';
+import { uriGenerator } from './Utils/UriGenerator';
 import { HTTPErrors, Route } from '@kastelll/packages';
 import { join } from 'node:path';
 const Routes = Route.loadRoutes(join(__dirname, 'routes'));
-import { Cache } from './utils/Classes/Cache';
+import { Cache } from './Utils/Classes/Cache';
 import { IpUtils } from './Utils/Classes/IpUtils';
 import Turnstile from './Utils/Classes/Turnstile';
 
@@ -106,7 +106,7 @@ app.listen((Config.Server.Port || 62250), async () => {
 
     const cache = new Cache(Config.Redis.Host, Config.Redis.Port, Config.Redis.User, Config.Redis.Password, Config.Redis.Db);
 
-    await cache.connect().then(() => console.info('[Cache] Redis connected!')).catch((e) => {
+    await cache.connect().then(() => console.info('[Cache] Redis connected!')).catch((e: any) => {
         console.error('[Cache] Failed to connect to Redis', e);
         process.exit();
     });
@@ -126,7 +126,7 @@ app.listen((Config.Server.Port || 62250), async () => {
 
     mongoose.set('strictQuery', true);
 
-    mongoose.connect(uriGenerator()).then(() => console.info('[Database] MongoDB connected!')).catch((e) => {
+    mongoose.connect(uriGenerator()).then(() => console.info('[Database] MongoDB connected!')).catch((e: any) => {
         console.error('[Database] Failed to connect to MongoDB', e);
         process.exit();
     });
