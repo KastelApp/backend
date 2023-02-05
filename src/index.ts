@@ -41,7 +41,7 @@ import { uriGenerator } from './utils/uriGenerator';
 import { HTTPErrors, Route } from '@kastelll/packages';
 import { join } from 'node:path';
 const Routes = Route.loadRoutes(join(__dirname, 'routes'));
-import { Cache } from './utils/classes/Cache';
+import { Cache } from './utils/Classes/Cache';
 import { IpUtils } from './Utils/Classes/IpUtils';
 import Turnstile from './Utils/Classes/Turnstile';
 

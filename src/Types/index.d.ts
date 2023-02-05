@@ -9,7 +9,7 @@
  * GPL 3.0 Licensed
  */
 
-import { Cache } from "../utils/classes/Cache";
+import { Cache } from "../utils/Classes/Cache";
 import Turnstile from "../Utils/Classes/Turnstile";
 import { LessUser } from "./Users/Users";
 
