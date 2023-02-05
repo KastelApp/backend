@@ -11,20 +11,20 @@
 
 import { User } from "./User";
 import { Friend } from "./Friend";
-import { Friends } from "./friends";
-import { FriendUser } from "./friendUser";
-import { Ban } from "./ban";
-import { Bans } from "./bans";
-import { Channel } from "./channel";
-import { Channels } from "./channels";
-import { Guild } from "./guild";
-import { Guilds } from "./guilds";
-import { GuildMember } from "./guildMember";
-import { GuildMembers } from "./guildMembers";
-import { Invite } from "./invite";
-import { Invites } from "./invites";
-import { Role } from "./role";
-import { Roles } from "./roles";
+import { Friends } from "./Friends";
+import { FriendUser } from "./FriendUser";
+import { Ban } from "./Ban";
+import { Bans } from "./Bans";
+import { Channel } from "./Channel";
+import { Channels } from "./Channels";
+import { Guild } from "./Guild";
+import { Guilds } from "./Guilds";
+import { GuildMember } from "./GuildMember";
+import { GuildMembers } from "./GuildMembers";
+import { Invite } from "./Invite";
+import { Invites } from "./Invites";
+import { Role } from "./Role";
+import { Roles } from "./Roles";
 import { Settings } from './Settings';
 import { RawUser } from './RawUser';
 
