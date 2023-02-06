@@ -14,7 +14,9 @@ import type { Request } from "express";
 class IpUtils {
   static GetIp(req: Request): string {
     let Ip: string | undefined | string[] =
-      req.headers["x-forwarded-for"] || req.headers["cf-connecting-ip"] || req.ip;
+      req.headers['cf-connecting-ip'] ||
+      req.headers['x-forwarded-for'] ||
+      req.ip
 
     if (typeof Ip === "string") {
       Ip = Ip.split(",")[0];
