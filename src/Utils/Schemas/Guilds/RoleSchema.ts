@@ -52,7 +52,7 @@ const RoleSchema = new Schema({
     },
 
     Color: {
-        type: String,
+        type: Number,
         required: false,
     },
 

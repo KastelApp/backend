@@ -10,6 +10,7 @@
  */
 
 import { Cache } from "../utils/Classes/Cache";
+import RequestUtils from "../Utils/Classes/RequestUtils";
 import Turnstile from "../Utils/Classes/Turnstile";
 import { LessUser } from "./Users/Users";
 
@@ -19,6 +20,7 @@ declare global {
       clientIp: string;
       user: LessUser
       captcha: Turnstile
+      utils: RequestUtils
     }
 
     interface Application {
