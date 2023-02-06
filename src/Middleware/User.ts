@@ -12,7 +12,7 @@
 import { HTTPErrors } from "@kastelll/packages";
 import type { NextFunction, Request, Response } from "express";
 import type { UserMiddleware } from "../Types/Routes";
-import type { LessUser, PopulatedUser } from "../Types/Users/Users";
+import type { LessUser, PopulatedUserWJ } from "../Types/Users/Users";
 import FlagFields from "../Utils/Classes/BitFields/Flags";
 import Encryption from "../Utils/Classes/Encryption";
 import Token from "../Utils/Classes/Token";
@@ -31,8 +31,8 @@ const User = (options: UserMiddleware) => {
 
     if (AuthHeader?.includes("Bot") && options.AllowedRequesters === "User") {
       res.status(401).json({
-        code: 4013,
-        message: "You are not allowed to access this endpoint.",
+        Code: 4013,
+        Message: "You are not allowed to access this endpoint.",
       });
 
       return;
@@ -44,8 +44,8 @@ const User = (options: UserMiddleware) => {
 
     if (options.AccessType === "LoggedIn" && !AuthHeader) {
       res.status(401).json({
-        code: 4010,
-        message: "You need to be logged in to access this endpoint",
+        Code: 4010,
+        Message: "You need to be logged in to access this endpoint",
       });
 
       return;
@@ -53,8 +53,8 @@ const User = (options: UserMiddleware) => {
 
     if (options.AccessType === "LoggedOut" && AuthHeader) {
       res.status(401).json({
-        code: 4011,
-        message: "You are not allowed to access this endpoint.",
+        Code: 4011,
+        Message: "You are not allowed to access this endpoint.",
       });
 
       return;
@@ -65,8 +65,8 @@ const User = (options: UserMiddleware) => {
 
       if (!VaildatedToken) {
         res.status(401).json({
-          code: 4012,
-          message: "Unauthorized",
+          Code: 4012,
+          Message: "Unauthorized",
         });
 
         return;
@@ -80,21 +80,21 @@ const User = (options: UserMiddleware) => {
 
       if (!UsersSettings) {
         res.status(401).json({
-          code: 4012,
-          message: "Unauthorized",
+          Code: 4012,
+          Message: "Unauthorized",
         });
 
         return;
       }
 
       const PopulatedUser = await UsersSettings.populate<{
-        User: PopulatedUser;
+        User: PopulatedUserWJ;
       }>("User");
 
       if (!PopulatedUser) {
         res.status(401).json({
-          code: 4012,
-          message: "Unauthorized",
+          Code: 4012,
+          Message: "Unauthorized",
         });
 
         return;
@@ -106,10 +106,10 @@ const User = (options: UserMiddleware) => {
         const Errors = new HTTPErrors(4002);
 
         Errors.addError({
-          email: {
-            code: "AccountTerminated",
-            message: "Your account has been terminated.",
-            reason: PopulatedUser.User.BanReason,
+          Email: {
+            Code: "AccountTerminated",
+            Message: "Your account has been terminated.",
+            Reason: PopulatedUser.User.BanReason,
           },
         });
 
@@ -122,9 +122,9 @@ const User = (options: UserMiddleware) => {
         const Errors = new HTTPErrors(4003);
 
         Errors.addError({
-          email: {
-            code: "AccountDisabled",
-            message: "Your account is disabled, please contact support!",
+          Email: {
+            Code: "AccountDisabled",
+            Message: "Your account is disabled, please contact support!",
           },
         });
 
@@ -137,9 +137,9 @@ const User = (options: UserMiddleware) => {
         const Errors = new HTTPErrors(4004);
 
         Errors.addError({
-          email: {
-            code: "AccountDeletionInProgress",
-            message:
+          Email: {
+            Code: "AccountDeletionInProgress",
+            Message:
               "Your account is currently being deleted, If you would like to cancel this, please contact support",
           },
         });
@@ -151,8 +151,8 @@ const User = (options: UserMiddleware) => {
 
       if (!PopulatedUser.Tokens.includes(Encryption.encrypt(AuthHeader))) {
         res.status(401).json({
-          code: 4012,
-          message: "Unauthorized",
+          Code: 4012,
+          Message: "Unauthorized",
         });
 
         return;
@@ -163,8 +163,8 @@ const User = (options: UserMiddleware) => {
         (UsersFlags.hasString("Bot") || UsersFlags.hasString("VerifiedBot"))
       ) {
         res.status(401).json({
-          code: 4011,
-          message: "You are not allowed to access this endpoint.",
+          Code: 4011,
+          Message: "You are not allowed to access this endpoint.",
         });
 
         return;
@@ -175,8 +175,8 @@ const User = (options: UserMiddleware) => {
         !(UsersFlags.hasString("Bot") || UsersFlags.hasString("VerifiedBot"))
       ) {
         res.status(401).json({
-          code: 4011,
-          message: "You are not allowed to access this endpoint.",
+          Code: 4011,
+          Message: "You are not allowed to access this endpoint.",
         });
 
         return;
@@ -187,8 +187,8 @@ const User = (options: UserMiddleware) => {
           for (const Flag of options.Flags) {
             if (!UsersFlags.hasString(Flag)) {
               res.status(401).json({
-                code: 4011,
-                message: "You are not allowed to access this endpoint.",
+                Code: 4011,
+                Message: "You are not allowed to access this endpoint.",
               });
 
               return;
@@ -202,8 +202,8 @@ const User = (options: UserMiddleware) => {
           for (const Flag of options.DisallowedFlags) {
             if (UsersFlags.hasString(Flag)) {
               res.status(401).json({
-                code: 4011,
-                message: "You are not allowed to access this endpoint.",
+                Code: 4011,
+                Message: "You are not allowed to access this endpoint.",
               });
 
               return;

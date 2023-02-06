@@ -29,11 +29,11 @@ new Route('/logout', 'GET', [
 
         await FoundSchema.save();
     } else {
-        res.status(500).json({ message: 'Internal Server Error' }); // how did this happen? lol
+        res.status(500).json({ Message: 'Internal Server Error' }); // how did this happen? lol
 
         return;
     }
 
-    res.json({ message: 'Logged out' });
+    res.json({ Message: 'Logged out' });
 
 });

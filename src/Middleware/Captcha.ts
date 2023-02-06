@@ -40,9 +40,9 @@ const Captcha = (options: Captcha) => {
       const Errors = new HTTPErrors(5000);
 
       Errors.addError({
-        captcha: {
-          code: "MissingCaptcha",
-          message: "You need to solve the captcha to access this endpoint",
+        Captcha: {
+          Code: "MissingCaptcha",
+          Message: "You need to solve the captcha to access this endpoint",
         },
       });
 
@@ -55,9 +55,9 @@ const Captcha = (options: Captcha) => {
       const Errors = new HTTPErrors(5000);
 
       Errors.addError({
-        captcha: {
-          code: "InvalidCaptcha",
-          message: "The captcha you provided is invalid",
+        Captcha: {
+          Code: "InvalidCaptcha",
+          Message: "The captcha you provided is invalid",
         },
       });
 
@@ -72,9 +72,9 @@ const Captcha = (options: Captcha) => {
       const Errors = new HTTPErrors(5000);
 
       Errors.addError({
-        captcha: {
-          code: "InvalidCaptcha",
-          message: "The captcha you provided is invalid",
+        Captcha: {
+          Code: "InvalidCaptcha",
+          Message: "The captcha you provided is invalid",
         },
       });
 
@@ -90,9 +90,9 @@ const Captcha = (options: Captcha) => {
       const Errors = new HTTPErrors(5000);
 
       Errors.addError({
-        captcha: {
-          code: "InvalidCaptcha",
-          message: "The captcha you provided is invalid",
+        Captcha: {
+          Code: "InvalidCaptcha",
+          Message: "The captcha you provided is invalid",
         },
       });
 

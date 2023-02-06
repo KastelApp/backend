@@ -40,17 +40,17 @@ new Route(
 
       if (!email)
         Errors.addError({
-          email: {
-            code: "EmailRequired",
-            message: "Email is required",
+          Email: {
+            Code: "EmailRequired",
+            Message: "Email is required",
           },
         });
 
       if (!password)
         Errors.addError({
-          password: {
-            code: "PasswordRequired",
-            message: "Password is required",
+          Password: {
+            Code: "PasswordRequired",
+            Message: "Password is required",
           },
         });
 
@@ -70,10 +70,10 @@ new Route(
         const Errors = new HTTPErrors(4002);
 
         Errors.addError({
-          email: {
-            code: "AccountTerminated",
-            message: "Your account has been terminated.",
-            reason: User.BannedReason,
+          Email: {
+            Code: "AccountTerminated",
+            Message: "Your account has been terminated.",
+            Reason: User.BannedReason,
           },
         });
 
@@ -86,9 +86,9 @@ new Route(
         const Errors = new HTTPErrors(4003);
 
         Errors.addError({
-          email: {
-            code: "AccountDisabled",
-            message: "Your account is disabled, please contact support!",
+          Email: {
+            Code: "AccountDisabled",
+            Message: "Your account is disabled, please contact support!",
           },
         });
 
@@ -101,9 +101,9 @@ new Route(
         const Errors = new HTTPErrors(4004);
 
         Errors.addError({
-          email: {
-            code: "AccountDeletionInProgress",
-            message:
+          Email: {
+            Code: "AccountDeletionInProgress",
+            Message:
               "Your account is currently being deleted, If you would like to cancel this, please contact support",
           },
         });
@@ -117,9 +117,9 @@ new Route(
         const Errors = new HTTPErrors(4005);
 
         Errors.addError({
-          email: {
-            code: "PasswordNotSet",
-            message:
+          Email: {
+            Code: "PasswordNotSet",
+            Message:
               "Password not set, please reset your password (forgot password)",
           },
         });
@@ -133,9 +133,9 @@ new Route(
         const Errors = new HTTPErrors(4006);
 
         Errors.addError({
-          password: {
-            code: "PasswordIncorrect",
-            message: "Password is incorrect",
+          Password: {
+            Code: "PasswordIncorrect",
+            Message: "Password is incorrect",
           },
         });
 
@@ -174,9 +174,9 @@ new Route(
       const Errors = new HTTPErrors(4001);
 
       Errors.addError({
-        email: {
-          code: "EmailNotFound",
-          message: "Email not found",
+        Email: {
+          Code: "EmailNotFound",
+          Message: "Email not found",
         },
       });
 
@@ -191,10 +191,10 @@ new Route(
       const Errors = new HTTPErrors(4002);
 
       Errors.addError({
-        email: {
-          code: "AccountTerminated",
-          message: "Your account has been terminated.",
-          reason: User.BannedReason,
+        Email: {
+          Code: "AccountTerminated",
+          Message: "Your account has been terminated.",
+          Reason: User.BannedReason,
         },
       });
 
@@ -207,9 +207,9 @@ new Route(
       const Errors = new HTTPErrors(4003);
 
       Errors.addError({
-        email: {
-          code: "AccountDisabled",
-          message: "Your account is disabled, please contact support!",
+        Email: {
+          Code: "AccountDisabled",
+          Message: "Your account is disabled, please contact support!",
         },
       });
 
@@ -222,9 +222,9 @@ new Route(
       const Errors = new HTTPErrors(4004);
 
       Errors.addError({
-        email: {
-          code: "AccountDeletionInProgress",
-          message:
+        Email: {
+          Code: "AccountDeletionInProgress",
+          Message:
             "Your account is currently being deleted, If you would like to cancel this, please contact support",
         },
       });
@@ -238,9 +238,9 @@ new Route(
       const Errors = new HTTPErrors(4005);
 
       Errors.addError({
-        email: {
-          code: "PasswordNotSet",
-          message:
+        Email: {
+          Code: "PasswordNotSet",
+          Message:
             "Password not set, please reset your password (forgot password)",
         },
       });
@@ -254,9 +254,9 @@ new Route(
       const Errors = new HTTPErrors(4006);
 
       Errors.addError({
-        password: {
-          code: "PasswordIncorrect",
-          message: "Password is incorrect",
+        Password: {
+          Code: "PasswordIncorrect",
+          Message: "Password is incorrect",
         },
       });
 

@@ -34,11 +34,11 @@ new Route('/register', 'POST', [
     if (!email || !password || !username) {
         const Errors = new HTTPErrors(4007);
 
-        if (!email) Errors.addError({ email: { code: 'EmailRequired', message: 'Email is required' } });
+        if (!email) Errors.addError({ Email: { Code: 'EmailRequired', Message: 'Email is required' } });
 
-        if (!password) Errors.addError({ password: { code: 'PasswordRequired', message: 'Password is required' } });
+        if (!password) Errors.addError({ password: { Code: 'PasswordRequired', Message: 'Password is required' } });
 
-        if (!username) Errors.addError({ username: { code: 'UsernameRequired', message: 'Username is required' } });
+        if (!username) Errors.addError({ username: { Code: 'UsernameRequired', Message: 'Username is required' } });
 
         res.status(400).json(Errors.toJSON());
 
@@ -51,9 +51,9 @@ new Route('/register', 'POST', [
     if (UsersCache || CountedUsers >= Constants.Settings.Max.UsernameCount) {
         const Errors = new HTTPErrors(4008);
 
-        if (UsersCache) Errors.addError({ email: { code: 'EmailTaken', message: 'Email is taken' } });
+        if (UsersCache) Errors.addError({ Email: { Code: 'EmailTaken', Message: 'Email is taken' } });
 
-        if (CountedUsers >= Constants.Settings.Max.UsernameCount) Errors.addError({ username: { code: 'UsernameTaken', message: 'Username is taken' } });
+        if (CountedUsers >= Constants.Settings.Max.UsernameCount) Errors.addError({ Username: { Code: 'UsernameTaken', Message: 'Username is taken' } });
 
         res.status(400).json(Errors.toJSON());
 
@@ -63,11 +63,11 @@ new Route('/register', 'POST', [
     if (!password.match(Config.Regexs.password) || !email.match(Config.Regexs.email) || !(username.length >= Constants.Settings.Min.UsernameLength) || !(username.length <= Constants.Settings.Max.UsernameLength)) {
         const Errors = new HTTPErrors(4009);
 
-        if (!password.match(Config.Regexs.password)) Errors.addError({ password: { code: 'PasswordInvalid', message: 'Password is invalid' } });
+        if (!password.match(Config.Regexs.password)) Errors.addError({ Password: { Code: 'PasswordInvalid', Message: 'Password is invalid' } });
 
-        if (!email.match(Config.Regexs.email)) Errors.addError({ email: { code: 'EmailInvalid', message: 'Email is invalid' } });
+        if (!email.match(Config.Regexs.email)) Errors.addError({ Email: { Code: 'EmailInvalid', Message: 'Email is invalid' } });
 
-        if (!(username.length >= Constants.Settings.Min.UsernameLength) || !(username.length <= Constants.Settings.Max.UsernameLength)) Errors.addError({ username: { code: 'UsernameInvalid', message: 'Username is invalid' } });
+        if (!(username.length >= Constants.Settings.Min.UsernameLength) || !(username.length <= Constants.Settings.Max.UsernameLength)) Errors.addError({ Username: { Code: 'UsernameInvalid', Message: 'Username is invalid' } });
 
 
         res.status(400).json(Errors.toJSON());
@@ -115,14 +115,14 @@ new Route('/register', 'POST', [
     await Settings.save();
 
     res.status(200).json({
-        token: UserToken,
-        user: {
-            id: Encryption.decrypt(User._id),
-            username: username,
-            tag: User.Tag,
-            avatar: null,
-            flags: 0,
-            email: email,
+        Token: UserToken,
+        User: {
+            Id: Encryption.decrypt(User._id),
+            Username: username,
+            Tag: User.Tag,
+            Avatar: null,
+            Flags: 0,
+            Email: email,
         }
     });
 

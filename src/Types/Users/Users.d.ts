@@ -27,8 +27,7 @@ export interface LessUser { // Less user is just less data but important data
     Bot: boolean;
 }
 
-export interface PopulatedUser {
-    toJSON(): any;
+export interface RawUser {
     _id: string,
     Email: string,
     EmailVerified: boolean,
@@ -52,6 +51,12 @@ export interface PopulatedUser {
     AccountDeletionInProgress: boolean,
     __v: number
 }
+
+interface IPopulatedUserWJ {
+    toJSON(): RawUser
+} 
+
+export type PopulatedUserWJ = RawUser & IPopulatedUserWJ;
 
 export interface UserAtMe {
     id: string;

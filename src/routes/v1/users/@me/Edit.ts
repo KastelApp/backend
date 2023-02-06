@@ -14,7 +14,7 @@ import { compareSync, hashSync } from "bcrypt";
 import Constants from "../../../../Constants";
 import Captcha from "../../../../Middleware/Captcha";
 import User from "../../../../Middleware/User";
-import type { PopulatedUser, UserAtMe } from "../../../../Types/Users/Users";
+import type { PopulatedUserWJ, UserAtMe } from "../../../../Types/Users/Users";
 import FlagFields from "../../../../Utils/Classes/BitFields/Flags";
 import Encryption from "../../../../Utils/Classes/Encryption";
 import schemaData from "../../../../Utils/SchemaData";
@@ -65,9 +65,9 @@ new Route(
         const Errors = new HTTPErrors(4015);
     
         Errors.addError({
-            tag: {
-            code: "InvalidTag",
-            message: "You cannot use a tag of 0000",
+            Tag: {
+            Code: "InvalidTag",
+            Message: "You cannot use a tag of 0000",
             },
         });
     
@@ -82,26 +82,26 @@ new Route(
 
         if (password)
           Errors.addError({
-            password: {
-              code: "CannotChangePassword",
-              message: "You cannot change your password as a bot",
+            Password: {
+              Code: "CannotChangePassword",
+              Message: "You cannot change your password as a bot",
             },
           });
 
         if (twoFa)
           Errors.addError({
-            twoFa: {
-              code: "CannotChangeTwoFa",
-              message:
+            TwoFa: {
+              Code: "CannotChangeTwoFa",
+              Message:
                 "You cannot change your two factor authentication as a bot",
             },
           });
 
         if (phoneNumber)
           Errors.addError({
-            phoneNumber: {
-              code: "CannotChangePhoneNumber",
-              message: "You cannot change your phone number as a bot",
+            PhoneNumber: {
+              Code: "CannotChangePhoneNumber",
+              Message: "You cannot change your phone number as a bot",
             },
           });
 
@@ -117,9 +117,9 @@ new Route(
 
         if (phoneNumber)
           Errors.addError({
-            phoneNumber: {
-              code: "CannotChangePhoneNumber",
-              message:
+            PhoneNumber: {
+              Code: "CannotChangePhoneNumber",
+              Message:
                 "You cannot change your phone number without providing your password",
             },
           });
@@ -127,8 +127,8 @@ new Route(
         if (email)
           Errors.addError({
             email: {
-              code: "CannotChangeEmail",
-              message:
+              Code: "CannotChangeEmail",
+              Message:
                 "You cannot change your email without providing your password",
             },
           });
@@ -136,8 +136,8 @@ new Route(
         if (twoFa)
           Errors.addError({
             twoFa: {
-              code: "CannotChangeTwoFa",
-              message:
+              Code: "CannotChangeTwoFa",
+              Message:
                 "You cannot change your two factor authentication without providing your password",
             },
           });
@@ -145,8 +145,8 @@ new Route(
         if (newPassword)
           Errors.addError({
             newPassword: {
-              code: "CannotChangeNewPassword",
-              message:
+              Code: "CannotChangeNewPassword",
+              Message:
                 "You cannot change your new password without providing your password",
             },
           });
@@ -167,8 +167,8 @@ new Route(
 
         Errors.addError({
           password: {
-            code: "PasswordIncorrect",
-            message: "Password is incorrect",
+            Code: "PasswordIncorrect",
+            Message: "Password is incorrect",
           },
         });
 
@@ -193,7 +193,7 @@ new Route(
     })
 
     const ChangedUser = {
-        ...FoundUser?.toJSON() as PopulatedUser,
+        ...FoundUser?.toJSON() as PopulatedUserWJ,
         Username: username ? Encryption.encrypt(username) : FoundUser?.Username,
         Tag: tag ? tag : FoundUser?.Tag,
         Email: email ? Encryption.encrypt(email) : FoundUser?.Email,
@@ -204,7 +204,7 @@ new Route(
         TwoFa: twoFa ? twoFa : FoundUser?.TwoFa,
         TwoFaSecret: twoFa ? null : FoundUser?.TwoFaSecret,
         id: Encryption.decrypt(FoundUser?.id as string),
-    } as PopulatedUser;
+    } as PopulatedUserWJ;
 
     const SchemaUser = schemaData('User', Encryption.completeDecryption(ChangedUser)) as UserAtMe
 

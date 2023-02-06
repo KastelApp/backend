@@ -12,7 +12,7 @@
 // TODO: Add more stuff to this class
 
 import type { Request, Response } from "express";
-import type { LessUser, PopulatedUser } from "../../Types/Users/Users";
+import type { LessUser, PopulatedUserWJ } from "../../Types/Users/Users";
 import schemaData from "../SchemaData";
 import { FriendSchema } from "../Schemas/Schemas";
 import Encryption from "./Encryption";
@@ -69,29 +69,29 @@ class User {
     });
 
     const FriendRArray: {
-      Sender: PopulatedUser;
-      Receiver: PopulatedUser;
+      Sender: PopulatedUserWJ;
+      Receiver: PopulatedUserWJ;
       Flags: number;
     }[] = [];
 
     const FriendSArray: {
-      Sender: PopulatedUser;
-      Receiver: PopulatedUser;
+      Sender: PopulatedUserWJ;
+      Receiver: PopulatedUserWJ;
       Flags: number;
     }[] = [];
 
     for (const Friend of FriendsR) {
       if (FilterBlocked && Friend.Flags === RelationshipFlags.Blocked) continue;
 
-      await Friend.populate<PopulatedUser>("Sender");
-      await Friend.populate<PopulatedUser>("Receiver");
+      await Friend.populate<PopulatedUserWJ>("Sender");
+      await Friend.populate<PopulatedUserWJ>("Receiver");
 
       const FixedData = schemaData("Friend", {
         Sender: Encryption.completeDecryption(
-          (Friend.Sender as any as PopulatedUser).toJSON()
+          (Friend.Sender as any as PopulatedUserWJ).toJSON()
         ),
         Receiver: Encryption.completeDecryption(
-          (Friend.Receiver as any as PopulatedUser).toJSON()
+          (Friend.Receiver as any as PopulatedUserWJ).toJSON()
         ),
         Flags: Friend.Flags,
       });
@@ -102,15 +102,15 @@ class User {
     for (const Friend of FriendsS) {
       if (FilterBlocked && Friend.Flags === RelationshipFlags.Blocked) continue;
       
-      await Friend.populate<PopulatedUser>("Sender");
-      await Friend.populate<PopulatedUser>("Receiver");
+      await Friend.populate<PopulatedUserWJ>("Sender");
+      await Friend.populate<PopulatedUserWJ>("Receiver");
 
       const FixedData = schemaData("Friend", {
         Sender: Encryption.completeDecryption(
-          (Friend.Sender as any as PopulatedUser).toJSON()
+          (Friend.Sender as any as PopulatedUserWJ).toJSON()
         ),
         Receiver: Encryption.completeDecryption(
-          (Friend.Receiver as any as PopulatedUser).toJSON()
+          (Friend.Receiver as any as PopulatedUserWJ).toJSON()
         ),
         Flags: Friend.Flags,
       });

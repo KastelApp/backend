@@ -15,7 +15,7 @@ import type { Schema } from '../../Types/Schema';
 const Channel: Schema = {
     type: Object,
     data: {
-        id: {
+        Id: {
             name: '_id',
             expected: String,
             default: null,

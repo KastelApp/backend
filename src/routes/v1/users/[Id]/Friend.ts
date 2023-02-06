@@ -38,9 +38,9 @@ new Route('/friend', 'POST', [
         const Errors = new HTTPErrors(4016)
 
         Errors.addError({
-            id: {
-                code: 'InvalidUser',
-                message: 'The user ID provided is invalid.'
+            Id: {
+                Code: 'InvalidUser',
+                Message: 'The user ID provided is invalid.'
             }
         })
 
@@ -53,9 +53,9 @@ new Route('/friend', 'POST', [
         const Errors = new HTTPErrors(4017)
 
         Errors.addError({
-            friend: {
-                code: 'InvalidFriend',
-                message: 'The friend parameter must be a boolean.'
+            Friend: {
+                Code: 'InvalidFriend',
+                Message: 'The friend parameter must be a boolean.'
             }
         })
 
@@ -80,9 +80,9 @@ new Route('/friend', 'POST', [
             const Errors = new HTTPErrors(4018)
 
             Errors.addError({
-                friend: { // this doesn't makse sense but idk what else to put (for now)
-                    code: 'AlreadySent',
-                    message: 'You have already sent this user a friend request.'
+                Friend: { // this doesn't makse sense but idk what else to put (for now)
+                    Code: 'AlreadySent',
+                    Message: 'You have already sent this user a friend request.'
                 }
             })
 
@@ -101,8 +101,8 @@ new Route('/friend', 'POST', [
         await NewFriend.save()
 
         res.send({
-            code: "FriendRequestSent",
-            message: "The friend request has been sent."
+            Code: "FriendRequestSent",
+            Message: "The friend request has been sent."
         })
 
         return;
@@ -119,15 +119,15 @@ new Route('/friend', 'POST', [
 
         if (friend) {
             res.send({
-                code: "FriendRequestAccepted",
-                message: "The friend request has been accepted."
+                Code: "FriendRequestAccepted",
+                Message: "The friend request has been accepted."
             })
 
             return;
         } else {
             res.send({
-                code: "FriendRequestDenied",
-                message: "The friend request has been denied."
+                Code: "FriendRequestDenied",
+                Message: "The friend request has been denied."
             })
 
             return;
@@ -142,9 +142,9 @@ new Route('/friend', 'POST', [
             const Errors = new HTTPErrors(4018)
 
             Errors.addError({
-                friend: {
-                    code: 'AlreadySent',
-                    message: 'You have already sent this user a friend request.'
+                Friend: {
+                    Code: 'AlreadySent',
+                    Message: 'You have already sent this user a friend request.'
                 }
             })
 
@@ -156,15 +156,15 @@ new Route('/friend', 'POST', [
         await FriendsS.deleteOne()
 
         res.send({
-            code: "FriendRequestDeleted",
-            message: "The friend request has been deleted."
+            Code: "FriendRequestDeleted",
+            Message: "The friend request has been deleted."
         })
 
         return;
     }
 
     res.status(500).json({
-        message: 'Something went wrong.'
+        Message: 'Something went wrong.'
     })
 
     return;

@@ -38,9 +38,9 @@ new Route(
       const Errors = new HTTPErrors(4014);
 
       Errors.addError({
-        password: {
-          code: "MissingPassword",
-          message: "You must provide your password to disable your account",
+        Password: {
+          Code: "MissingPassword",
+          Message: "You must provide your password to disable your account",
         },
       });
 
@@ -57,9 +57,9 @@ new Route(
       const Errors = new HTTPErrors(4006);
 
       Errors.addError({
-        password: {
-          code: "PasswordIncorrect",
-          message: "Password is incorrect",
+        Password: {
+          Code: "PasswordIncorrect",
+          Message: "Password is incorrect",
         },
       });
 
@@ -87,7 +87,7 @@ new Route(
     }
 
     res.status(200).json({
-      message: "Account disabled",
+      Message: "Account disabled",
     });
 
     return;

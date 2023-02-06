@@ -14,7 +14,7 @@ import type { Schema } from "../../Types/Schema";
 const User: Schema = {
     type: Array,
     data: {
-        id: {
+        Id: {
             name: 'id',
             expected: String,
             default: null,
