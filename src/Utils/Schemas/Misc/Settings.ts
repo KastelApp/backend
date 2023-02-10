@@ -40,6 +40,26 @@ const SettingSchema = new Schema({
         required: true,
         default: 'dark',
     },
+
+    Mentions: [
+        {
+            Channel: {
+                type: String,
+                required: true,
+                ref: 'Channels',
+            },
+            Guild: {
+                type: String,
+                required: true,
+                ref: 'Guilds',
+            },
+            Count: {
+                type: Number,
+                required: true,
+                default: 0,
+            }
+        }
+    ]
 });
 
 export default model('Settings', SettingSchema);

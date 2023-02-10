@@ -31,6 +31,7 @@ import { SpecialGuildNC, SpecialGuildNCW, SpecialGuildNW } from './SpecialGuild'
 import { SpecialGuildsNC, SpecialGuildsNCW, SpecialGuildsNW } from './SpecialGuilds';
 import { Emojis } from './Emojis';
 import { Emoji } from './Emoji';
+import { PermissionsOveride, PermissionsOverides } from './PermissionsOverides'
 
 export default {
   User,
@@ -58,7 +59,9 @@ export default {
   SpecialGuildsNCW,
   SpecialGuildsNW,
   Emojis,
-  Emoji
+  Emoji,
+  PermissionsOveride,
+  PermissionsOverides
 };
 
 export {
@@ -87,5 +90,7 @@ export {
   SpecialGuildsNCW,
   SpecialGuildsNW,
   Emojis,
-  Emoji
+  Emoji,
+  PermissionsOveride,
+  PermissionsOverides
 };

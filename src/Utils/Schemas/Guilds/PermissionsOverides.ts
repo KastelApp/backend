@@ -18,15 +18,15 @@ const PermissionsOverides = new Schema({
     },
 
     Allow: {
-        type: Array,
+        type: String,
         required: true,
-        default: [],
+        default: "0"
     },
 
     Deny: {
-        type: Array,
+        type: String,
         required: true,
-        default: [],
+        default: "0",
     },
 
     Type: { // 1 << 0 = role, 1 << 1 = member

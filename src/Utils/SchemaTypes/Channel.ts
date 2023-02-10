@@ -69,11 +69,10 @@ const Channel: Schema = {
             default: 0,
             extended: false
         },
-        Permissions: {
-            name: 'Permissions',
-            expected: Number,
-            default: 0,
-            extended: false
+        PermissionsOverides: {
+            name: 'PermissionsOverides',
+            extended: true,
+            extends: 'PermissionsOverides'
         },
     },
 };
