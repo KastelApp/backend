@@ -11,6 +11,7 @@
 
 import { HTTPErrors, Route } from "@kastelll/packages";
 import { compareSync } from "bcrypt";
+import Constants from "../../../../Constants";
 import User from "../../../../Middleware/User";
 import Encryption from "../../../../Utils/Classes/Encryption";
 import { SettingSchema, UserSchema } from "../../../../Utils/Schemas/Schemas";
@@ -18,8 +19,6 @@ import { SettingSchema, UserSchema } from "../../../../Utils/Schemas/Schemas";
 interface DisableBody {
   password: string;
 }
-
-// TODO: Add account to queue to be wiped
 
 new Route(
   "/",
@@ -71,6 +70,7 @@ new Route(
     await FoundUser?.updateOne({
       $set: {
         Locked: true,
+        Flags: (FoundUser?.Flags as number) | Number(Constants.Flags.WaitingOnDisableDataUpdate)
       },
     });
 
@@ -87,6 +87,7 @@ new Route(
     }
 
     res.status(200).json({
+      Success: true,
       Message: "Account disabled",
     });
 

@@ -117,6 +117,8 @@ const Settings = {
     GuildBan: 1n << 33n,
     FriendBan: 1n << 34n,
     GroupchatBan: 1n << 35n,
+    WaitingOnAccountDeletion: 1n << 36n,
+    WaitingOnDisableDataUpdate: 1n << 37n,
   };
   
   // These are BigInts since BigInt Bitfields don't loop around to One after 32 (1 << 32 loops 1 but 1n << 32n goes to 4294967296n)

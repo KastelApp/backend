@@ -16,5 +16,4 @@ new Route('/friends', 'GET', [User({
     AccessType: 'LoggedIn',
     AllowedRequesters: 'User',
     Flags: []
-})], async (req, res) => {
-})
+})], async (req, res) => {})
