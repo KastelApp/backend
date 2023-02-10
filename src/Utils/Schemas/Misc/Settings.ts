@@ -11,36 +11,37 @@
 
 import { model, Schema } from 'mongoose';
 
-const GuildMemberSchema = new Schema({
-    _id: {
-        type: String,
-        required: true,
-    },
-
-    Guild: { // Allow easier deletion of guild member schemas when a guild owner deletes their guild
-        type: String,
-        required: true,
-        ref: 'Guilds',
-    },
-
+const SettingSchema = new Schema({
     User: {
         type: String,
-        required: true,
         ref: 'Users',
+        required: true,
     },
 
-    Roles: [{
+    Status: {
         type: String,
         required: false,
-        ref: 'Roles',
-    }],
+    },
 
-    Nickname: {
+    Presence: {
+        type: Number,
+        required: true,
+        default: 0,
+    },
+
+    Tokens: {
+        type: Array,
+        required: true,
+        default: [],
+    },
+
+    Theme: {
         type: String,
-        required: false,
+        required: true,
+        default: 'dark',
     },
 });
 
-export default model('GuildMembers', GuildMemberSchema);
+export default model('Settings', SettingSchema);
 
-export { GuildMemberSchema }
+export { SettingSchema }

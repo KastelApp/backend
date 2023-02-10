@@ -20,7 +20,11 @@ new Route('/', 'GET', [User({
     AllowedRequesters: 'All',
     Flags: []
 })], async (req, res) => {
-    const FixedUser = schemaData('User', req.user) as UserAtMe;
+
+    const FixedUser = schemaData('User', {
+        ...req.user,
+        _id: req.user.Id
+    }) as UserAtMe;
 
     FixedUser.PublicFlags = Number(FlagFields.RemovePrivateFlags(BigInt(FixedUser.PublicFlags)));
 

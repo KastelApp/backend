@@ -54,45 +54,6 @@ export interface MongoDB {
   Uri: string;
 }
 
-export interface ColorChoices {
-  Debug: string;
-  Info: string;
-  Log: string;
-  Warn: string;
-  Error: string;
-  Loaded: string;
-}
-
-export interface Colors {
-  Level: ColorChoices;
-  Message: ColorChoices;
-}
-
-export interface Logger {
-  LoggerEnabled: boolean;
-  TimeStartUp: boolean;
-  SaveInFiles: boolean;
-  Path: string;
-  Format: string;
-  Color: boolean;
-  Log: boolean;
-  LogRoutes: boolean;
-  LogLogo: boolean;
-  LogErrors: boolean;
-  LogInfo: boolean;
-  DateType: string;
-  Colors: Colors;
-}
-
-export interface Snowflake {
-  Epoch?: number;
-  WorkerId?: number;
-  DatacenterId?: number;
-  WorkerIdBytes?: number;
-  DatacenterIdBytes?: number;
-  SequenceBytes?: number;
-}
-
 export interface Config {
   Server: Server;
   Encryption: Encryption;

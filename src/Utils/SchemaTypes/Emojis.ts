@@ -11,8 +11,8 @@
 
 import type { Schema } from "../../Types/Schema";
 
-const FriendUser: Schema = {
-    type: Object,
+const Emojis: Schema = {
+    type: Array,
     data: {
         Id: {
             name: '_id',
@@ -20,33 +20,39 @@ const FriendUser: Schema = {
             default: null,
             extended: false
         },
-        AvatarHash: {
-            name: 'AvatarHash',
+        Creator: {
+            name: 'Creator',
             expected: String,
             default: null,
             extended: false
         },
-        Username: {
-            name: 'Username',
+        Name: {
+            name: 'Name',
             expected: String,
-            default: 'Unknown Username',
+            default: null,
             extended: false
         },
-        Tag: {
-            name: 'Tag',
+        EmojiHash: {
+            name: 'EmojiHash',
             expected: String,
-            default: '0000',
+            default: null,
             extended: false
         },
-        PublicFlags: {
-            name: 'Flags',
-            expected: Number,
-            default: 0,
+        Disabled: {
+            name: 'Disabled',
+            expected: Boolean,
+            default: false,
+            extended: false
+        },
+        Public: {
+            name: 'Public',
+            expected: Boolean,
+            default: false,
             extended: false
         }
     },
 };
 
-export default FriendUser;
+export default Emojis;
 
-export { FriendUser }
+export { Emojis }

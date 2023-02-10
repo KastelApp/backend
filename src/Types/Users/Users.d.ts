@@ -9,8 +9,10 @@
  * GPL 3.0 Licensed
  */
 
+import FlagFields from "../../Utils/Classes/BitFields/Flags";
+
 export interface LessUser { // Less user is just less data but important data
-    id: string;
+    Id: string;
     AvatarHash: string;
     Email: string;
     Username: string;
@@ -25,6 +27,7 @@ export interface LessUser { // Less user is just less data but important data
     AccountDeletionInProgress: boolean;
     Token: string;
     Bot: boolean;
+    FlagsUtil: FlagFields
 }
 
 export interface RawUser {
@@ -54,6 +57,7 @@ export interface RawUser {
 
 interface IPopulatedUserWJ {
     toJSON(): RawUser
+    toObject(): RawUser
 } 
 
 export type PopulatedUserWJ = RawUser & IPopulatedUserWJ;

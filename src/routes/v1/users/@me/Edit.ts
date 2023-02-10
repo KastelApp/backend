@@ -51,7 +51,7 @@ new Route(
   ],
   async (req, res) => {
     const {
-      avatar,
+      // avatar, // base64 if the avatar, We send it to the CDN after
       email,
       password,
       phoneNumber,
@@ -62,7 +62,7 @@ new Route(
     } = req.body as EditUserBody;
 
     if (tag && tag === "0000") {
-        const Errors = new HTTPErrors(4015);
+        const Errors = new HTTPErrors(4014);
     
         Errors.addError({
             Tag: {
@@ -78,7 +78,7 @@ new Route(
 
     if (password || twoFa || phoneNumber) {
       if (req.user.Bot) {
-        const Errors = new HTTPErrors(4014);
+        const Errors = new HTTPErrors(4013);
 
         if (password)
           Errors.addError({
@@ -113,7 +113,7 @@ new Route(
 
     if (phoneNumber || email || twoFa || newPassword) {
       if (!password) {
-        const Errors = new HTTPErrors(4014);
+        const Errors = new HTTPErrors(4013);
 
         if (phoneNumber)
           Errors.addError({
@@ -158,7 +158,7 @@ new Route(
     }
 
     const FoundUser = await UserSchema.findById(
-      Encryption.encrypt(req.user.id)
+      Encryption.encrypt(req.user.Id)
     );
 
     if (phoneNumber || email || twoFa || newPassword) {
@@ -184,7 +184,7 @@ new Route(
             Tag: tag ? tag : FoundUser.Tag,
             Email: email ? Encryption.encrypt(email) : FoundUser.Email,
             Password: newPassword ? hashSync(newPassword, 10) : FoundUser.Password,
-            AvatarHash: avatar ? avatar : FoundUser.AvatarHash,
+            // AvatarHash: avatar ? avatar : FoundUser.AvatarHash,
             PhoneNumber: phoneNumber ? Encryption.encrypt(phoneNumber) : FoundUser.PhoneNumber,
             EmailVerified: email ? false : FoundUser.EmailVerified,
             TwoFa: twoFa ? twoFa : FoundUser.TwoFa,
@@ -198,7 +198,7 @@ new Route(
         Tag: tag ? tag : FoundUser?.Tag,
         Email: email ? Encryption.encrypt(email) : FoundUser?.Email,
         Password: newPassword ? hashSync(newPassword, 10) : FoundUser?.Password,
-        AvatarHash: avatar ? avatar : FoundUser?.AvatarHash,
+        // AvatarHash: avatar ? avatar : FoundUser?.AvatarHash,
         PhoneNumber: phoneNumber ? Encryption.encrypt(phoneNumber) : FoundUser?.PhoneNumber,
         EmailVerified: email ? false : FoundUser?.EmailVerified,
         TwoFa: twoFa ? twoFa : FoundUser?.TwoFa,

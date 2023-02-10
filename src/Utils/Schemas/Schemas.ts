@@ -9,23 +9,23 @@
  * GPL 3.0 Licensed
  */
 
-import BanSchema from './Guilds/BanSchema';
-import ChannelSchema from './Guilds/ChannelSchema';
-import GuildMemberSchema from './Guilds/GuildMemberSchema';
-import GuildSchema from './Guilds/GuildSchema';
-import InviteSchema from './Guilds/InviteSchema';
-import RoleSchema from './Guilds/RoleSchema';
-import WebhookSchema from './Guilds/WebhookSchema';
-import FileSchema from './Misc/FileSchema';
-import MessageSchema from './Misc/MessageSchema';
-import SettingSchema from './Misc/SettingSchema';
-import DmSchema from './PrivateMessages/DmSchema';
-import GroupchatSchema from './PrivateMessages/GroupchatSchema';
-import FriendSchema from './Users/FriendSchema';
-import GiftSchema from './Users/GiftSchema';
-import UserSchema from './Users/UserSchema';
-
-
+import BanSchema from './Guilds/Ban';
+import ChannelSchema from './Guilds/Channel';
+import GuildMemberSchema from './Guilds/GuildMember';
+import GuildSchema from './Guilds/Guild';
+import InviteSchema from './Guilds/Invite';
+import RoleSchema from './Guilds/Role';
+import WebhookSchema from './Guilds/Webhook';
+import FileSchema from './Misc/File';
+import MessageSchema from './Misc/Message';
+import SettingSchema from './Misc/Settings';
+import DmSchema from './PrivateMessages/Dm';
+import GroupchatSchema from './PrivateMessages/GroupChat';
+import FriendSchema from './Users/Friend';
+import GiftSchema from './Users/Gift';
+import UserSchema from './Users/User';
+import PermissionsOveridesSchema from './Guilds/PermissionsOverides';
+import EmojiSchema from './Guilds/Emoji';
 export {
     BanSchema,
     ChannelSchema,
@@ -42,6 +42,8 @@ export {
     GiftSchema,
     UserSchema,
     SettingSchema,
+    PermissionsOveridesSchema,
+    EmojiSchema,
 };
 
 export default {
@@ -60,4 +62,6 @@ export default {
     GiftSchema,
     UserSchema,
     SettingSchema,
+    PermissionsOveridesSchema,
+    EmojiSchema,
 };

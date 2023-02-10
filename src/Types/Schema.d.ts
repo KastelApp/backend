@@ -9,8 +9,8 @@
  * GPL 3.0 Licensed
  */
 
-import schemaExports from '../Utils/SchemaTypes/Exports';
-
+import { SettingSchema } from "../Utils/Schemas/Schemas";
+import schemaExports from "../Utils/SchemaTypes/Exports";
 
 interface SchemaDataOptionsBase {
   name: string;

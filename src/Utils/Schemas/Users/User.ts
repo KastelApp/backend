@@ -10,6 +10,7 @@
  */
 
 import { model, Schema } from 'mongoose';
+import Encryption from '../../Classes/Encryption';
 
 const UserSchema = new Schema({
   _id: {
@@ -31,7 +32,7 @@ const UserSchema = new Schema({
   Username: {
     type: String,
     required: true,
-    default: 'Ghost',
+    default: Encryption.encrypt('Ghost'),
   },
 
   Tag: {
@@ -130,7 +131,6 @@ const UserSchema = new Schema({
     required: false,
   }
 });
-
 
 
 export default model('Users', UserSchema);

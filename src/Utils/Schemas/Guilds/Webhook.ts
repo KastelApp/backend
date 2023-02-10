@@ -10,41 +10,45 @@
  */
 
 import { model, Schema } from 'mongoose';
+import Encryption from '../../Classes/Encryption';
 
-const FileSchema = new Schema({
+const WebhookSchema = new Schema({
     _id: {
         type: String,
         required: true,
     },
 
-    Message: {
+    Guild: { // Allow easier deletion of role schemas when a guild owner deletes their guild
         type: String,
         required: true,
-        ref: 'Messages',
+        ref: 'Guilds',
     },
 
-    Name: {
+    Channel: {
         type: String,
         required: true,
-        default: 'Unknown',
+        ref: 'Channels',
     },
 
-    CdnToken: {
+    Username: {
         type: String,
         required: true,
+        username: Encryption.encrypt('Ghost'),
     },
 
-    Type: {
+    Token: {
         type: String,
         required: true,
+        unqiue: true,
     },
 
-    Deleted: {
-        type: Boolean,
+    AllowedMentions: {
+        type: Number,
         required: false,
+        default: 0,
     },
 });
 
-export default model('Files', FileSchema);
+export default model('Webhooks', WebhookSchema);
 
-export { FileSchema }
+export { WebhookSchema }

@@ -9,16 +9,44 @@
  * GPL 3.0 Licensed
  */
 
-import { Route } from '@kastelll/packages';
-import Encryption from '../Utils/Classes/Encryption';
+// Gift Schema, Not used yet but might be used in the future
 
-new Route('/decrypt', 'POST', [], async (req, res) => {
+import { model, Schema } from 'mongoose';
 
-    const body = req.body as {
-        [key: string]: string
-    }
+const GiftSchema = new Schema({
+    _id: { // The gift token/id
+        type: String,
+        required: true,
+    },
 
-    const DecryptedData = Encryption.completeDecryption(body);
+    User: {
+        type: String,
+        required: true,
+        ref: 'Users',
+    },
 
-    res.json(DecryptedData);
+    Type: {
+        type: Number,
+        required: true,
+    },
+
+    MaxAge: {
+        type: Date,
+        required: true,
+    },
+
+    GiftLength: {
+        type: Date,
+        required: true,
+    },
+
+    UsedBy: {
+        type: String,
+        required: true,
+        ref: 'Users',
+    },
 });
+
+export default model('Gifts', GiftSchema);
+
+export { GiftSchema }

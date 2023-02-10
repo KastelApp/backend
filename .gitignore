@@ -1,6 +1,10 @@
 .yarn
+
+Constants.ts
 Config.ts
+
 dist
+
 node_modules
 
 scripts/

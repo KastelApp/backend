@@ -7,5 +7,6 @@ export interface Role {
     AllowedMentions?: number;
     Hoisted?: boolean;
     Color?: number;
-    Permissions: number;
+    Permissions: string;
+    Position: number;
 }

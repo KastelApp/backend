@@ -1,10 +1,11 @@
 import { Route } from '@kastelll/packages';
-import User from '../../../../Middleware/User';
+import User from '../../../../../Middleware/User';
 
-new Route('/transfer', 'PUT', [
+// Only allows for fetching the first 100 members
+
+new Route('/', 'GET', [
     User({
         AccessType: 'LoggedIn',
         AllowedRequesters: 'All',
-        DisallowedFlags: ['GuildBan']
     })
 ], async (req, res) => {});

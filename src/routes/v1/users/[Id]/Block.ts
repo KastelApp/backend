@@ -25,7 +25,7 @@ new Route('/block', 'PUT', [
     const VaildatedId = Snowflake.validate(Id);
 
     if (!VaildatedId) {
-        const Errors = new HTTPErrors(4016)
+        const Errors = new HTTPErrors(4014)
 
         Errors.addError({
             id: {
@@ -40,7 +40,7 @@ new Route('/block', 'PUT', [
     }
 
     if (!(typeof blocked === 'boolean')) {
-        const Errors = new HTTPErrors(4017)
+        const Errors = new HTTPErrors(4014)
 
         Errors.addError({
             friend: {
@@ -55,19 +55,19 @@ new Route('/block', 'PUT', [
     }
 
     const FriendsR = await FriendSchema.findOne({
-        Receiver: Encryption.encrypt(req.user.id),
+        Receiver: Encryption.encrypt(req.user.Id),
         Sender: Encryption.encrypt(Id)
     })
 
     const FriendsS = await FriendSchema.findOne({
-        Sender: Encryption.encrypt(req.user.id),
+        Sender: Encryption.encrypt(req.user.Id),
         Receiver: Encryption.encrypt(Id)
     })
 
     if (!FriendsR && !FriendsS) {
         
         if (!blocked) {
-            const Errors = new HTTPErrors(4019)
+            const Errors = new HTTPErrors(4015)
 
             Errors.addError({
                 friend: {
@@ -82,7 +82,7 @@ new Route('/block', 'PUT', [
         }
 
         const Block = new FriendSchema({
-            Sender: Encryption.encrypt(req.user.id),
+            Sender: Encryption.encrypt(req.user.Id),
             Receiver: Encryption.encrypt(Id),
             Flags: RelationshipFlags.Blocked
         })
@@ -100,7 +100,7 @@ new Route('/block', 'PUT', [
         if (FriendsR.Flags === RelationshipFlags.Blocked) {
             if (!blocked) {
                 await FriendSchema.deleteOne({
-                    Receiver: Encryption.encrypt(req.user.id),
+                    Receiver: Encryption.encrypt(req.user.Id),
                     Sender: Encryption.encrypt(Id)
                 })
 
@@ -111,7 +111,7 @@ new Route('/block', 'PUT', [
                 return;
             }
 
-            const Errors = new HTTPErrors(4018)
+            const Errors = new HTTPErrors(4015)
 
             Errors.addError({
                 friend: {
@@ -126,7 +126,7 @@ new Route('/block', 'PUT', [
         }
 
         await FriendSchema.updateOne({
-            Receiver: Encryption.encrypt(req.user.id),
+            Receiver: Encryption.encrypt(req.user.Id),
             Sender: Encryption.encrypt(Id)
         }, {
             Flags: RelationshipFlags.Blocked
@@ -143,7 +143,7 @@ new Route('/block', 'PUT', [
         if (FriendsS.Flags === RelationshipFlags.Blocked) {
             if (!blocked) {
                 await FriendSchema.deleteOne({
-                    Sender: Encryption.encrypt(req.user.id),
+                    Sender: Encryption.encrypt(req.user.Id),
                     Receiver: Encryption.encrypt(Id)
                 })
 
@@ -154,7 +154,7 @@ new Route('/block', 'PUT', [
                 return;
             }
 
-            const Errors = new HTTPErrors(4018)
+            const Errors = new HTTPErrors(4015)
 
             Errors.addError({
                 friend: {
@@ -169,7 +169,7 @@ new Route('/block', 'PUT', [
         }
 
         await FriendSchema.updateOne({
-            Sender: Encryption.encrypt(req.user.id),
+            Sender: Encryption.encrypt(req.user.Id),
             Receiver: Encryption.encrypt(Id)
         }, {
             Flags: RelationshipFlags.Blocked

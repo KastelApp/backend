@@ -35,7 +35,7 @@ new Route(
     const { password } = req.body as DisableBody;
 
     if (!password) {
-      const Errors = new HTTPErrors(4014);
+      const Errors = new HTTPErrors(4013);
 
       Errors.addError({
         Password: {
@@ -50,7 +50,7 @@ new Route(
     }
 
     const FoundUser = await UserSchema.findById(
-      Encryption.encrypt(req.user.id)
+      Encryption.encrypt(req.user.Id)
     );
 
     if (!compareSync(password, FoundUser?.Password as string)) {
@@ -75,7 +75,7 @@ new Route(
     });
 
     const UsersSettings = await SettingSchema.findOne({
-      User: Encryption.encrypt(req.user.id),
+      User: Encryption.encrypt(req.user.Id),
     });
 
     if (UsersSettings) {

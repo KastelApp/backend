@@ -27,6 +27,10 @@ import { Role } from "./Role";
 import { Roles } from "./Roles";
 import { Settings } from './Settings';
 import { RawUser } from './RawUser';
+import { SpecialGuildNC, SpecialGuildNCW, SpecialGuildNW } from './SpecialGuild';
+import { SpecialGuildsNC, SpecialGuildsNCW, SpecialGuildsNW } from './SpecialGuilds';
+import { Emojis } from './Emojis';
+import { Emoji } from './Emoji';
 
 export default {
   User,
@@ -47,6 +51,14 @@ export default {
   Roles,
   Settings,
   RawUser,
+  SpecialGuildNC,
+  SpecialGuildNCW,
+  SpecialGuildNW,
+  SpecialGuildsNC,
+  SpecialGuildsNCW,
+  SpecialGuildsNW,
+  Emojis,
+  Emoji
 };
 
 export {
@@ -68,4 +80,12 @@ export {
   Roles,
   Settings,
   RawUser,
+  SpecialGuildNC,
+  SpecialGuildNCW,
+  SpecialGuildNW,
+  SpecialGuildsNC,
+  SpecialGuildsNCW,
+  SpecialGuildsNW,
+  Emojis,
+  Emoji
 };

@@ -145,16 +145,16 @@ new Route(
       }
 
       const Settings = await SettingSchema.findOne({
-        User: Encryption.encrypt(User.id),
+        User: Encryption.encrypt(User.Id),
       });
 
-      const UserToken = Token.GenerateToken(User.id);
+      const UserToken = Token.GenerateToken(User.Id);
 
       if (Settings) {
         Settings.Tokens.push(Encryption.encrypt(UserToken));
       } else {
         const NewSettings = new SettingSchema({
-          User: Encryption.encrypt(User.id),
+          User: Encryption.encrypt(User.Id),
           Tokens: [Encryption.encrypt(UserToken)],
         });
 
@@ -265,10 +265,12 @@ new Route(
       return;
     }
 
-    const UserToken = Token.GenerateToken(User.id);
+    console.log(User);
+
+    const UserToken = Token.GenerateToken(User.Id);
 
     const Settings = await SettingSchema.findOne({
-      User: Encryption.encrypt(User.id),
+      User: Encryption.encrypt(User.Id),
     });
 
     if (Settings) {
@@ -277,7 +279,7 @@ new Route(
       await Settings.save();
     } else {
       const NewSettings = new SettingSchema({
-        User: Encryption.encrypt(User.id),
+        User: Encryption.encrypt(User.Id),
         Tokens: [Encryption.encrypt(UserToken)],
       });
 

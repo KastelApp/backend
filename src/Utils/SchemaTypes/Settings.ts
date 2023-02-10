@@ -36,6 +36,12 @@ const Settings: Schema = {
             expected: Array,
             default: [],
             extended: false
+        },
+        Theme: {
+            name: 'Theme',
+            expected: String,
+            default: 'dark',
+            extended: false
         }
     },
 };

@@ -73,6 +73,17 @@ const Guild: Schema = {
             extended: true,
             extends: 'Invites',
         },
+        Emojis: {
+            name: 'Emojis',
+            extended: true,
+            extends: 'Emojis',
+        },
+        MaxMembers: {
+            name: 'MaxMembers',
+            extended: false,
+            expected: Number,
+            default: 100,
+        }
     },
 };
 

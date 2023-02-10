@@ -924,14 +924,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kastelll/packages@npm:^2.2.1":
-  version: 2.2.1
-  resolution: "@kastelll/packages@npm:2.2.1::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40kastelll%2Fpackages%2F2.2.1%2F14c7a43444a2fa47525f36df65bf3a8b7e5efcaa"
+"@kastelll/packages@npm:^2.2.4":
+  version: 2.2.4
+  resolution: "@kastelll/packages@npm:2.2.4::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40kastelll%2Fpackages%2F2.2.4%2Fe2e644a95e4203cc5aed86a4593a55bc3b65cfaf"
   dependencies:
     express: ^4.18.2
     ws: ^8.12.0
     zlib: ^1.0.5
-  checksum: a2a0dbd858982cbbc6a7bd421447e5b523dfe2af52e1c81c4d7adfa0f740413e616e551b41f0083c092bb4753e2160c77758e83bdabbe3d1c2365f654090651d
+  checksum: 863555cafd12cded957646fd7266f40301279fa7fbe80a2631234be3c955af1d817846faa019b6927fb09aac9632ff2d23f7bca75072d5566bf96a500495025e
   languageName: node
   linkType: hard
 
@@ -2485,7 +2485,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "kastel@workspace:."
   dependencies:
-    "@kastelll/packages": ^2.2.1
+    "@kastelll/packages": ^2.2.4
     "@types/bcrypt": ^5.0.0
     "@types/cookie-parser": ^1.4.3
     "@types/cors": ^2.8.13

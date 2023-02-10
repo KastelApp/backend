@@ -9,7 +9,7 @@
  * GPL 3.0 Licensed
  */
 
-import type { Encryption, Logger, MongoDB, Redis, Regexes, Server, Snowflake, Ws } from "./Types/Config";
+import type { Encryption, MongoDB, Redis, Regexes, Server, Ws } from "./Types/Config";
 
 
 const Server: Server = {
@@ -57,48 +57,6 @@ const MongoDB: MongoDB = {
     Uri: '',
 };
 
-const Logger: Logger = {
-    LoggerEnabled: true,
-    TimeStartUp: true,
-    SaveInFiles: true,
-    Path: './logs',
-    Format: '[{DATE} {LEVEL}] {MESSAGE}',
-    Color: true,
-    Log: true,
-    LogRoutes: false,
-    LogLogo: true,
-    LogErrors: true,
-    LogInfo: true,
-    DateType: 'en-US',
-    Colors: {
-        Level: {
-            Debug: 'magenta',
-            Info: 'cyan',
-            Log: 'cyan',
-            Warn: 'yellow',
-            Error: 'red',
-            Loaded: 'green',
-        },
-        Message: {
-            Debug: 'magenta',
-            Info: '#FFC0CB',
-            Log: 'pink',
-            Warn: 'yellow',
-            Error: 'red',
-            Loaded: 'green',
-        },
-    },
-};
-
-const Snowflake: Snowflake = {
-    Epoch: 1641016800000,
-    WorkerId: 0,
-    DatacenterId: 1,
-    WorkerIdBytes: 6,
-    DatacenterIdBytes: 5,
-    SequenceBytes: 12,
-};
-
 const Regexs: Regexes = {
     // Source: https://regexr.com/2rhq7
     email: new RegExp(/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/),
@@ -112,8 +70,6 @@ const Config = {
     Ws,
     Redis,
     MongoDB,
-    Logger,
-    Snowflake,
     Regexs,
 }
 
@@ -124,8 +80,6 @@ export {
     Ws,
     Redis,
     MongoDB,
-    Logger,
-    Snowflake,
     Regexs,
 }
 
@@ -136,7 +90,5 @@ export default {
     Ws,
     Redis,
     MongoDB,
-    Logger,
-    Snowflake,
     Regexs,
 }

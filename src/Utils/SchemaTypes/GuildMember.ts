@@ -36,6 +36,12 @@ const GuildMember: Schema = {
             default: null,
             extended: false
         },
+        JoinedAt: {
+            name: 'JoinedAt',
+            expected: Number,
+            default: Date.now(),
+            extended: false
+        },  
     },
 };
 

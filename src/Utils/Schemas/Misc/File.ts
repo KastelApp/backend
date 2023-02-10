@@ -10,32 +10,42 @@
  */
 
 import { model, Schema } from 'mongoose';
+import Encryption from '../../Classes/Encryption';
 
-const SettingSchema = new Schema({
-    User: {
+const FileSchema = new Schema({
+    _id: {
         type: String,
-        ref: 'Users',
         required: true,
     },
 
-    Status: {
+    Message: {
         type: String,
+        required: true,
+        ref: 'Messages',
+    },
+
+    Name: {
+        type: String,
+        required: true,
+        default: Encryption.encrypt('Unknown'),
+    },
+
+    CdnToken: {
+        type: String,
+        required: true,
+    },
+
+    Type: {
+        type: String,
+        required: true,
+    },
+
+    Deleted: {
+        type: Boolean,
         required: false,
     },
-
-    Presence: {
-        type: Number,
-        required: true,
-        default: 0,
-    },
-
-    Tokens: {
-        type: Array,
-        required: true,
-        default: [],
-    }
 });
 
-export default model('Settings', SettingSchema);
+export default model('Files', FileSchema);
 
-export { SettingSchema }
+export { FileSchema }

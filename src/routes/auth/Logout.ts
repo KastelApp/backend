@@ -22,14 +22,14 @@ new Route('/logout', 'GET', [
     })
 ], async (req, res) => {
 
-    const FoundSchema = await SettingSchema.findOne({ User: Encryption.encrypt(req.user.id) });
+    const FoundSchema = await SettingSchema.findOne({ User: Encryption.encrypt(req.user.Id) });
 
     if (FoundSchema) {
         FoundSchema.Tokens = FoundSchema.Tokens.filter(Token => Token !== Encryption.encrypt(req.user.Token));
 
         await FoundSchema.save();
     } else {
-        res.status(500).json({ Message: 'Internal Server Error' }); // how did this happen? lol
+        res.status(500).send('Internal Server Error'); // how did this happen? lol
 
         return;
     }

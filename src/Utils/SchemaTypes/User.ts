@@ -15,7 +15,7 @@ const User: Schema = {
     type: Object,
     data: {
         Id: {
-            name: 'id',
+            name: '_id',
             expected: String,
             default: null,
             extended: false

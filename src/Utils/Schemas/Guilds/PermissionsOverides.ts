@@ -11,72 +11,36 @@
 
 import { model, Schema } from 'mongoose';
 
-const GuildSchema = new Schema({
+const PermissionsOverides = new Schema({
     _id: {
         type: String,
         required: true,
     },
 
-    Name: {
+    Allow: {
+        type: Array,
+        required: true,
+        default: [],
+    },
+
+    Deny: {
+        type: Array,
+        required: true,
+        default: [],
+    },
+
+    Type: { // 1 << 0 = role, 1 << 1 = member
         type: String,
         required: true,
-        default: 'Unknown Guild',
     },
 
-    Description: {
-        type: String,
-        required: false,
-    },
-
-    Flags: {
-        type: Number,
-        required: false,
-        default: 0,
-    },
-
-    Owner: {
-        type: String,
+    Editable: { // If the permission is editable by a user (For setting Owner permissions)
+        type: Boolean,
         required: true,
-        ref: 'GuildMembers',
+        default: true,
     },
-
-    CoOwners: [{
-        type: String,
-        required: false,
-        ref: 'GuildMembers',
-    }],
-
-    Channels: [{
-        type: String,
-        required: false,
-        ref: 'Channels',
-    }],
-
-    Roles: [{
-        type: String,
-        required: false,
-        ref: 'Roles',
-    }],
-
-    Invites: [{
-        type: String,
-        required: false,
-        ref: 'Invites',
-    }],
-
-    Bans: [{
-        type: String,
-        required: false,
-        ref: 'Bans',
-    }],
-
-    Members: [{
-        type: String,
-        required: false,
-        ref: 'GuildMembers',
-    }],
 });
 
-export default model('Guilds', GuildSchema);
+export default model('PermissionsOverides', PermissionsOverides);
 
-export { GuildSchema }
+export { PermissionsOverides }

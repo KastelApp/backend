@@ -21,7 +21,7 @@ const schemaData = (type: keyof typeof schemaExports, data: any): any => {
     }
 
     if (!(typeof data === ((tp.type.name).toLowerCase())) && !(data instanceof tp.type)) {
-        throw new TypeError(`${type} Expected ${tp.type.name} got ${data == null ? 'Null' : typeof data}`);
+        throw new TypeError(`${type} Expected ${tp.type.name} got ${data == null ? 'Null' : typeof data}\n\nData Dump: ${JSON.stringify(data, null, 4)}`);
     }
 
     if (tp.type === Object && Array.isArray(data)) {
@@ -58,7 +58,7 @@ const schemaData = (type: keyof typeof schemaExports, data: any): any => {
         return newObject;
     }
 
-    if (tp.type instanceof Array) {
+    if (tp.type === Array) {
         const newArray: any[] = [];
 
         for (const item of data) {

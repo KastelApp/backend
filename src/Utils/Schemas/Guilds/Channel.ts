@@ -19,7 +19,7 @@ const ChannelSchema = new Schema({
 
     Guild: { // Allow easier deletion of role schemas when a guild owner deletes their guild
         type: String,
-        required: true,
+        required: false,
         ref: 'Guilds',
     },
 
@@ -67,11 +67,11 @@ const ChannelSchema = new Schema({
         required: true,
     },
 
-    Permissions: {
-        type: Number,
-        required: true,
-        default: 0,
-    },
+    PermissionsOverides: [{
+        type: String,
+        required: false,
+        ref: 'PermissionsOverides',
+    }],
 });
 
 export default model('Channels', ChannelSchema);

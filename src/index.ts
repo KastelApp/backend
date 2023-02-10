@@ -18,9 +18,8 @@ import Constants, { Relative } from "./Constants";
 import mongoose from "mongoose";
 import chalk from "chalk";
 
-if (Config.Logger.LogLogo) {
-  console.log(
-    chalk.hex("#ca8911")(`
+console.log(
+  chalk.hex("#ca8911")(`
 ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     
 ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     
 █████╔╝ ███████║███████╗   ██║   █████╗  ██║     
@@ -29,10 +28,9 @@ if (Config.Logger.LogLogo) {
 ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
 A Chatting Application
 Running version ${
-      Relative.Version ? `v${Relative.Version}` : "Unknown version"
-    } of Kastel's Backend. Node.js version ${process.version}\n`)
-  );
-}
+    Relative.Version ? `v${Relative.Version}` : "Unknown version"
+  } of Kastel's Backend. Node.js version ${process.version}\n`)
+);
 
 /* Express Imports */
 import express from "express";
@@ -69,17 +67,15 @@ app
   .disable("x-powered-by");
 
 /* Error Handling */
-if (Config.Logger.LogErrors) {
-  process
-    .on("uncaughtException", (err) =>
-      console.error(`Unhandled Exception, \n${err.stack}`)
+process
+  .on("uncaughtException", (err) =>
+    console.error(`Unhandled Exception, \n${err.stack}`)
+  )
+  .on("unhandledRejection", (reason: any) =>
+    console.error(
+      `Unhandled Rejection, \n${reason?.stack ? reason.stack : reason}`
     )
-    .on("unhandledRejection", (reason: any) =>
-      console.error(
-        `Unhandled Rejection, \n${reason?.stack ? reason.stack : reason}`
-      )
-    );
-}
+  );
 
 /* Sets the users IP, Setups Captcha & Utils */
 /* Also Logs the requested path */
@@ -168,24 +164,13 @@ app.listen(Config.Server.Port || 62250, async () => {
       process.exit();
     });
 
-  if (Config.Logger.LogInfo)
-    console.info(
-      `[Stats] ${
-        Config.Logger.TimeStartUp
-          ? `Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(
-              2
-            )}s to Start Up, `
-          : ""
-      }Loaded ${Routes.length} Routes, Running Version ${
-        Constants.Relative.Version
-          ? `v${Constants.Relative.Version}`
-          : "Unknown version"
-      }, Cleared ${cleared.length} keys from cache`
-    );
-  if (!Config.Logger.LogInfo && Config.Logger.TimeStartUp)
-    console.info(
-      `[Stats] Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(
-        3
-      )}s to Start Up`
-    );
+  console.info(
+    `[Stats] Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(
+      2
+    )}s to Start Up,Loaded ${Routes.length} Routes, Running Version ${
+      Constants.Relative.Version
+        ? `v${Constants.Relative.Version}`
+        : "Unknown version"
+    }, Cleared ${cleared.length} keys from cache`
+  );
 });

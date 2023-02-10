@@ -10,59 +10,87 @@
  */
 
 import { model, Schema } from 'mongoose';
+import Constants from '../../../Constants';
+import Encryption from '../../Classes/Encryption';
 
-const RoleSchema = new Schema({
+const GuildSchema = new Schema({
     _id: {
         type: String,
         required: true,
     },
 
-    Guild: { // Allow easier deletion of role schemas when a guild owner deletes their guild
-        type: String,
-        required: true,
-        ref: 'Guilds',
-    },
-
     Name: {
         type: String,
         required: true,
-        default: 'Unknown Role',
+        default: Encryption.encrypt('Unknown Guild'),
     },
 
-    AllowedNsfw: {
-        type: Boolean,
+    Description: {
+        type: String,
         required: false,
     },
 
-    Deleteable: {
-        type: Boolean,
-        required: true,
-        default: true,
-    },
-
-    AllowedMentions: {
+    Flags: {
         type: Number,
         required: false,
         default: 0,
     },
 
-    Hoisted: {
-        type: Boolean,
-        required: false,
-    },
-
-    Color: {
-        type: Number,
-        required: false,
-    },
-
-    Permissions: {
-        type: Number,
+    Owner: {
+        type: String,
         required: true,
-        default: 0,
+        ref: 'GuildMembers',
+    },
+
+    CoOwners: [{
+        type: String,
+        required: false,
+        ref: 'GuildMembers',
+    }],
+
+    Channels: [{
+        type: String,
+        required: false,
+        ref: 'Channels',
+    }],
+
+    Roles: [{
+        type: String,
+        required: false,
+        ref: 'Roles',
+    }],
+
+    Invites: [{
+        type: String,
+        required: false,
+        ref: 'Invites',
+    }],
+
+    Bans: [{
+        type: String,
+        required: false,
+        ref: 'Bans',
+    }],
+
+    Members: [{
+        type: String,
+        required: false,
+        ref: 'GuildMembers',
+    }],
+
+    Emojis: [{
+        type: String,
+        required: false,
+        ref: 'Emojis',
+    }],
+
+    MaxMembers: { 
+        type: Number,
+        required: false,
+        default: Constants.Settings.Max.MemberCount,
     },
 });
 
-export default model('Roles', RoleSchema);
+export default model('Guilds', GuildSchema);
 
-export { RoleSchema }
+export { GuildSchema }

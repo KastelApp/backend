@@ -31,7 +31,7 @@ const User = (options: UserMiddleware) => {
 
     if (AuthHeader?.includes("Bot") && options.AllowedRequesters === "User") {
       res.status(401).json({
-        Code: 4013,
+        Code: 4011,
         Message: "You are not allowed to access this endpoint.",
       });
 
@@ -222,6 +222,7 @@ const User = (options: UserMiddleware) => {
         ...SchemaUserd,
         Token: AuthHeader,
         Bot: false,
+        FlagsUtil: new FlagFields(SchemaUserd.Flags),
       } as LessUser;
 
       next();

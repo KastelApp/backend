@@ -73,6 +73,12 @@ const Guilds: Schema = {
             extended: true,
             extends: 'Invites',
         },
+        MaxMembers: {
+            name: 'MaxMembers',
+            extended: false,
+            expected: Number,
+            default: 100,
+        }
     },
 };
 

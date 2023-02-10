@@ -10,8 +10,9 @@
  */
 
 import { model, Schema } from 'mongoose';
+import Encryption from '../../Classes/Encryption';
 
-const WebhookSchema = new Schema({
+const RoleSchema = new Schema({
     _id: {
         type: String,
         required: true,
@@ -23,22 +24,21 @@ const WebhookSchema = new Schema({
         ref: 'Guilds',
     },
 
-    Channel: {
+    Name: {
         type: String,
         required: true,
-        ref: 'Channels',
+        default: Encryption.encrypt('Unknown Role'),
     },
 
-    Username: {
-        type: String,
-        required: true,
-        username: 'Ghost',
+    AllowedNsfw: {
+        type: Boolean,
+        required: false,
     },
 
-    Token: {
-        type: String,
+    Deleteable: {
+        type: Boolean,
         required: true,
-        unqiue: true,
+        default: true,
     },
 
     AllowedMentions: {
@@ -46,8 +46,30 @@ const WebhookSchema = new Schema({
         required: false,
         default: 0,
     },
+
+    Hoisted: {
+        type: Boolean,
+        required: false,
+    },
+
+    Color: {
+        type: Number,
+        required: false,
+    },
+
+    Permissions: {
+        type: String,
+        required: true,
+        default: 0,
+    },
+
+    Position: {
+        type: Number,
+        required: true,
+        default: 0,
+    },
 });
 
-export default model('Webhooks', WebhookSchema);
+export default model('Roles', RoleSchema);
 
-export { WebhookSchema }
+export { RoleSchema }

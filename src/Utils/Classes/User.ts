@@ -61,11 +61,11 @@ class User {
 
   async fetchFriends(FilterBlocked = false) {
     const FriendsR = await FriendSchema.find({
-      Receiver: Encryption.encrypt(this.user?.id as string),
+      Receiver: Encryption.encrypt(this.user?.Id as string),
     });
 
     const FriendsS = await FriendSchema.find({
-      Sender: Encryption.encrypt(this.user?.id as string),
+      Sender: Encryption.encrypt(this.user?.Id as string),
     });
 
     const FriendRArray: {

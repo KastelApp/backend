@@ -35,7 +35,7 @@ new Route('/friend', 'POST', [
     const VaildatedId = Snowflake.validate(Id);
 
     if (!VaildatedId) {
-        const Errors = new HTTPErrors(4016)
+        const Errors = new HTTPErrors(4014)
 
         Errors.addError({
             Id: {
@@ -50,7 +50,7 @@ new Route('/friend', 'POST', [
     }
 
     if (!(typeof friend === 'boolean')) {
-        const Errors = new HTTPErrors(4017)
+        const Errors = new HTTPErrors(4014)
 
         Errors.addError({
             Friend: {
@@ -65,19 +65,19 @@ new Route('/friend', 'POST', [
     }
 
     const FriendsR = await FriendSchema.findOne({
-        Receiver: Encryption.encrypt(req.user.id),
+        Receiver: Encryption.encrypt(req.user.Id),
         Sender: Encryption.encrypt(Id)
     })
 
     const FriendsS = await FriendSchema.findOne({
-        Sender: Encryption.encrypt(req.user.id),
+        Sender: Encryption.encrypt(req.user.Id),
         Receiver: Encryption.encrypt(Id)
     })
 
     if (!FriendsR && !FriendsS) {
 
         if (!friend) {
-            const Errors = new HTTPErrors(4018)
+            const Errors = new HTTPErrors(4015)
 
             Errors.addError({
                 Friend: { // this doesn't makse sense but idk what else to put (for now)
@@ -93,7 +93,7 @@ new Route('/friend', 'POST', [
         }
 
         const NewFriend = new FriendSchema({
-            Sender: Encryption.encrypt(req.user.id),
+            Sender: Encryption.encrypt(req.user.Id),
             Receiver: Encryption.encrypt(Id),
             Flags: RelationshipFlags.FriendRequest
         })
@@ -139,7 +139,7 @@ new Route('/friend', 'POST', [
     // but if they send false it will delete the friend request
     if (FriendsS) {
         if (friend) {
-            const Errors = new HTTPErrors(4018)
+            const Errors = new HTTPErrors(4015)
 
             Errors.addError({
                 Friend: {

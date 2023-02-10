@@ -10,4 +10,6 @@ export interface Guild {
     Invites: string[];
     Bans: string[];
     Members: string[];
+    Emojis: string[];
+    MaxMembers: number;
 }
