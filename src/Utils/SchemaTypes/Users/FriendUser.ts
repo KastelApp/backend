@@ -9,9 +9,9 @@
  * GPL 3.0 Licensed
  */
 
-import type { Schema } from "../../Types/Schema";
+import type { Schema } from "../../../Types/Schema";
 
-const Ban: Schema = {
+const FriendUser: Schema = {
     type: Object,
     data: {
         Id: {
@@ -20,37 +20,33 @@ const Ban: Schema = {
             default: null,
             extended: false
         },
-        User: {
-            name: 'User',
-            extends: 'FriendUser',
-            extended: true
-        },
-        Banner: {
-            name: 'Banner',
-            extends: 'FriendUser',
-            extended: true
-        },
-        Reason: {
-            name: 'Reason',
+        AvatarHash: {
+            name: 'AvatarHash',
             expected: String,
-            default: 'N/A',
-            extended: false
-        },
-        BanDate: {
-            name: 'BannedDate',
-            expected: Number,
-            default: Date.now(),
-            extended: false
-        },
-        UnbanDate: {
-            name: 'UnbanDate',
-            expected: Number,
             default: null,
             extended: false
         },
+        Username: {
+            name: 'Username',
+            expected: String,
+            default: 'Unknown Username',
+            extended: false
+        },
+        Tag: {
+            name: 'Tag',
+            expected: String,
+            default: '0000',
+            extended: false
+        },
+        PublicFlags: {
+            name: 'Flags',
+            expected: Number,
+            default: 0,
+            extended: false
+        }
     },
 };
 
-export default Ban;
+export default FriendUser;
 
-export { Ban }
+export { FriendUser }

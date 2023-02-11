@@ -9,10 +9,10 @@
  * GPL 3.0 Licensed
  */
 
-import type { Schema } from "../../Types/Schema";
+import type { Schema } from "../../../Types/Schema";
 
-const GuildMembers: Schema = {
-    type: Array,
+const GuildMember: Schema = {
+    type: Object,
     data: {
         Id: {
             name: '_id',
@@ -41,10 +41,10 @@ const GuildMembers: Schema = {
             expected: Number,
             default: Date.now(),
             extended: false
-        },
+        },  
     },
 };
 
-export default GuildMembers;
+export default GuildMember;
 
-export { GuildMembers }
+export { GuildMember }

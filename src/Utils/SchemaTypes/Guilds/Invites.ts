@@ -9,43 +9,49 @@
  * GPL 3.0 Licensed
  */
 
-import type { Schema } from "../../Types/Schema";
+import type { Schema } from "../../../Types/Schema";
 
-const Settings: Schema = {
-    type: Object,
+const Invites: Schema = {
+    type: Array,
     data: {
-        User: {
-            name: 'User',
-            extended: true,
-            extends: 'User',
-        },
-        Status: {
-            name: 'Status',
+        Id: {
+            name: '_id',
             expected: String,
             default: null,
             extended: false
         },
-        Presence: {
-            name: 'Presence',
+        Expires: {
+            name: 'Expires',
+            expected: Date,
+            default: null,
+            extended: false
+        },
+        Uses: {
+            name: 'Uses',
             expected: Number,
             default: 0,
             extended: false
         },
-        Tokens: {
-            name: 'Tokens',
-            expected: Array,
-            default: [],
+        MaxUses: {
+            name: 'MaxUses',
+            expected: Number,
+            default: null,
             extended: false
         },
-        Theme: {
-            name: 'Theme',
-            expected: String,
-            default: 'dark',
+        Creator: {
+            name: 'Creator',
+            extended: true,
+            extends: 'GuildMember',
+        },
+        Deleteable: {
+            name: 'Deleteable',
+            expected: Boolean,
+            default: true,
             extended: false
-        }
+        },
     },
 };
 
-export default Settings;
+export default Invites;
 
-export { Settings }
+export { Invites }

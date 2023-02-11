@@ -4,15 +4,15 @@
  *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
  *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
- * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
+ * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═l╝   ╚══════╝╚══════╝
  * Copyright(c) 2022-2023 DarkerInk
  * GPL 3.0 Licensed
  */
 
-import type { Schema } from "../../Types/Schema";
+import type { Schema } from "../../../Types/Schema";
 
-const Guild: Schema = {
-    type: Object,
+const Guilds: Schema = {
+    type: Array,
     data: {
         Id: {
             name: '_id',
@@ -73,11 +73,6 @@ const Guild: Schema = {
             extended: true,
             extends: 'Invites',
         },
-        Emojis: {
-            name: 'Emojis',
-            extended: true,
-            extends: 'Emojis',
-        },
         MaxMembers: {
             name: 'MaxMembers',
             extended: false,
@@ -87,6 +82,6 @@ const Guild: Schema = {
     },
 };
 
-export default Guild;
+export default Guilds;
 
-export { Guild }
+export { Guilds }

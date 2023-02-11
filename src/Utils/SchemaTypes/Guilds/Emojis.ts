@@ -9,42 +9,50 @@
  * GPL 3.0 Licensed
  */
 
-import type { Schema } from "../../Types/Schema";
+import type { Schema } from "../../../Types/Schema";
 
-const Friends: Schema = {
+const Emojis: Schema = {
     type: Array,
     data: {
-        Flags: {
-            name: 'Flags',
-            expected: Number,
-            default: 0,
+        Id: {
+            name: '_id',
+            expected: String,
+            default: null,
             extended: false
         },
-        Sender: {
-            name: 'Sender',
-            extends: 'RawUser',
-            extended: true,
-        },
-        Receiver: {
-            name: 'Receiver',
-            extends: 'RawUser',
-            extended: true,
-        },
-        SenderNickname: {
-            name: 'SenderNickname',
+        Creator: {
+            name: 'Creator',
             expected: String,
             default: null,
-            extended: false,
+            extended: false
         },
-        ReceiverNickname: {
-            name: 'ReceiverNickname',
+        Name: {
+            name: 'Name',
             expected: String,
             default: null,
-            extended: false,
+            extended: false
+        },
+        EmojiHash: {
+            name: 'EmojiHash',
+            expected: String,
+            default: null,
+            extended: false
+        },
+        Disabled: {
+            name: 'Disabled',
+            expected: Boolean,
+            default: false,
+            extended: false
+        },
+        Public: {
+            name: 'Public',
+            expected: Boolean,
+            default: false,
+            extended: false
         }
     },
 };
 
-export default Friends;
+export default Emojis;
 
-export { Friends }
+export { Emojis }

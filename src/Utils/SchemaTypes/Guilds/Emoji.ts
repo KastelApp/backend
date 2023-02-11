@@ -9,10 +9,9 @@
  * GPL 3.0 Licensed
  */
 
-import { AllowedMentions } from '../../Constants';
-import type { Schema } from '../../Types/Schema';
+import type { Schema } from "../../../Types/Schema";
 
-const Role: Schema = {
+const Emoji: Schema = {
     type: Object,
     data: {
         Id: {
@@ -21,51 +20,39 @@ const Role: Schema = {
             default: null,
             extended: false
         },
+        Creator: {
+            name: 'Creator',
+            expected: String,
+            default: null,
+            extended: false
+        },
         Name: {
             name: 'Name',
             expected: String,
-            default: 'Unknown Role Name',
+            default: null,
             extended: false
         },
-        AllowedNsfw: {
-            name: 'AllowedNsfw',
+        EmojiHash: {
+            name: 'EmojiHash',
+            expected: String,
+            default: null,
+            extended: false
+        },
+        Disabled: {
+            name: 'Disabled',
             expected: Boolean,
             default: false,
             extended: false
         },
-        Deleteable: {
-            name: 'Deleteable',
-            expected: Boolean,
-            default: true,
-            extended: false
-        },
-        AllowedMentions: {
-            name: 'AllowedMentions',
-            expected: Number,
-            default: AllowedMentions.All,
-            extended: false
-        },
-        Hoisted: {
-            name: 'Hoisted',
+        Public: {
+            name: 'Public',
             expected: Boolean,
             default: false,
             extended: false
-        },
-        Color: {
-            name: 'Color',
-            expected: Number,
-            default: 16744272,
-            extended: false
-        },
-        Permissions: {
-            name: 'Permissions',
-            expected: Number,
-            default: 0,
-            extended: false
-        },
+        }
     },
 };
 
-export default Role;
+export default Emoji;
 
-export { Role }
+export { Emoji }

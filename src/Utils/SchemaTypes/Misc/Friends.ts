@@ -9,10 +9,10 @@
  * GPL 3.0 Licensed
  */
 
-import type { Schema } from "../../Types/Schema";
+import type { Schema } from "../../../Types/Schema";
 
-const Friend: Schema = {
-    type: Object,
+const Friends: Schema = {
+    type: Array,
     data: {
         Flags: {
             name: 'Flags',
@@ -45,6 +45,6 @@ const Friend: Schema = {
     },
 };
 
-export default Friend;
+export default Friends;
 
-export { Friend }
+export { Friends }

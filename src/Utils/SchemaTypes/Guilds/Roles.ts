@@ -9,8 +9,8 @@
  * GPL 3.0 Licensed
  */
 
-import { AllowedMentions } from "../../Constants";
-import type { Schema } from "../../Types/Schema";
+import { AllowedMentions } from "../../../Constants";
+import type { Schema } from "../../../Types/Schema";
 
 const Roles: Schema = {
   type: Array,

@@ -9,10 +9,11 @@
  * GPL 3.0 Licensed
  */
 
-import type { Schema } from "../../Types/Schema";
+import { ChannelTypes, AllowedMentions } from '../../../Constants';
+import type { Schema } from '../../../Types/Schema';
 
-const Emojis: Schema = {
-    type: Array,
+const Channel: Schema = {
+    type: Object,
     data: {
         Id: {
             name: '_id',
@@ -20,39 +21,63 @@ const Emojis: Schema = {
             default: null,
             extended: false
         },
-        Creator: {
-            name: 'Creator',
-            expected: String,
-            default: null,
-            extended: false
-        },
         Name: {
             name: 'Name',
             expected: String,
-            default: null,
+            default: 'Unknown Channel Name',
             extended: false
         },
-        EmojiHash: {
-            name: 'EmojiHash',
+        Description: {
+            name: 'Description',
             expected: String,
             default: null,
             extended: false
         },
-        Disabled: {
-            name: 'Disabled',
+        Type: {
+            name: 'Type',
+            expected: Number,
+            default: ChannelTypes.GuildText,
+            extended: false
+        },
+        Nsfw: {
+            name: 'Nsfw',
             expected: Boolean,
             default: false,
             extended: false
         },
-        Public: {
-            name: 'Public',
-            expected: Boolean,
-            default: false,
+        AllowedMentions: {
+            name: 'AllowedMentions',
+            expected: Number,
+            default: AllowedMentions.All,
             extended: false
-        }
+        },
+        Parent: {
+            name: 'Parent',
+            expected: String,
+            default: null,
+            extended: false
+        },
+        Children: {
+            name: 'Children',
+            expected: Array,
+            default: null,
+            extended: false
+        },
+        Position: {
+            name: 'Position',
+            expected: Number,
+            default: 0,
+            extended: false
+        },
+        Permissions: {
+            name: 'Permissions',
+            expected: Number,
+            default: 0,
+            extended: false
+        },
     },
 };
 
-export default Emojis;
+export default Channel;
 
-export { Emojis }
+export { Channel }

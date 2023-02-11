@@ -9,7 +9,7 @@
  * GPL 3.0 Licensed
  */
 
-import type { Schema } from "../../Types/Schema";
+import type { Schema } from "../../../Types/Schema";
 
 const User: Schema = {
     type: Object,

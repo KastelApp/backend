@@ -9,8 +9,8 @@
  * GPL 3.0 Licensed
  */
 
-import { ChannelTypes, AllowedMentions } from '../../Constants';
-import type { Schema } from '../../Types/Schema';
+import { ChannelTypes, AllowedMentions } from '../../../Constants';
+import type { Schema } from '../../../Types/Schema';
 
 const Channels: Schema = {
     type: Array,
@@ -69,10 +69,11 @@ const Channels: Schema = {
             default: 0,
             extended: false
         },
-        PermissionsOverides: {
-            name: 'PermissionsOverides',
-            extended: true,
-            extends: 'PermissionsOverides'
+        Permissions: {
+            name: 'Permissions',
+            expected: Number,
+            default: 0,
+            extended: false
         },
     },
 };

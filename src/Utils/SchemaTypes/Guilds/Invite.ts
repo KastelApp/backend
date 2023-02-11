@@ -9,10 +9,9 @@
  * GPL 3.0 Licensed
  */
 
-import { ChannelTypes, AllowedMentions } from '../../Constants';
-import type { Schema } from '../../Types/Schema';
+import type { Schema } from "../../../Types/Schema";
 
-const Channel: Schema = {
+const Invite: Schema = {
     type: Object,
     data: {
         Id: {
@@ -21,62 +20,38 @@ const Channel: Schema = {
             default: null,
             extended: false
         },
-        Name: {
-            name: 'Name',
-            expected: String,
-            default: 'Unknown Channel Name',
-            extended: false
-        },
-        Description: {
-            name: 'Description',
-            expected: String,
+        Expires: {
+            name: 'Expires',
+            expected: Date,
             default: null,
             extended: false
         },
-        Type: {
-            name: 'Type',
-            expected: Number,
-            default: ChannelTypes.GuildText,
-            extended: false
-        },
-        Nsfw: {
-            name: 'Nsfw',
-            expected: Boolean,
-            default: false,
-            extended: false
-        },
-        AllowedMentions: {
-            name: 'AllowedMentions',
-            expected: Number,
-            default: AllowedMentions.All,
-            extended: false
-        },
-        Parent: {
-            name: 'Parent',
-            expected: String,
-            default: null,
-            extended: false
-        },
-        Children: {
-            name: 'Children',
-            expected: Array,
-            default: null,
-            extended: false
-        },
-        Position: {
-            name: 'Position',
+        Uses: {
+            name: 'Uses',
             expected: Number,
             default: 0,
             extended: false
         },
-        PermissionsOverides: {
-            name: 'PermissionsOverides',
+        MaxUses: {
+            name: 'MaxUses',
+            expected: Number,
+            default: null,
+            extended: false
+        },
+        Creator: {
+            name: 'Creator',
             extended: true,
-            extends: 'PermissionsOverides'
+            extends: 'GuildMember',
+        },
+        Deleteable: {
+            name: 'Deleteable',
+            expected: Boolean,
+            default: true,
+            extended: false
         },
     },
 };
 
-export default Channel;
+export default Invite;
 
-export { Channel }
+export { Invite }

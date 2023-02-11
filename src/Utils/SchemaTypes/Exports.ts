@@ -9,29 +9,28 @@
  * GPL 3.0 Licensed
  */
 
-import { User } from "./User";
-import { Friend } from "./Friend";
-import { Friends } from "./Friends";
-import { FriendUser } from "./FriendUser";
-import { Ban } from "./Ban";
-import { Bans } from "./Bans";
-import { Channel } from "./Channel";
-import { Channels } from "./Channels";
-import { Guild } from "./Guild";
-import { Guilds } from "./Guilds";
-import { GuildMember } from "./GuildMember";
-import { GuildMembers } from "./GuildMembers";
-import { Invite } from "./Invite";
-import { Invites } from "./Invites";
-import { Role } from "./Role";
-import { Roles } from "./Roles";
-import { Settings } from './Settings';
-import { RawUser } from './RawUser';
-import { SpecialGuildNC, SpecialGuildNCW, SpecialGuildNW } from './SpecialGuild';
-import { SpecialGuildsNC, SpecialGuildsNCW, SpecialGuildsNW } from './SpecialGuilds';
-import { Emojis } from './Emojis';
-import { Emoji } from './Emoji';
-import { PermissionsOveride, PermissionsOverides } from './PermissionsOverides'
+import { User } from "./Users/User";
+import { Friend } from "./Misc/Friend";
+import { Friends } from "./Misc/Friends";
+import { FriendUser } from "./Users/FriendUser";
+import { Ban } from "./Guilds/Ban";
+import { Bans } from "./Guilds/Bans";
+import { Channel } from "./Guilds/Channel";
+import { Channels } from "./Guilds/Channels";
+import { Guild } from "./Guilds/Guild";
+import { Guilds } from "./Guilds/Guilds";
+import { GuildMember } from "./Guilds/GuildMember";
+import { GuildMembers } from "./Guilds/GuildMembers";
+import { Invite } from "./Guilds/Invite";
+import { Invites } from "./Guilds/Invites";
+import { Role } from "./Guilds/Role";
+import { Roles } from "./Guilds/Roles";
+import { Settings } from './Misc/Settings';
+import { RawUser } from './Users/RawUser';
+import { SpecialGuildNC, SpecialGuildNCW, SpecialGuildNW } from './Misc/SpecialGuild';
+import { SpecialGuildsNC, SpecialGuildsNCW, SpecialGuildsNW } from './Misc/SpecialGuilds';
+import { Emojis } from './Guilds/Emojis';
+import { Emoji } from './Guilds/Emoji';
 
 export default {
   User,
@@ -59,9 +58,7 @@ export default {
   SpecialGuildsNCW,
   SpecialGuildsNW,
   Emojis,
-  Emoji,
-  PermissionsOveride,
-  PermissionsOverides
+  Emoji
 };
 
 export {
@@ -90,7 +87,5 @@ export {
   SpecialGuildsNCW,
   SpecialGuildsNW,
   Emojis,
-  Emoji,
-  PermissionsOveride,
-  PermissionsOverides
+  Emoji
 };

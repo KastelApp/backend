@@ -9,9 +9,10 @@
  * GPL 3.0 Licensed
  */
 
-import type { Schema } from "../../Types/Schema";
+import { AllowedMentions } from '../../../Constants';
+import type { Schema } from '../../../Types/Schema';
 
-const FriendUser: Schema = {
+const Role: Schema = {
     type: Object,
     data: {
         Id: {
@@ -20,33 +21,51 @@ const FriendUser: Schema = {
             default: null,
             extended: false
         },
-        AvatarHash: {
-            name: 'AvatarHash',
+        Name: {
+            name: 'Name',
             expected: String,
-            default: null,
+            default: 'Unknown Role Name',
             extended: false
         },
-        Username: {
-            name: 'Username',
-            expected: String,
-            default: 'Unknown Username',
+        AllowedNsfw: {
+            name: 'AllowedNsfw',
+            expected: Boolean,
+            default: false,
             extended: false
         },
-        Tag: {
-            name: 'Tag',
-            expected: String,
-            default: '0000',
+        Deleteable: {
+            name: 'Deleteable',
+            expected: Boolean,
+            default: true,
             extended: false
         },
-        PublicFlags: {
-            name: 'Flags',
+        AllowedMentions: {
+            name: 'AllowedMentions',
+            expected: Number,
+            default: AllowedMentions.All,
+            extended: false
+        },
+        Hoisted: {
+            name: 'Hoisted',
+            expected: Boolean,
+            default: false,
+            extended: false
+        },
+        Color: {
+            name: 'Color',
+            expected: Number,
+            default: 16744272,
+            extended: false
+        },
+        Permissions: {
+            name: 'Permissions',
             expected: Number,
             default: 0,
             extended: false
-        }
+        },
     },
 };
 
-export default FriendUser;
+export default Role;
 
-export { FriendUser }
+export { Role }

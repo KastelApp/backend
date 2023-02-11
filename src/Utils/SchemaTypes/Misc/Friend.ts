@@ -9,49 +9,42 @@
  * GPL 3.0 Licensed
  */
 
-import type { Schema } from "../../Types/Schema";
+import type { Schema } from "../../../Types/Schema";
 
-const Invite: Schema = {
+const Friend: Schema = {
     type: Object,
     data: {
-        Id: {
-            name: '_id',
-            expected: String,
-            default: null,
-            extended: false
-        },
-        Expires: {
-            name: 'Expires',
-            expected: Date,
-            default: null,
-            extended: false
-        },
-        Uses: {
-            name: 'Uses',
+        Flags: {
+            name: 'Flags',
             expected: Number,
             default: 0,
             extended: false
         },
-        MaxUses: {
-            name: 'MaxUses',
-            expected: Number,
-            default: null,
-            extended: false
-        },
-        Creator: {
-            name: 'Creator',
+        Sender: {
+            name: 'Sender',
+            extends: 'RawUser',
             extended: true,
-            extends: 'GuildMember',
         },
-        Deleteable: {
-            name: 'Deleteable',
-            expected: Boolean,
-            default: true,
-            extended: false
+        Receiver: {
+            name: 'Receiver',
+            extends: 'RawUser',
+            extended: true,
         },
+        SenderNickname: {
+            name: 'SenderNickname',
+            expected: String,
+            default: null,
+            extended: false,
+        },
+        ReceiverNickname: {
+            name: 'ReceiverNickname',
+            expected: String,
+            default: null,
+            extended: false,
+        }
     },
 };
 
-export default Invite;
+export default Friend;
 
-export { Invite }
+export { Friend }

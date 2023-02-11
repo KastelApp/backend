@@ -9,50 +9,48 @@
  * GPL 3.0 Licensed
  */
 
-import type { Schema } from "../../Types/Schema";
+import type { Schema } from "../../../Types/Schema";
 
-const Emoji: Schema = {
-    type: Object,
+const Bans: Schema = {
+    type: Array,
     data: {
-        Id: {
+        id: {
             name: '_id',
             expected: String,
             default: null,
             extended: false
         },
-        Creator: {
-            name: 'Creator',
+        User: {
+            name: 'User',
+            extends: 'FriendUser',
+            extended: true
+        },
+        Banner: {
+            name: 'Banner',
+            extends: 'FriendUser',
+            extended: true
+        },
+        Reason: {
+            name: 'Reason',
             expected: String,
+            default: 'N/A',
+            extended: false
+        },
+        BanDate: {
+            name: 'BannedDate',
+            expected: Number,
+            default: Date.now(),
+            extended: false
+        },
+        UnbanDate: {
+            name: 'UnbanDate',
+            expected: Number,
             default: null,
             extended: false
         },
-        Name: {
-            name: 'Name',
-            expected: String,
-            default: null,
-            extended: false
-        },
-        EmojiHash: {
-            name: 'EmojiHash',
-            expected: String,
-            default: null,
-            extended: false
-        },
-        Disabled: {
-            name: 'Disabled',
-            expected: Boolean,
-            default: false,
-            extended: false
-        },
-        Public: {
-            name: 'Public',
-            expected: Boolean,
-            default: false,
-            extended: false
-        }
     },
 };
 
-export default Emoji;
+export default Bans;
 
-export { Emoji }
+export { Bans }
