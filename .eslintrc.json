@@ -46,5 +46,8 @@
 	},
 	"globals": {
 		"BigInt": true
-	}
+	},
+	"ignorePatterns": [
+		"node_modules/**/*"
+	]
 }

@@ -11,44 +11,39 @@
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 
-Kastel Is a Chatting App like <a href="https://discord.com">Discord</a> & <a href="https://guilded.gg">Guilded</a>, Though its Open Sourced & Data is encrypted
+Kastel is an open-source and privacy-focused communication platform that allows you to connect with your friends, colleagues, and communities. It's similar to popular chat apps like Discord and Guilded, but with an added emphasis on data security and encryption. Whether you're looking to build a gaming community, manage a team, or just chat with friends, Kastel provides a safe and secure environment to connect and communicate.
+
 
 ## Roadmap
 ### Misc
 - [x] Correct Error codes
-- [ ] Docker File to easily run the backend
+- [x] Docker File to easily run the backend
 - [x] A Snowflake ID System
-- [ ] Routing to Different servers
-    - If you are in Canada, Route to a US server if there are no canada servers ETC
-- [ ] Rewrite to TS & Fastify
-    - I have plans on Rewriting most of this project into TS and Using Fastify instead of Express.JS, When this will happen I'm not sure.
+- [x] Rewrite to TS
+    - I want to rewrite the backend to TS, This will make it easier to maintain and add new features
 - [ ] Different ways to login besides a password
     - I want Users to pick how they login, Allowing them to remove their password and login with other sites, Below are some Ideas
-        - Google
-        - Github
-        - Apple
+      - [ ] SMS Login
+      - [ ] Email Login
+      - [ ] Google Login
+      - [ ] Github Login
+
 ### Database Related
-- [x] Start MongoDB Stuff (Creating Schemas, Using it for Creating accounts ETC)
-- [x] Encrypting User Data and messages, Username, ID ETC & Hashing Passwords, Emails and IPS
+- [x] Database Setup
+    - I want to use MongoDB for the Database, I want to use a NoSQL Database because it will be easier to scale and it will be easier to add new features (Though could be slower)
+- [x] Database Models
+    - I want to make a Database Model for each type of data, This will make it easier to add new features and it will make it easier to maintain the code
+    
 ### Caching Related
-- [ ] Advanced Caching system using redis
-    - Caching system to make API requests faster
+- [x] Caching Setup
+    - Caching is important, but also bad, Discord uses ScyllaDB which doesn't need caching as its fast, At some point we should move to a database like that, But for now we will use MongoDB which requires caching
 ### Route Related
 - [x] API Endpoints for Creating Accounts, Updating Accounts, Deleting Accounts ETC
 - [x] Route Handler/Loader (Loads Routes, Set Routes ETC.)
 
-# Credits
-
-[Robin][robin-github] - For Helping with the Schemas & giving tips about them.
-
 # Contributing
 
 If you want to contribute fork the development branch, make your changes, verify it works then create a pull request with the changed things, In the Pull request explain what you changed and why you changed it. If you want to make more then one change please do it in one pull request unless they are big things (Like changing Packages, Completely refactoring code etc etc)
-
-
-# User Security
-
-As of 8/15/2022 User Data Is Encrypted with AES (AES is the default) As seen in the [User Schema](/src/utils/schemas/users/userSchema.js) What is Encrypted or hashed is pointed out. If it doesn't have a '// Encrypted' or '// Hashed' next to it means it isn't hashed or encrypted. If you got any questions please email 'security@kastelapp.com' for more info.
 
 ## Maintainers
 
@@ -66,5 +61,4 @@ This project is licensed under the GPL-3.0 License, For more info please check [
 [stars-url]: https://github.com/Kastelll/backend/stargazers
 [issues-shield]: https://img.shields.io/github/issues/Kastelll/backend.svg?style=for-the-badge
 [issues-url]: https://github.com/Kastelll/backend/issues
-[robin-github]: https://github.com/Robin-Sch
 </div>
