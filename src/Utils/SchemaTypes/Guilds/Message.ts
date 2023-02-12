@@ -11,58 +11,52 @@
 
 import type { Schema } from "../../../Types/Schema";
 
-const Settings: Schema = {
+const Message: Schema = {
     type: Object,
     data: {
-        User: {
-            name: 'User',
-            extended: true,
-            extends: 'User',
-        },
-        Status: {
-            name: 'Status',
+        Id: {
+            name: '_id',
             expected: String,
             default: null,
             extended: false
         },
-        Presence: {
-            name: 'Presence',
-            expected: Number,
-            default: 0,
-            extended: false
-        },
-        Tokens: {
-            name: 'Tokens',
-            expected: Array,
-            default: [],
-            extended: false
-        },
-        Theme: {
-            name: 'Theme',
-            expected: String,
-            default: 'dark',
-            extended: false
-        },
-        Language: {
-            name: 'Language',
-            expected: String,
-            default: 'en-US',
-            extended: false
-        },
-        Privacy: {
-            name: 'Privacy',
-            expected: Number,
-            default: 0,
-            extended: false
-        },
-        Mentions: {
-            name: 'Mentions',
+        Author: {
+            name: 'Author',
+            extends: 'GuildMember',
             extended: true,
-            extends: 'Mentions',
+        },
+        Content: {
+            name: 'Content',
+            expected: String,
+            default: null,
+            extended: false
+        },
+        AllowedMentions: {
+            name: 'AllowedMentions',
+            expected: Number,
+            default: 0,
+            extended: false
+        },
+        CreatedAt: {
+            name: 'CreatedAt',
+            expected: Number,
+            default: 0,
+            extended: false
+        },
+        UpdatedAt: {
+            name: 'UpdatedAt',
+            expected: Number,
+            default: 0,
+            extended: false
         }
     },
 };
 
-export default Settings;
+const Messages: Schema = {
+    type: Object,
+    data: Message.data
+};
 
-export { Settings }
+export default Message;
+
+export { Message, Messages }

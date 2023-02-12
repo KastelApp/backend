@@ -41,22 +41,28 @@ const SettingSchema = new Schema({
         default: 'dark',
     },
 
+    Language: { // Not Used Yet (Will be used in the future)
+        type: String,
+        required: true,
+        default: 'en-US',
+    },
+
+    // Who can see your Status, online status, etc. (Not used yet)
+    // 0 = Everyone
+    // 1 = Friends
+    // 2 = Nobody
+    Privacy: {
+        type: Number,
+        required: true,
+        default: 0,
+    },
+
     Mentions: [
         {
-            Channel: {
+            Message: {
                 type: String,
                 required: true,
-                ref: 'Channels',
-            },
-            Guild: {
-                type: String,
-                required: true,
-                ref: 'Guilds',
-            },
-            Count: {
-                type: Number,
-                required: true,
-                default: 0,
+                ref: 'Messages',
             }
         }
     ]

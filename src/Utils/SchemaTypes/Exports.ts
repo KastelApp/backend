@@ -31,6 +31,8 @@ import { SpecialGuildNC, SpecialGuildNCW, SpecialGuildNW } from './Misc/SpecialG
 import { SpecialGuildsNC, SpecialGuildsNCW, SpecialGuildsNW } from './Misc/SpecialGuilds';
 import { Emojis } from './Guilds/Emojis';
 import { Emoji } from './Guilds/Emoji';
+import { Message, Messages } from './Guilds/Message';
+import { Mention, Mentions } from './Misc/Mentions'
 
 export default {
   User,
@@ -58,7 +60,11 @@ export default {
   SpecialGuildsNCW,
   SpecialGuildsNW,
   Emojis,
-  Emoji
+  Emoji,
+  Message,
+  Messages,
+  Mention,
+  Mentions
 };
 
 export {
@@ -87,5 +93,9 @@ export {
   SpecialGuildsNCW,
   SpecialGuildsNW,
   Emojis,
-  Emoji
+  Emoji,
+  Message,
+  Messages,
+  Mention,
+  Mentions
 };
