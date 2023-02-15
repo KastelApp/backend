@@ -287,7 +287,7 @@ new Route(
     }
 
     res.json({
-      token: UserToken,
+      Token: UserToken,
     });
 
     return;

@@ -52,6 +52,11 @@ const MessageSchema = new Schema({
         ref: 'Channels',
     },
 
+    Nonce: {
+        type: String,
+        required: false,
+    }
+
 });
 
 export default model('Messages', MessageSchema);

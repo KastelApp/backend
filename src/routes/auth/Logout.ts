@@ -34,6 +34,9 @@ new Route('/logout', 'GET', [
         return;
     }
 
-    res.json({ Message: 'Logged out' });
+    res.json({ 
+        Success: true,
+        Message: 'Logged out'
+    });
 
 });
