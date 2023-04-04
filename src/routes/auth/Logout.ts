@@ -25,7 +25,7 @@ new Route('/logout', 'GET', [
     const FoundSchema = await SettingSchema.findOne({ User: Encryption.encrypt(req.user.Id) });
 
     if (FoundSchema) {
-        FoundSchema.Tokens = FoundSchema.Tokens.filter(Token => Token !== Encryption.encrypt(req.user.Token));
+        FoundSchema.Tokens = FoundSchema.Tokens.filter(Token => Token.Token !== Encryption.encrypt(req.user.Token));
 
         await FoundSchema.save();
     } else {

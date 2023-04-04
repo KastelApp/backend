@@ -18,6 +18,7 @@ import Encryption from "../Utils/Classes/Encryption";
 import Token from "../Utils/Classes/Token";
 import schemaData from "../Utils/SchemaData";
 import { SettingSchema } from "../Utils/Schemas/Schemas";
+import Utils from "../Utils/Classes/MiscUtils/Utils";
 
 /**
  * The Middleware on each and every request (well it should be on it)
@@ -25,6 +26,7 @@ import { SettingSchema } from "../Utils/Schemas/Schemas";
  * and what flags are needed/allowed to access the endpoint, As well as if they need to be
  * logged in or not
  */
+
 const User = (options: UserMiddleware) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     let AuthHeader = req.headers.authorization;
@@ -149,7 +151,11 @@ const User = (options: UserMiddleware) => {
         return;
       }
 
-      if (!PopulatedUser.Tokens.includes(Encryption.encrypt(AuthHeader))) {
+      if (
+        !PopulatedUser.Tokens.find(
+          (Token) => Token.Token === Encryption.encrypt(AuthHeader as string)
+        )
+      ) {
         res.status(401).json({
           Code: 4012,
           Message: "Unauthorized",
@@ -224,6 +230,8 @@ const User = (options: UserMiddleware) => {
         Bot: false,
         FlagsUtil: new FlagFields(SchemaUserd.Flags),
       } as LessUser;
+
+      req.mutils = new Utils(req.user.Token, req, res);
 
       next();
 

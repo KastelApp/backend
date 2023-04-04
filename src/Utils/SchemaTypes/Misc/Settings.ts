@@ -33,9 +33,8 @@ const Settings: Schema = {
         },
         Tokens: {
             name: 'Tokens',
-            expected: Array,
-            default: [],
-            extended: false
+            extends: 'Tokens',
+            extended: true
         },
         Theme: {
             name: 'Theme',

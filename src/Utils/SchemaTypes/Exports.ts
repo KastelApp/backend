@@ -19,7 +19,7 @@ import { Channel } from "./Guilds/Channel";
 import { Channels } from "./Guilds/Channels";
 import { Guild } from "./Guilds/Guild";
 import { Guilds } from "./Guilds/Guilds";
-import { GuildMember } from "./Guilds/GuildMember";
+import { GuildMember, GuildMemberNR } from "./Guilds/GuildMember";
 import { GuildMembers } from "./Guilds/GuildMembers";
 import { Invite } from "./Guilds/Invite";
 import { Invites } from "./Guilds/Invites";
@@ -32,7 +32,8 @@ import { SpecialGuildsNC, SpecialGuildsNCW, SpecialGuildsNW } from './Misc/Speci
 import { Emojis } from './Guilds/Emojis';
 import { Emoji } from './Guilds/Emoji';
 import { Message, Messages } from './Guilds/Message';
-import { Mention, Mentions } from './Misc/Mentions'
+import { Mention, Mentions } from './Misc/Mentions';
+import { Tokens } from './Misc/Tokens';
 
 export default {
   User,
@@ -64,7 +65,9 @@ export default {
   Message,
   Messages,
   Mention,
-  Mentions
+  Mentions,
+  GuildMemberNR,
+  Tokens  
 };
 
 export {
@@ -97,5 +100,7 @@ export {
   Message,
   Messages,
   Mention,
-  Mentions
+  Mentions,
+  GuildMemberNR,
+  Tokens
 };

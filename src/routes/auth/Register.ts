@@ -109,7 +109,11 @@ new Route('/register', 'POST', [
 
     const Settings = new SettingSchema({
         User: User._id,
-        Tokens: [Encryption.encrypt(UserToken)],
+        Tokens: [{
+            Token: Encryption.encrypt(UserToken),
+            Ip: Encryption.encrypt(req.ip),
+            CreatedDate: Date.now(),
+        }],
     })
 
     await Settings.save();

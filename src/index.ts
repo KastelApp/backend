@@ -29,7 +29,8 @@ console.log(
 A Chatting Application
 Running version ${
     Relative.Version ? `v${Relative.Version}` : "Unknown version"
-  } of Kastel's Backend. Node.js version ${process.version}\n`)
+  } of Kastel's Backend. Node.js version ${process.version}
+If you would like to support this project please consider donating to https://opencollective.com/kastel\n`)
 );
 
 /* Express Imports */
@@ -47,6 +48,7 @@ import { Cache } from "./Utils/Classes/Cache";
 import { IpUtils } from "./Utils/Classes/IpUtils";
 import Turnstile from "./Utils/Classes/Turnstile";
 import RequestUtils from "./Utils/Classes/RequestUtils";
+import SystemSocket from "./Utils/Classes/System/SystemSocket";
 
 /* Express Middleware stuff */
 const app = express();
@@ -80,6 +82,18 @@ process
 /* Sets the users IP, Setups Captcha & Utils */
 /* Also Logs the requested path */
 app.use((req, res, next) => {
+
+  if (!app.ready) {
+    res.status(503).json({
+      error: {
+        code: "ServiceUnavailable",
+        message: "The service is currently unavailable.",
+      },
+    });
+
+    return;
+  }
+
   // Client IP is just different headers to get the actual IP of the user
   req.clientIp = IpUtils.GetIp(req);
 
@@ -120,6 +134,7 @@ app.all("*", (req, res) => {
 });
 
 app.listen(Config.Server.Port || 62250, async () => {
+  app.ready = false;
   console.info(
     `[Express] Server Started On Port ${Config.Server.Port || 62250}`
   );
@@ -156,21 +171,30 @@ app.listen(Config.Server.Port || 62250, async () => {
 
   mongoose.set("strictQuery", true);
 
-  mongoose
+  await mongoose
     .connect(uriGenerator())
-    .then(() => console.info("[Database] MongoDB connected!"))
     .catch((e: any) => {
       console.error("[Database] Failed to connect to MongoDB", e);
       process.exit();
     });
 
+  console.info("[Database] MongoDB connected!")
+
+  const Socket = new SystemSocket()
+
+  await Socket.Connect();
+
+  app.socket = Socket;
+
   console.info(
     `[Stats] Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(
       2
-    )}s to Start Up,Loaded ${Routes.length} Routes, Running Version ${
+    )}s to Start Up, Loaded ${Routes.length} Routes, Running Version ${
       Constants.Relative.Version
         ? `v${Constants.Relative.Version}`
         : "Unknown version"
     }, Cleared ${cleared.length} keys from cache`
   );
+
+  app.ready = true;
 });

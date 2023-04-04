@@ -22,6 +22,7 @@ const UserSchema = new Schema({
     type: String,
     required: true,
     unique: true,
+    index: true,
   },
 
   EmailVerified: {
@@ -33,12 +34,14 @@ const UserSchema = new Schema({
     type: String,
     required: true,
     default: Encryption.encrypt('Ghost'),
+    index: true
   },
 
   Tag: {
     type: String,
     required: true,
     default: '0000',
+    index: true
   },
 
   AvatarHash: {

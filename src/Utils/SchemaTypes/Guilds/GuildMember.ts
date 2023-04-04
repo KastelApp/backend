@@ -45,6 +45,42 @@ const GuildMember: Schema = {
     },
 };
 
+// NR = No Roles
+const GuildMemberNR: Schema = {
+    type: Object,
+    data: {
+        Id: {
+            name: '_id',
+            expected: String,
+            default: null,
+            extended: false
+        },
+        User: {
+            name: 'User',
+            extended: true,
+            extends: 'FriendUser',
+        },
+        Roles: {
+            name: 'Roles',
+            expected: Array,
+            default: [],
+            extended: false
+        },
+        Nickname: {
+            name: 'Nickname',
+            expected: String,
+            default: null,
+            extended: false
+        },
+        JoinedAt: {
+            name: 'JoinedAt',
+            expected: Number,
+            default: Date.now(),
+            extended: false
+        },  
+    },
+};
+
 export default GuildMember;
 
-export { GuildMember }
+export { GuildMember, GuildMemberNR }

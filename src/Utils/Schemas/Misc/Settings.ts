@@ -30,7 +30,23 @@ const SettingSchema = new Schema({
     },
 
     Tokens: {
-        type: Array,
+        type: [
+            {
+                Token: {
+                    type: String,
+                    required: true,
+                },
+                CreatedDate: {
+                    type: Number,
+                    required: true,
+                    default: Date.now(),
+                },
+                Ip: {
+                    type: String,
+                    required: true,
+                }
+            }
+        ],
         required: true,
         default: [],
     },

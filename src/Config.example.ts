@@ -35,8 +35,7 @@ const Encryption: Encryption = {
 
 const Ws: Ws = {
     Url: '',
-    User: '0',
-    Password: '',
+    Password: ''
 };
 
 const Redis: Redis = {

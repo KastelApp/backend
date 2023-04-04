@@ -32,8 +32,8 @@ export interface Encryption {
 
 export interface Ws {
   Url: string;
-  User: string;
   Password: string;
+  version?: number; // not required as most likely will be 0
 }
 
 export interface Redis {

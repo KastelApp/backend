@@ -9,7 +9,7 @@
  * GPL 3.0 Licensed
  */
 
-import { Permissions as Perms } from '../../../Constants'
+import { Permissions as Perms, RolePermissions, ChannelPermissions, MixedPermissions } from '../../../Constants'
 
 class Permissions {
     bits: bigint
@@ -65,6 +65,31 @@ class Permissions {
 
     static get FlagFieldsArray(): (keyof typeof Perms)[] {
         return Object.keys(Perms) as (keyof typeof Perms)[]
+    }
+
+    static removeRolePerms(permissions: bigint): bigint {
+        Object.keys(RolePermissions).forEach((key) => {
+            permissions &= ~RolePermissions[key as keyof typeof RolePermissions]
+        })
+
+        return permissions
+    }
+
+    static removeChannelPerms(permissions: bigint): bigint {
+        Object.keys(ChannelPermissions).forEach((key) => {
+            permissions &= ~ChannelPermissions[key as keyof typeof ChannelPermissions]
+        })
+
+        return permissions
+    }
+
+    // this may never be used tbh
+    static removeMixedPerms(permissions: bigint): bigint {
+        Object.keys(MixedPermissions).forEach((key) => {
+            permissions &= ~MixedPermissions[key as keyof typeof MixedPermissions]
+        })
+
+        return permissions
     }
 }
 

@@ -20,7 +20,7 @@ const MessageSchema = new Schema({
     Author: {
         type: String,
         required: true,
-        ref: 'Users',
+        ref: 'GuildMembers',
     },
 
     Content: {
@@ -35,28 +35,55 @@ const MessageSchema = new Schema({
     },
 
     CreatedDate: {
-        type: Date,
+        type: Number,
         required: true,
         default: Date.now(),
+        index: true,
     },
 
     UpdatedDate: {
-        type: Date,
-        required: true,
-        default: Date.now(),
+        type: Number,
+        required: false,
+        default: null,
     },
 
     Channel: {
         type: String,
         required: true,
         ref: 'Channels',
+        index: true,
     },
 
     Nonce: {
         type: String,
         required: false,
-    }
+        index: true,
+    },
 
+    Flags: {
+        type: Number,
+        required: false,
+        default: 0,
+    },
+
+    Embeds: {
+        type: Array,
+        required: false,
+        default: [],
+    },
+
+    Attachments: {
+        type: Array,
+        required: false,
+        ref: "Files",
+        default: [],
+    },
+
+    ReplyingTo: {
+        type: String,
+        required: false,
+        ref: 'Messages',
+    },
 });
 
 export default model('Messages', MessageSchema);

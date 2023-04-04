@@ -25,6 +25,7 @@ const Settings = {
       GuildNameLength: 100,
       GuildDescriptionLength: 500,
       GuildLimit: 100, // The amount they can request in the /guilds/fetch route
+      MessageLength: 1000, // The max amount of characters in a message
     },
     Min: {
       UsernameLength: 2,

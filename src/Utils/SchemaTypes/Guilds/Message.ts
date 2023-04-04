@@ -22,7 +22,7 @@ const Message: Schema = {
         },
         Author: {
             name: 'Author',
-            extends: 'GuildMember',
+            extends: 'GuildMemberNR',
             extended: true,
         },
         Content: {
@@ -38,13 +38,25 @@ const Message: Schema = {
             extended: false
         },
         CreatedAt: {
-            name: 'CreatedAt',
+            name: 'CreatedDate',
             expected: Number,
-            default: 0,
+            default: null,
             extended: false
         },
         UpdatedAt: {
-            name: 'UpdatedAt',
+            name: 'UpdatedDate',
+            expected: Number,
+            default: null,
+            extended: false
+        },
+        Nonce: {
+            name: 'Nonce',
+            expected: String,
+            default: null,
+            extended: false
+        },
+        Flags: {
+            name: 'Flags',
             expected: Number,
             default: 0,
             extended: false
@@ -53,7 +65,7 @@ const Message: Schema = {
 };
 
 const Messages: Schema = {
-    type: Object,
+    type: Array,
     data: Message.data
 };
 

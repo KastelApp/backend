@@ -9,43 +9,32 @@
  * GPL 3.0 Licensed
  */
 
-import { model, Schema } from 'mongoose';
-import Encryption from '../../Classes/Encryption';
+import type { Schema } from "../../../Types/Schema";
 
-const FileSchema = new Schema({
-    _id: {
-        type: String,
-        required: true,
+const Tokens: Schema = {
+    type: Object,
+    data: {
+        Token: {
+            name: 'Token',
+            expected: String,
+            default: null,
+            extended: false
+        },
+        CreatedDate: {
+            name: 'CreatedDate',
+            expected: Number,
+            default: null,
+            extended: false
+        },
+        Ip: {
+            name: 'Ip',
+            expected: String,
+            default: null,
+            extended: false
+        }
     },
+};
 
-    Message: {
-        type: String,
-        required: false,
-        ref: 'Messages',
-    },
+export default Tokens;
 
-    Name: {
-        type: String,
-        required: true,
-        default: Encryption.encrypt('Unknown'),
-    },
-
-    CdnToken: {
-        type: String,
-        required: true,
-    },
-
-    Type: {
-        type: String,
-        required: true,
-    },
-
-    Deleted: {
-        type: Boolean,
-        required: false,
-    },
-});
-
-export default model('Files', FileSchema);
-
-export { FileSchema }
+export { Tokens }
