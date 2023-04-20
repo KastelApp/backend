@@ -77,11 +77,9 @@ if (Config.Server.Sentry.Enabled) {
     dsn: Config.Server.Sentry.Dsn,
     tracesSampleRate: Config.Server.Sentry.TracesSampleRate,
     // I have no clue if this is setup right, anyways waffles are cool do not forget that
-    // @ts-ignore
     integrations: (integrations) => {
-      const owo = [
+      const Intergrations = [
         ...integrations.map((integration) => {
-          console.log(integration.name);
           if (integration.name === "OnUncaughtException") {
             // override `OnUncaughtException` integration to not exit.
             return new Sentry.Integrations.OnUncaughtException({
@@ -89,17 +87,14 @@ if (Config.Server.Sentry.Enabled) {
               exitEvenIfOtherHandlersAreRegistered: false,
             });
           } else {
-            // return integration;
-            return null;
+            return integration;
           }
         }),
         new Sentry.Integrations.Http({ tracing: true }),
         new Sentry.Integrations.Express({ app }),
-      ].filter((x) => x !== null);
+      ];
 
-      console.log(owo);
-
-      return owo;
+      return Intergrations;
     },
   });
 }
@@ -140,11 +135,11 @@ if (Config.Server.Sentry.Enabled) {
 
 app.use((req, res, next) => {
 
-  res.send('owo')
+  // res.send('owo')
 
-  let i = true;
+  // let i = true;
 
-  if (i) return;
+  // if (i) return;
 
   if (!app.ready) {
     res.status(503).json({
@@ -246,6 +241,7 @@ app.listen(Config.Server.Port || 62250, async () => {
   await Socket.Connect();
 
   app.socket = Socket;
+  
 
   if (Config.MailServer.Enabled) {
     const Support = Config.MailServer.Users.find(

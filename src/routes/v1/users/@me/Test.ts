@@ -9,36 +9,35 @@
  * GPL 3.0 Licensed
  */
 
-import { Route } from "@kastelll/core";
-import User from "../../../../Middleware/User";
-import rateLimit from "../../../../Utils/Classes/TokenBucket";
+import { Route } from '@kastelll/core';
+import User from '../../../../Middleware/User';
+import RateLimit from '../../../../Utils/Classes/TokenBucket';
 
 new Route(
-  "/test",
-  "GET",
-  [
-    User({
-      AccessType: "LoggedIn",
-      AllowedRequesters: "User",
-      Flags: [],
-    }),
-    rateLimit({
-        count: 5,
-        window: 10000,
-        bucket: 'test',
-        // failed: {
-        //   boost: 1000000,
-        //   count: 3
-        // },
-        error: true,
-      }),
-    ],
-  async (req, res) => {
+	'/test',
+	'GET',
+	[
+		User({
+			AccessType: 'LoggedIn',
+			AllowedRequesters: 'User',
+			Flags: [],
+		}),
+		RateLimit({
+			Count: 5,
+			Window: 10000,
+			Bucket: 'test',
+			// failed: {
+			//   boost: 1000000,
+			//   count: 3
+			// },
+			Error: true,
+		}),
+	],
+	async (req, res) => {
+		res.status(403).send('uwu');
 
-    res.status(403).send("uwu")
+		return;
 
-    return;
-
-    // res.send('uwu')
-  }
+		// res.send('uwu')
+	},
 );

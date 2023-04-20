@@ -27,8 +27,9 @@ dist/
 .turbo
 .npmrc
 tsconfig.tsbuildinfo
-coverage/
 scripts/
+# Developer Tests
+dtests/
 
 # yarn
 .pnp.*

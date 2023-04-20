@@ -50,6 +50,8 @@ class SystemSocket {
         console.log("[System Socket] Failed to connect to System Socket / Recieved an Error");
 
         this.HandleDisconnect()
+        
+        resolve();
       });
 
       this.Ws.on("open", () => {
