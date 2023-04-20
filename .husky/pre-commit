@@ -1,0 +1,17 @@
+#!/bin/bash
+
+. "$(dirname "$0")/_/husky.sh"
+
+# if we are on development branch run build:affected:development else run build:affected:stable if on stable ORR if we are not on 
+# any of those branches run build:affected:development
+
+# yarn build:affected && yarn lint-staged
+
+
+if [ "$CI_COMMIT_REF_NAME" = "development" ]; then
+  yarn build:affected:development
+elif [ "$CI_COMMIT_REF_NAME" = "stable" ]; then
+  yarn build:affected:stable
+else
+  yarn build:affected:development
+fi

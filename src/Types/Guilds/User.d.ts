@@ -1,7 +1,7 @@
 interface RawGuildMember {
     _id: string
     Guild: string
-    User: RawUser
+    User?: RawUser
     Roles: string[]
     JoinedAt: number
     Flags: number
@@ -66,11 +66,11 @@ export interface GuildPermissions {
     Flags: number;
     Owner: string;
     CoOwners: string[];
-    Channels: RawChannel[];
-    Roles: RawRole[];
+    Channels?: RawChannel[];
+    Roles?: RawRole[];
     Invites: string[];
     Bans: string[];
-    Members: RawGuildMember[];
+    Members?: RawGuildMember[];
     Emojis: string[];
     MaxMembers: number;
     __v: number;

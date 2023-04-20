@@ -1,95 +1,97 @@
-import { HTTPErrors, Route } from '@kastelll/packages';
+import { HTTPErrors } from '@kastelll/util';
+import { Route } from '@kastelll/core';
 import User from '../../../../../../Middleware/User';
 
 interface MessageBody {
-    content: string;
-    allowedMentions: number;
-    flags: number;
-    embeds: {
-      title?: string;
-      description?: string;
-      color?: number;
-      timestamp?: number;
-      footer?: {
-        text: string;
-      };
-      fields?: {
-        title: string;
-        value: string;
-      }[];
-    }[];
+	content: string;
+	allowedMentions: number;
+	flags: number;
+	embeds: {
+		title?: string;
+		description?: string;
+		color?: number;
+		timestamp?: number;
+		footer?: {
+			text: string;
+		};
+		fields?: {
+			title: string;
+			value: string;
+		}[];
+	}[];
 }
 
-new Route('/', 'PATCH', [
-    User({
-        AccessType: 'LoggedIn',
-        AllowedRequesters: 'All',
-        Flags: []
-    })
-], async (req, res) => {
+new Route(
+	'/',
+	'PATCH',
+	[
+		User({
+			AccessType: 'LoggedIn',
+			AllowedRequesters: 'All',
+			Flags: [],
+		}),
+	],
+	async (req, res) => {
+		const { Id, MessageId } = req.params as { Id: string; MessageId: string };
 
-    const { Id, MessageId } = req.params as { Id: string, MessageId: string };
+		const { content, allowedMentions } = req.body as MessageBody;
 
-    const { content, allowedMentions } = req.body as MessageBody;
+		const CanEdit = await req.mutils.Channel.hasPermission(Id, ['SendMessages', 'Administrator'], true);
 
-    const CanEdit = await req.mutils.Channel.hasPermission(Id, [
-        'SendMessages',
-        'Administrator'
-    ], true);
+		const Message = await req.mutils.Channel.fetchMessage(Id, MessageId);
 
-    const Message = await req.mutils.Channel.fetchMessage(Id, MessageId);
+		if (!Message) {
+			const Errors = new HTTPErrors(4052);
 
-    if (!Message) {
-        const Errors = new HTTPErrors(4052);
+			Errors.AddError({
+				MessageIds: {
+					code: 'InvalidMessageIds',
+					message: 'The message ids are invalid.',
+				},
+			});
 
-        Errors.addError({
-            MessageIds: {
-                code: 'InvalidMessageIds',
-                message: 'The message ids are invalid.'
-            },
-        });
+			res.status(400).json(Errors.toJSON());
 
-        res.status(400).json(Errors.toJSON());
+			return;
+		}
 
-        return;
-    }
+		if (!CanEdit && Message.Author.User.Id !== req.user.Id) {
+			const MissingPermissions = new HTTPErrors(4021);
 
-    if (!CanEdit && Message.Author.User.Id !== req.user.Id) {
-        const MissingPermissions = new HTTPErrors(4021);
+			MissingPermissions.AddError({
+				Channel: {
+					code: 'MissingPermissions',
+					message: 'You are missing the permissions to manage messages in this channel.',
+				},
+			});
 
-        MissingPermissions.addError({
-            Channel: {
-                code: 'MissingPermissions',
-                message: 'You are missing the permissions to manage messages in this channel.'
-            },
-        });
+			res.status(403).json(MissingPermissions.toJSON());
 
-        res.status(403).json(MissingPermissions.toJSON());
+			return;
+		}
 
-        return;
-    }
+		const EditedMessage = await req.mutils.Channel.editMessage(Id, MessageId, content, allowedMentions);
 
-    const EditedMessage = await req.mutils.Channel.editMessage(Id, MessageId, content, allowedMentions);
+		if (!EditedMessage) {
+			const Errors = new HTTPErrors(4052);
 
-    if (!EditedMessage) {
-        const Errors = new HTTPErrors(4052);
+			Errors.AddError({
+				MessageIds: {
+					code: 'InvalidMessageIds',
+					message: 'The message ids are invalid.',
+				},
+			});
 
-        Errors.addError({
-            MessageIds: {
-                code: 'InvalidMessageIds',
-                message: 'The message ids are invalid.'
-            },
-        });
+			res.status(400).json(Errors.toJSON());
 
-        res.status(400).json(Errors.toJSON());
+			return;
+		}
 
-        return;
-    }
+		res.status(200).json(EditedMessage);
 
-    res.status(200).json(EditedMessage);
-
-    req.app.socket.Events.MessageUpdate({
-        ...EditedMessage,
-        ChannelId: Id
-    })
-});
+		req.app.socket.Events.MessageUpdate({
+			...EditedMessage,
+			ChannelId: Id,
+		});
+	},
+);

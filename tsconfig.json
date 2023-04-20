@@ -1,6 +1,5 @@
 {
 	"compilerOptions": {
-		// Type Checking
 		"allowUnreachableCode": false,
 		"allowUnusedLabels": false,
 		"exactOptionalPropertyTypes": true,
@@ -8,45 +7,32 @@
 		"noImplicitOverride": true,
 		"noImplicitReturns": true,
 		"noUnusedLocals": true,
-		"noUnusedParameters": false,
+		"noUnusedParameters": true,
 		"strict": true,
 		"useUnknownInCatchVariables": true,
 		"noUncheckedIndexedAccess": true,
-		// Modules
-		"module": "CommonJS",
+
+		"module": "ESNext",
 		"moduleResolution": "node",
 		"resolveJsonModule": true,
-		// Emit
+
 		"declaration": true,
-		"declarationMap": false,
+		"declarationMap": true,
 		"importHelpers": true,
 		"inlineSources": true,
 		"newLine": "lf",
 		"noEmitHelpers": true,
 		"outDir": "dist",
-		"preserveConstEnums": true,
 		"removeComments": false,
 		"sourceMap": true,
 		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": false,
-		// Language and Environment
-		"emitDecoratorMetadata": true,
+		"forceConsistentCasingInFileNames": true,
+
 		"experimentalDecorators": true,
-		"lib": [
-			"ES2022"
-		],
-		"target": "ES2022",
-		"useDefineForClassFields": true,
-		"allowJs": true,
-		"typeRoots": [
-			"./src/Types/**/*"
-		],
-		"skipLibCheck": true
+		"lib": ["ESNext", "DOM"],
+		"target": "ES2021",
+		"useDefineForClassFields": true
 	},
-	"include": [
-		"src/**/*"
-	],
-	"exclude": [
-		"node_modules"
-	]
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "dist"]
 }

@@ -41,14 +41,17 @@ import bodyParser from "body-parser";
 
 /* Util Imports */
 import { uriGenerator } from "./Utils/UriGenerator";
-import { HTTPErrors, Route } from "@kastelll/packages";
+import { HTTPErrors, Snowflake} from "@kastelll/util";
+import { Route } from "@kastelll/core";
 import { join } from "node:path";
-const Routes = Route.loadRoutes(join(__dirname, "routes"));
+const Routes = Route.LoadRoutes(join(__dirname, "routes"));
 import { Cache } from "./Utils/Classes/Cache";
 import { IpUtils } from "./Utils/Classes/IpUtils";
 import Turnstile from "./Utils/Classes/Turnstile";
 import RequestUtils from "./Utils/Classes/RequestUtils";
 import SystemSocket from "./Utils/Classes/System/SystemSocket";
+import Emails from "./Utils/Classes/Emails";
+import * as Sentry from "@sentry/node";
 
 /* Express Middleware stuff */
 const app = express();
@@ -68,20 +71,80 @@ app
   .use(cookieParser(Config.Server.CookieSecrets))
   .disable("x-powered-by");
 
+if (Config.Server.Sentry.Enabled) {
+  Sentry.init({
+    ...Config.Server.Sentry.OtherOptions,
+    dsn: Config.Server.Sentry.Dsn,
+    tracesSampleRate: Config.Server.Sentry.TracesSampleRate,
+    // I have no clue if this is setup right, anyways waffles are cool do not forget that
+    // @ts-ignore
+    integrations: (integrations) => {
+      const owo = [
+        ...integrations.map((integration) => {
+          console.log(integration.name);
+          if (integration.name === "OnUncaughtException") {
+            // override `OnUncaughtException` integration to not exit.
+            return new Sentry.Integrations.OnUncaughtException({
+              // do not exit if other uncaught exception handlers are registered.
+              exitEvenIfOtherHandlersAreRegistered: false,
+            });
+          } else {
+            // return integration;
+            return null;
+          }
+        }),
+        new Sentry.Integrations.Http({ tracing: true }),
+        new Sentry.Integrations.Express({ app }),
+      ].filter((x) => x !== null);
+
+      console.log(owo);
+
+      return owo;
+    },
+  });
+}
+
 /* Error Handling */
 process
-  .on("uncaughtException", (err) =>
-    console.error(`Unhandled Exception, \n${err.stack}`)
-  )
-  .on("unhandledRejection", (reason: any) =>
+  .on("uncaughtException", (err) => {
+    if (Config.Server.Sentry.Enabled) {
+      Sentry.captureException(err);
+    }
+    console.error(`Uncaught Exception, \n${err?.stack ? err.stack : err}`);
+  })
+  .on("unhandledRejection", (reason: any) => {
+    if (Config.Server.Sentry.Enabled) {
+      Sentry.captureException(reason);
+    }
     console.error(
       `Unhandled Rejection, \n${reason?.stack ? reason.stack : reason}`
-    )
-  );
+    );
+  });
 
 /* Sets the users IP, Setups Captcha & Utils */
 /* Also Logs the requested path */
+
+
+
+if (Config.Server.Sentry.Enabled) {
+  app.use(
+    Sentry.Handlers.requestHandler({
+      ...Config.Server.Sentry.RequestOptions,
+    })
+  );
+  // TracingHandler creates a trace for every incoming request
+  app.use(Sentry.Handlers.tracingHandler());
+
+  app.use(Sentry.Handlers.errorHandler());
+}
+
 app.use((req, res, next) => {
+
+  res.send('owo')
+
+  let i = true;
+
+  if (i) return;
 
   if (!app.ready) {
     res.status(503).json({
@@ -91,6 +154,12 @@ app.use((req, res, next) => {
       },
     });
 
+    return;
+  }
+  
+  if (Config.Server.StrictRouting && req.path.length > 1 && req.path.endsWith("/")) {
+    res.status(404).json(FourOhFourError);
+  
     return;
   }
 
@@ -105,22 +174,16 @@ app.use((req, res, next) => {
 
   console.info(`[Stats] ${req.clientIp} Requested ${req.path} (${req.method})`);
 
+  res.on("finish", () => {
+    console.info(
+      `[Stats] ${req.clientIp} Requested ${req.path} (${req.method}) - ${res.statusCode}`
+    );
+  });
+  
   next();
 });
 
-app.use((req, res, next) => {
-  if (
-    !Config.Server.StrictRouting ||
-    req.path.length <= 1 ||
-    !req.path.endsWith("/")
-  ) {
-    next();
-  } else {
-    res.status(404).json(FourOhFourError);
-  }
-});
-
-Route.setRoutes(app);
+Route.SetRoutes(app);
 
 /* If the path does not exist */
 app.all("*", (req, res) => {
@@ -171,20 +234,67 @@ app.listen(Config.Server.Port || 62250, async () => {
 
   mongoose.set("strictQuery", true);
 
-  await mongoose
-    .connect(uriGenerator())
-    .catch((e: any) => {
-      console.error("[Database] Failed to connect to MongoDB", e);
-      process.exit();
-    });
+  await mongoose.connect(uriGenerator()).catch((e: any) => {
+    console.error("[Database] Failed to connect to MongoDB", e);
+    process.exit();
+  });
 
-  console.info("[Database] MongoDB connected!")
+  console.info("[Database] MongoDB connected!");
 
-  const Socket = new SystemSocket()
+  const Socket = new SystemSocket();
 
   await Socket.Connect();
 
   app.socket = Socket;
+
+  if (Config.MailServer.Enabled) {
+    const Support = Config.MailServer.Users.find(
+      (u) => u.ShortCode === "Support"
+    );
+    const NoReply = Config.MailServer.Users.find(
+      (u) => u.ShortCode === "NoReply"
+    );
+
+    if (!Support || !NoReply) {
+      console.error("[Mail] Missing Support or NoReply user in config");
+      console.error("[Mail] Disable MailServer in config to ignore this error");
+      process.exit();
+    }
+
+    app.request.Support = new Emails(
+      Support.Host,
+      Support.Port,
+      Support.Secure,
+      Support.User,
+      Support.Password
+    );
+
+    app.request.NoReply = new Emails(
+      NoReply.Host,
+      NoReply.Port,
+      NoReply.Secure,
+      NoReply.User,
+      NoReply.Password
+    );
+
+    try {
+      await app.request.Support.Connect();
+      await app.request.NoReply.Connect();
+    } catch (e) {
+      console.error("[Mail] Failed to connect to Mail Server", e);
+      process.exit();
+    }
+
+    console.info("[Mail] Mail Server connected!");
+  } else {
+    console.info("[Mail] Mail Server disabled!");
+
+    app.request.Support = null;
+
+    app.request.NoReply = null;
+  }
+  
+  app.snowflake = new Snowflake(Constants.Snowflake)
 
   console.info(
     `[Stats] Took ${(Math.round(Date.now() - timeStarted) / 1000).toFixed(

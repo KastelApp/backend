@@ -9,7 +9,7 @@
  * GPL 3.0 Licensed
  */
 
-import { Route } from "@kastelll/packages";
+import { Route } from "@kastelll/core";
 import User from "../../../../Middleware/User";
 
 new Route(

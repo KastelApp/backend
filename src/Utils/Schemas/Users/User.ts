@@ -132,7 +132,7 @@ const UserSchema = new Schema({
   AccountDeletionInProgress: {
     type: Boolean,
     required: false,
-  }
+  },
 });
 
 

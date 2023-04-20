@@ -10,12 +10,14 @@
  */
 
 import { model, Schema } from 'mongoose';
+import Constants from '../../../Constants';
 
 const SettingSchema = new Schema({
     User: {
         type: String,
         ref: 'Users',
         required: true,
+        index: true,
     },
 
     Status: {
@@ -35,6 +37,7 @@ const SettingSchema = new Schema({
                 Token: {
                     type: String,
                     required: true,
+                    index: true,
                 },
                 CreatedDate: {
                     type: Number,
@@ -79,9 +82,21 @@ const SettingSchema = new Schema({
                 type: String,
                 required: true,
                 ref: 'Messages',
-            }
+            },
         }
-    ]
+    ],
+
+    MaxGuilds: {
+        type: Number,
+        required: true,
+        default: Constants.Settings.Max.GuildCount,
+    },
+
+    MaxFileUploadSize: {
+        type: Number,
+        required: true,
+        default: Constants.Settings.Max.MaxFileSize,
+    }
 });
 
 export default model('Settings', SettingSchema);

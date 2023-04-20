@@ -1,5 +1,6 @@
-import { WsUtils } from '../WsUtils';
-import {SystemSocket } from './SystemSocket'
+import { OpCodes } from '../WsUtils';
+import { SystemSocket } from './SystemSocket'
+
 class Events {
     SendEvents: boolean;
     constructor(
@@ -37,7 +38,7 @@ class Events {
     }) {
         if (this.SendEvents) {
             this.SystemSocket.Ws?.send(JSON.stringify({
-                op: WsUtils.OpCodes.MessageCreate,
+                op: OpCodes.MessageCreate,
                 d: {
                     Message
                 }
@@ -45,7 +46,7 @@ class Events {
         }
 
         return JSON.stringify({
-            op: WsUtils.OpCodes.MessageCreate,
+            op: OpCodes.MessageCreate,
             d: {
                 Message
             }
@@ -60,7 +61,7 @@ class Events {
     }) {
         if (this.SendEvents) {
             this.SystemSocket.Ws?.send(JSON.stringify({
-                op: WsUtils.OpCodes.MessageDelete,
+                op: OpCodes.MessageDelete,
                 d: {
                     Message
                 }
@@ -68,7 +69,7 @@ class Events {
         }
 
         return JSON.stringify({
-            op: WsUtils.OpCodes.MessageDelete,
+            op: OpCodes.MessageDelete,
             d: {
                 Message
             }
@@ -101,7 +102,7 @@ class Events {
     }) {
         if (this.SendEvents) {
             this.SystemSocket.Ws?.send(JSON.stringify({
-                op: WsUtils.OpCodes.MessageUpdate,
+                op: OpCodes.MessageUpdate,
                 d: {
                     Message
                 }
@@ -109,7 +110,7 @@ class Events {
         }
 
         return JSON.stringify({
-            op: WsUtils.OpCodes.MessageUpdate,
+            op: OpCodes.MessageUpdate,
             d: {
                 Message
             }

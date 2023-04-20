@@ -11,8 +11,81 @@
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 
-Kastel is an open-source and privacy-focused communication platform that allows you to connect with your friends, colleagues, and communities. It's similar to popular chat apps like Discord and Guilded, but with an added emphasis on data security and encryption. Whether you're looking to build a gaming community, manage a team, or just chat with friends, Kastel provides a safe and secure environment to connect and communicate.
+Kastel is an open-sourced chatting application, Its like [Discord](https://discord.com) but open-sourced and free, It is currently in development and is not ready for use yet, If you want to contribute please read the [Contributing](#contributing) section.
 
+The main focus around it is for the some of the community to help develop and improve it, This will allow the community to have a say in how the application is developed and what features are added, This will also allow the community to help improve the application and make it better for everyone. 
+
+We plan on not storing stuff that is not required.
+
+<details open>
+<summary>What we plan on storing</summary>
+
+## User Data
+
+In this table below we explain some data that may be considered sensitive and why we need it, How we store it, How we use it and how you can remove it.
+
+Note, Any Data not listed here can be removed by deleting your account.
+
+| Data              | Why we need it          | How we store it | How we use it                      | How to remove it                       |
+| ----------------- | ----------------------- | -------------- | ----------------------------------- | -------------------------------------- |
+| ID                | Identify user           | Encrypted      | User identification                 | Delete account                         |
+| Email             | Verify account          | Encrypted      | Account verification, communication | Delete account                         |
+| Username          | Identify user           | Encrypted      | User identification                 | Delete account                         |
+| Password          | Login to account        | Hashed         | User authentication                 | Change password or delete account      |
+| Phone number      | Verify account          | Encrypted      | Account verification, communication | Delete account                         |
+| Two-factor secret | Verify account          | Encrypted      | Two-factor authentication           | Disable two-factor or delete account   |
+| IP addresses      | Account security        | Encrypted      | Session management                  | Log out of all sessions                |
+
+There is some More Data below on what we store, This is stuff like your avatar, tag, flags etc etc
+
+<details>
+<summary>More Data</summary>
+
+
+| Data                      | Why we need it                    | How we store it | How we use it                       | How to remove it                       |
+| ------------------------- | --------------------------------- | --------------- | ----------------------------------- | -------------------------------------- |
+| Email Verified            | To check if the email is verified | Encrypted       | Account verification                | Delete account                         |
+| Tag                       | Identify user                     | Encrypted       | User identification                 | Delete account                         |
+| Avatar                    | Identify user                     | Encrypted       | User identification                 | Delete account                         |
+| Two-factor enabled        | Verify account                    | Encrypted       | Two-factor authentication           | Disable two-factor or delete account   |
+| Two-Factor Verified       | Verify account                    | Encrypted       | Two-factor authentication           | Disable two-factor or delete account   |
+| Flags                     | Info about the user               | Encrypted       | User identification                 | Delete account                         |
+| Banned                    | Info about the user               | Encrypted       | User identification                 | Request account deletion               |
+| Locked                    | Info about the user               | Encrypted       | User identification                 | Request account deletion               |
+| AccountDeletionInProgress | Info about the user               | Encrypted       | User identification                 | Wait for account deletion              |
+
+</details>
+
+<br />
+
+### User Settings
+
+So for User Settings this is stuff like Tokens, theme etc etc
+
+| Data              | Why we need it                    | How we store it | How we use it                      | How to remove it                       |
+| ----------------- | --------------------------------- | --------------- | ---------------------------------- | -------------------------------------- |
+| ID                | Identify user                     | Encrypted       | User identification                | Delete account                         |
+| Status            | User status                       | Encrypted       | User status                        | Change status or remove current one    |
+| Tokens & Ips      | Account Authentication & Security | Encrypted       | Session management                 | Log out of all sessions                |
+| Language          | User language                     | Encrypted       | User language                      | Delete Account                         |
+| Message Ids       | For Messages that mention you     | Encrypted       | Message identification             | Delete Account                         |
+
+### Friends
+
+| Data              | Why we need it          | How we store it | How we use it                      | How to remove it                       |
+| ----------------- | ----------------------- | -------------- | ----------------------------------- | -------------------------------------- |
+| ID                | Identify user           | Encrypted      | User identification                 | Delete account                         |
+| Friend ID         | Identify friend         | Encrypted      | Friend identification               | Remove friend                          |
+| SenderNickname    | Identify friend         | Encrypted      | Friend identification               | Remove friend                          |
+| ReceiverNickname  | Identify friend         | Encrypted      | Friend identification               | Remove friend                          |
+
+### Gifts
+
+| Data              | Why we need it          | How we store it | How we use it                      | How to remove it                       |
+| ----------------- | ----------------------- | -------------- | ----------------------------------- | -------------------------------------- |
+| UsedBy            | Identify user           | Encrypted      | User identification                 | Delete account                         |
+
+</details>
 
 ## Roadmap
 ### Misc
@@ -21,6 +94,8 @@ Kastel is an open-source and privacy-focused communication platform that allows 
 - [x] A Snowflake ID System
 - [x] Rewrite to TS
     - I want to rewrite the backend to TS, This will make it easier to maintain and add new features
+- [ ] Fix Typings
+    - I want to fix the typings, This will make it easier to maintain and add new features (They are garbage right now)
 - [ ] Different ways to login besides a password
     - I want Users to pick how they login, Allowing them to remove their password and login with other sites, Below are some Ideas
       - [ ] SMS Login
@@ -61,4 +136,5 @@ This project is licensed under the GPL-3.0 License, For more info please check [
 [stars-url]: https://github.com/Kastelll/backend/stargazers
 [issues-shield]: https://img.shields.io/github/issues/Kastelll/backend.svg?style=for-the-badge
 [issues-url]: https://github.com/Kastelll/backend/issues
+[Kastel Code Lines]: https://sloc.xyz/github/Kastelll/backend?category=lines
 </div>

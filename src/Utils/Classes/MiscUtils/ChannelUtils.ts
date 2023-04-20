@@ -19,7 +19,6 @@ import Permissions from "../BitFields/Permissions";
 import GuildMemberFlags from "../BitFields/GuildMember";
 import Utils from "./Utils";
 import { ChannelSchema, MessageSchema } from "../../Schemas/Schemas";
-import { Snowflake } from "@kastelll/packages";
 import schemaData from "../../SchemaData";
 import Encryption from "../Encryption";
 import type { PopulatedMessage } from "../../../Types/Guilds/Message";
@@ -52,10 +51,10 @@ class ChannelUtils {
   }
 
   async fetchChannelStuff(ChannelId: string) {
-    const Guilds = await this.Utils.User.getGuilds();
+    const Guilds = await this.Utils.User.getGuilds(['Channels', 'Members', 'MemberUser']);
 
     const Guild = Guilds.find((g) =>
-      g.Channels.find((c) => c._id === ChannelId)
+      g.Channels?.find((c) => c._id === ChannelId)
     );
 
     if (!Guild)
@@ -65,7 +64,7 @@ class ChannelUtils {
         GuildMember: null,
       };
 
-    const GuildMember = Guild.Members.find((m) => m.User._id === this.user?.Id);
+    const GuildMember = Guild.Members?.find((m) => m.User?._id === this.user?.Id);
 
     if (!GuildMember)
       return {
@@ -74,7 +73,7 @@ class ChannelUtils {
         GuildMember: null,
       };
 
-    const Channel = Guild.Channels.find((c) => c._id === ChannelId);
+    const Channel = Guild.Channels?.find((c) => c._id === ChannelId);
 
     if (!Channel)
       return {
@@ -110,7 +109,7 @@ class ChannelUtils {
       return true;
 
     const OneRoleHasPermission = GuildMember.Roles.some((r) => {
-      const Role = Guild.Roles.find((gr) => gr._id === r);
+      const Role = Guild.Roles?.find((gr) => gr._id === r);
 
       if (!Role) return false;
 
@@ -148,7 +147,7 @@ class ChannelUtils {
       return true;
 
     const OneRoleHasPermission = GuildMember.Roles.some((r) => {
-      const Role = Guild.Roles.find((gr) => gr._id === r);
+      const Role = Guild.Roles?.find((gr) => gr._id === r);
 
       if (!Role) return false;
 
@@ -163,15 +162,15 @@ class ChannelUtils {
   }
 
   async getMember(ChannelId: string, UserId: string) {
-    const Guild = await this.Utils.User.getGuilds();
+    const Guild = await this.Utils.User.getGuilds(['Channels', 'Members', 'MemberUser']);
 
     const GuildData = Guild.find((g) =>
-      g.Channels.find((c) => c._id === ChannelId)
+      g.Channels?.find((c) => c._id === ChannelId)
     );
 
     if (!GuildData) return null;
 
-    const Member = GuildData.Members.find((m) => m.User._id === UserId);
+    const Member = GuildData.Members?.find((m) => m.User?._id === UserId);
 
     if (!Member) return null;
 
@@ -184,8 +183,8 @@ class ChannelUtils {
     Before?: string,
     After?: string
   ): Promise<PopulatedMessage[]> {
-    const BeforeDate = Before ? Snowflake.timeStamp(Before) : null;
-    const AfterDate = After ? Snowflake.timeStamp(After) : null;
+    const BeforeDate = Before ? this.req.app.snowflake.TimeStamp(Before) : null;
+    const AfterDate = After ? this.req.app.snowflake.TimeStamp(After) : null;
 
     const FetchedMessage = await MessageSchema.find({
       Channel: Encryption.encrypt(ChannelId),
@@ -268,7 +267,8 @@ class ChannelUtils {
 
     const Message = await MessageSchema.findOne({
         _id: Encryption.encrypt(MessageId),
-        Channel: Encryption.encrypt(ChannelId)
+        Channel: Encryption.encrypt(ChannelId),
+        ...Flags ? { Flags: Flags } : {}
     });
 
     if (!Message) return null;
@@ -299,7 +299,7 @@ class ChannelUtils {
       Content: Encryption.encrypt(Content),
       Nonce: Encryption.encrypt(Nonce),
       CreatedDate: Date.now(),
-      Flags: ReplyingTo ? MessageFlags.Reply : MessageFlags.Normal,
+      Flags: ReplyingTo ? MessageFlags.Reply | Flags : Flags | MessageFlags.Normal,
       ReplyingTo: ReplyingTo ? Encryption.encrypt(ReplyingTo) : null,
       AllowedMentions: AllowedMentions,
     });

@@ -1,0 +1,63 @@
+{
+	"$schema": "https://turbo.build/schema.json",
+	"globalDependencies": ["yarn.lock"],
+	"pipeline": {
+		"build": {
+			"inputs": ["src/**/*.ts", "tsconfig.json", "tsup.config.ts"],
+			"outputs": ["dist/**"]
+		},
+		"test": {
+			"inputs": [
+				"__tests_/**/*.ts",
+				"src/**/*.ts",
+				"src/**/*.js",
+				"tsconfig.json"
+			],
+			"outputs": ["coverage/**"]
+		},
+		"lint": {
+			"inputs": [
+				"src/**/*.tsx",
+				"src/**/*.ts",
+				"src/**/*.css",
+				"src/**/*.mdx",
+				"scripts/**.js",
+				"scripts/**.mjs",
+				".eslintignore",
+				".eslintrc.json",
+				".prettierignore",
+				".prettierrc.js",
+				".prettierrc.cjs",
+				".prettierrc.json",
+				"tsconfig.json",
+				"tsconfig.eslint.json",
+				"next.config.js",
+				"tsup.config.ts",
+				"vite.config.ts"
+			],
+			"outputs": []
+		},
+		"format": {
+			"inputs": [
+				"src/**/*.tsx",
+				"src/**/*.ts",
+				"src/**/*.css",
+				"src/**/*.mdx",
+				"scripts/**.js",
+				"scripts/**.mjs",
+				".eslintignore",
+				".eslintrc.json",
+				".prettierignore",
+				".prettierrc.js",
+				".prettierrc.cjs",
+				".prettierrc.json",
+				"tsconfig.json",
+				"tsconfig.eslint.json",
+				"next.config.js",
+				"tsup.config.ts",
+				"vite.config.ts"
+			],
+			"outputs": []
+		}
+	}
+}

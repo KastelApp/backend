@@ -89,6 +89,12 @@ const GuildSchema = new Schema({
         required: false,
         default: Constants.Settings.Max.MemberCount,
     },
+
+    Features: {
+        type: Number,
+        required: false,
+        default: 0,
+    }
 });
 
 export default model('Guilds', GuildSchema);

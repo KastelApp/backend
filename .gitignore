@@ -1,10 +1,39 @@
-.yarn
+# Packages
+node_modules/
 
+# Log files
+logs/
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Configs
 Constants.ts
 Config.ts
 
-dist
+# Dist
+dist/
 
-node_modules
-
+# Miscellaneous
+.tmp/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+.turbo
+.npmrc
+tsconfig.tsbuildinfo
+coverage/
 scripts/
+
+# yarn
+.pnp.*
+.yarn/*
+
+# Cache
+.prettiercache
+.eslintcache

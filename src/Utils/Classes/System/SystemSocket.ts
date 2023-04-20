@@ -5,7 +5,7 @@ import type {
   AuthedPayload,
   NormalPayload,
 } from "../../../Types/Socket/MiscPayloads";
-import { WsUtils } from "../WsUtils";
+import { OpCodes } from "../WsUtils";
 import Events from "./Events";
 
 class SystemSocket {
@@ -86,7 +86,7 @@ class SystemSocket {
               this.debug("Sending Heartbeat");
               this.Ws?.send(
                 JSON.stringify({
-                  op: WsUtils.OpCodes.HeartBeat,
+                  op: OpCodes.HeartBeat,
                   d: {
                     Sequence: this.Sequence,
                   },
@@ -107,13 +107,13 @@ class SystemSocket {
           this.debug(`Received Payload: ${JSON.stringify(NormalPayload)}`);
 
           switch (NormalPayload.op) {
-            case WsUtils.OpCodes.HeartBeatAck:
+            case OpCodes.HeartBeatAck:
               this.LastHeartbeatAck = Date.now();
               this.debug(`Heartbeat Acknowledged`);
               break;
 
-            case Object.values(WsUtils.OpCodes).find((op) => op === NormalPayload.op):
-              this.debug(`Received Event: ${Object.keys(WsUtils.OpCodes).find((op) => WsUtils.OpCodes[op as keyof typeof WsUtils.OpCodes] === NormalPayload.op)}`);
+            case Object.values(OpCodes).find((op) => op === NormalPayload.op):
+              this.debug(`Received Event: ${Object.keys(OpCodes).find((op) => OpCodes[op as keyof typeof OpCodes] === NormalPayload.op)}`);
               break;
           }
         }

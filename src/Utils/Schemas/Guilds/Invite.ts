@@ -21,6 +21,14 @@ const InviteSchema = new Schema({
         type: String,
         required: true,
         ref: 'Guilds',
+        index: true,
+    },
+
+    Channel: {
+        type: String,
+        required: true,
+        ref: 'Channels',
+        index: true,
     },
 
     Expires: {
@@ -41,6 +49,7 @@ const InviteSchema = new Schema({
     Creator: {
         type: String,
         ref: 'GuildMembers',
+        required: true,
     },
 
     Deleteable: { // Used for vanity URLs, Makes them undeleteable (Useful for guilds with more then one)

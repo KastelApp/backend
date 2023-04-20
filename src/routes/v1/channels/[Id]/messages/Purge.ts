@@ -1,68 +1,70 @@
-import { HTTPErrors, Route } from '@kastelll/packages';
+import { HTTPErrors } from '@kastelll/util';
+import { Route } from '@kastelll/core';
 import User from '../../../../../Middleware/User';
 
-new Route('/purge', 'DELETE', [
-    User({
-        AccessType: 'LoggedIn',
-        AllowedRequesters: 'All',
-        Flags: []
-    })
-], async (req, res) => {
+new Route(
+	'/purge',
+	'DELETE',
+	[
+		User({
+			AccessType: 'LoggedIn',
+			AllowedRequesters: 'All',
+			Flags: [],
+		}),
+	],
+	async (req, res) => {
+		const { Id } = req.params as { Id: string };
+		const { messageIds } = req.body as { messageIds: string[] };
 
-    const { Id } = req.params as { Id: string };
-    const { messageIds } = req.body as { messageIds: string[] };
+		const CanDelete = await req.mutils.Channel.hasPermission(Id, ['ManageMessages', 'Administrator'], true);
 
-    const CanDelete = await req.mutils.Channel.hasPermission(Id, [
-        'ManageMessages',
-        'Administrator'
-    ], true);
+		if (!CanDelete) {
+			const MissingPermissions = new HTTPErrors(4021);
 
-    if (!CanDelete) {
-        const MissingPermissions = new HTTPErrors(4021);
+			MissingPermissions.AddError({
+				Channel: {
+					code: 'MissingPermissions',
+					message: 'You are missing the permissions to manage messages in this channel.',
+				},
+			});
 
-        MissingPermissions.addError({
-            Channel: {
-                code: 'MissingPermissions',
-                message: 'You are missing the permissions to manage messages in this channel.'
-            },
-        });
+			res.status(403).json(MissingPermissions.toJSON());
 
-        res.status(403).json(MissingPermissions.toJSON());
+			return;
+		}
 
-        return;
-    }
+		if (!messageIds || messageIds.length < 1 || messageIds.length > 100) {
+			const Errors = new HTTPErrors(4051);
 
-    if (!messageIds || messageIds.length < 1 || messageIds.length > 100) {
-        const Errors = new HTTPErrors(4051);
+			Errors.AddError({
+				MessageIds: {
+					code: 'InvalidMessageIds',
+					message: 'The message ids are invalid.',
+				},
+			});
 
-        Errors.addError({
-            MessageIds: {
-                code: 'InvalidMessageIds',
-                message: 'The message ids are invalid.'
-            },
-        });
+			res.status(400).json(Errors.toJSON());
 
-        res.status(400).json(Errors.toJSON());
+			return;
+		}
 
-        return;
-    }
+		const DeletedMessages = await req.mutils.Channel.deleteMessages(Id, messageIds);
 
-    const DeletedMessages = await req.mutils.Channel.deleteMessages(Id, messageIds);
+		if (!DeletedMessages) {
+			const Errors = new HTTPErrors(4052);
 
-    if (!DeletedMessages) {
-        const Errors = new HTTPErrors(4052);
+			Errors.AddError({
+				MessageIds: {
+					code: 'InvalidMessageIds',
+					message: 'The message ids are invalid.',
+				},
+			});
 
-        Errors.addError({
-            MessageIds: {
-                code: 'InvalidMessageIds',
-                message: 'The message ids are invalid.'
-            },
-        });
+			res.status(400).json(Errors.toJSON());
 
-        res.status(400).json(Errors.toJSON());
+			return;
+		}
 
-        return;
-    }
-
-    res.status(204).send();
-});
+		res.status(204).send();
+	},
+);

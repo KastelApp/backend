@@ -1,4 +1,4 @@
-import { Flags } from '../../../Constants'
+import { Flags, VerificationFlags } from '../../../Constants'
 
 // This just removes private / invalid flags
 class FlagRemover {
@@ -8,15 +8,19 @@ class FlagRemover {
     }
 
     static NormalFlagsInvalidRemover(flags: bigint) {
-        // just goes through all the flags and removes them if they're invalid
-        return Object.keys(Flags).reduce((bits, key) => {
-            if (bits & Flags[key as keyof typeof Flags]) bits ^= Flags[key as keyof typeof Flags]
-            return bits
-        }, flags)
+        const validFlags = Object.values(Flags);
+        const invalidFlags = flags & ~validFlags.reduce((acc, f) => acc | f, 0n);
+        return flags & ~invalidFlags;
     }
 
     static NormalFlags(flags: bigint) {
         return this.NormalFlagsInvalidRemover(this.RemovePrivateNormalFlags(flags))
+    }
+
+    static VerifyFlagsInvalidRemover(flags: number) {
+        const validFlags = Object.values(VerificationFlags);
+        const invalidFlags = flags & ~validFlags.reduce((acc, f) => acc | f, 0);
+        return flags & ~invalidFlags;
     }
 }
 

@@ -20,13 +20,19 @@ class Base64 {
 
   static Decode(string: string): string {
     // Replace F with +, q with /, and zT with =
-    const base64 = string
+    let base64 = string
       .replace(/F/g, "+")
       .replace(/q/g, "/")
       .replace(/zT$/, "");
 
+    if (base64.match(/[^a-zA-Z0-9\.-]/)) base64 = string;
+
     // Convert the base64 to string
     return Buffer.from(base64, "base64").toString("utf8");
+  }
+
+  static OldBase64(string: string): string {
+    return string.replace(/\+/g, "F").replace(/\//g, "q").replace(/=+$/, "zT");
   }
 }
 

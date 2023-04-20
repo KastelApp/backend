@@ -91,6 +91,12 @@ const RawUser: Schema = {
             expected: Boolean,
             default: false,
             extended: false
+        },
+        EmailVerified: {
+            name: 'EmailVerified',
+            expected: Boolean,
+            default: false,
+            extended: false
         }
     },
 };

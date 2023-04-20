@@ -17,6 +17,12 @@ const PermissionsOverides = new Schema({
         required: true,
     },
 
+    Id: { // User or Role Id
+        type: String,
+        required: true,
+        index: true,
+    },
+
     Allow: {
         type: String,
         required: true,

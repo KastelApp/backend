@@ -9,7 +9,7 @@
  * GPL 3.0 Licensed
  */
 
-const crypto = require('crypto');
+import crypto from 'crypto';
 const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789';
 
 /**
@@ -23,9 +23,12 @@ const InviteGenerator = (Length: number = 15): string => {
     let Invite = '';
 
     for (let i = 0; i < Number(Length); i++) {
-        const randomByte = crypto.randomBytes(1);
+        const randomByte: Buffer = crypto.randomBytes(1);
+        const byte = randomByte[0];
         
-        const randomIndex = randomByte[0] % chars.length;
+        if (!byte) continue;
+            
+        const randomIndex = byte % chars.length;        
         
         Invite += chars[randomIndex];
     }

@@ -15,6 +15,7 @@ export interface LessUser { // Less user is just less data but important data
     Id: string;
     AvatarHash: string;
     Email: string;
+    EmailVerified: boolean;
     Username: string;
     Tag: string;
     TwoFa: boolean;

@@ -26,6 +26,8 @@ import GiftSchema from './Users/Gift';
 import UserSchema from './Users/User';
 import PermissionsOveridesSchema from './Guilds/PermissionsOverides';
 import EmojiSchema from './Guilds/Emoji';
+import VerifcationLinkSchema from './Misc/VerificationLinks';
+
 export {
     BanSchema,
     ChannelSchema,
@@ -44,6 +46,7 @@ export {
     SettingSchema,
     PermissionsOveridesSchema,
     EmojiSchema,
+    VerifcationLinkSchema,
 };
 
 export default {
@@ -64,4 +67,5 @@ export default {
     SettingSchema,
     PermissionsOveridesSchema,
     EmojiSchema,
+    VerifcationLinkSchema,
 };

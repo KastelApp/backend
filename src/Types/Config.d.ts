@@ -9,10 +9,14 @@
  * GPL 3.0 Licensed
  */
 
+import * as Sentry from '@sentry/node';
+
+
 export interface Server {
   Port?: number | string;
   CookieSecrets: string[];
   Domain: string;
+  Secure: boolean;
   WorkerId?: number;
   Cache: {
     ClearInterval: number;
@@ -21,6 +25,13 @@ export interface Server {
   StrictRouting: boolean; // if true then you cannot do like /users/@me/ you have to do /users/@me
   TurnstileSecret: string | null; // cloudflare turnstile secret (for captchas)
   CaptchaEnabled: boolean; // if true then some routes will require captcha (register, login, etc)
+  Sentry: {
+    Enabled: boolean;
+    Dsn: string;
+    TracesSampleRate: number;
+    OtherOptions: Exclude<Sentry.NodeOptions, 'dsn' | 'tracesSampleRate'>;
+    RequestOptions: Sentry.Handlers.RequestHandlerOptions
+}
 }
 
 export interface Encryption {
@@ -54,17 +65,71 @@ export interface MongoDB {
   Uri: string;
 }
 
+type ShortCode = 'Support' | 'NoReply';
+
+interface User {
+  Host: string;
+  Port: number;
+  Secure: boolean;
+  User: string;
+  Password: string;
+  ShortCode: ShortCode
+}
+
+export interface MailServer {
+  Enabled: boolean;
+  Users: [User, User]
+};
+
+export interface EmailTemplates {
+  VerifyEmail: VerifyEmail
+  ResetPassword: ResetPassword
+  DisabledAccount: DisabledAccount
+}
+
+interface VerifyEmail {
+  Subject: string
+  Template: string
+  PlaceHolders: {
+    Username: string
+    VerifyLink: string
+    SupportEmail: string
+  }
+}
+
+interface ResetPassword {
+  Subject: string
+  Template: string
+  PlaceHolders: {
+    Username: string
+    ResetLink: string
+    SupportEmail: string
+  }
+}
+
+interface DisabledAccount {
+  Subject: string
+  Template: string
+  PlaceHolders: {
+    Uusername: string
+    SupportEmail: string
+    Reason: string
+  }
+  
+}
+
+export interface Regexs {
+  Password: RegExp;
+  Email: RegExp;
+}
+
 export interface Config {
   Server: Server;
   Encryption: Encryption;
   Ws: Ws;
   Redis: Redis;
   MongoDB: MongoDB;
-  Logger: Logger;
-  Snowflake: Snowflake;
-}
-
-export interface Regexes {
-  password: RegExp;
-  email: RegExp;
+  MailServer: MailServer;
+  Regexs: Regexs;
+  EmailTemplates: EmailTemplates
 }
