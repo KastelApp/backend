@@ -79,7 +79,7 @@ interface User {
 export interface MailServer {
   Enabled: boolean;
   Users: [User, User]
-};
+}
 
 export interface EmailTemplates {
   VerifyEmail: VerifyEmail

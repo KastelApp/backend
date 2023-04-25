@@ -1,3 +1,3 @@
 import { Route } from '@kastelll/core';
 
-new Route('/channels', 'POST', [], async (req, res) => {});
+new Route('/dms', 'POST', [], async (req, res) => {});

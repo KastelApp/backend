@@ -209,6 +209,15 @@ API V1 Is closer then ever. This will be the first functional version of the API
             - **Body**:
               - `code` - A 2FA Code (String) (Required if 2FA is enabled)
       - [ ] Edit
+        - **Description**: This route is for editing the specified guild.
+        - **Method**: `PATCH`
+        - **Path**: `/guilds/:guildId`
+        - **Required Permissions**: `ManageGuild`
+        - **Body**:
+          - `name` - The name of the guild (String) (Optional)
+          - `description` - The description of the guild (String) (Optional)
+          - `icon` - The icon of the guild (String) (Optional)
+          - `features` - The features of the guild (Array of Strings) (Optional)
       - [ ] Channels
         - [ ] Fetch
           - **Description**: This route is for fetching the channels in the specified guild.
@@ -238,11 +247,6 @@ API V1 Is closer then ever. This will be the first functional version of the API
               - `type` - The type of the overide (Number) (Required)
               - `allow` - The permissions to allow (String) (Required)
               - `deny` - The permissions to deny (String) (Required)
-      - [ ] Co-Owners
-        - [ ] Fetch
-        - [ ] New
-        - [ ] [Co-Owner]
-          - [ ] Delete
       - [ ] Invites
         - [ ] Fetch
           - **Description**: This route is for fetching the invites in the specified guild.
@@ -264,36 +268,120 @@ API V1 Is closer then ever. This will be the first functional version of the API
             - `maxUses` - The max uses of the invite (Number) (Optional) (Default: 0)
             - `temporary` - Whether the invite is temporary (Boolean) (Optional) (Default: false)
             - `unique` - Whether the invite is unique (Boolean) (Optional) (Default: false)
-        - [ ] Purge
       - [ ] Members
         - [ ] Fetch
+          - **Description**: This route is for fetching the members in the specified guild. (This route can only fetch the first 100 members)
+          - **Method**: `GET`
+          - **Path**: `/guilds/:guildId/members`
+          - **Parameters**:
+            - `limit` - The amount of members to fetch (Number) (Optional) (Default: 50)
         - [ ] [Member]
           - [ ] Ban
+            - **Description**: This route is for banning the specified member in the specified guild.
+            - **Method**: `PUT`
+            - **Path**: `/guilds/:guildId/members/:userId/ban`
+            - **Required Permissions**: `BanMembers`
+            - **Body**:
+              - `code` - A 2FA Code (String) (Required if 2FA is enabled and the guild forces 2FA authentication)
           - [ ] Edit
+            - **Description**: This route is for editing the specified member in the specified guild.
+            - **Method**: `PATCH`
+            - **Path**: `/guilds/:guildId/members/:userId`
+            - **Required Permissions**: `ManageMembers, Self`
+            - **Body**:
+              - `nick` - The nickname of the member (String) (Optional)
+              - `roles` - The roles of the member (Array of Strings) (Optional)
           - [ ] Fetch
+            - **Description**: This route is for fetching the specified member in the specified guild.
+            - **Method**: `GET`
+            - **Path**: `/guilds/:guildId/members/:userId`
           - [ ] Kick
+            - **Description**: This route is for kicking the specified member in the specified guild.
+            - **Method**: `PUT`
+            - **Path**: `/guilds/:guildId/members/:userId/kick`
+            - **Required Permissions**: `KickMembers`
+            - **Body**:
+              - `code` - A 2FA Code (String) (Required if 2FA is enabled and the guild forces 2FA authentication)
   - [ ] Invite
     - [ ] Fetch Guild
+      - **Description**: This route is for fetching the guild of the invite.
+      - **Method**: `GET`
+      - **Path**: `/invite/:inviteCode/guild`
     - [ ] Join
+      - **Description**: This route is for joining the guild of the invite.
+      - **Method**: `PUT`
+      - **Path**: `/invite/:inviteCode/join`
   - [ ] Users
     - [ ] [@Me]
       - [ ] CreateDm
+        - **Description**: This route is for creating a dm with the specified user.
+        - **Method**: `POST`
+        - **Path**: `/users/@me/dms`
+        - **Body**:
+          - `recipient` - The id of the recipient (String) (Required)
       - [ ] Delete
+        - **Description**: This route is for deleting the current user.
+        - **Method**: `DELETE`
+        - **Path**: `/users/@me`
+        - **Body**:
+          - `code` - A 2FA Code (String) (Required if 2FA is enabled)
+          - `password` - The password of the user (String) (Required)
       - [ ] Disable
+        - **Description**: This route is for disabling the current user.
+        - **Method**: `PUT`
+        - **Path**: `/users/@me/disable`
+        - **Body**:
+          - `code` - A 2FA Code (String) (Required if 2FA is enabled)
+          - `password` - The password of the user (String) (Required)
       - [ ] Edit
+        - **Description**: This route is for editing the current user.
+        - **Method**: `PATCH`
+        - **Path**: `/users/@me`
+        - **Body**:
+          - `username` - The username of the user (String) (Optional)
+          - `tag` - The tag of the user (String) (Optional)
+          - `email` - The email of the user (String) (Optional)
+          - `password` - The password of the user (String) (Optional)
+          - `avatar` - The avatar of the user (String) (Optional)
+          - `phoneNumber` - The phone of the user (String) (Optional)
+          - `twoFa` - Whether the user has 2FA enabled (Boolean) (Optional)
+          - `twoFaSecret` - The 2FA secret of the user (String) (Optional)
+          - `newPassword` - The new password of the user (String) (Optional)
+          - `twoFaCode` - The 2FA code of the user (String) (Optional)
       - [ ] Fetch
+        - **Description**: This route is for fetching the current user.
+        - **Method**: `GET`
+        - **Path**: `/users/@me`
       - [ ] Friends
+        - **Description**: This route is for fetching the friends of the current user.
+        - **Method**: `GET`
+        - **Path**: `/users/@me/friends`
       - [ ] Sessions
+        - [ ] Fetch
+          - **Description**: This route is for fetching the sessions of the current user.
+          - **Method**: `GET`
+          - **Path**: `/users/@me/sessions`
+        - [ ] Delete
+          - **Description**: This route is for deleting the sessions of the current user.
+          - **Method**: `DELETE`
+          - **Path**: `/users/@me/sessions`
     - [ ] [User]
       - [ ] Block
+        - **Description**: This route is for blocking and unblocking the specified user.
+        - **Method**: `PUT`
+        - **Path**: `/users/:userId/block`
+        - **Body**:
+          - `blocked` - Whether the user is blocked (Boolean) (Required)
       - [ ] Fetch
+        - **Description**: This route is for fetching the specified user.
+        - **Method**: `GET`
+        - **Path**: `/users/:userId`
       - [ ] Friend
-  - [ ] Webhooks
-    - [ ] Fetch
-    - [ ] Post
-    - [ ] Delete
-    - [ ] [Webhook]
-      - [ ] Fetch
+        - **Description**: This route is for sending, accepting and declining friend requests to the specified user.
+        - **Method**: `POST`
+        - **Path**: `/users/:userId/friend`
+        - **Body**:
+          - `friend` - Whether to send a friend request, accept a friend request or decline a friend request (Boolean) (Required)
 
 
 ### Allowed Mentions

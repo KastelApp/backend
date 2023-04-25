@@ -17,7 +17,7 @@ The main focus around it is for the some of the community to help develop and im
 
 We plan on not storing stuff that is not required.
 
-<details open>
+<details>
 <summary>What we plan on storing</summary>
 
 ## User Data

@@ -31,6 +31,7 @@ interface EditUserBody {
 	twoFa?: boolean;
 	twoFaSecret?: string;
 	newPassword?: string;
+	twoFaCode?: string;
 }
 
 new Route(

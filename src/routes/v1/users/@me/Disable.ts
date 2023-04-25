@@ -22,7 +22,7 @@ interface DisableBody {
 }
 
 new Route(
-	'/',
+	'/disable',
 	'PUT',
 	[
 		User({
