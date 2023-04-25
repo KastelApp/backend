@@ -1631,7 +1631,7 @@ __metadata:
     eslint: ^8.37.0
     express: ^4.18.2
     jsonwebtoken: ^9.0.0
-    mongoose: ^7.0.3
+    mongoose: ^7.0.5
     ms: ^2.1.3
     redis: ^4.6.5
     speakeasy: ^2.0.0
@@ -1916,9 +1916,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongoose@npm:^7.0.3":
-  version: 7.0.3
-  resolution: "mongoose@npm:7.0.3"
+"mongoose@npm:^7.0.5":
+  version: 7.0.5
+  resolution: "mongoose@npm:7.0.5"
   dependencies:
     bson: ^5.0.1
     kareem: 2.5.1
@@ -1927,7 +1927,7 @@ __metadata:
     mquery: 5.0.0
     ms: 2.1.3
     sift: 16.0.1
-  checksum: 0ced556b0b572aed1b866a4eff05d1e7371e0696d264f15818140f5c65368d44fb9cb4e60ab54ef209f39e91d803c74315f09d931967234561005c074050136e
+  checksum: 85eeae91efe213b6b5384fba23500cf311fa8b3fa609fc6535201f9c4d5e1b7557bd38c977dddba68a7cf522737ebb1c7021c7b02430492c72b12af0735fc76e
   languageName: node
   linkType: hard
 
