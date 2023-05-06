@@ -18,11 +18,11 @@ import type { Permissions as Perms } from '../../../Constants.js';
 import { RelationshipFlags } from '../../../Constants.js';
 import type { GuildPermissions } from '../../../Types/Guilds/User';
 import type { LessUser, PopulatedUserWJ } from '../../../Types/Users/Users';
-import schemaData from '../../SchemaData';
-import { FriendSchema, SettingSchema, UserSchema } from '../../Schemas/Schemas';
-import GuildMemberFlags from '../BitFields/GuildMember';
-import Permissions from '../BitFields/Permissions';
-import Encryption from '../Encryption';
+import schemaData from '../../SchemaData.js';
+import { FriendSchema, SettingSchema, UserSchema } from '../../Schemas/Schemas.js';
+import GuildMemberFlags from '../BitFields/GuildMember.js';
+import Permissions from '../BitFields/Permissions.js';
+import Encryption from '../Encryption.js';
 import type Utils from './Utils';
 
 // Description: This class is used to store user data, and to flush it to the database
@@ -33,21 +33,21 @@ import type Utils from './Utils';
 // when it will be used in development, but it will be used in the future (hopefully)
 
 class UserUtils {
-	Token: string;
+	public Token: string;
 
-	Failed: boolean;
+	public Failed: boolean;
 
-	FailedCode: number | null;
+	public FailedCode: number | null;
 
-	req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>;
+	public req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>;
 
-	res: Response<any, Record<string, any>>;
+	public res: Response<any, Record<string, any>>;
 
-	user: LessUser;
+	public user: LessUser;
 
-	Utils: Utils;
+	public Utils: Utils;
 
-	constructor(
+	public constructor(
 		Token: string,
 		req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
 		res: Response<any, Record<string, any>>,
@@ -68,12 +68,12 @@ class UserUtils {
 		this.Utils = Utils;
 	}
 
-	SetFailed(code: number) {
+	public SetFailed(code: number) {
 		this.Failed = true;
 		this.FailedCode = code;
 	}
 
-	reply(code: number, data: any) {
+	public reply(code: number, data: any) {
 		if (typeof data === 'object') {
 			this.res.status(code).json(data);
 		} else {
@@ -81,7 +81,7 @@ class UserUtils {
 		}
 	}
 
-	async fetchFriends(FilterBlocked = false) {
+	public async fetchFriends(FilterBlocked = false) {
 		const FriendsR = await FriendSchema.find({
 			Receiver: Encryption.encrypt(this.user.Id as string),
 		});
@@ -140,14 +140,14 @@ class UserUtils {
 	}
 
 	// This is for Guilds not DM channels
-	async canSendMessagesGuildV(ChannelId: string): Promise<boolean> {
+	public async canSendMessagesGuildV(ChannelId: string): Promise<boolean> {
 		const Guilds = await this.getGuilds(['Channels', 'Members', 'MemberUser', 'PermissionOverides', 'Roles']);
 
-		const Guild = Guilds?.find((g) => g.Channels?.find((c) => c._id === ChannelId));
+		const Guild = Guilds?.find((gld) => gld.Channels?.find((chan) => chan._id === ChannelId));
 
 		if (!Guild) return false;
 
-		const GuildMember = Guild.Members?.find((m) => m?.User?._id === this.user?.Id);
+		const GuildMember = Guild.Members?.find((mem) => mem?.User?._id === this.user?.Id);
 
 		if (!GuildMember) return false;
 
@@ -158,12 +158,12 @@ class UserUtils {
 		if (MemberFlags.hasString('Owner') || MemberFlags.hasString('CoOwner')) return true;
 
 		// Soon we will check for PermissionOverides
-		const Channel = Guild.Channels?.find((c) => c._id === ChannelId);
+		const Channel = Guild.Channels?.find((chan) => chan._id === ChannelId);
 
 		if (!Channel) return false;
 
-		const OneRoleHasPermission = GuildMember.Roles.some((r) => {
-			const Role = Guild.Roles?.find((gr) => gr._id === r);
+		const OneRoleHasPermission = GuildMember.Roles.some((rle) => {
+			const Role = Guild.Roles?.find((gr) => gr._id === rle);
 
 			if (!Role) return false;
 
@@ -172,12 +172,10 @@ class UserUtils {
 			return RolePermissions.hasString('SendMessages');
 		});
 
-		if (OneRoleHasPermission) return true;
-
-		return false;
+		return OneRoleHasPermission ?? false;
 	}
 
-	async getGuilds(
+	public async getGuilds(
 		include: ('Channels' | 'Members' | 'MemberUser' | 'PermissionOverides' | 'Roles')[],
 	): Promise<GuildPermissions[]> {
 		const UserSchemad = await UserSchema.findById(Encryption.encrypt(this.user.Id as string));
@@ -213,35 +211,35 @@ class UserUtils {
 		return Encryption.completeDecryption(UserSchemad.toObject().Guilds);
 	}
 
-	async getMember(GuildId: string, UserId: string) {
+	public async getMember(GuildId: string, UserId: string) {
 		const Guild = await this.getGuilds(['Members', 'MemberUser']);
 
-		const GuildData = Guild.find((g) => g._id === GuildId);
+		const GuildData = Guild.find((gld) => gld._id === GuildId);
 
 		if (!GuildData) return null;
 
-		const Member = GuildData.Members?.find((m) => m.User?._id === UserId);
+		const Member = GuildData.Members?.find((mem) => mem.User?._id === UserId);
 
 		if (!Member) return null;
 
 		return Member;
 	}
 
-	async getMemberFromChannel(ChannelId: string, UserId: string) {
+	public async getMemberFromChannel(ChannelId: string, UserId: string) {
 		const Guild = await this.getGuilds(['Channels', 'Members', 'MemberUser']);
 
-		const GuildData = Guild.find((g) => g.Channels?.find((c) => c._id === ChannelId));
+		const GuildData = Guild.find((gld) => gld.Channels?.find((chan) => chan._id === ChannelId));
 
 		if (!GuildData) return null;
 
-		const Member = GuildData.Members?.find((m) => m.User?._id === UserId);
+		const Member = GuildData.Members?.find((mem) => mem.User?._id === UserId);
 
 		if (!Member) return null;
 
 		return Member;
 	}
 
-	async getSessions(): Promise<
+	public async getSessions(): Promise<
 		{
 			CreatedDate: Date;
 			Ip: string;
@@ -255,29 +253,29 @@ class UserUtils {
 		if (!Settings) return [];
 
 		return Encryption.completeDecryption(
-			Settings.toJSON().Tokens.map((t) => {
+			Settings.toJSON().Tokens.map((ses) => {
 				return {
-					Token: t.Token,
-					CreatedDate: t.CreatedDate,
-					Ip: t.Ip,
+					Token: ses.Token,
+					CreatedDate: ses.CreatedDate,
+					Ip: ses.Ip,
 				};
 			}),
 		);
 	}
 
 	// TODO: Check for PermissionOverides
-	async hasPermission(
+	public async hasPermission(
 		GuildId: string,
 		Permission: (keyof typeof Perms)[] | keyof typeof Perms,
 		Single?: boolean, // If Permission is an Array Single will return true if the role has at least one of the permissions
 	): Promise<boolean> {
 		const Guilds = await this.getGuilds(['Channels', 'Members', 'MemberUser', 'PermissionOverides', 'Roles']);
 
-		const Guild = Guilds.find((g) => g._id === GuildId);
+		const Guild = Guilds.find((gld) => gld._id === GuildId);
 
 		if (!Guild) return false;
 
-		const GuildMember = Guild?.Members?.find((m) => m.User?._id === this.user?.Id);
+		const GuildMember = Guild?.Members?.find((mem) => mem.User?._id === this.user?.Id);
 
 		if (!GuildMember) return false;
 
@@ -287,8 +285,8 @@ class UserUtils {
 
 		if (MemberFlags.hasString('Owner') || MemberFlags.hasString('CoOwner')) return true;
 
-		const OneRoleHasPermission = GuildMember.Roles.some((r) => {
-			const Role = Guild?.Roles?.find((gr) => gr._id === r);
+		const OneRoleHasPermission = GuildMember.Roles.some((rl) => {
+			const Role = Guild?.Roles?.find((gr) => gr._id === rl);
 
 			if (!Role) return false;
 
@@ -296,18 +294,16 @@ class UserUtils {
 
 			if (Array.isArray(Permission)) {
 				if (Single) {
-					return Permission.some((p) => RolePermissions.hasString(p));
+					return Permission.some((pm) => RolePermissions.hasString(pm));
 				} else {
-					return Permission.every((p) => RolePermissions.hasString(p));
+					return Permission.every((pm) => RolePermissions.hasString(pm));
 				}
 			}
 
 			return RolePermissions.hasString(Permission);
 		});
 
-		if (OneRoleHasPermission) return true;
-
-		return false;
+		return OneRoleHasPermission ?? false;
 	}
 }
 

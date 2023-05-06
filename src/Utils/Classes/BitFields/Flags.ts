@@ -40,12 +40,11 @@ class FlagFields {
 
 	public toJSON() {
 		return Object.keys(Flags).reduce<Record<keyof typeof Flags, boolean>>((obj, key) => {
-		  obj[key as keyof typeof Flags] = this.has(Flags[key as keyof typeof Flags]);
-		  return obj;
-		// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter -- I got no other ideas how to fix this
+			obj[key as keyof typeof Flags] = this.has(Flags[key as keyof typeof Flags]);
+			return obj;
+			// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter -- I got no other ideas how to fix this
 		}, {} as Record<keyof typeof Flags, boolean>);
-	  }
-	  
+	}
 
 	public toArray(): string[] {
 		return Object.keys(Flags).reduce<string[]>((arr, key) => {

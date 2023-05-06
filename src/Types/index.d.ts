@@ -10,7 +10,6 @@
  */
 
 import type { Snowflake, Turnstile, CacheManager } from '@kastelll/util';
-import type { Cache } from '../Utils/Classes/Cache';
 import type Emails from '../Utils/Classes/Emails';
 import type UserUtils from '../Utils/Classes/MiscUtils/User';
 import type Utils from '../Utils/Classes/MiscUtils/Utils';

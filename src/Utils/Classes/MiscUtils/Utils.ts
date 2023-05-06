@@ -1,21 +1,21 @@
 import type { Request, Response } from 'express';
 import type { ParamsDictionary } from 'express-serve-static-core';
 import type { ParsedQs } from 'qs';
-import ChannelUtils from './ChannelUtils';
-import UserUtils from './User';
+import ChannelUtils from './ChannelUtils.js';
+import UserUtils from './User.js';
 
 class Utils {
-	Token: any;
+	public Token: string;
 
-	User: UserUtils;
+	public User: UserUtils;
 
-	Channel: ChannelUtils;
+	public Channel: ChannelUtils;
 
-	req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>;
+	public req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>;
 
-	res: Response<any, Record<string, any>>;
+	public res: Response<any, Record<string, any>>;
 
-	constructor(
+	public constructor(
 		Token: string,
 		req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
 		res: Response<any, Record<string, any>>,

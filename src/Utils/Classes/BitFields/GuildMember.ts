@@ -40,11 +40,11 @@ class GuildMemberFlags {
 
 	public toJSON() {
 		return Object.keys(GMF).reduce<Record<keyof typeof GMF, boolean>>((obj, key) => {
-		  obj[key as keyof typeof GMF] = this.has(GMF[key as keyof typeof GMF]);
-		  return obj;
-		// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter -- I got no other ideas how to fix this
+			obj[key as keyof typeof GMF] = this.has(GMF[key as keyof typeof GMF]);
+			return obj;
+			// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter -- I got no other ideas how to fix this
 		}, {} as Record<keyof typeof GMF, boolean>);
-	  }
+	}
 
 	public toArray(): string[] {
 		return Object.keys(GMF).reduce<string[]>((arr, key) => {

@@ -40,11 +40,11 @@ class Permissions {
 
 	public toJSON() {
 		return Object.keys(Perms).reduce<Record<keyof typeof Perms, boolean>>((obj, key) => {
-		  obj[key as keyof typeof Perms] = this.has(Perms[key as keyof typeof Perms]);
-		  return obj;
-		// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter -- I got no other ideas how to fix this
+			obj[key as keyof typeof Perms] = this.has(Perms[key as keyof typeof Perms]);
+			return obj;
+			// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter -- I got no other ideas how to fix this
 		}, {} as Record<keyof typeof Perms, boolean>);
-	  }
+	}
 
 	public toArray(): string[] {
 		return Object.keys(Perms).reduce<string[]>((arr, key) => {
@@ -70,9 +70,8 @@ class Permissions {
 	}
 
 	public static removeRolePerms(permissions: bigint): bigint {
-		
 		let newPermissions = permissions;
-		
+
 		for (const key of Object.keys(RolePermissions)) {
 			newPermissions &= ~RolePermissions[key as keyof typeof RolePermissions];
 		}
@@ -81,9 +80,8 @@ class Permissions {
 	}
 
 	public static removeChannelPerms(permissions: bigint): bigint {
-		
 		let newPermissions = permissions;
-		
+
 		for (const key of Object.keys(ChannelPermissions)) {
 			newPermissions &= ~ChannelPermissions[key as keyof typeof ChannelPermissions];
 		}
@@ -93,9 +91,8 @@ class Permissions {
 
 	// this may never be used tbh
 	public static removeMixedPerms(permissions: bigint): bigint {
-		
 		let newPermissions = permissions;
-		
+
 		for (const key of Object.keys(MixedPermissions)) {
 			newPermissions &= ~MixedPermissions[key as keyof typeof MixedPermissions];
 		}
