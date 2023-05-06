@@ -1,9 +1,9 @@
 import { Route } from '@kastelll/core';
-import Constants from '../../Constants';
-import Captcha from '../../Middleware/Captcha';
 import { HTTPErrors } from '@kastelll/util';
-import { UserSchema } from '../../Utils/Schemas/Schemas';
-import Encryption from '../../Utils/Classes/Encryption';
+import Constants from '../../Constants.js';
+import Captcha from '../../Middleware/Captcha.js';
+import Encryption from '../../Utils/Classes/Encryption.js';
+import { UserSchema } from '../../Utils/Schemas/Schemas.js';
 
 new Route(
 	'/forgot',
@@ -17,15 +17,15 @@ new Route(
 		const { email }: { email: string } = req.body;
 
 		if (!email) {
-			const Errors = new HTTPErrors(4000);
+			const Errors = new HTTPErrors(4_000);
 
-			if (!email)
-				Errors.AddError({
-					Email: {
-						Code: 'EmailRequired',
-						Message: 'Email is required',
-					},
-				});
+			// if (!email) // temp until we add more checks
+			Errors.AddError({
+				Email: {
+					Code: 'EmailRequired',
+					Message: 'Email is required',
+				},
+			});
 
 			res.status(400).json(Errors.toJSON());
 
@@ -37,7 +37,7 @@ new Route(
 		});
 
 		if (!User) {
-			const Errors = new HTTPErrors(4001);
+			const Errors = new HTTPErrors(4_001);
 
 			Errors.AddError({
 				Email: {
@@ -47,8 +47,6 @@ new Route(
 			});
 
 			res.status(400).json(Errors.toJSON());
-
-			return;
 		}
 	},
 );

@@ -10,7 +10,7 @@
  */
 
 import { Route } from '@kastelll/core';
-import User from '../../../../Middleware/User';
+import User from '../../../../Middleware/User.js';
 import RateLimit from '../../../../Utils/Classes/TokenBucket';
 
 new Route(
@@ -24,7 +24,7 @@ new Route(
 		}),
 		RateLimit({
 			Count: 5,
-			Window: 10000,
+			Window: 10_000,
 			Bucket: 'test',
 			// failed: {
 			//   boost: 1000000,
@@ -35,8 +35,6 @@ new Route(
 	],
 	async (req, res) => {
 		res.status(403).send('uwu');
-
-		return;
 
 		// res.send('uwu')
 	},

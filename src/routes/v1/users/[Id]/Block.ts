@@ -1,9 +1,9 @@
-import { HTTPErrors } from '@kastelll/util';
 import { Route } from '@kastelll/core';
-import { RelationshipFlags } from '../../../../Constants';
-import User from '../../../../Middleware/User';
-import Encryption from '../../../../Utils/Classes/Encryption';
-import { FriendSchema } from '../../../../Utils/Schemas/Schemas';
+import { HTTPErrors } from '@kastelll/util';
+import { RelationshipFlags } from '../../../../Constants.js';
+import User from '../../../../Middleware/User.js';
+import Encryption from '../../../../Utils/Classes/Encryption.js';
+import { FriendSchema } from '../../../../Utils/Schemas/Schemas.js';
 
 interface BlockRQ {
 	blocked: boolean;
@@ -29,7 +29,7 @@ new Route(
 		const VaildatedId = req.app.snowflake.Validate(Id);
 
 		if (!VaildatedId) {
-			const Errors = new HTTPErrors(4014);
+			const Errors = new HTTPErrors(4_014);
 
 			Errors.AddError({
 				id: {
@@ -44,7 +44,7 @@ new Route(
 		}
 
 		if (!(typeof blocked === 'boolean')) {
-			const Errors = new HTTPErrors(4014);
+			const Errors = new HTTPErrors(4_014);
 
 			Errors.AddError({
 				friend: {
@@ -70,7 +70,7 @@ new Route(
 
 		if (!FriendsR && !FriendsS) {
 			if (!blocked) {
-				const Errors = new HTTPErrors(4015);
+				const Errors = new HTTPErrors(4_015);
 
 				Errors.AddError({
 					friend: {
@@ -114,7 +114,7 @@ new Route(
 					return;
 				}
 
-				const Errors = new HTTPErrors(4015);
+				const Errors = new HTTPErrors(4_015);
 
 				Errors.AddError({
 					friend: {
@@ -160,7 +160,7 @@ new Route(
 					return;
 				}
 
-				const Errors = new HTTPErrors(4015);
+				const Errors = new HTTPErrors(4_015);
 
 				Errors.AddError({
 					friend: {

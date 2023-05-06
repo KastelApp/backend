@@ -1,111 +1,103 @@
-import nodemailer from "nodemailer";
+import nodemailer from 'nodemailer';
 
 class Emails {
-    host: string;
-    port: number;
-    secure: boolean;
-    private email!: string;
-    private password!: string;
-    totalEmailsSent: number;
-    private transporter?: nodemailer.Transporter | undefined;
-    constructor(
-        host: string,
-        port: number,
-        secure: boolean,
-        email: string,
-        password: string
-    ) {
-        this.host = host;
+	host: string;
 
-        this.port = port;
+	port: number;
 
-        this.secure = secure;
-        
-        Object.defineProperty(this, "email", {
-            value: email,
-            writable: false,
-            enumerable: false,
-            configurable: false,
-        });
+	secure: boolean;
 
-        Object.defineProperty(this, "password", {
-            value: password,
-            writable: false,
-            enumerable: false,
-            configurable: false,
-        });
+	private readonly email!: string;
 
-        this.totalEmailsSent = 0; // why not
+	private readonly password!: string;
 
-        Object.defineProperty(this, "transporter", {
-            value: undefined,
-            writable: true,
-            enumerable: false,
-            configurable: false,
-        });
-    }
+	totalEmailsSent: number;
 
-    async SendEmail(
-        to: string,
-        subject: string,
-        text?: string,
-        html?: string
-    ): Promise<boolean> {
+	private transporter?: nodemailer.Transporter | undefined;
 
-        if (!this.transporter) {
-            throw new Error("Transporter not created");
-        }
+	constructor(host: string, port: number, secure: boolean, email: string, password: string) {
+		this.host = host;
 
-        if (!to || !subject) {
-            throw new Error("Invalid arguments");
-        }
+		this.port = port;
 
-        if (!text && !html) {
-            throw new Error("Invalid arguments");
-        }
+		this.secure = secure;
 
-        const Sent = await this.transporter.sendMail({
-            from: this.email,
-            to,
-            subject,
-            text,
-            html,
-        });
+		Object.defineProperty(this, 'email', {
+			value: email,
+			writable: false,
+			enumerable: false,
+			configurable: false,
+		});
 
-        if (Sent) {
-            this.totalEmailsSent++;
-            return true;
-        }
+		Object.defineProperty(this, 'password', {
+			value: password,
+			writable: false,
+			enumerable: false,
+			configurable: false,
+		});
 
-        return false;
-    }
+		this.totalEmailsSent = 0; // why not
 
-    async Connect(): Promise<nodemailer.Transporter> {
+		Object.defineProperty(this, 'transporter', {
+			value: undefined,
+			writable: true,
+			enumerable: false,
+			configurable: false,
+		});
+	}
 
-        if (!this.transporter) {
-            this.transporter = nodemailer.createTransport({
-                host: this.host,
-                port: this.port,
-                secure: this.secure,
-                auth: {
-                    user: this.email,
-                    pass: this.password,
-                },
-            });
-        }
+	async SendEmail(to: string, subject: string, text?: string, html?: string): Promise<boolean> {
+		if (!this.transporter) {
+			throw new Error('Transporter not created');
+		}
 
-        return this.transporter;
-    }
+		if (!to || !subject) {
+			throw new Error('Invalid arguments');
+		}
 
-    async CloseTransporter(): Promise<void> {
-        if (this.transporter) {
-            this.transporter.close();
+		if (!text && !html) {
+			throw new Error('Invalid arguments');
+		}
 
-            this.transporter = undefined;
-        }
+		const Sent = await this.transporter.sendMail({
+			from: this.email,
+			to,
+			subject,
+			text,
+			html,
+		});
 
-        return;
-    }
+		if (Sent) {
+			this.totalEmailsSent++;
+			return true;
+		}
+
+		return false;
+	}
+
+	async Connect(): Promise<nodemailer.Transporter> {
+		if (!this.transporter) {
+			this.transporter = nodemailer.createTransport({
+				host: this.host,
+				port: this.port,
+				secure: this.secure,
+				auth: {
+					user: this.email,
+					pass: this.password,
+				},
+			});
+		}
+
+		return this.transporter;
+	}
+
+	async CloseTransporter(): Promise<void> {
+		if (this.transporter) {
+			this.transporter.close();
+
+			this.transporter = undefined;
+		}
+	}
 }
 
 export { Emails };

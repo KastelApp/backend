@@ -9,79 +9,82 @@
  * GPL 3.0 Licensed
  */
 
-import { Flags } from '../../../Constants'
+import { Flags } from '../../../Constants.js';
 
 class FlagFields {
-    bits: bigint
-    constructor(bits: number) {
-        this.bits = BigInt(bits)
-    }
+	public bits: bigint;
 
-    has(bit: bigint) {
-        return (this.bits & bit) === bit
-    }
+	public constructor(bits: number) {
+		this.bits = BigInt(bits);
+	}
 
-    add(bit: bigint): this {
-        if (this.has(bit)) return this
-        this.bits |= bit
-        return this
-    }
+	public has(bit: bigint) {
+		return (this.bits & bit) === bit;
+	}
 
-    remove(bit: bigint): this {
-        if (!this.has(bit)) return this
-        this.bits ^= bit
-        return this
-    }
+	public add(bit: bigint): this {
+		if (this.has(bit)) return this;
+		this.bits |= bit;
+		return this;
+	}
 
-    serialize(): bigint {
-        return this.bits
-    }
+	public remove(bit: bigint): this {
+		if (!this.has(bit)) return this;
+		this.bits ^= bit;
+		return this;
+	}
 
-    toJSON(): Record<keyof typeof Flags, boolean> {
-        return Object.keys(Flags).reduce((obj, key) => {
-            obj[key as keyof typeof Flags] = this.has(Flags[key as keyof typeof Flags])
-            return obj
-        }, {} as Record<keyof typeof Flags, boolean>)
-    }
+	public serialize(): bigint {
+		return this.bits;
+	}
 
-    toArray(): string[] {
-        return Object.keys(Flags).reduce((arr, key) => {
-            if (this.has(Flags[key as keyof typeof Flags])) arr.push(key)
-            return arr
-        }, [] as string[])
-    }
+	public toJSON() {
+		return Object.keys(Flags).reduce<Record<keyof typeof Flags, boolean>>((obj, key) => {
+		  obj[key as keyof typeof Flags] = this.has(Flags[key as keyof typeof Flags]);
+		  return obj;
+		// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter -- I got no other ideas how to fix this
+		}, {} as Record<keyof typeof Flags, boolean>);
+	  }
+	  
 
-    hasString(bit: keyof typeof Flags) {
-        return this.has(Flags[bit as keyof typeof Flags])
-    }
+	public toArray(): string[] {
+		return Object.keys(Flags).reduce<string[]>((arr, key) => {
+			if (this.has(Flags[key as keyof typeof Flags])) arr.push(key);
+			return arr;
+		}, []);
+	}
 
-    static deserialize(bits: bigint): FlagFields {
-        return new FlagFields(Number(bits))
-    }
+	public hasString(bit: keyof typeof Flags) {
+		return this.has(Flags[bit as keyof typeof Flags]);
+	}
 
-    static get FlagFields(): typeof Flags {
-        return Flags
-    }
+	public static deserialize(bits: bigint): FlagFields {
+		return new FlagFields(Number(bits));
+	}
 
-    static get FlagFieldsArray(): (keyof typeof Flags)[] {
-        return Object.keys(Flags) as (keyof typeof Flags)[]
-    }
+	public static get FlagFields(): typeof Flags {
+		return Flags;
+	}
 
-    // Private flags is anything above 1n << 25n
-    static get PrivateFlags(): (keyof typeof Flags)[] {
-        return Object.keys(Flags).filter(key => Flags[key as keyof typeof Flags] >= 1n << 25n) as (keyof typeof Flags)[]
-    }
+	public static get FlagFieldsArray(): (keyof typeof Flags)[] {
+		return Object.keys(Flags) as (keyof typeof Flags)[];
+	}
 
-    // Public flags is anything under 1n << 25n
-    static get PublicFlags(): (keyof typeof Flags)[] {
-        return Object.keys(Flags).filter(key => Flags[key as keyof typeof Flags] < 1n << 25n) as (keyof typeof Flags)[]
-    }
+	// Private flags is anything above 1n << 25n
+	public static get PrivateFlags(): (keyof typeof Flags)[] {
+		return Object.keys(Flags).filter((key) => Flags[key as keyof typeof Flags] >= 1n << 25n) as (keyof typeof Flags)[];
+	}
 
-    static RemovePrivateFlags(flags: bigint): bigint {
-        return flags & ((1n << 25n) - 1n)
-    }
+	// Public flags is anything under 1n << 25n
+	public static get PublicFlags(): (keyof typeof Flags)[] {
+		return Object.keys(Flags).filter((key) => Flags[key as keyof typeof Flags] < 1n << 25n) as (keyof typeof Flags)[];
+	}
+
+	public static RemovePrivateFlags(flags: bigint): bigint {
+		return flags & ((1n << 25n) - 1n);
+	}
 }
 
-export default FlagFields
+export default FlagFields;
 
-export { FlagFields }
+export { FlagFields };

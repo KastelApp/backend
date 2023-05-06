@@ -9,33 +9,32 @@
  * GPL 3.0 Licensed
  */
 
-import { Cache } from "../Utils/Classes/Cache";
-import RequestUtils from "../Utils/Classes/RequestUtils";
-import SystemSocket from "../Utils/Classes/System/SystemSocket";
-import Turnstile from "../Utils/Classes/Turnstile";
-import UserUtils from "../Utils/Classes/MiscUtils/User";
-import { LessUser } from "./Users/Users";
-import Utils from "../Utils/Classes/MiscUtils/Utils";
-import Emails from "../Utils/Classes/Emails";
-import { Snowflake } from "@kastelll/util";
+import type { Snowflake, Turnstile, CacheManager } from '@kastelll/util';
+import type { Cache } from '../Utils/Classes/Cache';
+import type Emails from '../Utils/Classes/Emails';
+import type UserUtils from '../Utils/Classes/MiscUtils/User';
+import type Utils from '../Utils/Classes/MiscUtils/Utils';
+import type RequestUtils from '../Utils/Classes/RequestUtils';
+import type SystemSocket from '../Utils/Classes/System/SystemSocket';
+import type { LessUser } from './Users/Users';
 
 declare global {
-  namespace Express {
-    interface Request {
-      clientIp: string;
-      user: LessUser
-      captcha: Turnstile
-      utils: RequestUtils
-      mutils: Utils
-      NoReply: Emails | null
-      Support: Emails | null
-    }
+	namespace Express {
+		interface Request {
+			NoReply: Emails | null;
+			Support: Emails | null;
+			captcha: Turnstile;
+			clientIp: string;
+			mutils: Utils;
+			user: LessUser;
+			utils: RequestUtils;
+		}
 
-    interface Application {
-      cache: Cache;
-      socket: SystemSocket
-      ready: boolean
-      snowflake: Snowflake
-    }
-  }
+		interface Application {
+			cache: CacheManager;
+			ready: boolean;
+			snowflake: Snowflake;
+			socket: SystemSocket;
+		}
+	}
 }

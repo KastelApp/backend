@@ -1,10 +1,10 @@
 import { Route } from '@kastelll/core';
-import Constants, { VerificationFlags } from '../../../Constants';
-import Captcha from '../../../Middleware/Captcha';
 import { HTTPErrors } from '@kastelll/util';
-import { UserSchema, VerifcationLinkSchema } from '../../../Utils/Schemas/Schemas';
-import Encryption from '../../../Utils/Classes/Encryption';
-import LinkGeneration from '../../../Utils/Classes/LinkGeneration';
+import Constants, { VerificationFlags } from '../../../Constants.js';
+import Captcha from '../../../Middleware/Captcha.js';
+import Encryption from '../../../Utils/Classes/Encryption.js';
+import LinkGeneration from '../../../Utils/Classes/LinkGeneration.js';
+import { UserSchema, VerifcationLinkSchema } from '../../../Utils/Schemas/Schemas.js';
 
 new Route(
 	'/verify',
@@ -18,7 +18,7 @@ new Route(
 		const { code }: { code: string } = req.body;
 
 		if (!code) {
-			const MissingCode = new HTTPErrors(4019);
+			const MissingCode = new HTTPErrors(4_019);
 
 			MissingCode.AddError({
 				Code: {
@@ -40,7 +40,7 @@ new Route(
 		});
 
 		if (!Link) {
-			const InvalidCode = new HTTPErrors(4019);
+			const InvalidCode = new HTTPErrors(4_019);
 
 			InvalidCode.AddError({
 				Code: {
@@ -55,7 +55,7 @@ new Route(
 		}
 
 		if (Link.ExpireDate < Date.now()) {
-			const ExpiredCode = new HTTPErrors(4100);
+			const ExpiredCode = new HTTPErrors(4_100);
 
 			ExpiredCode.AddError({
 				Code: {

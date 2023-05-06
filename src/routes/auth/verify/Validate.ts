@@ -1,15 +1,15 @@
 import { Route } from '@kastelll/core';
 import { HTTPErrors } from '@kastelll/util';
-import { VerifcationLinkSchema } from '../../../Utils/Schemas/Schemas';
-import Encryption from '../../../Utils/Classes/Encryption';
-import { VerificationFlags } from '../../../Constants';
-import LinkGeneration from '../../../Utils/Classes/LinkGeneration';
+import { VerificationFlags } from '../../../Constants.js';
+import Encryption from '../../../Utils/Classes/Encryption.js';
+import LinkGeneration from '../../../Utils/Classes/LinkGeneration.js';
+import { VerifcationLinkSchema } from '../../../Utils/Schemas/Schemas.js';
 
 new Route('/validate', 'POST', [], async (req, res) => {
 	const { code }: { code: string } = req.body;
 
 	if (!code) {
-		const MissingCode = new HTTPErrors(4019);
+		const MissingCode = new HTTPErrors(4_019);
 
 		MissingCode.AddError({
 			Code: {
@@ -33,7 +33,7 @@ new Route('/validate', 'POST', [], async (req, res) => {
 	});
 
 	if (!Link) {
-		const InvalidCode = new HTTPErrors(4019);
+		const InvalidCode = new HTTPErrors(4_019);
 
 		InvalidCode.AddError({
 			Code: {
@@ -48,7 +48,7 @@ new Route('/validate', 'POST', [], async (req, res) => {
 	}
 
 	if (Link.ExpireDate < Date.now()) {
-		const ExpiredCode = new HTTPErrors(4100);
+		const ExpiredCode = new HTTPErrors(4_100);
 
 		ExpiredCode.AddError({
 			Code: {

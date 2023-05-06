@@ -1,6 +1,6 @@
 import { Route } from '@kastelll/core';
-import Constants from '../../Constants';
-import Captcha from '../../Middleware/Captcha';
+import Constants from '../../Constants.js';
+import Captcha from '../../Middleware/Captcha.js';
 
 new Route(
 	'/reset',

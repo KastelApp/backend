@@ -9,29 +9,29 @@
  * GPL 3.0 Licensed
  */
 
-import { HTTPErrors } from '@kastelll/util';
 import { Route } from '@kastelll/core';
+import { HTTPErrors } from '@kastelll/util';
 import { compareSync, hashSync } from 'bcrypt';
-import Constants from '../../../../Constants';
-import Captcha from '../../../../Middleware/Captcha';
-import User from '../../../../Middleware/User';
+import Constants from '../../../../Constants.js';
+import Captcha from '../../../../Middleware/Captcha.js';
+import User from '../../../../Middleware/User.js';
 import type { PopulatedUserWJ, UserAtMe } from '../../../../Types/Users/Users';
-import FlagFields from '../../../../Utils/Classes/BitFields/Flags';
-import Encryption from '../../../../Utils/Classes/Encryption';
-import schemaData from '../../../../Utils/SchemaData';
-import { UserSchema } from '../../../../Utils/Schemas/Schemas';
+import FlagFields from '../../../../Utils/Classes/BitFields/Flags.js';
+import Encryption from '../../../../Utils/Classes/Encryption.js';
+import schemaData from '../../../../Utils/SchemaData.js';
+import { UserSchema } from '../../../../Utils/Schemas/Schemas.js';
 
 interface EditUserBody {
-	username?: string;
-	tag?: string;
-	email?: string;
-	password?: string;
 	avatar?: string;
-	phoneNumber?: string;
-	twoFa?: boolean;
-	twoFaSecret?: string;
+	email?: string;
 	newPassword?: string;
+	password?: string;
+	phoneNumber?: string;
+	tag?: string;
+	twoFa?: boolean;
 	twoFaCode?: string;
+	twoFaSecret?: string;
+	username?: string;
 }
 
 new Route(
@@ -64,7 +64,7 @@ new Route(
 		} = req.body as EditUserBody;
 
 		if (tag && tag === '0000') {
-			const Errors = new HTTPErrors(4014);
+			const Errors = new HTTPErrors(4_014);
 
 			Errors.AddError({
 				Tag: {
@@ -78,99 +78,96 @@ new Route(
 			return;
 		}
 
-		if (password || twoFa || phoneNumber) {
-			if (req.user.Bot) {
-				const Errors = new HTTPErrors(4013);
+		if ((password || twoFa || phoneNumber) && req.user.Bot) {
+			const Errors = new HTTPErrors(4_013);
 
-				if (password)
-					Errors.AddError({
-						Password: {
-							Code: 'CannotChangePassword',
-							Message: 'You cannot change your password as a bot',
-						},
-					});
+			if (password)
+				Errors.AddError({
+					Password: {
+						Code: 'CannotChangePassword',
+						Message: 'You cannot change your password as a bot',
+					},
+				});
 
-				if (twoFa)
-					Errors.AddError({
-						TwoFa: {
-							Code: 'CannotChangeTwoFa',
-							Message: 'You cannot change your two factor authentication as a bot',
-						},
-					});
+			if (twoFa)
+				Errors.AddError({
+					TwoFa: {
+						Code: 'CannotChangeTwoFa',
+						Message: 'You cannot change your two factor authentication as a bot',
+					},
+				});
 
-				if (phoneNumber)
-					Errors.AddError({
-						PhoneNumber: {
-							Code: 'CannotChangePhoneNumber',
-							Message: 'You cannot change your phone number as a bot',
-						},
-					});
+			if (phoneNumber)
+				Errors.AddError({
+					PhoneNumber: {
+						Code: 'CannotChangePhoneNumber',
+						Message: 'You cannot change your phone number as a bot',
+					},
+				});
 
-				res.status(401).json(Errors.toJSON());
+			res.status(401).json(Errors.toJSON());
 
-				return;
-			}
+			return;
 		}
 
-		if (phoneNumber || email || twoFa || newPassword) {
-			if (!password) {
-				const Errors = new HTTPErrors(4013);
+		if ((phoneNumber || email || twoFa || newPassword) && !password) {
+			const Errors = new HTTPErrors(4_013);
 
-				if (phoneNumber)
-					Errors.AddError({
-						PhoneNumber: {
-							Code: 'CannotChangePhoneNumber',
-							Message: 'You cannot change your phone number without providing your password',
-						},
-					});
+			if (phoneNumber)
+				Errors.AddError({
+					PhoneNumber: {
+						Code: 'CannotChangePhoneNumber',
+						Message: 'You cannot change your phone number without providing your password',
+					},
+				});
 
-				if (email)
-					Errors.AddError({
-						email: {
-							Code: 'CannotChangeEmail',
-							Message: 'You cannot change your email without providing your password',
-						},
-					});
+			if (email)
+				Errors.AddError({
+					email: {
+						Code: 'CannotChangeEmail',
+						Message: 'You cannot change your email without providing your password',
+					},
+				});
 
-				if (twoFa)
-					Errors.AddError({
-						twoFa: {
-							Code: 'CannotChangeTwoFa',
-							Message: 'You cannot change your two factor authentication without providing your password',
-						},
-					});
+			if (twoFa)
+				Errors.AddError({
+					twoFa: {
+						Code: 'CannotChangeTwoFa',
+						Message: 'You cannot change your two factor authentication without providing your password',
+					},
+				});
 
-				if (newPassword)
-					Errors.AddError({
-						newPassword: {
-							Code: 'CannotChangeNewPassword',
-							Message: 'You cannot change your new password without providing your password',
-						},
-					});
+			if (newPassword)
+				Errors.AddError({
+					newPassword: {
+						Code: 'CannotChangeNewPassword',
+						Message: 'You cannot change your new password without providing your password',
+					},
+				});
 
-				res.status(401).json(Errors.toJSON());
+			res.status(401).json(Errors.toJSON());
 
-				return;
-			}
+			return;
 		}
 
 		const FoundUser = await UserSchema.findById(Encryption.encrypt(req.user.Id));
 
-		if (phoneNumber || email || twoFa || newPassword) {
-			if (!compareSync(password as string, FoundUser?.Password as string)) {
-				const Errors = new HTTPErrors(4006);
+		if (
+			(phoneNumber || email || twoFa || newPassword) &&
+			!compareSync(password as string, FoundUser?.Password as string)
+		) {
+			const Errors = new HTTPErrors(4_006);
 
-				Errors.AddError({
-					password: {
-						Code: 'PasswordIncorrect',
-						Message: 'Password is incorrect',
-					},
-				});
+			Errors.AddError({
+				password: {
+					Code: 'PasswordIncorrect',
+					Message: 'Password is incorrect',
+				},
+			});
 
-				res.status(400).json(Errors.toJSON());
+			res.status(400).json(Errors.toJSON());
 
-				return;
-			}
+			return;
 		}
 
 		await FoundUser?.updateOne({

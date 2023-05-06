@@ -1,6 +1,6 @@
-import { HTTPErrors } from '@kastelll/util';
 import { Route } from '@kastelll/core';
-import User from '../../../../../Middleware/User';
+import { HTTPErrors } from '@kastelll/util';
+import User from '../../../../../Middleware/User.js';
 
 new Route(
 	'/',
@@ -14,12 +14,12 @@ new Route(
 	],
 	async (req, res) => {
 		const { Id } = req.params as { Id: string };
-		const { limit, before, after } = req.query as { limit: string; before: string; after: string };
+		const { limit, before, after } = req.query as { after: string; before: string; limit: string };
 
 		const CanRead = await req.mutils.Channel.hasPermission(Id, ['ReadMessages', 'Administrator'], true);
 
 		if (!CanRead) {
-			const MissingPermissions = new HTTPErrors(4021);
+			const MissingPermissions = new HTTPErrors(4_021);
 
 			MissingPermissions.AddError({
 				Channel: {

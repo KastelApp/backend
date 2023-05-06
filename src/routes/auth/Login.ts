@@ -9,17 +9,17 @@
  * GPL 3.0 Licensed
  */
 
-import { HTTPErrors } from '@kastelll/util';
 import { Route } from '@kastelll/core';
-import User from '../../Middleware/User';
-import type { LessUser } from '../../Types/Users/Users';
-import schemaData from '../../Utils/SchemaData';
-import { SettingSchema, UserSchema } from '../../Utils/Schemas/Schemas';
+import { HTTPErrors } from '@kastelll/util';
 import { compareSync } from 'bcrypt';
-import Token from '../../Utils/Classes/Token';
-import Encryption from '../../Utils/Classes/Encryption';
-import Captcha from '../../Middleware/Captcha';
-import Constants from '../../Constants';
+import Constants from '../../Constants.js';
+import Captcha from '../../Middleware/Captcha.js';
+import User from '../../Middleware/User.js';
+import type { LessUser } from '../../Types/Users/Users';
+import Encryption from '../../Utils/Classes/Encryption.js';
+import Token from '../../Utils/Classes/Token.js';
+import schemaData from '../../Utils/SchemaData.js';
+import { SettingSchema, UserSchema } from '../../Utils/Schemas/Schemas.js';
 
 new Route(
 	'/login',
@@ -37,7 +37,7 @@ new Route(
 		const { email, password }: { email: string; password: string } = req.body;
 
 		if (!email || !password) {
-			const Errors = new HTTPErrors(4000);
+			const Errors = new HTTPErrors(4_000);
 
 			if (!email)
 				Errors.AddError({
@@ -68,7 +68,7 @@ new Route(
 			const User = schemaData('RawUser', UserCachedData) as LessUser;
 
 			if (User.Banned) {
-				const Errors = new HTTPErrors(4002);
+				const Errors = new HTTPErrors(4_002);
 
 				Errors.AddError({
 					Email: {
@@ -84,7 +84,7 @@ new Route(
 			}
 
 			if (User.Locked) {
-				const Errors = new HTTPErrors(4003);
+				const Errors = new HTTPErrors(4_003);
 
 				Errors.AddError({
 					Email: {
@@ -99,7 +99,7 @@ new Route(
 			}
 
 			if (User.AccountDeletionInProgress) {
-				const Errors = new HTTPErrors(4004);
+				const Errors = new HTTPErrors(4_004);
 
 				Errors.AddError({
 					Email: {
@@ -115,7 +115,7 @@ new Route(
 			}
 
 			if (!User.Password) {
-				const Errors = new HTTPErrors(4005);
+				const Errors = new HTTPErrors(4_005);
 
 				Errors.AddError({
 					Email: {
@@ -130,7 +130,7 @@ new Route(
 			}
 
 			if (!compareSync(password, User.Password)) {
-				const Errors = new HTTPErrors(4006);
+				const Errors = new HTTPErrors(4_006);
 
 				Errors.AddError({
 					Password: {
@@ -181,7 +181,7 @@ new Route(
 		const UserRaw = await UserSchema.findOne({ Email: Encryption.encrypt(email) });
 
 		if (!UserRaw) {
-			const Errors = new HTTPErrors(4001);
+			const Errors = new HTTPErrors(4_001);
 
 			Errors.AddError({
 				Email: {
@@ -198,7 +198,7 @@ new Route(
 		const User = schemaData('RawUser', Encryption.completeDecryption(UserRaw.toJSON())) as LessUser;
 
 		if (User.Banned) {
-			const Errors = new HTTPErrors(4002);
+			const Errors = new HTTPErrors(4_002);
 
 			Errors.AddError({
 				Email: {
@@ -214,7 +214,7 @@ new Route(
 		}
 
 		if (User.Locked) {
-			const Errors = new HTTPErrors(4003);
+			const Errors = new HTTPErrors(4_003);
 
 			Errors.AddError({
 				Email: {
@@ -229,7 +229,7 @@ new Route(
 		}
 
 		if (User.AccountDeletionInProgress) {
-			const Errors = new HTTPErrors(4004);
+			const Errors = new HTTPErrors(4_004);
 
 			Errors.AddError({
 				Email: {
@@ -244,7 +244,7 @@ new Route(
 		}
 
 		if (!User.Password) {
-			const Errors = new HTTPErrors(4005);
+			const Errors = new HTTPErrors(4_005);
 
 			Errors.AddError({
 				Email: {
@@ -259,7 +259,7 @@ new Route(
 		}
 
 		if (!compareSync(password, User.Password)) {
-			const Errors = new HTTPErrors(4006);
+			const Errors = new HTTPErrors(4_006);
 
 			Errors.AddError({
 				Password: {
@@ -305,7 +305,5 @@ new Route(
 		res.json({
 			Token: UserToken,
 		});
-
-		return;
 	},
 );

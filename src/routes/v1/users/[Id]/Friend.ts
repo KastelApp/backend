@@ -9,13 +9,12 @@
  * GPL 3.0 Licensed
  */
 
-import { HTTPErrors } from '@kastelll/util';
 import { Route } from '@kastelll/core';
-import { RelationshipFlags } from '../../../../Constants';
-import User from '../../../../Middleware/User';
-import Encryption from '../../../../Utils/Classes/Encryption';
-
-import { FriendSchema } from '../../../../Utils/Schemas/Schemas';
+import { HTTPErrors } from '@kastelll/util';
+import { RelationshipFlags } from '../../../../Constants.js';
+import User from '../../../../Middleware/User.js';
+import Encryption from '../../../../Utils/Classes/Encryption.js';
+import { FriendSchema } from '../../../../Utils/Schemas/Schemas.js';
 
 // TODO: Make it where users can't friend themselves. (Idk why they would want to do that, but it's possible.) (they are so lonely they need to add themselves)
 
@@ -40,7 +39,7 @@ new Route(
 		const VaildatedId = req.app.snowflake.Validate(Id);
 
 		if (!VaildatedId) {
-			const Errors = new HTTPErrors(4014);
+			const Errors = new HTTPErrors(4_014);
 
 			Errors.AddError({
 				Id: {
@@ -55,7 +54,7 @@ new Route(
 		}
 
 		if (!(typeof friend === 'boolean')) {
-			const Errors = new HTTPErrors(4014);
+			const Errors = new HTTPErrors(4_014);
 
 			Errors.AddError({
 				Friend: {
@@ -81,7 +80,7 @@ new Route(
 
 		if (!FriendsR && !FriendsS) {
 			if (!friend) {
-				const Errors = new HTTPErrors(4015);
+				const Errors = new HTTPErrors(4_015);
 
 				Errors.AddError({
 					Friend: {
@@ -143,7 +142,7 @@ new Route(
 		// but if they send false it will delete the friend request
 		if (FriendsS) {
 			if (friend) {
-				const Errors = new HTTPErrors(4015);
+				const Errors = new HTTPErrors(4_015);
 
 				Errors.AddError({
 					Friend: {
@@ -170,7 +169,5 @@ new Route(
 		res.status(500).json({
 			Message: 'Something went wrong.',
 		});
-
-		return;
 	},
 );

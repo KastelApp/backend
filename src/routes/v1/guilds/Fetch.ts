@@ -1,11 +1,11 @@
-import { HTTPErrors } from '@kastelll/util';
 import { Route } from '@kastelll/core';
-import Constants from '../../../Constants';
-import User from '../../../Middleware/User';
+import { HTTPErrors } from '@kastelll/util';
+import Constants from '../../../Constants.js';
+import User from '../../../Middleware/User.js';
 import type { Guild } from '../../../Types/Guilds/Guild';
-import Encryption from '../../../Utils/Classes/Encryption';
-import schemaData from '../../../Utils/SchemaData';
-import { UserSchema } from '../../../Utils/Schemas/Schemas';
+import Encryption from '../../../Utils/Classes/Encryption.js';
+import schemaData from '../../../Utils/SchemaData.js';
+import { UserSchema } from '../../../Utils/Schemas/Schemas.js';
 
 new Route(
 	'/',
@@ -19,10 +19,10 @@ new Route(
 	],
 	async (req, res) => {
 		const { include, limit } = req.query as {
+			after: string;
+			before: string;
 			include: string;
 			limit: string;
-			before: string;
-			after: string;
 		};
 
 		let ToInclude: ('coowners' | 'owner')[] = [];
@@ -32,7 +32,7 @@ new Route(
 
 			// if there are any invalid includes, return an error
 			if (ToInclude.some((Include) => !['coowners', 'owner'].includes(Include))) {
-				const Errors = new HTTPErrors(4014);
+				const Errors = new HTTPErrors(4_014);
 
 				Errors.AddError({
 					Include: {
@@ -48,23 +48,23 @@ new Route(
 		}
 
 		if (limit) {
-			const Errors = new HTTPErrors(4014);
+			const Errors = new HTTPErrors(4_014);
 
-			if (parseInt(limit) > Constants.Settings.Max.GuildFetchLimit) {
+			if (Number.parseInt(limit) > Constants.Settings.Max.GuildFetchLimit) {
 				Errors.AddError({
 					Limit: {
 						Code: 'InvalidLimit',
 						Message: `The limit parameter must be less than or equal to ${Constants.Settings.Max.GuildFetchLimit}.`,
 					},
 				});
-			} else if (parseInt(limit) < 1) {
+			} else if (Number.parseInt(limit) < 1) {
 				Errors.AddError({
 					Limit: {
 						Code: 'InvalidLimit',
 						Message: `The limit parameter must be greater than or equal to 1.`,
 					},
 				});
-			} else if (isNaN(parseInt(limit))) {
+			} else if (isNaN(Number.parseInt(limit))) {
 				Errors.AddError({
 					Limit: {
 						Code: 'InvalidLimit',
@@ -130,7 +130,7 @@ new Route(
 
 		// limits to the amount of guilds the user wants limited to (default is 100)
 		if (limit) {
-			res.status(200).json(GuildData.slice(0, parseInt(limit)));
+			res.status(200).json(GuildData.slice(0, Number.parseInt(limit)));
 
 			return;
 		}

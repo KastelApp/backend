@@ -1,15 +1,15 @@
 export interface AuthedPayload {
-    Authed: boolean;
-    ApproximateMembers: number;
-    Misc: {
-        HeartbeatInterval: number | null;
-        SessionId: string
-    };
-    s: number;
+	ApproximateMembers: number;
+	Authed: boolean;
+	Misc: {
+		HeartbeatInterval: number | null;
+		SessionId: string;
+	};
+	s: number;
 }
 
 export interface NormalPayload {
-    op: number;
-    d?: any; // data
-    s?: number; // sequence
+	d?: any;
+	op: number; // data
+	s?: number; // sequence
 }

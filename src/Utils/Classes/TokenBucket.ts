@@ -1,39 +1,41 @@
 import { HTTPErrors } from '@kastelll/util';
 import type { NextFunction, Request, Response } from 'express';
 
-type RateLimitData = {
-	Bucket: 'global' | 'error' | string;
-	ExecutorId: string;
-	hits: number;
+interface RateLimitData {
 	Blocked: boolean;
+	Bucket: string | 'error' | 'global';
+	ExecutorId: string;
 	ExpiresAt: Date;
 	FailedHits: number;
-};
+	hits: number;
+}
 
 const RateLimitCache = new Map<string, RateLimitData>();
 
 interface RateLimitOptions {
-	Bucket?: string;
-	Window: number; // in ms
-	Count: number;
 	Bot?: {
 		inherit?: boolean; // if we should inherit the count from the normal count if so the other counts below this will be ignored
 	};
+	Bucket?: string;
+	Count: number; // in ms
 	Error?: boolean; // If we should should remove a token if the request was a 4xx or 5xx
-	IpCheck?: boolean; // if only the ip should be used to rate limit
 	Failed?: {
 		Boosts: {
-			Count: number; // if you get this many failed hits, then you get boosted by Y
-			Boost: number; // So if you get 5 failed hits, then you get an extra 5 seconds (in ms)
+			// if you get this many failed hits, then you get boosted by Y
+			Boost: number;
+			Count: number; // So if you get 5 failed hits, then you get an extra 5 seconds (in ms)
 		};
 		Remover: {
 			Count: number; // if you get this many failed hits then you loose X amount of tokens
 			Remove: number; // So if you get 5 failed hits, then you loose 5 tokens
 		};
 	};
+	// if we should also check the ip address
+	IpCheck?: boolean;
+	Window: number;
 }
 
-const Hit = async (opts: { BucketId: string; ClientId: string; MaxHits: number; Window: number; Failed: boolean }) => {
+const Hit = async (opts: { BucketId: string; ClientId: string; Failed: boolean; MaxHits: number; Window: number }) => {
 	const BucketId = `${opts.ClientId}-${opts.BucketId}`;
 
 	let Client = RateLimitCache.get(BucketId);
@@ -65,11 +67,11 @@ const Hit = async (opts: { BucketId: string; ClientId: string; MaxHits: number; 
 };
 
 const RateLimit = (options: RateLimitOptions) => {
-	return async function (req: Request, res: Response, next: NextFunction) {
-		const BucketId = options.Bucket || req.originalUrl.replace(/^\/api(\/v\d+)?\//, '');
+	return async (req: Request, res: Response, next: NextFunction) => {
+		const BucketId = options.Bucket ?? req.originalUrl.replace(/^\/api(?:\/v\d+)?\//, '');
 
 		let ClientId = req.clientIp;
-		let MaxHits = options.Count;
+		const MaxHits = options.Count;
 
 		if (!options.IpCheck && req.user.Id) ClientId = req.user.Id;
 
@@ -93,7 +95,7 @@ const RateLimit = (options: RateLimitOptions) => {
 			// }
 
 			const IsGlobal = BucketId === 'global';
-			const ResetAfterSecond = ResetAfterMs / 1000;
+			const ResetAfterSecond = ResetAfterMs / 1_000;
 
 			res.set({
 				'X-RateLimit-Limit': `${MaxHits}`,
@@ -107,19 +109,19 @@ const RateLimit = (options: RateLimitOptions) => {
 
 				Client.FailedHits++;
 
-				const Error = new HTTPErrors(4200, {
+				const Error = new HTTPErrors(4_200, {
 					RateLimit: {
 						Message: 'You are being rate limited.',
 						RetryAfter: ResetAfterSecond,
 						Global: IsGlobal,
 					},
 				});
-        
-        res.set({
-          'Retry-After': `${Math.ceil(ResetAfterSecond)}`,
-          'X-RateLimit-Reset': `${Client.ExpiresAt.getTime()}`,
-          'X-RateLimit-Reset-After': `${ResetAfterSecond}`,
-        });
+
+				res.set({
+					'Retry-After': `${Math.ceil(ResetAfterSecond)}`,
+					'X-RateLimit-Reset': `${Client.ExpiresAt.getTime()}`,
+					'X-RateLimit-Reset-After': `${ResetAfterSecond}`,
+				});
 
 				res.status(429).json(Error.toJSON());
 
@@ -127,20 +129,20 @@ const RateLimit = (options: RateLimitOptions) => {
 			}
 		}
 
-		next();
-
 		if (options.Error) {
-			res.once('finish', () => {
+			res.once('finish', async () => {
 				if (res.statusCode >= 400 && options.Error) {
-					Hit({ BucketId, ClientId, MaxHits, Window: options.Window, Failed: true });
+					await Hit({ BucketId, ClientId, MaxHits, Window: options.Window, Failed: true });
 				}
 			});
 		} else {
-			Hit({ BucketId, ClientId, MaxHits, Window: options.Window, Failed: false });
+			await Hit({ BucketId, ClientId, MaxHits, Window: options.Window, Failed: false });
 		}
+
+		next();
 	};
 };
 
 export default RateLimit;
 
-export { RateLimitCache, RateLimitData, RateLimitOptions, RateLimit, Hit };
+export { RateLimitCache, type RateLimitData, type RateLimitOptions, RateLimit, Hit };

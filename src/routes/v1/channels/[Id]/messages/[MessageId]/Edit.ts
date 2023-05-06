@@ -1,24 +1,24 @@
-import { HTTPErrors } from '@kastelll/util';
 import { Route } from '@kastelll/core';
-import User from '../../../../../../Middleware/User';
+import { HTTPErrors } from '@kastelll/util';
+import User from '../../../../../../Middleware/User.js';
 
 interface MessageBody {
-	content: string;
 	allowedMentions: number;
-	flags: number;
+	content: string;
 	embeds: {
-		title?: string;
-		description?: string;
 		color?: number;
-		timestamp?: number;
-		footer?: {
-			text: string;
-		};
+		description?: string;
 		fields?: {
 			title: string;
 			value: string;
 		}[];
+		footer?: {
+			text: string;
+		};
+		timestamp?: number;
+		title?: string;
 	}[];
+	flags: number;
 }
 
 new Route(
@@ -41,7 +41,7 @@ new Route(
 		const Message = await req.mutils.Channel.fetchMessage(Id, MessageId);
 
 		if (!Message) {
-			const Errors = new HTTPErrors(4052);
+			const Errors = new HTTPErrors(4_052);
 
 			Errors.AddError({
 				MessageIds: {
@@ -56,7 +56,7 @@ new Route(
 		}
 
 		if (!CanEdit && Message.Author.User.Id !== req.user.Id) {
-			const MissingPermissions = new HTTPErrors(4021);
+			const MissingPermissions = new HTTPErrors(4_021);
 
 			MissingPermissions.AddError({
 				Channel: {
@@ -73,7 +73,7 @@ new Route(
 		const EditedMessage = await req.mutils.Channel.editMessage(Id, MessageId, content, allowedMentions);
 
 		if (!EditedMessage) {
-			const Errors = new HTTPErrors(4052);
+			const Errors = new HTTPErrors(4_052);
 
 			Errors.AddError({
 				MessageIds: {

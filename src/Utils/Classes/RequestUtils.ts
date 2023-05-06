@@ -11,21 +11,23 @@ import {
 	RoleSchema,
 	UserSchema,
 	VerifcationLinkSchema,
-} from '../Schemas/Schemas';
-import Encryption from './Encryption';
-import LinkGeneration from './LinkGeneration';
-import FlagRemover from './BitFields/FlagRemover';
+} from '../Schemas/Schemas.js';
+import FlagRemover from './BitFields/FlagRemover.js';
+import Encryption from './Encryption.js';
+import LinkGeneration from './LinkGeneration.js';
 
 class RequestUtils {
-	req: Request<any, any, any, any>;
-	res: Response<any, Record<string, any>>;
-	constructor(req: Request, res: Response) {
+	public req: Request<any, any, any, any>;
+
+	public res: Response<any, Record<string, any>>;
+
+	public constructor(req: Request, res: Response) {
 		this.req = req;
 
 		this.res = res;
 	}
 
-	async FetchUser(Id: string): Promise<RawUser | null> {
+	public async FetchUser(Id: string): Promise<RawUser | null> {
 		const UserData = await UserSchema.findById(Encryption.encrypt(Id));
 
 		if (!UserData) return null;
@@ -33,7 +35,7 @@ class RequestUtils {
 		return Encryption.completeDecryption(UserData.toObject());
 	}
 
-	async FetchMember(GuildId: string, UserId: string): Promise<GuildMember | null> {
+	public async FetchMember(GuildId: string, UserId: string): Promise<GuildMember | null> {
 		const GuildMemberData = await GuildMemberSchema.findOne({
 			Guild: Encryption.encrypt(GuildId),
 			User: Encryption.encrypt(UserId),
@@ -44,7 +46,7 @@ class RequestUtils {
 		return Encryption.completeDecryption(GuildMemberData.toObject());
 	}
 
-	async FetchGuild(Id: string): Promise<Guild | null> {
+	public async FetchGuild(Id: string): Promise<Guild | null> {
 		const GuildData = await GuildSchema.findById(Encryption.encrypt(Id));
 
 		if (!GuildData) return null;
@@ -52,7 +54,7 @@ class RequestUtils {
 		return Encryption.completeDecryption(GuildData.toObject());
 	}
 
-	async FetchChannel(Id: string): Promise<Channel | null> {
+	public async FetchChannel(Id: string): Promise<Channel | null> {
 		const ChannelData = await ChannelSchema.findById(Encryption.encrypt(Id));
 
 		if (!ChannelData) return null;
@@ -60,7 +62,7 @@ class RequestUtils {
 		return Encryption.completeDecryption(ChannelData.toObject());
 	}
 
-	async FetchRole(Id: string): Promise<Role | null> {
+	public async FetchRole(Id: string): Promise<Role | null> {
 		const RoleData = await RoleSchema.findById(Encryption.encrypt(Id));
 
 		if (!RoleData) return null;
@@ -68,7 +70,7 @@ class RequestUtils {
 		return Encryption.completeDecryption(RoleData.toObject());
 	}
 
-	async VerificationLink(type: number, id: string) {
+	public async VerificationLink(type: number, id: string) {
 		const CodeId = this.req.app.snowflake.Generate();
 
 		const Code = LinkGeneration.VerifcationLink(CodeId);
@@ -79,7 +81,7 @@ class RequestUtils {
 			_id: Encryption.encrypt(CodeId),
 			Code: Encryption.encrypt(Code),
 			CreatedDate: Date.now(),
-			ExpireDate: Date.now() + 1000 * 60 * 60 * 24,
+			ExpireDate: Date.now() + 1_000 * 60 * 60 * 24,
 			Flags: FixedFlags,
 			Ip: Encryption.encrypt(this.req.clientIp),
 			User: Encryption.encrypt(id),

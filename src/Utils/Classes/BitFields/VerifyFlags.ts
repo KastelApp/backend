@@ -9,65 +9,67 @@
  * GPL 3.0 Licensed
  */
 
-import { VerificationFlags } from '../../../Constants'
+import { VerificationFlags } from '../../../Constants.js';
 
 class VerifyFields {
-    bits: number
-    constructor(bits: number) {
-        this.bits = bits
-    }
+	public bits: number;
 
-    has(bit: number) {
-        return (this.bits & bit) === bit
-    }
+	public constructor(bits: number) {
+		this.bits = bits;
+	}
 
-    add(bit: number): this {
-        if (this.has(bit)) return this
-        this.bits |= bit
-        return this
-    }
+	public has(bit: number) {
+		return (this.bits & bit) === bit;
+	}
 
-    remove(bit: number): this {
-        if (!this.has(bit)) return this
-        this.bits ^= bit
-        return this
-    }
+	public add(bit: number): this {
+		if (this.has(bit)) return this;
+		this.bits |= bit;
+		return this;
+	}
 
-    serialize(): number {
-        return this.bits
-    }
+	public remove(bit: number): this {
+		if (!this.has(bit)) return this;
+		this.bits ^= bit;
+		return this;
+	}
 
-    toJSON(): Record<keyof typeof VerificationFlags, boolean> {
-        return Object.keys(VerificationFlags).reduce((obj, key) => {
-            obj[key as keyof typeof VerificationFlags] = this.has(VerificationFlags[key as keyof typeof VerificationFlags])
-            return obj
-        }, {} as Record<keyof typeof VerificationFlags, boolean>)
-    }
+	public serialize(): number {
+		return this.bits;
+	}
 
-    toArray(): string[] {
-        return Object.keys(VerificationFlags).reduce((arr, key) => {
-            if (this.has(VerificationFlags[key as keyof typeof VerificationFlags])) arr.push(key)
-            return arr
-        }, [] as string[])
-    }
+	public toJSON() {
+		return Object.keys(VerificationFlags).reduce<Record<keyof typeof VerificationFlags, boolean>>((obj, key) => {
+			obj[key as keyof typeof VerificationFlags] = this.has(VerificationFlags[key as keyof typeof VerificationFlags]);
+			return obj;
+			// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter -- I got no other ideas how to fix this
+		}, {} as Record<keyof typeof VerificationFlags, boolean>);
+	}
 
-    hasString(bit: keyof typeof VerificationFlags) {
-        return this.has(VerificationFlags[bit as keyof typeof VerificationFlags])
-    }
+	public toArray(): string[] {
+		return Object.keys(VerificationFlags).reduce<string[]>((arr, key) => {
+			if (this.has(VerificationFlags[key as keyof typeof VerificationFlags])) arr.push(key);
+			return arr;
+		}, []);
+	}
 
-    static deserialize(bits: number): VerifyFields {
-        return new VerifyFields(Number(bits))
-    }
+	public hasString(bit: keyof typeof VerificationFlags) {
+		return this.has(VerificationFlags[bit as keyof typeof VerificationFlags]);
+	}
 
-    static get FlagFields(): typeof VerificationFlags {
-        return VerificationFlags
-    }
+	public static deserialize(bits: number): VerifyFields {
+		return new VerifyFields(Number(bits));
+	}
 
-    static get FlagFieldsArray(): (keyof typeof VerificationFlags)[] {
-        return Object.keys(VerificationFlags) as (keyof typeof VerificationFlags)[]
-    }
+	public static get FlagFields(): typeof VerificationFlags {
+		return VerificationFlags;
+	}
+
+	public static get FlagFieldsArray(): (keyof typeof VerificationFlags)[] {
+		return Object.keys(VerificationFlags) as (keyof typeof VerificationFlags)[];
+	}
 }
 
-export default VerifyFields
+export default VerifyFields;
 
-export { VerifyFields }
+export { VerifyFields };

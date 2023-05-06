@@ -1,121 +1,119 @@
 import { OpCodes } from '../WsUtils';
-import { SystemSocket } from './SystemSocket'
+import type { SystemSocket } from './SystemSocket';
 
 class Events {
-    SendEvents: boolean;
-    constructor(
-        private SystemSocket: SystemSocket
-    ) {
-        this.SystemSocket = SystemSocket;
+	SendEvents: boolean;
 
-        this.SendEvents = true
-    }
+	constructor(private readonly SystemSocket: SystemSocket) {
+		this.SystemSocket = SystemSocket;
 
-    MessageCreate(Message: {
-        Id: string;
-        Author: {
-            Id: string;
-            User: {
-                Id: string;
-                AvatarHash: string | null;
-                Username: string;
-                Tag: string;
-                PublicFlags: number;
-                Flags: number;
-            }
-            ;
-            Roles: string[];
-            Nickname: string | null;
-            JoinedAt: number;
-        }
-        Content: string;
-        AllowedMentions: number;
-        CreatedAt: number;
-        UpdatedAt: number;
-        Nonce: null;
-        Flags: number;
-        ChannelId: string;
-    }) {
-        if (this.SendEvents) {
-            this.SystemSocket.Ws?.send(JSON.stringify({
-                op: OpCodes.MessageCreate,
-                d: {
-                    Message
-                }
-            }))
-        }
+		this.SendEvents = true;
+	}
 
-        return JSON.stringify({
-            op: OpCodes.MessageCreate,
-            d: {
-                Message
-            }
-        })
-    }
+	MessageCreate(Message: {
+		AllowedMentions: number;
+		Author: {
+			Id: string;
+			JoinedAt: number;
+			Nickname: string | null;
+			Roles: string[];
+			User: {
+				AvatarHash: string | null;
+				Flags: number;
+				Id: string;
+				PublicFlags: number;
+				Tag: string;
+				Username: string;
+			};
+		};
+		ChannelId: string;
+		Content: string;
+		CreatedAt: number;
+		Flags: number;
+		Id: string;
+		Nonce: null;
+		UpdatedAt: number;
+	}) {
+		if (this.SendEvents) {
+			this.SystemSocket.Ws?.send(
+				JSON.stringify({
+					op: OpCodes.MessageCreate,
+					d: {
+						Message,
+					},
+				}),
+			);
+		}
 
-    MessageDelete(Message: {
-        Id: string;
-        ChannelId: string;
-        AuthorId: string;
-        Timestamp: number;
-    }) {
-        if (this.SendEvents) {
-            this.SystemSocket.Ws?.send(JSON.stringify({
-                op: OpCodes.MessageDelete,
-                d: {
-                    Message
-                }
-            }))
-        }
+		return JSON.stringify({
+			op: OpCodes.MessageCreate,
+			d: {
+				Message,
+			},
+		});
+	}
 
-        return JSON.stringify({
-            op: OpCodes.MessageDelete,
-            d: {
-                Message
-            }
-        })
-    }
+	MessageDelete(Message: { AuthorId: string; ChannelId: string; Id: string; Timestamp: number }) {
+		if (this.SendEvents) {
+			this.SystemSocket.Ws?.send(
+				JSON.stringify({
+					op: OpCodes.MessageDelete,
+					d: {
+						Message,
+					},
+				}),
+			);
+		}
 
-    MessageUpdate(Message: {
-        Id: string;
-        Author: {
-            Id: string;
-            User: {
-                Id: string;
-                AvatarHash: string | null;
-                Username: string;
-                Tag: string;
-                PublicFlags: number;
-            }
-            ;
-            Roles: string[];
-            Nickname: string | null;
-            JoinedAt: number;
-        }
-        Content: string;
-        AllowedMentions: number;
-        CreatedAt: number;
-        UpdatedAt: number;
-        Nonce: string;
-        Flags: number;
-        ChannelId: string;
-    }) {
-        if (this.SendEvents) {
-            this.SystemSocket.Ws?.send(JSON.stringify({
-                op: OpCodes.MessageUpdate,
-                d: {
-                    Message
-                }
-            }))
-        }
+		return JSON.stringify({
+			op: OpCodes.MessageDelete,
+			d: {
+				Message,
+			},
+		});
+	}
 
-        return JSON.stringify({
-            op: OpCodes.MessageUpdate,
-            d: {
-                Message
-            }
-        })
-    }
+	MessageUpdate(Message: {
+		AllowedMentions: number;
+		Author: {
+			Id: string;
+			JoinedAt: number;
+			Nickname: string | null;
+			Roles: string[];
+			User: {
+				AvatarHash: string | null;
+				Id: string;
+				PublicFlags: number;
+				Tag: string;
+				Username: string;
+			};
+		};
+		ChannelId: string;
+		Content: string;
+		CreatedAt: number;
+		Flags: number;
+		Id: string;
+		Nonce: string;
+		UpdatedAt: number;
+	}) {
+		if (this.SendEvents) {
+			this.SystemSocket.Ws?.send(
+				JSON.stringify({
+					op: OpCodes.MessageUpdate,
+					d: {
+						Message,
+					},
+				}),
+			);
+		}
+
+		return JSON.stringify({
+			op: OpCodes.MessageUpdate,
+			d: {
+				Message,
+			},
+		});
+	}
 }
 
 export default Events;

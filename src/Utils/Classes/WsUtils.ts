@@ -51,13 +51,9 @@ const SystemOpCodes = {
 	MemberUpdateAck: 21,
 };
 
-
-export {
-    OpCodes,
-    SystemOpCodes,
-}
+export { OpCodes, SystemOpCodes };
 
 export default {
-    OpCodes,
-    SystemOpCodes,
-}
+	OpCodes,
+	SystemOpCodes,
+};

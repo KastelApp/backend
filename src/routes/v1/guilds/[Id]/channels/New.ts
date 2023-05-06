@@ -1,6 +1,6 @@
 import { Route } from '@kastelll/core';
-import User from '../../../../../Middleware/User';
 import { HTTPErrors } from '@kastelll/util';
+import User from '../../../../../Middleware/User.js';
 
 /*
 
@@ -21,20 +21,20 @@ import { HTTPErrors } from '@kastelll/util';
  */
 
 interface RouteBody {
-	name: string;
-	description?: string;
-	type: number;
-	nsfw?: boolean;
 	allowedMentions?: number;
-	parent?: string;
-	position?: number;
 	children?: string[];
+	description?: string;
+	name: string;
+	nsfw?: boolean;
+	parent?: string;
 	permissionsOverides?: {
-		id: string;
-		type: number;
 		allow: string;
 		deny: string;
+		id: string;
+		type: number;
 	}[];
+	position?: number;
+	type: number;
 }
 
 new Route(
@@ -50,25 +50,25 @@ new Route(
 	async (req, res) => {
 		const { name, type, description } = req.body as RouteBody;
 		const { Id } = req.params as { Id: string };
-		
+
 		const CanSend = await req.mutils.User.hasPermission(Id, ['ManageChannels', 'Administrator'], true);
-		
+
 		if (!CanSend) {
-			const Errors = new HTTPErrors(4021);
-			
+			const Errors = new HTTPErrors(4_021);
+
 			Errors.AddError({
 				Guild: {
 					Code: 'MissingPermissions',
-					Message: 'The Guild you are trying to create a channel in does not exist or you do not have permission to create a channel',
-				}
+					Message:
+						'The Guild you are trying to create a channel in does not exist or you do not have permission to create a channel',
+				},
 			});
-			
+
 			res.status(400).json(Errors.toJSON());
-			
+
 			return;
 		}
-		
-		
+
 		console.log(name, type, description);
 	},
 );

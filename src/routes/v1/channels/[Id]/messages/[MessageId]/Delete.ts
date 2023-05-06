@@ -1,6 +1,6 @@
-import { HTTPErrors } from '@kastelll/util';
 import { Route } from '@kastelll/core';
-import User from '../../../../../../Middleware/User';
+import { HTTPErrors } from '@kastelll/util';
+import User from '../../../../../../Middleware/User.js';
 
 new Route(
 	'/',
@@ -20,7 +20,7 @@ new Route(
 		const Message = await req.mutils.Channel.fetchMessage(Id, MessageId);
 
 		if (!Message) {
-			const Errors = new HTTPErrors(4052);
+			const Errors = new HTTPErrors(4_052);
 
 			Errors.AddError({
 				MessageIds: {
@@ -35,7 +35,7 @@ new Route(
 		}
 
 		if (!CanDelete && Message.Author.User.Id !== req.user.Id) {
-			const MissingPermissions = new HTTPErrors(4021);
+			const MissingPermissions = new HTTPErrors(4_021);
 
 			MissingPermissions.AddError({
 				Channel: {
@@ -52,7 +52,7 @@ new Route(
 		const DeletedMessage = await req.mutils.Channel.deleteMessages(Id, [MessageId]);
 
 		if (!DeletedMessage) {
-			const Errors = new HTTPErrors(4052);
+			const Errors = new HTTPErrors(4_052);
 
 			Errors.AddError({
 				MessageIds: {

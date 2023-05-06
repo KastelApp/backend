@@ -11,11 +11,11 @@
 
 import { HTTPErrors } from '@kastelll/util';
 import type { NextFunction, Request, Response } from 'express';
-import type { Captcha } from '../Types/Routes';
+import type { Captcha as CaptchaType } from '../Types/Routes.js';
 
 // TODO: Cdata support
 
-const Captcha = (options: Captcha) => {
+const Captcha = (options: CaptchaType) => {
 	return async (req: Request, res: Response, next: NextFunction) => {
 		const CaptchaHeader = req.headers['cf-turnstile-response'];
 
@@ -25,15 +25,17 @@ const Captcha = (options: Captcha) => {
 			return;
 		}
 
-		if (options.Enabled && options.BodyTrigger) {
-			if (!Object.keys(req.body).some((key) => options?.BodyTrigger?.includes(key))) {
-				next();
-				return;
-			}
+		if (
+			options.Enabled &&
+			options.BodyTrigger &&
+			!Object.keys(req.body).some((key) => options?.BodyTrigger?.includes(key))
+		) {
+			next();
+			return;
 		}
 
 		if (!CaptchaHeader && options.Enabled) {
-			const Errors = new HTTPErrors(5000);
+			const Errors = new HTTPErrors(5_000);
 
 			Errors.AddError({
 				Captcha: {
@@ -48,7 +50,7 @@ const Captcha = (options: Captcha) => {
 		}
 
 		if (typeof CaptchaHeader !== 'string') {
-			const Errors = new HTTPErrors(5000);
+			const Errors = new HTTPErrors(5_000);
 
 			Errors.AddError({
 				Captcha: {
@@ -65,7 +67,7 @@ const Captcha = (options: Captcha) => {
 		const VerifyCaptcha = await req.captcha.Verify(CaptchaHeader, req.ip);
 
 		if (!VerifyCaptcha.success) {
-			const Errors = new HTTPErrors(5000);
+			const Errors = new HTTPErrors(5_000);
 
 			Errors.AddError({
 				Captcha: {
@@ -80,7 +82,7 @@ const Captcha = (options: Captcha) => {
 		}
 
 		if (options.ExpectedAction && options.ExpectedAction !== VerifyCaptcha.action) {
-			const Errors = new HTTPErrors(5000);
+			const Errors = new HTTPErrors(5_000);
 
 			Errors.AddError({
 				Captcha: {

@@ -1,208 +1,208 @@
 interface Ban {
-  _id: string;
-  Guild: string;
-  User: string;
-  Banner: string;
-  Reason: string;
-  BannedDate: number;
-  UnbanDate: number;
+	BannedDate: number;
+	Banner: string;
+	Guild: string;
+	Reason: string;
+	UnbanDate: number;
+	User: string;
+	_id: string;
 }
 
 interface Channel {
-  _id: string;
-  Guild: string;
-  Name: string;
-  Description: string;
-  Type: number;
-  Nsfw: boolean;
-  AllowedMentions: number;
-  Parent: string;
-  Children: string[];
-  Position: number;
-  PermissionsOverides: string[];
+	AllowedMentions: number;
+	Children: string[];
+	Description: string;
+	Guild: string;
+	Name: string;
+	Nsfw: boolean;
+	Parent: string;
+	PermissionsOverides: string[];
+	Position: number;
+	Type: number;
+	_id: string;
 }
 
 interface Emoji {
-  _id: string;
-  Guild: string;
-  Creator: string;
-  Name: string;
-  EmojiHash: string;
-  Disabled: boolean;
-  Public: boolean;
+	Creator: string;
+	Disabled: boolean;
+	EmojiHash: string;
+	Guild: string;
+	Name: string;
+	Public: boolean;
+	_id: string;
 }
 
 interface Guild {
-  _id: string;
-  Name: string;
-  Description: string;
-  Flags: number;
-  Owner: string;
-  CoOwners: string[];
-  Channels: string[];
-  Roles: string[];
-  Invites: string[];
-  Bans: string[];
-  Members: string[];
-  Emojis: string[];
-  MaxMembers: number;
+	Bans: string[];
+	Channels: string[];
+	CoOwners: string[];
+	Description: string;
+	Emojis: string[];
+	Flags: number;
+	Invites: string[];
+	MaxMembers: number;
+	Members: string[];
+	Name: string;
+	Owner: string;
+	Roles: string[];
+	_id: string;
 }
 
 interface GuildMember {
-  _id: string;
-  Guild: string;
-  User: string;
-  Roles: string[];
-  Nickname: string;
-  JoinedAt: number;
-  Flags: number;
+	Flags: number;
+	Guild: string;
+	JoinedAt: number;
+	Nickname: string;
+	Roles: string[];
+	User: string;
+	_id: string;
 }
 
 interface Invite {
-  _id: string;
-  Guild: string;
-  Expires: Date;
-  Uses: number;
-  MaxUses: number;
-  Creator: string;
-  Deleteable: boolean;
+	Creator: string;
+	Deleteable: boolean;
+	Expires: Date;
+	Guild: string;
+	MaxUses: number;
+	Uses: number;
+	_id: string;
 }
 
 interface PermissionsOverides {
-  _id: string;
-  Allow: string;
-  Deny: string;
-  Type: string;
-  Editable: boolean;
+	Allow: string;
+	Deny: string;
+	Editable: boolean;
+	Type: string;
+	_id: string;
 }
 
 interface Role {
-  _id: string;
-  Guild: string;
-  Name: string;
-  AllowedNsfw: boolean;
-  Deleteable: boolean;
-  AllowedMentions: number;
-  Hoisted: boolean;
-  Color: number;
-  Permissions: string;
-  Position: number;
+	AllowedMentions: number;
+	AllowedNsfw: boolean;
+	Color: number;
+	Deleteable: boolean;
+	Guild: string;
+	Hoisted: boolean;
+	Name: string;
+	Permissions: string;
+	Position: number;
+	_id: string;
 }
 
 interface Webhook {
-  _id: string;
-  Guild: string;
-  Channel: string;
-  Username: string;
-  Token: string;
-  AllowedMentions: number;
+	AllowedMentions: number;
+	Channel: string;
+	Guild: string;
+	Token: string;
+	Username: string;
+	_id: string;
 }
 
 interface File {
-  _id: string;
-  Message: string;
-  Name: string;
-  CdnToken: string;
-  Type: string;
-  Deleted: boolean;
+	CdnToken: string;
+	Deleted: boolean;
+	Message: string;
+	Name: string;
+	Type: string;
+	_id: string;
 }
 
 interface Settings {
-  User: string;
-  Status: string;
-  Presence: number;
-  Tokens: string[];
-  Theme: string;
-  Language: string;
-  Privacy: number;
-  Mentions: { Message: string }[];
+	Language: string;
+	Mentions: { Message: string }[];
+	Presence: number;
+	Privacy: number;
+	Status: string;
+	Theme: string;
+	Tokens: string[];
+	User: string;
 }
 
 interface Dm {
-  _id: string;
-  Creator: string;
-  Receiver: string;
+	Creator: string;
+	Receiver: string;
+	_id: string;
 }
 
 interface User {
-  _id: string;
-  Email: string;
-  EmailVerified: boolean;
-  Username: string;
-  Tag: string;
-  AvatarHash: string;
-  Password: string;
-  PhoneNumber: string;
-  TwoFa: boolean;
-  TwoFaVerified: boolean;
-  TwoFaSecret: string;
-  Ips: string[];
-  Flags: number;
-  Guilds: string[];
-  Dms: string[];
-  GroupChats: string[];
-  Bots: string[];
-  Banned: boolean;
-  BanReason: string;
-  Locked: boolean;
-  AccountDeletionInProgress: boolean;
+	AccountDeletionInProgress: boolean;
+	AvatarHash: string;
+	BanReason: string;
+	Banned: boolean;
+	Bots: string[];
+	Dms: string[];
+	Email: string;
+	EmailVerified: boolean;
+	Flags: number;
+	GroupChats: string[];
+	Guilds: string[];
+	Ips: string[];
+	Locked: boolean;
+	Password: string;
+	PhoneNumber: string;
+	Tag: string;
+	TwoFa: boolean;
+	TwoFaSecret: string;
+	TwoFaVerified: boolean;
+	Username: string;
+	_id: string;
 }
 
 interface GroupChat {
-  _id: string;
-  Users: string[];
-  Owner: string;
+	Owner: string;
+	Users: string[];
+	_id: string;
 }
 
 interface Friend {
-  Sender: string;
-  Receiver: string;
-  SenderNickname: string;
-  ReceiverNickname: string;
-  Flags: number;
+	Flags: number;
+	Receiver: string;
+	ReceiverNickname: string;
+	Sender: string;
+	SenderNickname: string;
 }
 
 interface Message {
-  _id: string;
-  Author: string;
-  Content: string;
-  AllowedMentions: number;
-  CreatedDate: number;
-  UpdatedDate: number;
-  Channel: string;
-  Nonce: string;
-  Flags: number;
-  Embeds: {
-    Title?: string;
-    Description?: string;
-    Color?: number;
-    Timestamp?: number;
-    Footer?: {
-      Text: string;
-    }[];
-    Fields?: {
-      Title: string;
-      Value: string;
-    }[];
-  }[];
-  Files: string[];
+	AllowedMentions: number;
+	Author: string;
+	Channel: string;
+	Content: string;
+	CreatedDate: number;
+	Embeds: {
+		Color?: number;
+		Description?: string;
+		Fields?: {
+			Title: string;
+			Value: string;
+		}[];
+		Footer?: {
+			Text: string;
+		}[];
+		Timestamp?: number;
+		Title?: string;
+	}[];
+	Files: string[];
+	Flags: number;
+	Nonce: string;
+	UpdatedDate: number;
+	_id: string;
 }
 
-export {
-  Ban,
-  Channel,
-  Emoji,
-  Guild,
-  GuildMember,
-  Invite,
-  PermissionsOverides,
-  Role,
-  Webhook,
-  File,
-  Settings,
-  Dm,
-  User,
-  GroupChat,
-  Friend,
-  Message,
+export type {
+	Ban,
+	Channel,
+	Emoji,
+	Guild,
+	GuildMember,
+	Invite,
+	PermissionsOverides,
+	Role,
+	Webhook,
+	File,
+	Settings,
+	Dm,
+	User,
+	GroupChat,
+	Friend,
+	Message,
 };

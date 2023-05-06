@@ -4,12 +4,12 @@
 	"version": "0.0.6",
 	"main": "dist/index.js",
 	"dependencies": {
-		"@kastelll/core": "^0.2.2",
-		"@kastelll/util": "^0.1.3",
+		"@kastelll/core": "^0.2.4",
+		"@kastelll/util": "^0.2.0",
 		"@sentry/node": "^7.49.0",
 		"bcrypt": "^5.1.0",
 		"body-parser": "^1.20.2",
-		"chalk": "^5.2.0",
+		"chalk": "^4.1.2",
 		"cookie-parser": "^1.4.6",
 		"cors": "^2.8.5",
 		"express": "^4.18.2",
@@ -20,8 +20,6 @@
 		"redis": "^4.6.5",
 		"speakeasy": "^2.0.0",
 		"terminal-kit": "^3.0.0",
-		"tsup": "^6.7.0",
-		"turbo": "^1.9.3",
 		"undici": "^5.22.0",
 		"vitest": "^0.30.1"
 	},
@@ -36,22 +34,20 @@
 		"@types/nodemailer": "^6.4.7",
 		"@types/speakeasy": "^2.0.7",
 		"@types/ws": "^8.5.4",
+		"cross-env": "^7.0.3",
 		"eslint": "^8.39.0",
+		"eslint-config-neon": "^0.1.42",
+		"eslint-formatter-pretty": "^5.0.0",
 		"husky": "^8.0.3",
-		"lint-staged": "^13.2.1"
+		"lint-staged": "^13.2.1",
+		"prettier": "^2.8.8",
+		"tsup": "^6.7.0"
 	},
 	"scripts": {
 		"start": "node dist/index.js",
-		"tsupb": "tsup",
-		"build": "turbo tsupb",
-		"lint": "turbo run lint --parallel",
-		"format": "turbo run format --parallel",
-		"lint:affected:development": "turbo run lint --filter='...[origin/development]' --parallel",
-		"format:affected:development": "turbo run format --filter='...[origin/development]' --parallel",
-		"lint:affected:stable": "turbo run lint --filter='...[origin/stable]' --parallel",
-		"format:affected:stable": "turbo run format --filter='...[origin/stable]' --parallel",
-		"build:affected:development": "turbo run tsupb --filter='...[origin/development]' --parallel",
-		"build:affected:stable": "turbo run tsupb --filter='...[origin/stable]' --parallel"
+		"build": "tsup",
+		"lint": "prettier --check . && cross-env TIMING=1 eslint src --ext .js,.ts --format=pretty",
+		"format": "prettier --write . && cross-env TIMING=1 eslint src --ext .js,.ts --fix --format=pretty"
 	},
 	"keywords": [
 		"chatting"

@@ -1,176 +1,178 @@
-import Config from "../../../Config";
-import WebSocket from "ws";
-import zlib from "zlib";
-import type {
-  AuthedPayload,
-  NormalPayload,
-} from "../../../Types/Socket/MiscPayloads";
-import { OpCodes } from "../WsUtils";
-import Events from "./Events";
+import zlib from 'node:zlib';
+import WebSocket from 'ws';
+import Config from '../../../Config.js';
+import type { AuthedPayload, NormalPayload } from '../../../Types/Socket/MiscPayloads';
+import { OpCodes } from '../WsUtils';
+import Events from './Events';
 
 class SystemSocket {
-  Ws: WebSocket | null;
-  Sequence: number;
-  HeartbeatInterval: null | NodeJS.Timer;
-  LastHeartbeat: null | number;
-  LastHeartbeatAck: null | number;
-  SessionId: null | string;
-  ApproximateMembers: number;
-  FailedConnectionAttempts: number;
-  Events: Events;
-  constructor() {
-    this.Ws = null;
+	Ws: WebSocket | null;
 
-    this.Sequence = 0;
+	Sequence: number;
 
-    this.HeartbeatInterval = null;
+	HeartbeatInterval: NodeJS.Timer | null;
 
-    this.LastHeartbeat = null;
+	LastHeartbeat: number | null;
 
-    this.LastHeartbeatAck = null;
+	LastHeartbeatAck: number | null;
 
-    this.SessionId = null;
+	SessionId: string | null;
 
-    this.ApproximateMembers = 0;
+	ApproximateMembers: number;
 
-    this.FailedConnectionAttempts = 0; // We allow for 15 failed connection attempts before we stop trying to connect
+	FailedConnectionAttempts: number;
 
-    this.Events = new Events(this)
-  }
+	Events: Events;
 
-  Connect(): Promise<void> {
-    return new Promise<void>((resolve) => {
-      this.Ws = new WebSocket(
-        `${Config.Ws.Url}?v=${Config.Ws.version || 0}&p=${encodeURIComponent(
-          Config.Ws.Password
-        )}&c=true&encoding=json`
-      );
+	constructor() {
+		this.Ws = null;
 
-      this.Ws.on("error", () => {
-        console.log("[System Socket] Failed to connect to System Socket / Recieved an Error");
+		this.Sequence = 0;
 
-        this.HandleDisconnect()
-        
-        resolve();
-      });
+		this.HeartbeatInterval = null;
 
-      this.Ws.on("open", () => {
-        console.log("[System Socket] Connected to System Socket");
-      });
+		this.LastHeartbeat = null;
 
-      this.Ws.on("close", () => {
-        console.log("[System Socket] Disconnected from System Socket");
+		this.LastHeartbeatAck = null;
 
-        this.HandleDisconnect()
-      });
+		this.SessionId = null;
 
-      this.Ws.on("message", (data: Buffer) => {
-        // data is a buffer and a zlib compressed buffer (Should be since we sent c=true in the query)
-        // so we need to decompress it
-        const decoded = this.decode(data);
+		this.ApproximateMembers = 0;
 
-        if (decoded?.s) this.Sequence = decoded.s;
+		this.FailedConnectionAttempts = 0; // We allow for 15 failed connection attempts before we stop trying to connect
 
-        if (decoded?.Authed === true) {
-          console.log("[System Socket] Authed to System Socket");
+		this.Events = new Events(this);
+	}
 
-          this.FailedConnectionAttempts = 0; // Reset the failed connection attempts (Since we are now connected)
+	async Connect(): Promise<void> {
+		return new Promise<void>((resolve) => {
+			this.Ws = new WebSocket(
+				`${Config.Ws.Url}?v=${Config.Ws.version || 0}&p=${encodeURIComponent(Config.Ws.Password)}&c=true&encoding=json`,
+			);
 
-          const AuthPayload = decoded as AuthedPayload;
+			this.Ws.on('error', () => {
+				console.log('[System Socket] Failed to connect to System Socket / Recieved an Error');
 
-          this.SessionId = AuthPayload.Misc.SessionId;
+				this.HandleDisconnect();
 
-          this.ApproximateMembers = AuthPayload.ApproximateMembers;
+				resolve();
+			});
 
-          if (typeof AuthPayload.Misc.HeartbeatInterval === "number") {
-            this.debug("Starting Heartbeat Interval");
-            this.HeartbeatInterval = setInterval(() => {
-              this.debug("Sending Heartbeat");
-              this.Ws?.send(
-                JSON.stringify({
-                  op: OpCodes.HeartBeat,
-                  d: {
-                    Sequence: this.Sequence,
-                  },
-                })
-              );
-              this.LastHeartbeat = Date.now();
+			this.Ws.on('open', () => {
+				console.log('[System Socket] Connected to System Socket');
+			});
 
-              this.debug(`Heartbeat Sent`);
-            }, AuthPayload.Misc.HeartbeatInterval - 2000);
-          }
+			this.Ws.on('close', () => {
+				console.log('[System Socket] Disconnected from System Socket');
 
-          resolve();
-        }
+				this.HandleDisconnect();
+			});
 
-        if (decoded?.op) {
-          const NormalPayload = decoded as NormalPayload;
+			this.Ws.on('message', (data: Buffer) => {
+				// data is a buffer and a zlib compressed buffer (Should be since we sent c=true in the query)
+				// so we need to decompress it
+				const decoded = this.decode(data);
 
-          this.debug(`Received Payload: ${JSON.stringify(NormalPayload)}`);
+				if (decoded?.s) this.Sequence = decoded.s;
 
-          switch (NormalPayload.op) {
-            case OpCodes.HeartBeatAck:
-              this.LastHeartbeatAck = Date.now();
-              this.debug(`Heartbeat Acknowledged`);
-              break;
+				if (decoded?.Authed === true) {
+					console.log('[System Socket] Authed to System Socket');
 
-            case Object.values(OpCodes).find((op) => op === NormalPayload.op):
-              this.debug(`Received Event: ${Object.keys(OpCodes).find((op) => OpCodes[op as keyof typeof OpCodes] === NormalPayload.op)}`);
-              break;
-          }
-        }
-      });
-    });
-  }
+					this.FailedConnectionAttempts = 0; // Reset the failed connection attempts (Since we are now connected)
 
-  private decode(data: Buffer): any {
-    try {
-      const ZlibDecoded = zlib.unzipSync(data);
+					const AuthPayload = decoded as AuthedPayload;
 
-      return JSON.parse(ZlibDecoded.toString());
-    } catch (er) {
-      try {
-        return JSON.parse(data.toString());
-      } catch (er) {
-        return null;
-      }
-    }
-  }
+					this.SessionId = AuthPayload.Misc.SessionId;
 
-  private debug(data: string): void {
-    if (process.env.DEBUG)
-    console.log(`[System Socket] ${data}`);
-  }
+					this.ApproximateMembers = AuthPayload.ApproximateMembers;
 
-  HandleDisconnect(Force: boolean = false): void {
+					if (typeof AuthPayload.Misc.HeartbeatInterval === 'number') {
+						this.debug('Starting Heartbeat Interval');
+						this.HeartbeatInterval = setInterval(() => {
+							this.debug('Sending Heartbeat');
+							this.Ws?.send(
+								JSON.stringify({
+									op: OpCodes.HeartBeat,
+									d: {
+										Sequence: this.Sequence,
+									},
+								}),
+							);
+							this.LastHeartbeat = Date.now();
 
-    if (!Force && this.Ws) return;
+							this.debug(`Heartbeat Sent`);
+						}, AuthPayload.Misc.HeartbeatInterval - 2_000);
+					}
 
-    if (this.HeartbeatInterval) {
-      clearInterval(this.HeartbeatInterval);
-      this.HeartbeatInterval = null;
-    }
+					resolve();
+				}
 
-    this.Ws?.removeAllListeners();
+				if (decoded?.op) {
+					const NormalPayload = decoded as NormalPayload;
 
-    if (!Force && this.FailedConnectionAttempts >= 15) {
-      console.log(
-        "[System Socket] Failed to connect to System Socket 15 times, stopping attempts"
-      );
-      return;
-    }
+					this.debug(`Received Payload: ${JSON.stringify(NormalPayload)}`);
 
-    this.FailedConnectionAttempts++;
-    this.Ws = null;
+					switch (NormalPayload.op) {
+						case OpCodes.HeartBeatAck:
+							this.LastHeartbeatAck = Date.now();
+							this.debug(`Heartbeat Acknowledged`);
+							break;
 
-    console.log(
-      `[System Socket] Attempting to reconnect to System Socket, attempt ${this.FailedConnectionAttempts}`
-    );
+						case Object.values(OpCodes).find((op) => op === NormalPayload.op):
+							this.debug(
+								`Received Event: ${Object.keys(OpCodes).find(
+									(op) => OpCodes[op as keyof typeof OpCodes] === NormalPayload.op,
+								)}`,
+							);
+							break;
+					}
+				}
+			});
+		});
+	}
 
-    setTimeout(() => {
-      this.Connect();
-    }, 5000);
-  }
+	private decode(data: Buffer): any {
+		try {
+			const ZlibDecoded = zlib.unzipSync(data);
+
+			return JSON.parse(ZlibDecoded.toString());
+		} catch {
+			try {
+				return JSON.parse(data.toString());
+			} catch {
+				return null;
+			}
+		}
+	}
+
+	private debug(data: string): void {
+		if (process.env.DEBUG) console.log(`[System Socket] ${data}`);
+	}
+
+	HandleDisconnect(Force: boolean = false): void {
+		if (!Force && this.Ws) return;
+
+		if (this.HeartbeatInterval) {
+			clearInterval(this.HeartbeatInterval);
+			this.HeartbeatInterval = null;
+		}
+
+		this.Ws?.removeAllListeners();
+
+		if (!Force && this.FailedConnectionAttempts >= 15) {
+			console.log('[System Socket] Failed to connect to System Socket 15 times, stopping attempts');
+			return;
+		}
+
+		this.FailedConnectionAttempts++;
+		this.Ws = null;
+
+		console.log(`[System Socket] Attempting to reconnect to System Socket, attempt ${this.FailedConnectionAttempts}`);
+
+		setTimeout(() => {
+			this.Connect();
+		}, 5_000);
+	}
 }
 
 export default SystemSocket;

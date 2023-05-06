@@ -1,5 +1,5 @@
 import { Route } from '@kastelll/core';
-import User from '../../../../Middleware/User';
+import User from '../../../../Middleware/User.js';
 
 new Route(
 	'/',

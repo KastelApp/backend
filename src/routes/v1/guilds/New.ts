@@ -1,30 +1,37 @@
-import { HTTPErrors } from '@kastelll/util';
 import { Route } from '@kastelll/core';
-import Constants from '../../../Constants';
-import User from '../../../Middleware/User';
-import Encryption from '../../../Utils/Classes/Encryption';
+import { HTTPErrors } from '@kastelll/util';
+import Constants from '../../../Constants.js';
+import User from '../../../Middleware/User.js';
+import Encryption from '../../../Utils/Classes/Encryption.js';
 import StringValidation from '../../../Utils/Classes/StringValidation';
-import schemaData from '../../../Utils/SchemaData';
-import { ChannelSchema, GuildMemberSchema, GuildSchema, RoleSchema, UserSchema } from '../../../Utils/Schemas/Schemas';
+import schemaData from '../../../Utils/SchemaData.js';
+import {
+	ChannelSchema,
+	GuildMemberSchema,
+	GuildSchema,
+	RoleSchema,
+	UserSchema,
+} from '../../../Utils/Schemas/Schemas.js';
 
 interface NewGuildBody {
-	name: string;
+	channels: {
+		// NOTE, THIS WILL NOT BE THE ID OF THE CHANNEL, This will be the id just for children channels
+		children: string[];
+		id: string;
+		name: string;
+		position: number;
+		type: number;
+	}[];
 	description: string;
 	icon: string;
-	channels: {
-		name: string;
-		type: number;
-		position: number;
-		id: string; // NOTE, THIS WILL NOT BE THE ID OF THE CHANNEL, This will be the id just for children channels
-		children: string[];
-	}[];
+	name: string;
 	roles: {
-		name: string;
-		permissions: number;
-		position: number;
 		color: number;
 		hoist: boolean;
 		mentionable: boolean;
+		name: string;
+		permissions: number;
+		position: number;
 	}[];
 }
 
@@ -47,7 +54,7 @@ new Route(
 		const { data } = req.query as { data: string };
 
 		if (!name) {
-			const Errors = new HTTPErrors(4016);
+			const Errors = new HTTPErrors(4_016);
 
 			Errors.AddError({
 				Name: {
@@ -64,7 +71,7 @@ new Route(
 		const FoundUser = await UserSchema.findById(Encryption.encrypt(req.user.Id));
 
 		if (FoundUser?.Guilds && FoundUser.Guilds.length >= Constants.Settings.Max.GuildCount) {
-			const Errors = new HTTPErrors(4017);
+			const Errors = new HTTPErrors(4_017);
 
 			Errors.AddError({
 				Guilds: {
@@ -79,7 +86,7 @@ new Route(
 		}
 
 		if (!StringValidation.GuildName(name)) {
-			const Errors = new HTTPErrors(4023);
+			const Errors = new HTTPErrors(4_023);
 
 			Errors.AddError({
 				Name: {
@@ -94,7 +101,7 @@ new Route(
 		}
 
 		if (description && !StringValidation.GuildDescription(description)) {
-			const Errors = new HTTPErrors(4023);
+			const Errors = new HTTPErrors(4_023);
 
 			Errors.AddError({
 				Description: {

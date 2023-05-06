@@ -1,10 +1,10 @@
-import { HTTPErrors } from '@kastelll/util';
 import { Route } from '@kastelll/core';
-import User from '../../../../Middleware/User';
+import { HTTPErrors } from '@kastelll/util';
+import User from '../../../../Middleware/User.js';
 import GuildMemberFlags from '../../../../Utils/Classes/BitFields/GuildMember';
-import Encryption from '../../../../Utils/Classes/Encryption';
-import schemaData from '../../../../Utils/SchemaData';
-import { GuildMemberSchema, GuildSchema } from '../../../../Utils/Schemas/Schemas';
+import Encryption from '../../../../Utils/Classes/Encryption.js';
+import schemaData from '../../../../Utils/SchemaData.js';
+import { GuildMemberSchema, GuildSchema } from '../../../../Utils/Schemas/Schemas.js';
 
 new Route(
 	'/',
@@ -27,7 +27,7 @@ new Route(
 
 			// if there are any invalid includes, return an error
 			if (ToInclude.some((Include) => !['coowners', 'owner'].includes(Include))) {
-				const Errors = new HTTPErrors(4014);
+				const Errors = new HTTPErrors(4_014);
 
 				Errors.AddError({
 					Include: {
@@ -45,7 +45,7 @@ new Route(
 		const GuildData = await GuildSchema.findById(Encryption.encrypt(Id));
 
 		if (!GuildData) {
-			const Errors = new HTTPErrors(4020);
+			const Errors = new HTTPErrors(4_020);
 
 			Errors.AddError({
 				Guild: {
@@ -65,7 +65,7 @@ new Route(
 		});
 
 		if (!UserInSideTheServer) {
-			const Errors = new HTTPErrors(4020);
+			const Errors = new HTTPErrors(4_020);
 
 			Errors.AddError({
 				Guild: {
@@ -82,7 +82,7 @@ new Route(
 		const MemberFlags = new GuildMemberFlags(UserInSideTheServer.Flags ?? 0);
 
 		if (!MemberFlags.hasString('In')) {
-			const Errors = new HTTPErrors(4020);
+			const Errors = new HTTPErrors(4_020);
 
 			Errors.AddError({
 				Guild: {

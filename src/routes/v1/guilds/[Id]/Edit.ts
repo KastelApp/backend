@@ -1,18 +1,18 @@
-import { HTTPErrors } from '@kastelll/util';
 import { Route } from '@kastelll/core';
-import User from '../../../../Middleware/User';
+import { HTTPErrors } from '@kastelll/util';
+import User from '../../../../Middleware/User.js';
 import type { Role } from '../../../../Types/Guilds/Role';
-import Permissions from '../../../../Utils/Classes/BitFields/Permissions';
 import GuildMemberFlags from '../../../../Utils/Classes/BitFields/GuildMember';
-import Encryption from '../../../../Utils/Classes/Encryption';
-import { GuildMemberSchema, GuildSchema } from '../../../../Utils/Schemas/Schemas';
+import Permissions from '../../../../Utils/Classes/BitFields/Permissions';
+import Encryption from '../../../../Utils/Classes/Encryption.js';
+import { GuildMemberSchema, GuildSchema } from '../../../../Utils/Schemas/Schemas.js';
 
 interface RequestBody {
-	name: string;
 	description: string;
+	maxMembers: number;
+	name: string;
 	ownerId: string;
 	serverIcon: string;
-	maxMembers: number;
 	twofaCode: string;
 }
 
@@ -34,7 +34,7 @@ new Route(
 		const GuildData = await GuildSchema.findById(Encryption.encrypt(Id));
 
 		if (!GuildData) {
-			const Errors = new HTTPErrors(4020);
+			const Errors = new HTTPErrors(4_020);
 
 			Errors.AddError({
 				Guild: {
@@ -56,7 +56,7 @@ new Route(
 		const MemberFlags = new GuildMemberFlags(UserInSideTheServer?.Flags ?? 0);
 
 		if (!UserInSideTheServer) {
-			const Errors = new HTTPErrors(4020);
+			const Errors = new HTTPErrors(4_020);
 
 			Errors.AddError({
 				Guild: {
@@ -88,7 +88,7 @@ new Route(
 
 			// If its the last role in the array and they dont have the permission respond with an error
 			if (PopulatedUser.Roles.indexOf(Role) === PopulatedUser.Roles.length - 1) {
-				const Errors = new HTTPErrors(4021);
+				const Errors = new HTTPErrors(4_021);
 
 				Errors.AddError({
 					Permissions: {
@@ -105,7 +105,7 @@ new Route(
 
 		// Changing MaxMembers is a staff only feature (This is just for testing/for offcial guilds that hit the limit)
 		if (maxMembers && !req.user.FlagsUtil.hasString('Staff')) {
-			const Errors = new HTTPErrors(4021);
+			const Errors = new HTTPErrors(4_021);
 
 			Errors.AddError({
 				Permissions: {
@@ -125,7 +125,7 @@ new Route(
 
 		if (ownerId) {
 			if (!MemberFlags.hasString('Owner')) {
-				const Errors = new HTTPErrors(4021);
+				const Errors = new HTTPErrors(4_021);
 
 				Errors.AddError({
 					Permissions: {
@@ -140,7 +140,7 @@ new Route(
 			}
 
 			if (req.user.TwoFa && !twofaCode) {
-				const Errors = new HTTPErrors(4018);
+				const Errors = new HTTPErrors(4_018);
 
 				Errors.AddError({
 					TwoFa: {
@@ -164,7 +164,7 @@ new Route(
 			});
 
 			if (!NewOwner) {
-				const Errors = new HTTPErrors(4021);
+				const Errors = new HTTPErrors(4_021);
 
 				Errors.AddError({
 					Member: {
@@ -177,7 +177,7 @@ new Route(
 			const NewOwnerFlags = new GuildMemberFlags(NewOwner?.Flags ?? 0);
 
 			if (!NewOwnerFlags.hasString('In')) {
-				const Errors = new HTTPErrors(4021);
+				const Errors = new HTTPErrors(4_021);
 
 				Errors.AddError({
 					Member: {
@@ -188,7 +188,7 @@ new Route(
 			}
 
 			if (NewOwnerFlags.hasString('Owner')) {
-				const Errors = new HTTPErrors(4021);
+				const Errors = new HTTPErrors(4_021);
 
 				Errors.AddError({
 					Member: {

@@ -9,11 +9,11 @@
  * GPL 3.0 Licensed
  */
 
-import { HTTPErrors } from '@kastelll/util';
+import crypto from 'node:crypto';
 import { Route } from '@kastelll/core';
-import crypto from 'crypto';
-import Config from '../../Config';
-import IpUtils from '../../Utils/Classes/IpUtils';
+import { HTTPErrors } from '@kastelll/util';
+import Config from '../../Config.js';
+import IpUtils from '../../Utils/Classes/IpUtils.js';
 
 // This route is used to restart connection to the socket server, its only accessible by the socket server itself
 new Route('/restart', 'GET', [], (req, res) => {

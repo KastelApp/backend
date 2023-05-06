@@ -1,6 +1,6 @@
-import { HTTPErrors } from '@kastelll/util';
 import { Route } from '@kastelll/core';
-import User from '../../../../../Middleware/User';
+import { HTTPErrors } from '@kastelll/util';
+import User from '../../../../../Middleware/User.js';
 
 new Route(
 	'/purge',
@@ -19,7 +19,7 @@ new Route(
 		const CanDelete = await req.mutils.Channel.hasPermission(Id, ['ManageMessages', 'Administrator'], true);
 
 		if (!CanDelete) {
-			const MissingPermissions = new HTTPErrors(4021);
+			const MissingPermissions = new HTTPErrors(4_021);
 
 			MissingPermissions.AddError({
 				Channel: {
@@ -34,7 +34,7 @@ new Route(
 		}
 
 		if (!messageIds || messageIds.length < 1 || messageIds.length > 100) {
-			const Errors = new HTTPErrors(4051);
+			const Errors = new HTTPErrors(4_051);
 
 			Errors.AddError({
 				MessageIds: {
@@ -51,7 +51,7 @@ new Route(
 		const DeletedMessages = await req.mutils.Channel.deleteMessages(Id, messageIds);
 
 		if (!DeletedMessages) {
-			const Errors = new HTTPErrors(4052);
+			const Errors = new HTTPErrors(4_052);
 
 			Errors.AddError({
 				MessageIds: {

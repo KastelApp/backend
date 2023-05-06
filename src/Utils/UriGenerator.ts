@@ -9,22 +9,42 @@
  * GPL 3.0 Licensed
  */
 
-import { MongoDB } from '../Config';
+import { MongoDB } from '../Config.js';
 
 const uriGenerator = (): string => {
+	const { Uri, User, Host, Port, Password, Database, AuthSource } = MongoDB;
 
-    if (MongoDB.Uri) return MongoDB.Uri;
+	if (Uri) {
+		return Uri;
+	}
 
-    const user = MongoDB.User;
-    const host = MongoDB.Host;
-    const port = MongoDB.Port;
-    const password = MongoDB.Password;
-    const database = MongoDB.Database || user;
-    const authSource = MongoDB.AuthSource;
+	let uri = 'mongodb://';
 
-    return `mongodb://${user}${password ? `:${encodeURIComponent(password)}` : ''}@${host}${port ? `:${port}` : ''}/${database}${authSource ? `?authSource=${authSource}` : ''}`;
+	if (User) {
+		uri += encodeURIComponent(User);
+
+		if (Password) {
+			uri += `:${encodeURIComponent(Password)}`;
+		}
+
+		uri += '@';
+	}
+
+	uri += Host;
+
+	if (Port) {
+		uri += `:${Port}`;
+	}
+
+	uri += `/${Database}`;
+
+	if (AuthSource) {
+		uri += `?authSource=${encodeURIComponent(AuthSource)}`;
+	}
+
+	return uri;
 };
 
 export default uriGenerator;
 
-export { uriGenerator }
+export { uriGenerator };

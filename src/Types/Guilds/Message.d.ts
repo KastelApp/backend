@@ -1,24 +1,24 @@
 interface Author {
-    Id: string;
-    User: {
-        Id: string;
-        Username: string;
-        Tag: string;
-        AvatarHash: string;
-        PublicFlags: number;
-    };
-    Roles: string[];
-    Nickname: string;
-    JoinedAt: number;
+	Id: string;
+	JoinedAt: number;
+	Nickname: string;
+	Roles: string[];
+	User: {
+		AvatarHash: string;
+		Id: string;
+		PublicFlags: number;
+		Tag: string;
+		Username: string;
+	};
 }
 
 export interface PopulatedMessage {
-    Id: string;
-    Author: Author
-    Content: string;
-    AllowedMentions: number;
-    CreatedAt: number;
-    UpdatedAt: number;
-    Flags: number;
-    Nonce: string;
+	AllowedMentions: number;
+	Author: Author;
+	Content: string;
+	CreatedAt: number;
+	Flags: number;
+	Id: string;
+	Nonce: string;
+	UpdatedAt: number;
 }

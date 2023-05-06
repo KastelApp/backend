@@ -10,10 +10,10 @@
  */
 
 import { Route } from '@kastelll/core';
-import User from '../../../../Middleware/User';
+import User from '../../../../Middleware/User.js';
 import type { UserAtMe } from '../../../../Types/Users/Users';
-import FlagFields from '../../../../Utils/Classes/BitFields/Flags';
-import schemaData from '../../../../Utils/SchemaData';
+import FlagFields from '../../../../Utils/Classes/BitFields/Flags.js';
+import schemaData from '../../../../Utils/SchemaData.js';
 
 new Route(
 	'/',

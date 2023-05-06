@@ -9,18 +9,18 @@
  * GPL 3.0 Licensed
  */
 
-import { HTTPErrors } from '@kastelll/util';
 import { Route } from '@kastelll/core';
-import Constants from '../../Constants';
-import Encryption from '../../Utils/Classes/Encryption';
-import { SettingSchema, UserSchema } from '../../Utils/Schemas/Schemas';
-import { Config } from '../../Config';
+import { HTTPErrors } from '@kastelll/util';
 import { hashSync } from 'bcrypt';
-import Token from '../../Utils/Classes/Token';
-import TagGenerator from '../../Utils/TagGenerator';
-import User from '../../Middleware/User';
-import Captcha from '../../Middleware/Captcha';
-import EMailTemplate from '../../Utils/Classes/EmailTemplate';
+import { Config } from '../../Config.js';
+import Constants from '../../Constants.js';
+import Captcha from '../../Middleware/Captcha.js';
+import User from '../../Middleware/User.js';
+import EMailTemplate from '../../Utils/Classes/EmailTemplate.js';
+import Encryption from '../../Utils/Classes/Encryption.js';
+import Token from '../../Utils/Classes/Token.js';
+import { SettingSchema, UserSchema } from '../../Utils/Schemas/Schemas.js';
+import TagGenerator from '../../Utils/TagGenerator.js';
 
 new Route(
 	'/register',
@@ -35,11 +35,11 @@ new Route(
 		}),
 	],
 	async (req, res) => {
-		const { username, email, password }: { username: string; email: string; password: string; invite?: string } =
+		const { username, email, password }: { email: string; invite?: string; password: string; username: string } =
 			req.body;
 
 		if (!email || !password || !username) {
-			const Errors = new HTTPErrors(4007);
+			const Errors = new HTTPErrors(4_007);
 
 			if (!email)
 				Errors.AddError({
@@ -75,7 +75,7 @@ new Route(
 		});
 
 		if (UsersCache || AllUsers.length >= Constants.Settings.Max.UsernameCount) {
-			const Errors = new HTTPErrors(4008);
+			const Errors = new HTTPErrors(4_008);
 
 			if (UsersCache)
 				Errors.AddError({
@@ -93,19 +93,19 @@ new Route(
 		}
 
 		if (
-			!password.match(Config.Regexs.Password) ||
-			!email.match(Config.Regexs.Email) ||
+			!Config.Regexs.Password.exec(password) ||
+			!Config.Regexs.Email.exec(email) ||
 			!(username.length >= Constants.Settings.Min.UsernameLength) ||
 			!(username.length <= Constants.Settings.Max.UsernameLength)
 		) {
-			const Errors = new HTTPErrors(4009);
+			const Errors = new HTTPErrors(4_009);
 
-			if (!password.match(Config.Regexs.Password))
+			if (!Config.Regexs.Password.exec(password))
 				Errors.AddError({
 					Password: { Code: 'PasswordInvalid', Message: 'Password is invalid' },
 				});
 
-			if (!email.match(Config.Regexs.Email))
+			if (!Config.Regexs.Email.exec(email))
 				Errors.AddError({
 					Email: { Code: 'EmailInvalid', Message: 'Email is invalid' },
 				});
@@ -194,7 +194,5 @@ new Route(
 				),
 			);
 		}
-
-		return;
 	},
 );

@@ -10,8 +10,8 @@
  */
 
 import { Route } from '@kastelll/core';
-import UserM from '../Middleware/User';
-import Encryption from '../Utils/Classes/Encryption';
+import UserM from '../Middleware/User.js';
+import Encryption from '../Utils/Classes/Encryption.js';
 
 new Route('/decrypt', 'POST', [], async (req, res) => {
 	const body = req.body as {

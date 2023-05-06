@@ -9,87 +9,85 @@
  * GPL 3.0 Licensed
  */
 
-import crypto from 'crypto';
-import Base64 from "./Base64";
-import { Encryption } from '../../Config';
-import { Snowflake as SnowflakeBuilder } from '@kastelll/util';
-import Constants from '../../Constants';
+import crypto from 'node:crypto';
+import { Snowflake as SnowflakeBuilder, Base64 } from '@kastelll/util';
+import { Encryption } from '../../Config.js';
+import Constants from '../../Constants.js';
 
-const Snowflake = new SnowflakeBuilder(Constants.Snowflake)
+const Snowflake = new SnowflakeBuilder(Constants.Snowflake);
 
 class LinkGeneration {
-    public static VerifcationLink(snowflakeId: string): string {
-        const CurrentDate = Date.now();
-        
-        const nonce = Base64.OldBase64(crypto.randomBytes(16).toString("base64"));
-        const snowflake = Base64.Encode(snowflakeId);
-        
-        const hmac = crypto.createHmac("sha256", Encryption.JwtKey);
+	public static VerifcationLink(snowflakeId: string): string {
+		const CurrentDate = Date.now();
 
-        hmac.update(`${snowflake}.${CurrentDate}.${nonce}`);
+		const nonce = Base64.OldBase64(crypto.randomBytes(16).toString('base64'));
+		const snowflake = Base64.Encode(snowflakeId);
 
-        const Secret = Base64.OldBase64(hmac.digest("base64"));
+		const hmac = crypto.createHmac('sha256', Encryption.JwtKey);
 
-        return Base64.Encode(`${snowflake}.${Base64.Encode(String(CurrentDate))}.${nonce}.${Secret}`)
-    }
+		hmac.update(`${snowflake}.${CurrentDate}.${nonce}`);
 
-    public static Verify(link: string): boolean {
+		const Secret = Base64.OldBase64(hmac.digest('base64'));
 
-        const DecodedLink = Base64.Decode(link)
+		return Base64.Encode(`${snowflake}.${Base64.Encode(String(CurrentDate))}.${nonce}.${Secret}`);
+	}
 
-        const [base64snowflake, base64createdDate, nonce, secret] = DecodedLink.split(".")
+	public static Verify(link: string): boolean {
+		const DecodedLink = Base64.Decode(link);
 
-        if (!base64snowflake || !base64createdDate || !nonce || !secret) return false;
+		const [base64snowflake, base64createdDate, nonce, secret] = DecodedLink.split('.');
 
-        const snowflake = Base64.Decode(base64snowflake)
-        const CreatedDate = Base64.Decode(base64createdDate);
+		if (!base64snowflake || !base64createdDate || !nonce || !secret) return false;
 
-        console.log('Snowflake', snowflake)
-        if (!Snowflake.Validate(snowflake)) return false;
+		const snowflake = Base64.Decode(base64snowflake);
+		const CreatedDate = Base64.Decode(base64createdDate);
 
-        console.log('Snowflake good')
+		console.log('Snowflake', snowflake);
+		if (!Snowflake.Validate(snowflake)) return false;
 
-        const CreatedDateParsed = new Date(CreatedDate);
+		console.log('Snowflake good');
 
-        // the max age of these will be around 2 weeks (MAX) so just hard code the check here
-        if (CreatedDateParsed.getTime() + 1209600000 < Date.now()) return false;
+		const CreatedDateParsed = new Date(CreatedDate);
 
-        console.log('Date good')
+		// the max age of these will be around 2 weeks (MAX) so just hard code the check here
+		if (CreatedDateParsed.getTime() + 1_209_600_000 < Date.now()) return false;
 
-        const hmac = crypto.createHmac("sha256", Encryption.JwtKey);
+		console.log('Date good');
 
-        hmac.update(`${base64snowflake}.${base64createdDate}.${nonce}`);
+		const hmac = crypto.createHmac('sha256', Encryption.JwtKey);
 
-        const Newsecret = Base64.OldBase64(hmac.digest("base64"));
+		hmac.update(`${base64snowflake}.${base64createdDate}.${nonce}`);
 
-        console.log('New Secret', Newsecret)
-        console.log('Old Secret', secret)
+		const Newsecret = Base64.OldBase64(hmac.digest('base64'));
 
-        if (Newsecret !== secret) return false;
+		console.log('New Secret', Newsecret);
+		console.log('Old Secret', secret);
 
-        console.log('New vs Old = Yes')
+		if (Newsecret !== secret) return false;
 
-        if (link !== Base64.Encode(`${base64snowflake}.${base64createdDate}.${nonce}.${secret}`)) return false;
+		console.log('New vs Old = Yes');
 
-        console.log("Verified Link")
+		if (link !== Base64.Encode(`${base64snowflake}.${base64createdDate}.${nonce}.${secret}`)) return false;
 
-        return true;
-    }
+		console.log('Verified Link');
 
-    public static GetSnowflake(link: string): string | null {
-        const DecodedLink = Base64.Decode(link)
+		return true;
+	}
 
-        const [base64snowflake, base64createdDate, nonce, secret] = DecodedLink.split(".")
+	public static GetSnowflake(link: string): string | null {
+		const DecodedLink = Base64.Decode(link);
 
-        if (!base64snowflake || !base64createdDate || !nonce || !secret) return null;
+		const [base64snowflake, base64createdDate, nonce, secret] = DecodedLink.split('.');
 
-        const snowflake = Base64.Decode(base64snowflake)
+		if (!base64snowflake || !base64createdDate || !nonce || !secret) return null;
 
-        if (!Snowflake.Validate(snowflake)) return null;
+		const snowflake = Base64.Decode(base64snowflake);
 
-        return snowflake;
-    }
-};
+		if (!Snowflake.Validate(snowflake)) return null;
+
+		return snowflake;
+	}
+}
 
 export { LinkGeneration };
 

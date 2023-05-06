@@ -10,9 +10,9 @@
  */
 
 import { Route } from '@kastelll/core';
-import User from '../../Middleware/User';
-import Encryption from '../../Utils/Classes/Encryption';
-import { SettingSchema } from '../../Utils/Schemas/Schemas';
+import User from '../../Middleware/User.js';
+import Encryption from '../../Utils/Classes/Encryption.js';
+import { SettingSchema } from '../../Utils/Schemas/Schemas.js';
 
 new Route(
 	'/logout',

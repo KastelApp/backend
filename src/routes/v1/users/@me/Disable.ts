@@ -9,13 +9,13 @@
  * GPL 3.0 Licensed
  */
 
-import { HTTPErrors } from '@kastelll/util';
 import { Route } from '@kastelll/core';
+import { HTTPErrors } from '@kastelll/util';
 import { compareSync } from 'bcrypt';
-import Constants from '../../../../Constants';
-import User from '../../../../Middleware/User';
-import Encryption from '../../../../Utils/Classes/Encryption';
-import { SettingSchema, UserSchema } from '../../../../Utils/Schemas/Schemas';
+import Constants from '../../../../Constants.js';
+import User from '../../../../Middleware/User.js';
+import Encryption from '../../../../Utils/Classes/Encryption.js';
+import { SettingSchema, UserSchema } from '../../../../Utils/Schemas/Schemas.js';
 
 interface DisableBody {
 	password: string;
@@ -35,7 +35,7 @@ new Route(
 		const { password } = req.body as DisableBody;
 
 		if (!password) {
-			const Errors = new HTTPErrors(4013);
+			const Errors = new HTTPErrors(4_013);
 
 			Errors.AddError({
 				Password: {
@@ -52,7 +52,7 @@ new Route(
 		const FoundUser = await UserSchema.findById(Encryption.encrypt(req.user.Id));
 
 		if (!compareSync(password, FoundUser?.Password as string)) {
-			const Errors = new HTTPErrors(4006);
+			const Errors = new HTTPErrors(4_006);
 
 			Errors.AddError({
 				Password: {
@@ -89,7 +89,5 @@ new Route(
 			Success: true,
 			Message: 'Account disabled',
 		});
-
-		return;
 	},
 );

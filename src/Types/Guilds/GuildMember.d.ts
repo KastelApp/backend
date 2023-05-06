@@ -1,7 +1,7 @@
 export interface GuildMember {
-    _id: string;
-    Guild: string;
-    User: string;
-    Roles: string[];
-    Nickname: string;
+	Guild: string;
+	Nickname: string;
+	Roles: string[];
+	User: string;
+	_id: string;
 }

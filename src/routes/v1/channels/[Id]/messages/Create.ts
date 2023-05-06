@@ -1,30 +1,30 @@
-import { HTTPErrors } from '@kastelll/util';
 import { Route } from '@kastelll/core';
-import Constants, { MessageFlags } from '../../../../../Constants';
-import User from '../../../../../Middleware/User';
+import { HTTPErrors } from '@kastelll/util';
+import Constants, { MessageFlags } from '../../../../../Constants.js';
+import User from '../../../../../Middleware/User.js';
 import FlagRemover from '../../../../../Utils/Classes/BitFields/FlagRemover';
-import Encryption from '../../../../../Utils/Classes/Encryption';
-import schemaData from '../../../../../Utils/SchemaData';
-import { MessageSchema } from '../../../../../Utils/Schemas/Schemas';
+import Encryption from '../../../../../Utils/Classes/Encryption.js';
+import schemaData from '../../../../../Utils/SchemaData.js';
+import { MessageSchema } from '../../../../../Utils/Schemas/Schemas.js';
 
 interface MessageBody {
-	content: string;
 	allowedMentions: number;
-	nonce: string;
-	flags: number;
+	content: string;
 	embeds: {
-		title?: string;
-		description?: string;
 		color?: number;
-		timestamp?: number;
-		footer?: {
-			text: string;
-		};
+		description?: string;
 		fields?: {
 			title: string;
 			value: string;
 		}[];
+		footer?: {
+			text: string;
+		};
+		timestamp?: number;
+		title?: string;
 	}[];
+	flags: number;
+	nonce: string;
 	replyingTo?: string;
 }
 
@@ -42,7 +42,7 @@ new Route(
 		const { content, nonce, replyingTo, allowedMentions } = req.body as MessageBody;
 		const { Id } = req.params as { Id: string };
 
-		const CommonErrors = new HTTPErrors(4050);
+		const CommonErrors = new HTTPErrors(4_050);
 
 		if (!content)
 			CommonErrors.AddError({
@@ -91,7 +91,7 @@ new Route(
 		const CanSend = await req.mutils.Channel.hasPermission(Id, ['SendMessages', 'Administrator'], true);
 
 		if (!CanSend) {
-			const MissingPermissions = new HTTPErrors(4021);
+			const MissingPermissions = new HTTPErrors(4_021);
 
 			MissingPermissions.AddError({
 				Content: {
@@ -109,7 +109,7 @@ new Route(
 		const FetchedAuthor = await req.mutils.User.getMemberFromChannel(Id, req.user.Id);
 
 		if (!FetchedAuthor) {
-			throw new HTTPErrors(4050).AddError({
+			throw new new HTTPErrors(4_050).AddError({
 				GuildMember: {
 					code: 'UnknownMember',
 					message: 'The Member that tried to send a message does not exist.',

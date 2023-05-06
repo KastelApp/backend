@@ -5,7 +5,9 @@
 		"project": "./tsconfig.json"
 	},
 	"rules": {
-		"@typescript-eslint/consistent-type-definitions": ["error", "interface"]
+		"@typescript-eslint/consistent-type-definitions": ["error", "interface"],
+		"require-atomic-updates": "off",
+		"unicorn/no-unsafe-regex": "off"
 	},
 	"ignorePatterns": ["**/dist/*"]
 }

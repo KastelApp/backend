@@ -4,9 +4,10 @@
 
 ### API
 
-API V1 Is closer then ever. This will be the first functional version of the API ~~hopefully~~. 
+API V1 Is closer then ever. This will be the first functional version of the API ~~hopefully~~.
 
 - [ ] Middleware
+
   - [x] Captcha
     - **Description**: The captcha middleware uses Cloudflares turnstile to verify that the request is not a bot. Any request that uses this middleware will be required to have a `captcha` header with the value of the captcha token. Then the middleware will verify that the token is valid and if it is not it will return a `401` error. This captcha also allows for certain items in the body to trigger a captcha. For example if the body contains a `password` field it will trigger a captcha. This is to prevent bots from spamming the API with requests.
     - **Options**: The middleware takes these options:
@@ -22,9 +23,8 @@ API V1 Is closer then ever. This will be the first functional version of the API
       - `AccessType` - If the user needs to be logged in or not ('LoggedIn' | 'LoggedOut' | 'All') (String) (Required)
       - `DisallowedFlags` - The flags that are not allowed to use this route (String) (Optional)
   - [ ] Rate Limit
-    - **Description**: The Rate limit middleware is sadly not finished yet, and may not be finished in v1. The point of it is to dynimically rate limit the API based on the amount of requests that are being made. This is to prevent people from spamming the API with requests. This middleware will also be able to be configured to allow for certain routes to be rate limited more then others. 
+    - **Description**: The Rate limit middleware is sadly not finished yet, and may not be finished in v1. The point of it is to dynimically rate limit the API based on the amount of requests that are being made. This is to prevent people from spamming the API with requests. This middleware will also be able to be configured to allow for certain routes to be rate limited more then others.
     - So lets say the route normally allows `10` requests `per minute`. If you hit that that rate limit once nothing will happen, if you hit it again again nothing `may` happen. Though if you hit it for a `third time` you will then see you got a `minute thirty` rate limit. And so on
-
 
 - [ ] Main Routes
   - [ ] Authentication
@@ -82,7 +82,7 @@ API V1 Is closer then ever. This will be the first functional version of the API
           - **Method**: `POST`
           - **Path**: `/auth/passwordless/email/verify`
   - [ ] Channels
-    - **Description**: The Channels routes are for everything to do with channels, creating, editing, deleting, etc etc. 
+    - **Description**: The Channels routes are for everything to do with channels, creating, editing, deleting, etc etc.
     - **Note**: All of these routes require the user to be logged in, If you have Admin Permissions then you should not run into any issues, else then you will need to have the permissions in the "Required Permissions" column.
     - [ ] Fetch
       - **Description**: This route is for fetching the info of the specified channel.
@@ -383,7 +383,6 @@ API V1 Is closer then ever. This will be the first functional version of the API
         - **Body**:
           - `friend` - Whether to send a friend request, accept a friend request or decline a friend request (Boolean) (Required)
 
-
 ### Allowed Mentions
 
 | Mention  | Value                          | Description                    |
@@ -393,7 +392,6 @@ API V1 Is closer then ever. This will be the first functional version of the API
 | Roles    | `0x0000000000000080`, `1 << 7` | Allows you to mention roles    |
 | Users    | `0x0000000000000100`, `1 << 8` | Allows you to mention users    |
 
-
 ### Implicit Permissions
 
 We follow the Implicit Permissions system, This means that if you have SendMessages but you do not have ViewChannel then you will not be able to send messages.
@@ -401,7 +399,6 @@ We follow the Implicit Permissions system, This means that if you have SendMessa
 From Discord:
 
 > Permissions in Discord are sometimes implicitly denied or allowed based on logical use. The two main cases are `VIEW_CHANNEL` and `SEND_MESSAGES` for text channels. Denying a user or a role `VIEW_CHANNEL` on a channel implicitly denies other permissions on the channel. Though permissions like `SEND_MESSAGES` are not explicitly denied for the user, they are ignored because the user cannot read messages in the channel.
-
 
 <details>
 <summary>CLI</summary>
@@ -456,4 +453,4 @@ These CLI Commands are the LEAST important things, They mainly are for testing a
 - [ ] CLI Console
   - CLI Console is a REPL that allows you to interact with the database and the project itself when the project is running.
   - Stuff like Disabling routes, Creating accounts, etc.
-</details>
+  </details>

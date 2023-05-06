@@ -1,12 +1,12 @@
 export interface Role {
-    _id: string;
-    Guild: string;
-    Name: string;
-    AllowedNsfw?: boolean;
-    Deleteable: boolean;
-    AllowedMentions?: number;
-    Hoisted?: boolean;
-    Color?: number;
-    Permissions: string;
-    Position: number;
+	AllowedMentions?: number;
+	AllowedNsfw?: boolean;
+	Color?: number;
+	Deleteable: boolean;
+	Guild: string;
+	Hoisted?: boolean;
+	Name: string;
+	Permissions: string;
+	Position: number;
+	_id: string;
 }

@@ -13,12 +13,12 @@ import { HTTPErrors } from '@kastelll/util';
 import type { NextFunction, Request, Response } from 'express';
 import type { UserMiddleware } from '../Types/Routes';
 import type { LessUser, PopulatedUserWJ } from '../Types/Users/Users';
-import FlagFields from '../Utils/Classes/BitFields/Flags';
-import Encryption from '../Utils/Classes/Encryption';
-import Token from '../Utils/Classes/Token';
-import schemaData from '../Utils/SchemaData';
-import { SettingSchema } from '../Utils/Schemas/Schemas';
-import Utils from '../Utils/Classes/MiscUtils/Utils';
+import FlagFields from '../Utils/Classes/BitFields/Flags.js';
+import Encryption from '../Utils/Classes/Encryption.js';
+import Utils from '../Utils/Classes/MiscUtils/Utils.js';
+import Token from '../Utils/Classes/Token.js';
+import schemaData from '../Utils/SchemaData.js';
+import { SettingSchema } from '../Utils/Schemas/Schemas.js';
 
 /**
  * The Middleware on each and every request (well it should be on it)
@@ -36,18 +36,18 @@ const User = (options: UserMiddleware) => {
 			(!AuthHeader?.includes('Bot') && options.AllowedRequesters === 'Bot')
 		) {
 			res.status(401).json({
-				Code: 4011,
+				Code: 4_011,
 				Message: 'You are not allowed to access this endpoint.',
 			});
 
 			return;
 		}
 
-		AuthHeader?.split(' ').length == 2 ? (AuthHeader = AuthHeader.split(' ')[1]) : (AuthHeader = AuthHeader);
+		AuthHeader = AuthHeader?.split(' ').length === 2 ? AuthHeader.split(' ')[1] : AuthHeader;
 
 		if (options.AccessType === 'LoggedIn' && !AuthHeader) {
 			res.status(401).json({
-				Code: 4010,
+				Code: 4_010,
 				Message: 'You need to be logged in to access this endpoint',
 			});
 
@@ -56,7 +56,7 @@ const User = (options: UserMiddleware) => {
 
 		if (options.AccessType === 'LoggedOut' && AuthHeader) {
 			res.status(401).json({
-				Code: 4011,
+				Code: 4_011,
 				Message: 'You are not allowed to access this endpoint.',
 			});
 
@@ -68,7 +68,7 @@ const User = (options: UserMiddleware) => {
 
 			if (!VaildatedToken) {
 				res.status(401).json({
-					Code: 4012,
+					Code: 4_012,
 					Message: 'Unauthorized',
 				});
 
@@ -87,7 +87,7 @@ const User = (options: UserMiddleware) => {
 
 			if (!UsersSettings) {
 				res.status(401).json({
-					Code: 4012,
+					Code: 4_012,
 					Message: 'Unauthorized',
 				});
 
@@ -96,7 +96,7 @@ const User = (options: UserMiddleware) => {
 
 			if (!UsersSettings.User) {
 				res.status(401).json({
-					Code: 4012,
+					Code: 4_012,
 					Message: 'Unauthorized',
 				});
 
@@ -106,7 +106,7 @@ const User = (options: UserMiddleware) => {
 			const UsersFlags = new FlagFields(UsersSettings.User.Flags);
 
 			if (UsersSettings.User.Banned) {
-				const Errors = new HTTPErrors(4002);
+				const Errors = new HTTPErrors(4_002);
 
 				Errors.AddError({
 					Email: {
@@ -122,7 +122,7 @@ const User = (options: UserMiddleware) => {
 			}
 
 			if (UsersSettings.User.Locked) {
-				const Errors = new HTTPErrors(4003);
+				const Errors = new HTTPErrors(4_003);
 
 				Errors.AddError({
 					Email: {
@@ -137,7 +137,7 @@ const User = (options: UserMiddleware) => {
 			}
 
 			if (UsersSettings.User.AccountDeletionInProgress) {
-				const Errors = new HTTPErrors(4004);
+				const Errors = new HTTPErrors(4_004);
 
 				Errors.AddError({
 					Email: {
@@ -170,7 +170,7 @@ const User = (options: UserMiddleware) => {
 				(UsersFlags.hasString('Bot') || UsersFlags.hasString('VerifiedBot'))
 			) {
 				res.status(401).json({
-					Code: 4011,
+					Code: 4_011,
 					Message: 'You are not allowed to access this endpoint.',
 				});
 
@@ -182,39 +182,35 @@ const User = (options: UserMiddleware) => {
 				!(UsersFlags.hasString('Bot') || UsersFlags.hasString('VerifiedBot'))
 			) {
 				res.status(401).json({
-					Code: 4011,
+					Code: 4_011,
 					Message: 'You are not allowed to access this endpoint.',
 				});
 
 				return;
 			}
 
-			if (options.Flags) {
-				if (options.Flags.length > 0) {
-					for (const Flag of options.Flags) {
-						if (!UsersFlags.hasString(Flag)) {
-							res.status(401).json({
-								Code: 4011,
-								Message: 'You are not allowed to access this endpoint.',
-							});
+			if (options.Flags && options.Flags.length > 0) {
+				for (const Flag of options.Flags) {
+					if (!UsersFlags.hasString(Flag)) {
+						res.status(401).json({
+							Code: 4_011,
+							Message: 'You are not allowed to access this endpoint.',
+						});
 
-							return;
-						}
+						return;
 					}
 				}
 			}
 
-			if (options.DisallowedFlags) {
-				if (options.DisallowedFlags.length > 0) {
-					for (const Flag of options.DisallowedFlags) {
-						if (UsersFlags.hasString(Flag)) {
-							res.status(401).json({
-								Code: 4011,
-								Message: 'You are not allowed to access this endpoint.',
-							});
+			if (options.DisallowedFlags && options.DisallowedFlags.length > 0) {
+				for (const Flag of options.DisallowedFlags) {
+					if (UsersFlags.hasString(Flag)) {
+						res.status(401).json({
+							Code: 4_011,
+							Message: 'You are not allowed to access this endpoint.',
+						});
 
-							return;
-						}
+						return;
 					}
 				}
 			}

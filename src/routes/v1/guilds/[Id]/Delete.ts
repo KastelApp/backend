@@ -1,8 +1,8 @@
-import { HTTPErrors } from '@kastelll/util';
 import { Route } from '@kastelll/core';
-import Constants from '../../../../Constants';
-import User from '../../../../Middleware/User';
-import Encryption from '../../../../Utils/Classes/Encryption';
+import { HTTPErrors } from '@kastelll/util';
+import Constants from '../../../../Constants.js';
+import User from '../../../../Middleware/User.js';
+import Encryption from '../../../../Utils/Classes/Encryption.js';
 import {
 	BanSchema,
 	ChannelSchema,
@@ -11,7 +11,7 @@ import {
 	GuildSchema,
 	InviteSchema,
 	RoleSchema,
-} from '../../../../Utils/Schemas/Schemas';
+} from '../../../../Utils/Schemas/Schemas.js';
 
 interface RequestBody {
 	twofaCode: string;
@@ -35,7 +35,7 @@ new Route(
 		const GuildData = await GuildSchema.findById(Encryption.encrypt(Id));
 
 		if (!GuildData) {
-			const Errors = new HTTPErrors(4020);
+			const Errors = new HTTPErrors(4_020);
 
 			Errors.AddError({
 				Guild: {
@@ -56,7 +56,7 @@ new Route(
 		});
 
 		if (!UserOwnerOfGuild) {
-			const Errors = new HTTPErrors(4021);
+			const Errors = new HTTPErrors(4_021);
 
 			Errors.AddError({
 				Guild: {
@@ -71,7 +71,7 @@ new Route(
 		}
 
 		if (req.user.TwoFa && !twofaCode) {
-			const Errors = new HTTPErrors(4018);
+			const Errors = new HTTPErrors(4_018);
 
 			Errors.AddError({
 				TwoFa: {

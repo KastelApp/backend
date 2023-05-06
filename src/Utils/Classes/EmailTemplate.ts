@@ -1,58 +1,35 @@
-import { readFileSync } from "fs";
-import { join } from "path";
-import { request } from "undici";
-import { EmailTemplates, MailServer } from "../../Config";
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { cwd } from 'node:process';
+import { request } from 'undici';
+import { EmailTemplates, MailServer } from '../../Config.js';
 
-const SupportEmail = MailServer.Users.find(
-  (u) => u.ShortCode === "Support"
-)?.User;
+const SupportEmail = MailServer.Users.find((user) => user.ShortCode === 'Support')?.User;
 
 class EMailTemplate {
-  static async EmailVerification(
-    Username: string,
-    VerificationLink: string
-  ): Promise<string> {
-    const Template = await this.GetTemplate(EmailTemplates.VerifyEmail);
+	public static async EmailVerification(Username: string, VerificationLink: string): Promise<string> {
+		const Template = await this.GetTemplate(EmailTemplates.VerifyEmail);
 
-    const EmailTemplate = Template.replace(
-      EmailTemplates.VerifyEmail.PlaceHolders.Username,
-      Username
-    )
-      .replace(
-        EmailTemplates.VerifyEmail.PlaceHolders.VerifyLink,
-        VerificationLink
-      )
-      .replace(
-        EmailTemplates.VerifyEmail.PlaceHolders.SupportEmail,
-        SupportEmail as string
-      );
+		return Template.replace(EmailTemplates.VerifyEmail.PlaceHolders.Username, Username)
+			.replace(EmailTemplates.VerifyEmail.PlaceHolders.VerifyLink, VerificationLink)
+			.replace(EmailTemplates.VerifyEmail.PlaceHolders.SupportEmail, SupportEmail as string);
+	}
 
-    return EmailTemplate;
-  }
+	public static async GetTemplate(
+		EmailTemplate: (typeof EmailTemplates)[keyof typeof EmailTemplates],
+	): Promise<string> {
+		const UrlRegex = /^https?:\/\/(?:www\.)?[\w#%+.:=@~-]{1,256}\.[\d()A-Za-z]{1,6}\b[\w#%&()+./:=?@~-]*$/g;
 
-  static async GetTemplate(
-    EmailTemplate: EmailTemplates[keyof EmailTemplates]
-  ): Promise<string> {
-    const UrlRegex =
-      /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/g;
+		if (!EmailTemplate.Template) throw new Error('No Template was provided');
 
-    if (!EmailTemplate.Template) throw new Error("No Template was provided");
+		if (UrlRegex.test(EmailTemplate.Template)) {
+			const { body } = await request(EmailTemplate.Template);
 
-    if (UrlRegex.test(EmailTemplate.Template)) {
-      const { body } = await request(EmailTemplate.Template);
+			return body.text();
+		}
 
-      const Template = await body.text();
-
-      return Template;
-    }
-
-    const Template = readFileSync(
-      join(process.cwd(), EmailTemplate.Template),
-      "utf-8"
-    );
-
-    return Template;
-  }
+		return readFileSync(join(cwd(), EmailTemplate.Template), 'utf8');
+	}
 }
 
 export default EMailTemplate;

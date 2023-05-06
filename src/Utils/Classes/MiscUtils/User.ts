@@ -14,15 +14,16 @@
 import type { Request, Response } from 'express';
 import type { ParamsDictionary } from 'express-serve-static-core';
 import type { ParsedQs } from 'qs';
+import type { Permissions as Perms } from '../../../Constants.js';
+import { RelationshipFlags } from '../../../Constants.js';
+import type { GuildPermissions } from '../../../Types/Guilds/User';
 import type { LessUser, PopulatedUserWJ } from '../../../Types/Users/Users';
 import schemaData from '../../SchemaData';
 import { FriendSchema, SettingSchema, UserSchema } from '../../Schemas/Schemas';
-import Encryption from '../Encryption';
-import { RelationshipFlags, Permissions as Perms } from '../../../Constants';
-import type { GuildPermissions } from '../../../Types/Guilds/User';
-import Permissions from '../BitFields/Permissions';
 import GuildMemberFlags from '../BitFields/GuildMember';
-import Utils from './Utils';
+import Permissions from '../BitFields/Permissions';
+import Encryption from '../Encryption';
+import type Utils from './Utils';
 
 // Description: This class is used to store user data, and to flush it to the database
 // Its main purpose is for setting when someone fails a request, we then flush it to the rate limiter database
@@ -33,12 +34,19 @@ import Utils from './Utils';
 
 class UserUtils {
 	Token: string;
+
 	Failed: boolean;
+
 	FailedCode: number | null;
+
 	req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>;
+
 	res: Response<any, Record<string, any>>;
+
 	user: LessUser;
+
 	Utils: Utils;
+
 	constructor(
 		Token: string,
 		req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
@@ -83,23 +91,23 @@ class UserUtils {
 		});
 
 		const FriendRArray: {
-			Sender: PopulatedUserWJ;
-			Receiver: PopulatedUserWJ;
 			Flags: number;
+			Receiver: PopulatedUserWJ;
+			Sender: PopulatedUserWJ;
 		}[] = [];
 
 		const FriendSArray: {
-			Sender: PopulatedUserWJ;
-			Receiver: PopulatedUserWJ;
 			Flags: number;
+			Receiver: PopulatedUserWJ;
+			Sender: PopulatedUserWJ;
 		}[] = [];
 
 		for (const Friend of FriendsR) {
 			if (FilterBlocked && Friend.Flags === RelationshipFlags.Blocked) continue;
 
 			const PopulatedFriend = await Friend.populate<{
-				Sender: PopulatedUserWJ;
 				Receiver: PopulatedUserWJ;
+				Sender: PopulatedUserWJ;
 			}>(['Receiver', 'Sender']);
 
 			const FixedData = schemaData('Friend', {
@@ -115,8 +123,8 @@ class UserUtils {
 			if (FilterBlocked && Friend.Flags === RelationshipFlags.Blocked) continue;
 
 			const PopulatedFriend = await Friend.populate<{
-				Sender: PopulatedUserWJ;
 				Receiver: PopulatedUserWJ;
+				Sender: PopulatedUserWJ;
 			}>(['Receiver', 'Sender']);
 
 			const FixedData = schemaData('Friend', {
@@ -170,7 +178,7 @@ class UserUtils {
 	}
 
 	async getGuilds(
-		include: ('Members' | 'Roles' | 'Channels' | 'MemberUser' | 'PermissionOverides')[],
+		include: ('Channels' | 'Members' | 'MemberUser' | 'PermissionOverides' | 'Roles')[],
 	): Promise<GuildPermissions[]> {
 		const UserSchemad = await UserSchema.findById(Encryption.encrypt(this.user.Id as string));
 
@@ -235,9 +243,9 @@ class UserUtils {
 
 	async getSessions(): Promise<
 		{
-			Token: string;
 			CreatedDate: Date;
 			Ip: string;
+			Token: string;
 		}[]
 	> {
 		const Settings = await SettingSchema.findOne({
@@ -260,7 +268,7 @@ class UserUtils {
 	// TODO: Check for PermissionOverides
 	async hasPermission(
 		GuildId: string,
-		Permission: keyof typeof Perms | (keyof typeof Perms)[],
+		Permission: (keyof typeof Perms)[] | keyof typeof Perms,
 		Single?: boolean, // If Permission is an Array Single will return true if the role has at least one of the permissions
 	): Promise<boolean> {
 		const Guilds = await this.getGuilds(['Channels', 'Members', 'MemberUser', 'PermissionOverides', 'Roles']);
