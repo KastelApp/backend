@@ -1,30 +1,34 @@
+/* eslint-disable id-length */
+import type { Buffer } from 'node:buffer';
+import process from 'node:process';
+import { setTimeout, setInterval, clearInterval } from 'node:timers';
 import zlib from 'node:zlib';
 import WebSocket from 'ws';
 import Config from '../../../Config.js';
 import type { AuthedPayload, NormalPayload } from '../../../Types/Socket/MiscPayloads';
-import { OpCodes } from '../WsUtils';
-import Events from './Events';
+import { OpCodes } from '../WsUtils.js';
+import Events from './Events.js';
 
 class SystemSocket {
-	Ws: WebSocket | null;
+	public Ws: WebSocket | null;
 
-	Sequence: number;
+	public Sequence: number;
 
-	HeartbeatInterval: NodeJS.Timer | null;
+	public HeartbeatInterval: NodeJS.Timer | null;
 
-	LastHeartbeat: number | null;
+	public LastHeartbeat: number | null;
 
-	LastHeartbeatAck: number | null;
+	public LastHeartbeatAck: number | null;
 
-	SessionId: string | null;
+	public SessionId: string | null;
 
-	ApproximateMembers: number;
+	public ApproximateMembers: number;
 
-	FailedConnectionAttempts: number;
+	public FailedConnectionAttempts: number;
 
-	Events: Events;
+	public Events: Events;
 
-	constructor() {
+	public constructor() {
 		this.Ws = null;
 
 		this.Sequence = 0;
@@ -44,10 +48,10 @@ class SystemSocket {
 		this.Events = new Events(this);
 	}
 
-	async Connect(): Promise<void> {
+	public async Connect(): Promise<void> {
 		return new Promise<void>((resolve) => {
 			this.Ws = new WebSocket(
-				`${Config.Ws.Url}?v=${Config.Ws.version || 0}&p=${encodeURIComponent(Config.Ws.Password)}&c=true&encoding=json`,
+				`${Config.Ws.Url}?v=${Config.Ws.version ?? 0}&p=${encodeURIComponent(Config.Ws.Password)}&c=true&encoding=json`,
 			);
 
 			this.Ws.on('error', () => {
@@ -133,6 +137,7 @@ class SystemSocket {
 
 	private decode(data: Buffer): any {
 		try {
+			// eslint-disable-next-line n/no-sync
 			const ZlibDecoded = zlib.unzipSync(data);
 
 			return JSON.parse(ZlibDecoded.toString());
@@ -149,7 +154,7 @@ class SystemSocket {
 		if (process.env.DEBUG) console.log(`[System Socket] ${data}`);
 	}
 
-	HandleDisconnect(Force: boolean = false): void {
+	public HandleDisconnect(Force: boolean = false): void {
 		if (!Force && this.Ws) return;
 
 		if (this.HeartbeatInterval) {
@@ -169,8 +174,8 @@ class SystemSocket {
 
 		console.log(`[System Socket] Attempting to reconnect to System Socket, attempt ${this.FailedConnectionAttempts}`);
 
-		setTimeout(() => {
-			this.Connect();
+		setTimeout(async () => {
+			await this.Connect();
 		}, 5_000);
 	}
 }

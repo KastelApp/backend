@@ -5,7 +5,7 @@
 	"main": "dist/index.js",
 	"dependencies": {
 		"@kastelll/core": "^0.2.4",
-		"@kastelll/util": "^0.2.0",
+		"@kastelll/util": "^0.2.1",
 		"@sentry/node": "^7.49.0",
 		"bcrypt": "^5.1.0",
 		"body-parser": "^1.20.2",
@@ -21,7 +21,8 @@
 		"speakeasy": "^2.0.0",
 		"terminal-kit": "^3.0.0",
 		"undici": "^5.22.0",
-		"vitest": "^0.30.1"
+		"vitest": "^0.30.1",
+		"ws": "^8.13.0"
 	},
 	"devDependencies": {
 		"@commitlint/cli": "^17.6.1",

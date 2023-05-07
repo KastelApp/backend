@@ -53,7 +53,7 @@ new Route(
 			return;
 		}
 
-		if (!(typeof friend === 'boolean')) {
+		if (typeof friend !== 'boolean') {
 			const Errors = new HTTPErrors(4_014);
 
 			Errors.AddError({

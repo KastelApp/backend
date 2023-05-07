@@ -50,21 +50,21 @@ new Route(
 		if (limit) {
 			const Errors = new HTTPErrors(4_014);
 
-			if (Number.parseInt(limit) > Constants.Settings.Max.GuildFetchLimit) {
+			if (Number.parseInt(limit, 10) > Constants.Settings.Max.GuildFetchLimit) {
 				Errors.AddError({
 					Limit: {
 						Code: 'InvalidLimit',
 						Message: `The limit parameter must be less than or equal to ${Constants.Settings.Max.GuildFetchLimit}.`,
 					},
 				});
-			} else if (Number.parseInt(limit) < 1) {
+			} else if (Number.parseInt(limit, 10) < 1) {
 				Errors.AddError({
 					Limit: {
 						Code: 'InvalidLimit',
 						Message: `The limit parameter must be greater than or equal to 1.`,
 					},
 				});
-			} else if (isNaN(Number.parseInt(limit))) {
+			} else if (Number.isNaN(Number.parseInt(limit, 10))) {
 				Errors.AddError({
 					Limit: {
 						Code: 'InvalidLimit',
@@ -73,7 +73,7 @@ new Route(
 				});
 			}
 
-			if (Object.keys(Errors.errors).length > 0) {
+			if (Object.keys(Errors.Errors).length > 0) {
 				res.status(400).json(Errors.toJSON());
 
 				return;
@@ -130,7 +130,7 @@ new Route(
 
 		// limits to the amount of guilds the user wants limited to (default is 100)
 		if (limit) {
-			res.status(200).json(GuildData.slice(0, Number.parseInt(limit)));
+			res.status(200).json(GuildData.slice(0, Number.parseInt(limit, 10)));
 
 			return;
 		}

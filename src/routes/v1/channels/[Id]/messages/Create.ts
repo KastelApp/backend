@@ -2,7 +2,7 @@ import { Route } from '@kastelll/core';
 import { HTTPErrors } from '@kastelll/util';
 import Constants, { MessageFlags } from '../../../../../Constants.js';
 import User from '../../../../../Middleware/User.js';
-import FlagRemover from '../../../../../Utils/Classes/BitFields/FlagRemover';
+import FlagRemover from '../../../../../Utils/Classes/BitFields/FlagRemover.js';
 import Encryption from '../../../../../Utils/Classes/Encryption.js';
 import schemaData from '../../../../../Utils/SchemaData.js';
 import { MessageSchema } from '../../../../../Utils/Schemas/Schemas.js';
@@ -109,12 +109,18 @@ new Route(
 		const FetchedAuthor = await req.mutils.User.getMemberFromChannel(Id, req.user.Id);
 
 		if (!FetchedAuthor) {
-			throw new new HTTPErrors(4_050).AddError({
+			const Error = new HTTPErrors(4_050, {
 				GuildMember: {
 					code: 'UnknownMember',
 					message: 'The Member that tried to send a message does not exist.',
 				},
-			});
+			}).toJSON();
+
+			console.error(Error);
+
+			res.status(500).json(Error);
+
+			return;
 		}
 
 		const Message = new MessageSchema({

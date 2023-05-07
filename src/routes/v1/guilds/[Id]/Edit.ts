@@ -2,8 +2,8 @@ import { Route } from '@kastelll/core';
 import { HTTPErrors } from '@kastelll/util';
 import User from '../../../../Middleware/User.js';
 import type { Role } from '../../../../Types/Guilds/Role';
-import GuildMemberFlags from '../../../../Utils/Classes/BitFields/GuildMember';
-import Permissions from '../../../../Utils/Classes/BitFields/Permissions';
+import GuildMemberFlags from '../../../../Utils/Classes/BitFields/GuildMember.js';
+import Permissions from '../../../../Utils/Classes/BitFields/Permissions.js';
 import Encryption from '../../../../Utils/Classes/Encryption.js';
 import { GuildMemberSchema, GuildSchema } from '../../../../Utils/Schemas/Schemas.js';
 

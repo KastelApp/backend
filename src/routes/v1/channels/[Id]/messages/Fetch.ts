@@ -33,7 +33,7 @@ new Route(
 			return;
 		}
 
-		const Limit = isNaN(Number(limit)) || Number(limit) < 1 || Number(limit) > 100 ? 50 : Number(limit);
+		const Limit = Number.isNaN(Number(limit)) || Number(limit) < 1 || Number(limit) > 100 ? 50 : Number(limit);
 		const Before = before ? (req.app.snowflake.Validate(before) ? before : undefined) : undefined;
 		const After = after ? (req.app.snowflake.Validate(after) ? after : undefined) : undefined;
 		const msgs = await req.mutils.Channel.fetchMessages(Id, Limit, Before, After);

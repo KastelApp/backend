@@ -63,7 +63,7 @@ new Route(
 		const UsersCache = await req.app.cache.get(`fullusers:${Encryption.encrypt(email)}`);
 
 		if (UsersCache) {
-			const UserCachedData = Encryption.completeDecryption(JSON.parse(UsersCache));
+			const UserCachedData = Encryption.completeDecryption(UsersCache);
 
 			const User = schemaData('RawUser', UserCachedData) as LessUser;
 

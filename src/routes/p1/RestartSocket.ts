@@ -8,7 +8,7 @@
  * Copyright(c) 2022-2023 DarkerInk
  * GPL 3.0 Licensed
  */
-
+import { Buffer } from 'node:buffer';
 import crypto from 'node:crypto';
 import { Route } from '@kastelll/core';
 import { HTTPErrors } from '@kastelll/util';

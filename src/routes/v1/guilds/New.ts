@@ -3,7 +3,7 @@ import { HTTPErrors } from '@kastelll/util';
 import Constants from '../../../Constants.js';
 import User from '../../../Middleware/User.js';
 import Encryption from '../../../Utils/Classes/Encryption.js';
-import StringValidation from '../../../Utils/Classes/StringValidation';
+import StringValidation from '../../../Utils/Classes/StringValidation.js';
 import schemaData from '../../../Utils/SchemaData.js';
 import {
 	ChannelSchema,

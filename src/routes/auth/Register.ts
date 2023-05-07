@@ -93,33 +93,33 @@ new Route(
 		}
 
 		if (
-			!Config.Regexs.Password.exec(password) ||
-			!Config.Regexs.Email.exec(email) ||
-			!(username.length >= Constants.Settings.Min.UsernameLength) ||
-			!(username.length <= Constants.Settings.Max.UsernameLength)
+			!Config.Regexs.Password.test(password) ||
+			!Config.Regexs.Email.test(email) ||
+			!(
+				Constants.Settings.Min.UsernameLength <= username.length &&
+				username.length <= Constants.Settings.Max.UsernameLength
+			)
 		) {
-			const Errors = new HTTPErrors(4_009);
+			const errors = new HTTPErrors(4_009);
 
-			if (!Config.Regexs.Password.exec(password))
-				Errors.AddError({
-					Password: { Code: 'PasswordInvalid', Message: 'Password is invalid' },
-				});
+			if (!Config.Regexs.Password.test(password)) {
+				errors.AddError({ Password: { Code: 'PasswordInvalid', Message: 'Password is invalid' } });
+			}
 
-			if (!Config.Regexs.Email.exec(email))
-				Errors.AddError({
-					Email: { Code: 'EmailInvalid', Message: 'Email is invalid' },
-				});
+			if (!Config.Regexs.Email.test(email)) {
+				errors.AddError({ Email: { Code: 'EmailInvalid', Message: 'Email is invalid' } });
+			}
 
 			if (
-				!(username.length >= Constants.Settings.Min.UsernameLength) ||
-				!(username.length <= Constants.Settings.Max.UsernameLength)
-			)
-				Errors.AddError({
-					Username: { Code: 'UsernameInvalid', Message: 'Username is invalid' },
-				});
+				!(
+					Constants.Settings.Min.UsernameLength <= username.length &&
+					username.length <= Constants.Settings.Max.UsernameLength
+				)
+			) {
+				errors.AddError({ Username: { Code: 'UsernameInvalid', Message: 'Username is invalid' } });
+			}
 
-			res.status(400).json(Errors.toJSON());
-
+			res.status(400).json(errors.toJSON());
 			return;
 		}
 

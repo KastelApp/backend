@@ -1,16 +1,17 @@
-import { OpCodes } from '../WsUtils';
+/* eslint-disable id-length */
+import { OpCodes } from '../WsUtils.js';
 import type { SystemSocket } from './SystemSocket';
 
 class Events {
-	SendEvents: boolean;
+	public SendEvents: boolean;
 
-	constructor(private readonly SystemSocket: SystemSocket) {
+	public constructor(private readonly SystemSocket: SystemSocket) {
 		this.SystemSocket = SystemSocket;
 
 		this.SendEvents = true;
 	}
 
-	MessageCreate(Message: {
+	public MessageCreate(Message: {
 		AllowedMentions: number;
 		Author: {
 			Id: string;
@@ -53,7 +54,7 @@ class Events {
 		});
 	}
 
-	MessageDelete(Message: { AuthorId: string; ChannelId: string; Id: string; Timestamp: number }) {
+	public MessageDelete(Message: { AuthorId: string; ChannelId: string; Id: string; Timestamp: number }) {
 		if (this.SendEvents) {
 			this.SystemSocket.Ws?.send(
 				JSON.stringify({
@@ -73,7 +74,7 @@ class Events {
 		});
 	}
 
-	MessageUpdate(Message: {
+	public MessageUpdate(Message: {
 		AllowedMentions: number;
 		Author: {
 			Id: string;

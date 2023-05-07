@@ -11,7 +11,7 @@
 
 import { Route } from '@kastelll/core';
 import User from '../../../../Middleware/User.js';
-import RateLimit from '../../../../Utils/Classes/TokenBucket';
+import RateLimit from '../../../../Utils/Classes/TokenBucket.js';
 
 new Route(
 	'/test',

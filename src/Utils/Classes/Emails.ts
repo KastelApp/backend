@@ -1,21 +1,21 @@
 import nodemailer from 'nodemailer';
 
 class Emails {
-	host: string;
+	public host: string;
 
-	port: number;
+	public port: number;
 
-	secure: boolean;
+	public secure: boolean;
 
 	private readonly email!: string;
 
 	private readonly password!: string;
 
-	totalEmailsSent: number;
+	public totalEmailsSent: number;
 
 	private transporter?: nodemailer.Transporter | undefined;
 
-	constructor(host: string, port: number, secure: boolean, email: string, password: string) {
+	public constructor(host: string, port: number, secure: boolean, email: string, password: string) {
 		this.host = host;
 
 		this.port = port;
@@ -46,7 +46,7 @@ class Emails {
 		});
 	}
 
-	async SendEmail(to: string, subject: string, text?: string, html?: string): Promise<boolean> {
+	public async SendEmail(to: string, subject: string, text?: string, html?: string): Promise<boolean> {
 		if (!this.transporter) {
 			throw new Error('Transporter not created');
 		}
@@ -75,7 +75,7 @@ class Emails {
 		return false;
 	}
 
-	async Connect(): Promise<nodemailer.Transporter> {
+	public async Connect(): Promise<nodemailer.Transporter> {
 		if (!this.transporter) {
 			this.transporter = nodemailer.createTransport({
 				host: this.host,
@@ -91,7 +91,7 @@ class Emails {
 		return this.transporter;
 	}
 
-	async CloseTransporter(): Promise<void> {
+	public async CloseTransporter(): Promise<void> {
 		if (this.transporter) {
 			this.transporter.close();
 

@@ -43,7 +43,7 @@ new Route(
 			return;
 		}
 
-		if (!(typeof blocked === 'boolean')) {
+		if (typeof blocked !== 'boolean') {
 			const Errors = new HTTPErrors(4_014);
 
 			Errors.AddError({
