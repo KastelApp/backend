@@ -9,42 +9,42 @@
  * GPL 3.0 Licensed
  */
 
-import type { Schema } from "../../../Types/Schema";
+import type { Schema } from '../../../Types/Schema';
 
 const Friend: Schema = {
-    type: Object,
-    data: {
-        Flags: {
-            name: 'Flags',
-            expected: Number,
-            default: 0,
-            extended: false
-        },
-        Sender: {
-            name: 'Sender',
-            extends: 'RawUser',
-            extended: true,
-        },
-        Receiver: {
-            name: 'Receiver',
-            extends: 'RawUser',
-            extended: true,
-        },
-        SenderNickname: {
-            name: 'SenderNickname',
-            expected: String,
-            default: null,
-            extended: false,
-        },
-        ReceiverNickname: {
-            name: 'ReceiverNickname',
-            expected: String,
-            default: null,
-            extended: false,
-        }
-    },
+	type: Object,
+	data: {
+		Flags: {
+			name: 'Flags',
+			expected: Number,
+			default: 0,
+			extended: false,
+		},
+		Sender: {
+			name: 'Sender',
+			extends: 'RawUser',
+			extended: true,
+		},
+		Receiver: {
+			name: 'Receiver',
+			extends: 'RawUser',
+			extended: true,
+		},
+		SenderNickname: {
+			name: 'SenderNickname',
+			expected: String,
+			default: null,
+			extended: false,
+		},
+		ReceiverNickname: {
+			name: 'ReceiverNickname',
+			expected: String,
+			default: null,
+			extended: false,
+		},
+	},
 };
 
 export default Friend;
 
-export { Friend }
+export { Friend };

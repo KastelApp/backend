@@ -9,36 +9,29 @@
  * GPL 3.0 Licensed
  */
 
-import schemaExports from "../Utils/SchemaTypes/Exports";
+import type schemaExports from '../Utils/SchemaTypes/Exports';
 
 interface SchemaDataOptionsBase {
-  name: string;
-  extended: true | false;
+	extended: false | true;
+	name: string;
 }
 
 interface SchemaDataOptionsWithExtends extends SchemaDataOptionsBase {
-  extended: true;
-  extends: keyof typeof schemaExports;
+	extended: true;
+	extends: keyof typeof schemaExports;
 }
 
 interface SchemaDataOptionsWithoutExtends extends SchemaDataOptionsBase {
-  extended: false;
-  expected:
-    | StringConstructor
-    | BooleanConstructor
-    | DateConstructor
-    | ArrayConstructor
-    | NumberConstructor;
-  default: any;
+	default: any;
+	expected: ArrayConstructor | BooleanConstructor | DateConstructor | NumberConstructor | StringConstructor;
+	extended: false;
 }
 
-type SchemaDataOptions =
-  | SchemaDataOptionsWithExtends
-  | SchemaDataOptionsWithoutExtends;
+type SchemaDataOptions = SchemaDataOptionsWithExtends | SchemaDataOptionsWithoutExtends;
 
 export interface Schema {
-  type: ObjectConstructor | ArrayConstructor;
-  data: {
-    [key: string]: SchemaDataOptions;
-  };
+	data: {
+		[key: string]: SchemaDataOptions;
+	};
+	type: ArrayConstructor | ObjectConstructor;
 }

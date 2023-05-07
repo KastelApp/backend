@@ -1,15 +1,15 @@
 export interface Guild {
-    _id: string;
-    Name: string;
-    Description: string;
-    Flags: number;
-    Owner: string;
-    CoOwners: string[];
-    Channels: string[];
-    Roles: string[];
-    Invites: string[];
-    Bans: string[];
-    Members: string[];
-    Emojis: string[];
-    MaxMembers: number;
+	Bans: string[];
+	Channels: string[];
+	CoOwners: string[];
+	Description: string;
+	Emojis: string[];
+	Flags: number;
+	Invites: string[];
+	MaxMembers: number;
+	Members: string[];
+	Name: string;
+	Owner: string;
+	Roles: string[];
+	_id: string;
 }

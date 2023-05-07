@@ -9,16 +9,34 @@
  * GPL 3.0 Licensed
  */
 
-import { Route } from '@kastelll/packages';
-import Encryption from '../Utils/Classes/Encryption';
+import { Route } from '@kastelll/core';
+import UserM from '../Middleware/User.js';
+import Encryption from '../Utils/Classes/Encryption.js';
 
 new Route('/decrypt', 'POST', [], async (req, res) => {
+	const body = req.body as {
+		[key: string]: string;
+	};
 
-    const body = req.body as {
-        [key: string]: string
-    }
+	const DecryptedData = Encryption.completeDecryption(body);
 
-    const DecryptedData = Encryption.completeDecryption(body);
-
-    res.json(DecryptedData);
+	res.json(DecryptedData);
 });
+
+new Route(
+	'/test',
+	'POST',
+	[
+		UserM({
+			AccessType: 'LoggedIn',
+			AllowedRequesters: 'User',
+		}),
+	],
+	async (req, res) => {
+		const CanSend = await req.mutils.User.canSendMessagesGuildV('296622893528518658');
+
+		console.log(CanSend);
+
+		res.send('Done');
+	},
+);

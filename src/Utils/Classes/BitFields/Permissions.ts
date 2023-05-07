@@ -9,63 +9,96 @@
  * GPL 3.0 Licensed
  */
 
-import { Permissions as Perms } from '../../../Constants'
+import { Permissions as Perms, RolePermissions, ChannelPermissions, MixedPermissions } from '../../../Constants.js';
 
 class Permissions {
-    bits: bigint
-    constructor(bits: number) {
-        this.bits = BigInt(bits)
-    }
+	public bits: bigint;
 
-    has(bit: bigint) {
-        return (this.bits & bit) === bit
-    }
+	public constructor(bits: number) {
+		this.bits = BigInt(bits);
+	}
 
-    add(bit: bigint): this {
-        if (this.has(bit)) return this
-        this.bits |= bit
-        return this
-    }
+	public has(bit: bigint) {
+		return (this.bits & bit) === bit;
+	}
 
-    remove(bit: bigint): this {
-        if (!this.has(bit)) return this
-        this.bits ^= bit
-        return this
-    }
+	public add(bit: bigint): this {
+		if (this.has(bit)) return this;
+		this.bits |= bit;
+		return this;
+	}
 
-    serialize(): bigint {
-        return this.bits
-    }
+	public remove(bit: bigint): this {
+		if (!this.has(bit)) return this;
+		this.bits ^= bit;
+		return this;
+	}
 
-    toJSON(): Record<keyof typeof Perms, boolean> {
-        return Object.keys(Perms).reduce((obj, key) => {
-            obj[key as keyof typeof Perms] = this.has(Perms[key as keyof typeof Perms])
-            return obj
-        }, {} as Record<keyof typeof Perms, boolean>)
-    }
+	public serialize(): bigint {
+		return this.bits;
+	}
 
-    toArray(): string[] {
-        return Object.keys(Perms).reduce((arr, key) => {
-            if (this.has(Perms[key as keyof typeof Perms])) arr.push(key)
-            return arr
-        }, [] as string[])
-    }
+	public toJSON() {
+		return Object.keys(Perms).reduce<Record<keyof typeof Perms, boolean>>((obj, key) => {
+			obj[key as keyof typeof Perms] = this.has(Perms[key as keyof typeof Perms]);
+			return obj;
+			// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter -- I got no other ideas how to fix this
+		}, {} as Record<keyof typeof Perms, boolean>);
+	}
 
-    hasString(bit: keyof typeof Perms) {
-        return this.has(Perms[bit as keyof typeof Perms])
-    }
+	public toArray(): string[] {
+		return Object.keys(Perms).reduce<string[]>((arr, key) => {
+			if (this.has(Perms[key as keyof typeof Perms])) arr.push(key);
+			return arr;
+		}, []);
+	}
 
-    static deserialize(bits: bigint): Permissions {
-        return new Permissions(Number(bits))
-    }
+	public hasString(bit: keyof typeof Perms) {
+		return this.has(Perms[bit as keyof typeof Perms]);
+	}
 
-    static get FlagFields(): typeof Perms {
-        return Perms
-    }
+	public static deserialize(bits: bigint): Permissions {
+		return new Permissions(Number(bits));
+	}
 
-    static get FlagFieldsArray(): (keyof typeof Perms)[] {
-        return Object.keys(Perms) as (keyof typeof Perms)[]
-    }
+	public static get FlagFields(): typeof Perms {
+		return Perms;
+	}
+
+	public static get FlagFieldsArray(): (keyof typeof Perms)[] {
+		return Object.keys(Perms) as (keyof typeof Perms)[];
+	}
+
+	public static removeRolePerms(permissions: bigint): bigint {
+		let newPermissions = permissions;
+
+		for (const key of Object.keys(RolePermissions)) {
+			newPermissions &= ~RolePermissions[key as keyof typeof RolePermissions];
+		}
+
+		return newPermissions;
+	}
+
+	public static removeChannelPerms(permissions: bigint): bigint {
+		let newPermissions = permissions;
+
+		for (const key of Object.keys(ChannelPermissions)) {
+			newPermissions &= ~ChannelPermissions[key as keyof typeof ChannelPermissions];
+		}
+
+		return newPermissions;
+	}
+
+	// this may never be used tbh
+	public static removeMixedPerms(permissions: bigint): bigint {
+		let newPermissions = permissions;
+
+		for (const key of Object.keys(MixedPermissions)) {
+			newPermissions &= ~MixedPermissions[key as keyof typeof MixedPermissions];
+		}
+
+		return newPermissions;
+	}
 }
 
 export default Permissions;

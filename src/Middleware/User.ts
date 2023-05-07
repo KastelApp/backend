@@ -9,15 +9,16 @@
  * GPL 3.0 Licensed
  */
 
-import { HTTPErrors } from "@kastelll/packages";
-import type { NextFunction, Request, Response } from "express";
-import type { UserMiddleware } from "../Types/Routes";
-import type { LessUser, PopulatedUserWJ } from "../Types/Users/Users";
-import FlagFields from "../Utils/Classes/BitFields/Flags";
-import Encryption from "../Utils/Classes/Encryption";
-import Token from "../Utils/Classes/Token";
-import schemaData from "../Utils/SchemaData";
-import { SettingSchema } from "../Utils/Schemas/Schemas";
+import { HTTPErrors } from '@kastelll/util';
+import type { NextFunction, Request, Response } from 'express';
+import type { UserMiddleware } from '../Types/Routes';
+import type { LessUser, PopulatedUserWJ } from '../Types/Users/Users';
+import FlagFields from '../Utils/Classes/BitFields/Flags.js';
+import Encryption from '../Utils/Classes/Encryption.js';
+import Utils from '../Utils/Classes/MiscUtils/Utils.js';
+import Token from '../Utils/Classes/Token.js';
+import schemaData from '../Utils/SchemaData.js';
+import { SettingSchema } from '../Utils/Schemas/Schemas.js';
 
 /**
  * The Middleware on each and every request (well it should be on it)
@@ -25,213 +26,215 @@ import { SettingSchema } from "../Utils/Schemas/Schemas";
  * and what flags are needed/allowed to access the endpoint, As well as if they need to be
  * logged in or not
  */
+
 const User = (options: UserMiddleware) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    let AuthHeader = req.headers.authorization;
+	return async (req: Request, res: Response, next: NextFunction) => {
+		let AuthHeader = req.headers.authorization;
 
-    if (AuthHeader?.includes("Bot") && options.AllowedRequesters === "User") {
-      res.status(401).json({
-        Code: 4011,
-        Message: "You are not allowed to access this endpoint.",
-      });
+		if (
+			(AuthHeader?.includes('Bot') && options.AllowedRequesters === 'User') ||
+			(!AuthHeader?.includes('Bot') && options.AllowedRequesters === 'Bot')
+		) {
+			res.status(401).json({
+				Code: 4_011,
+				Message: 'You are not allowed to access this endpoint.',
+			});
 
-      return;
-    }
+			return;
+		}
 
-    AuthHeader?.split(" ").length == 2
-      ? (AuthHeader = AuthHeader.split(" ")[1])
-      : (AuthHeader = AuthHeader);
+		AuthHeader = AuthHeader?.split(' ').length === 2 ? AuthHeader.split(' ')[1] : AuthHeader;
 
-    if (options.AccessType === "LoggedIn" && !AuthHeader) {
-      res.status(401).json({
-        Code: 4010,
-        Message: "You need to be logged in to access this endpoint",
-      });
+		if (options.AccessType === 'LoggedIn' && !AuthHeader) {
+			res.status(401).json({
+				Code: 4_010,
+				Message: 'You need to be logged in to access this endpoint',
+			});
 
-      return;
-    }
+			return;
+		}
 
-    if (options.AccessType === "LoggedOut" && AuthHeader) {
-      res.status(401).json({
-        Code: 4011,
-        Message: "You are not allowed to access this endpoint.",
-      });
+		if (options.AccessType === 'LoggedOut' && AuthHeader) {
+			res.status(401).json({
+				Code: 4_011,
+				Message: 'You are not allowed to access this endpoint.',
+			});
 
-      return;
-    }
+			return;
+		}
 
-    if (options.AccessType === "LoggedIn" && AuthHeader) {
-      const VaildatedToken = Token.ValidateToken(AuthHeader);
+		if (options.AccessType === 'LoggedIn' && AuthHeader) {
+			const VaildatedToken = Token.ValidateToken(AuthHeader);
 
-      if (!VaildatedToken) {
-        res.status(401).json({
-          Code: 4012,
-          Message: "Unauthorized",
-        });
+			if (!VaildatedToken) {
+				res.status(401).json({
+					Code: 4_012,
+					Message: 'Unauthorized',
+				});
 
-        return;
-      }
+				return;
+			}
 
-      const DecodedToken = Token.DecodeToken(AuthHeader);
+			const DecodedToken = Token.DecodeToken(AuthHeader);
 
-      const UsersSettings = await SettingSchema.findOne({
-        User: Encryption.encrypt(DecodedToken.Snowflake),
-      });
+			// user id, and the token are indexed
+			const UsersSettings = await SettingSchema.findOne({
+				User: Encryption.encrypt(DecodedToken.Snowflake),
+				'Tokens.Token': Encryption.encrypt(AuthHeader),
+			}).populate<{
+				User: PopulatedUserWJ;
+			}>('User');
 
-      if (!UsersSettings) {
-        res.status(401).json({
-          Code: 4012,
-          Message: "Unauthorized",
-        });
+			if (!UsersSettings) {
+				res.status(401).json({
+					Code: 4_012,
+					Message: 'Unauthorized',
+				});
 
-        return;
-      }
+				return;
+			}
 
-      const PopulatedUser = await UsersSettings.populate<{
-        User: PopulatedUserWJ;
-      }>("User");
+			if (!UsersSettings.User) {
+				res.status(401).json({
+					Code: 4_012,
+					Message: 'Unauthorized',
+				});
 
-      if (!PopulatedUser) {
-        res.status(401).json({
-          Code: 4012,
-          Message: "Unauthorized",
-        });
+				return;
+			}
 
-        return;
-      }
+			const UsersFlags = new FlagFields(UsersSettings.User.Flags);
 
-      const UsersFlags = new FlagFields(PopulatedUser.User.Flags);
+			if (UsersSettings.User.Banned) {
+				const Errors = new HTTPErrors(4_002);
 
-      if (PopulatedUser.User.Banned) {
-        const Errors = new HTTPErrors(4002);
+				Errors.AddError({
+					Email: {
+						Code: 'AccountTerminated',
+						Message: 'Your account has been terminated.',
+						Reason: UsersSettings.User.BanReason,
+					},
+				});
 
-        Errors.addError({
-          Email: {
-            Code: "AccountTerminated",
-            Message: "Your account has been terminated.",
-            Reason: PopulatedUser.User.BanReason,
-          },
-        });
+				res.status(400).json(Errors.toJSON());
 
-        res.status(400).json(Errors.toJSON());
+				return;
+			}
 
-        return;
-      }
+			if (UsersSettings.User.Locked) {
+				const Errors = new HTTPErrors(4_003);
 
-      if (PopulatedUser.User.Locked) {
-        const Errors = new HTTPErrors(4003);
+				Errors.AddError({
+					Email: {
+						Code: 'AccountDisabled',
+						Message: 'Your account is disabled, please contact support!',
+					},
+				});
 
-        Errors.addError({
-          Email: {
-            Code: "AccountDisabled",
-            Message: "Your account is disabled, please contact support!",
-          },
-        });
+				res.status(400).json(Errors.toJSON());
 
-        res.status(400).json(Errors.toJSON());
+				return;
+			}
 
-        return;
-      }
+			if (UsersSettings.User.AccountDeletionInProgress) {
+				const Errors = new HTTPErrors(4_004);
 
-      if (PopulatedUser.User.AccountDeletionInProgress) {
-        const Errors = new HTTPErrors(4004);
+				Errors.AddError({
+					Email: {
+						Code: 'AccountDeletionInProgress',
+						Message:
+							'Your account is currently being deleted, If you would like to cancel this, please contact support',
+					},
+				});
 
-        Errors.addError({
-          Email: {
-            Code: "AccountDeletionInProgress",
-            Message:
-              "Your account is currently being deleted, If you would like to cancel this, please contact support",
-          },
-        });
+				res.status(400).json(Errors.toJSON());
 
-        res.status(400).json(Errors.toJSON());
+				return;
+			}
 
-        return;
-      }
+			// if (
+			//   !UsersSettings.User.Tokens.find(
+			//     (Token) => Token.Token === Encryption.encrypt(AuthHeader as string)
+			//   )
+			// ) {
+			//   res.status(401).json({
+			//     Code: 4012,
+			//     Message: "Unauthorized",
+			//   });
 
-      if (!PopulatedUser.Tokens.includes(Encryption.encrypt(AuthHeader))) {
-        res.status(401).json({
-          Code: 4012,
-          Message: "Unauthorized",
-        });
+			//   return;
+			// }
 
-        return;
-      }
+			if (
+				options.AllowedRequesters === 'User' &&
+				(UsersFlags.hasString('Bot') || UsersFlags.hasString('VerifiedBot'))
+			) {
+				res.status(401).json({
+					Code: 4_011,
+					Message: 'You are not allowed to access this endpoint.',
+				});
 
-      if (
-        options.AllowedRequesters === "User" &&
-        (UsersFlags.hasString("Bot") || UsersFlags.hasString("VerifiedBot"))
-      ) {
-        res.status(401).json({
-          Code: 4011,
-          Message: "You are not allowed to access this endpoint.",
-        });
+				return;
+			}
 
-        return;
-      }
+			if (
+				options.AllowedRequesters === 'Bot' &&
+				!(UsersFlags.hasString('Bot') || UsersFlags.hasString('VerifiedBot'))
+			) {
+				res.status(401).json({
+					Code: 4_011,
+					Message: 'You are not allowed to access this endpoint.',
+				});
 
-      if (
-        options.AllowedRequesters === "Bot" &&
-        !(UsersFlags.hasString("Bot") || UsersFlags.hasString("VerifiedBot"))
-      ) {
-        res.status(401).json({
-          Code: 4011,
-          Message: "You are not allowed to access this endpoint.",
-        });
+				return;
+			}
 
-        return;
-      }
+			if (options.Flags && options.Flags.length > 0) {
+				for (const Flag of options.Flags) {
+					if (!UsersFlags.hasString(Flag)) {
+						res.status(401).json({
+							Code: 4_011,
+							Message: 'You are not allowed to access this endpoint.',
+						});
 
-      if (options.Flags) {
-        if (options.Flags.length > 0) {
-          for (const Flag of options.Flags) {
-            if (!UsersFlags.hasString(Flag)) {
-              res.status(401).json({
-                Code: 4011,
-                Message: "You are not allowed to access this endpoint.",
-              });
+						return;
+					}
+				}
+			}
 
-              return;
-            }
-          }
-        }
-      }
+			if (options.DisallowedFlags && options.DisallowedFlags.length > 0) {
+				for (const Flag of options.DisallowedFlags) {
+					if (UsersFlags.hasString(Flag)) {
+						res.status(401).json({
+							Code: 4_011,
+							Message: 'You are not allowed to access this endpoint.',
+						});
 
-      if (options.DisallowedFlags) {
-        if (options.DisallowedFlags.length > 0) {
-          for (const Flag of options.DisallowedFlags) {
-            if (UsersFlags.hasString(Flag)) {
-              res.status(401).json({
-                Code: 4011,
-                Message: "You are not allowed to access this endpoint.",
-              });
+						return;
+					}
+				}
+			}
 
-              return;
-            }
-          }
-        }
-      }
+			const CompleteDecrypted = Encryption.completeDecryption(UsersSettings.User.toJSON());
 
-      const CompleteDecrypted = Encryption.completeDecryption(
-        PopulatedUser.User.toJSON()
-      );
+			const SchemaUserd = schemaData('RawUser', CompleteDecrypted);
 
-      const SchemaUserd = schemaData("RawUser", CompleteDecrypted);
+			req.user = {
+				...SchemaUserd,
+				Token: AuthHeader,
+				Bot: false,
+				FlagsUtil: new FlagFields(SchemaUserd.Flags),
+			} as LessUser;
 
-      req.user = {
-        ...SchemaUserd,
-        Token: AuthHeader,
-        Bot: false,
-        FlagsUtil: new FlagFields(SchemaUserd.Flags),
-      } as LessUser;
+			req.mutils = new Utils(req.user.Token, req, res);
 
-      next();
+			next();
 
-      return;
-    }
+			return;
+		}
 
-    next();
-  };
+		next();
+	};
 };
 
 export default User;

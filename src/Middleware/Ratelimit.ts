@@ -9,8 +9,7 @@
  * GPL 3.0 Licensed
  */
 
-import { NextFunction, Request, Response } from "express";
-
+import type { NextFunction, Request, Response } from 'express';
 
 // Notes, This is a User Based **AND** IP Based Rate limiter.
 // Changing your IP and using the same account will not let you bypass rate limits
@@ -21,9 +20,9 @@ import { NextFunction, Request, Response } from "express";
 // and the reset time longer
 
 const Ratelimit = () => {
-    return async (req: Request, res: Response, next: NextFunction) => {
-        next();
-    };
+	return async (req: Request, res: Response, next: NextFunction) => {
+		next();
+	};
 };
 
 export default Ratelimit;

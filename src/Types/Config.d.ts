@@ -9,62 +9,129 @@
  * GPL 3.0 Licensed
  */
 
+import type * as Sentry from '@sentry/node';
+
 export interface Server {
-  Port?: number | string;
-  CookieSecrets: string[];
-  Domain: string;
-  WorkerId?: number;
-  Cache: {
-    ClearInterval: number;
-    ClearOnStart: boolean;
-  };
-  StrictRouting: boolean; // if true then you cannot do like /users/@me/ you have to do /users/@me
-  TurnstileSecret: string | null; // cloudflare turnstile secret (for captchas)
-  CaptchaEnabled: boolean; // if true then some routes will require captcha (register, login, etc)
+	Cache: {
+		ClearInterval: number;
+		ClearOnStart: boolean;
+	};
+	// cloudflare turnstile secret (for captchas)
+	CaptchaEnabled: boolean;
+	CookieSecrets: string[];
+	Domain: string;
+	LocalIps?: string[];
+	Port?: number | string;
+	Secure: boolean;
+	// if true then some routes will require captcha (register, login, etc)
+	Sentry: {
+		Dsn: string;
+		Enabled: boolean;
+		OtherOptions: Exclude<Sentry.NodeOptions, 'dsn' | 'tracesSampleRate'>;
+		RequestOptions: Sentry.Handlers.RequestHandlerOptions;
+		TracesSampleRate: number;
+	};
+	StrictRouting: boolean;
+	// if true then you cannot do like /users/@me/ you have to do /users/@me
+	TurnstileSecret: string | null;
+	WorkerId?: number;
 }
 
 export interface Encryption {
-  Algorithm: string;
-  InitVector: string;
-  SecurityKey: string;
-  JwtKey: string;
+	Algorithm: string;
+	InitVector: string;
+	JwtKey: string;
+	SecurityKey: string;
 }
 
 export interface Ws {
-  Url: string;
-  User: string;
-  Password: string;
+	Password: string;
+	Url: string;
+	version?: number; // not required as most likely will be 0
 }
 
 export interface Redis {
-  Host: string;
-  Port: number | string;
-  User: string;
-  Password: string;
-  Db: number | string;
+	DB: number;
+	Host: string;
+	Password: string;
+	Port: number;
+	Username: string;
 }
 
 export interface MongoDB {
-  User: string;
-  Host: string;
-  Port: string | number;
-  Password: string;
-  Database: string;
-  AuthSource: string;
-  Uri: string;
+	AuthSource: string;
+	Database: string;
+	Host: string;
+	Password: string;
+	Port: number | string;
+	Uri: string;
+	User: string;
+}
+
+type ShortCode = 'NoReply' | 'Support';
+
+interface User {
+	Host: string;
+	Password: string;
+	Port: number;
+	Secure: boolean;
+	ShortCode: ShortCode;
+	User: string;
+}
+
+export interface MailServer {
+	Enabled: boolean;
+	Users: [User, User];
+}
+
+export interface EmailTemplates {
+	DisabledAccount: DisabledAccount;
+	ResetPassword: ResetPassword;
+	VerifyEmail: VerifyEmail;
+}
+
+interface VerifyEmail {
+	PlaceHolders: {
+		SupportEmail: string;
+		Username: string;
+		VerifyLink: string;
+	};
+	Subject: string;
+	Template: string;
+}
+
+interface ResetPassword {
+	PlaceHolders: {
+		ResetLink: string;
+		SupportEmail: string;
+		Username: string;
+	};
+	Subject: string;
+	Template: string;
+}
+
+interface DisabledAccount {
+	PlaceHolders: {
+		Reason: string;
+		SupportEmail: string;
+		Uusername: string;
+	};
+	Subject: string;
+	Template: string;
+}
+
+export interface Regexs {
+	Email: RegExp;
+	Password: RegExp;
 }
 
 export interface Config {
-  Server: Server;
-  Encryption: Encryption;
-  Ws: Ws;
-  Redis: Redis;
-  MongoDB: MongoDB;
-  Logger: Logger;
-  Snowflake: Snowflake;
-}
-
-export interface Regexes {
-  password: RegExp;
-  email: RegExp;
+	EmailTemplates: EmailTemplates;
+	Encryption: Encryption;
+	MailServer: MailServer;
+	MongoDB: MongoDB;
+	Redis: Redis;
+	Regexs: Regexs;
+	Server: Server;
+	Ws: Ws;
 }

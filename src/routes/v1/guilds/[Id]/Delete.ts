@@ -1,123 +1,123 @@
-import { HTTPErrors, Route } from "@kastelll/packages";
-import Constants from "../../../../Constants";
-import User from "../../../../Middleware/User";
-import Encryption from "../../../../Utils/Classes/Encryption";
+import { Route } from '@kastelll/core';
+import { HTTPErrors } from '@kastelll/util';
+import Constants from '../../../../Constants.js';
+import User from '../../../../Middleware/User.js';
+import Encryption from '../../../../Utils/Classes/Encryption.js';
 import {
-  BanSchema,
-  ChannelSchema,
-  EmojiSchema,
-  GuildMemberSchema,
-  GuildSchema,
-  InviteSchema,
-  RoleSchema,
-} from "../../../../Utils/Schemas/Schemas";
+	BanSchema,
+	ChannelSchema,
+	EmojiSchema,
+	GuildMemberSchema,
+	GuildSchema,
+	InviteSchema,
+	RoleSchema,
+} from '../../../../Utils/Schemas/Schemas.js';
 
 interface RequestBody {
-  twofaCode: string;
+	twofaCode: string;
 }
 
 new Route(
-  "/",
-  "DELETE",
-  [
-    User({
-      AccessType: "LoggedIn",
-      AllowedRequesters: "All",
-      DisallowedFlags: ["GuildBan"],
-    }),
-  ],
-  async (req, res) => {
-    const { twofaCode } = req.body as RequestBody;
+	'/',
+	'DELETE',
+	[
+		User({
+			AccessType: 'LoggedIn',
+			AllowedRequesters: 'All',
+			DisallowedFlags: ['GuildBan'],
+		}),
+	],
+	async (req, res) => {
+		const { twofaCode } = req.body as RequestBody;
 
-    const { Id } = req.params as { Id: string };
+		const { Id } = req.params as { Id: string };
 
-    const GuildData = await GuildSchema.findById(Encryption.encrypt(Id));
+		const GuildData = await GuildSchema.findById(Encryption.encrypt(Id));
 
-    if (!GuildData) {
-      const Errors = new HTTPErrors(4020);
+		if (!GuildData) {
+			const Errors = new HTTPErrors(4_020);
 
-      Errors.addError({
-        Guild: {
-          Code: "InvalidGuild",
-          Message:
-            "The guild you are trying to fetch does not exist or you do not have permission to view it.",
-        },
-      });
+			Errors.AddError({
+				Guild: {
+					Code: 'InvalidGuild',
+					Message: 'The guild you are trying to fetch does not exist or you do not have permission to view it.',
+				},
+			});
 
-      res.status(400).json(Errors.toJSON());
+			res.status(400).json(Errors.toJSON());
 
-      return;
-    }
+			return;
+		}
 
-    const UserOwnerOfGuild = await GuildMemberSchema.findOne({
-      User: Encryption.encrypt(req.user.Id),
-      Guild: Encryption.encrypt(Id),
-      Flags: Constants.GuildMemberFlags.Owner | Constants.GuildMemberFlags.In,
-    });
+		const UserOwnerOfGuild = await GuildMemberSchema.findOne({
+			User: Encryption.encrypt(req.user.Id),
+			Guild: Encryption.encrypt(Id),
+			Flags: Constants.GuildMemberFlags.Owner | Constants.GuildMemberFlags.In,
+		});
 
-    if (!UserOwnerOfGuild) {
-      const Errors = new HTTPErrors(4021);
+		if (!UserOwnerOfGuild) {
+			const Errors = new HTTPErrors(4_021);
 
-      Errors.addError({
-        Guild: {
-          Code: "InvalidGuild",
-          Message: "You do not have permission to delete this guild.",
-        },
-      });
+			Errors.AddError({
+				Guild: {
+					Code: 'InvalidGuild',
+					Message: 'You do not have permission to delete this guild.',
+				},
+			});
 
-      res.status(400).json(Errors.toJSON());
+			res.status(400).json(Errors.toJSON());
 
-      return;
-    }
+			return;
+		}
 
-    if (req.user.TwoFa && !twofaCode) {
-      const Errors = new HTTPErrors(4018);
+		if (req.user.TwoFa && !twofaCode) {
+			const Errors = new HTTPErrors(4_018);
 
-      Errors.addError({
-        TwoFa: {
-          Code: "MissingTwoFa",
-          Message: "You must provide a two factor authentication code.",
-        },
-      });
+			Errors.AddError({
+				TwoFa: {
+					Code: 'MissingTwoFa',
+					Message: 'You must provide a two factor authentication code.',
+				},
+			});
 
-      res.status(400).json(Errors.toJSON());
+			res.status(400).json(Errors.toJSON());
 
-      return;
-    }
+			return;
+		}
 
-    if (req.user.TwoFa && twofaCode) {
-        // Todo: Add 2fa check
-    }
+		if (req.user.TwoFa && twofaCode) {
+			// Todo: Add 2fa check
+		}
 
-    for (const Member of GuildData.Members) {
-      await GuildMemberSchema.deleteOne({ _id: Member });
-    }
+		for (const Member of GuildData.Members) {
+			await GuildMemberSchema.deleteOne({ _id: Member });
+		}
 
-    for (const Channel of GuildData.Channels) {
-      await ChannelSchema.deleteOne({ _id: Channel });
-    }
+		for (const Channel of GuildData.Channels) {
+			await ChannelSchema.deleteOne({ _id: Channel });
+		}
 
-    for (const Role of GuildData.Roles) {
-      await RoleSchema.deleteOne({ _id: Role });
-    }
+		for (const Role of GuildData.Roles) {
+			await RoleSchema.deleteOne({ _id: Role });
+		}
 
-    for (const Emoji of GuildData.Emojis) {
-      await EmojiSchema.deleteOne({ _id: Emoji });
-    }
+		for (const Emoji of GuildData.Emojis) {
+			await EmojiSchema.deleteOne({ _id: Emoji });
+		}
 
-    for (const Invite of GuildData.Invites) {
-      await InviteSchema.deleteOne({ _id: Invite });
-    }
+		for (const Invite of GuildData.Invites) {
+			await InviteSchema.deleteOne({ _id: Invite });
+		}
 
-    for (const Ban of GuildData.Bans) {
-      await BanSchema.deleteOne({ _id: Ban });
-    }
+		for (const Ban of GuildData.Bans) {
+			await BanSchema.deleteOne({ _id: Ban });
+		}
 
-    await GuildData.deleteOne();
+		await GuildData.deleteOne();
 
-    res.status(200).json({
-        Success: true,
-        Message: "Successfully deleted guild.",
-    });
-  }
+		res.status(200).json({
+			Success: true,
+			Message: 'Successfully deleted guild.',
+		});
+	},
 );

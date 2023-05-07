@@ -1,0 +1,3 @@
+[submodule "src/Utils/Schemas"]
+	path = src/Utils/Schemas
+	url = https://github.com/Kastelll/Schemas
