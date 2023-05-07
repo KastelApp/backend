@@ -36,7 +36,7 @@
 		"@types/speakeasy": "^2.0.7",
 		"@types/ws": "^8.5.4",
 		"cross-env": "^7.0.3",
-		"eslint": "^8.39.0",
+		"eslint": "^8.40.0",
 		"eslint-config-neon": "^0.1.42",
 		"eslint-formatter-pretty": "^5.0.0",
 		"husky": "^8.0.3",
