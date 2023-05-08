@@ -34,7 +34,7 @@
 		"@types/ws": "^8.5.4",
 		"cross-env": "^7.0.3",
 		"eslint": "^8.40.0",
-		"eslint-config-neon": "^0.1.42",
+		"eslint-config-neon": "^0.1.47",
 		"eslint-formatter-pretty": "^5.0.0",
 		"husky": "^8.0.3",
 		"lint-staged": "^13.2.2",
