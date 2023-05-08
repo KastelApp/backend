@@ -6,7 +6,7 @@
 	"dependencies": {
 		"@kastelll/core": "^0.2.4",
 		"@kastelll/util": "^0.2.1",
-		"@sentry/node": "^7.49.0",
+		"@sentry/node": "^7.51.0",
 		"bcrypt": "^5.1.0",
 		"body-parser": "^1.20.2",
 		"chalk": "^4.1.2",
