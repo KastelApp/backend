@@ -9,7 +9,6 @@
  * GPL 3.0 Licensed
  */
 
-// import type { Encryption, MongoDB, Redis, Regexs, Server, Ws, MailServer, Config, EmailTemplates } from './Types/Config';
 import type {
 	Encryption as EncrpytionConfigType,
 	MongoDB as MongoDBConfigType,
