@@ -52,7 +52,20 @@ const schemaData = (type: keyof typeof schemaExports, data: any): any => {
 			}
 		}
 
-		return NewObject;
+		// sorts through the new object to put the keys in the same order as the schema
+		const SortedObject: { [key: string]: any } = {};
+
+		for (const [key, _] of Object.entries(tp.data)) {
+			const Found = Object.entries(NewObject).find(([keyName, _]) => keyName === key);
+
+			if (!Found) continue;
+
+			const [KeyName, Value] = Found;
+			
+			SortedObject[KeyName] = Value;
+		}
+		
+		return SortedObject;
 	}
 
 	if (tp.type === Array) {
@@ -75,11 +88,24 @@ const schemaData = (type: keyof typeof schemaExports, data: any): any => {
 						NewObject[NewName] = value;
 					}
 				}
-				
-				NewArray.push(NewObject);
+
+				// sorts through the new object to put the keys in the same order as the schema
+				const SortedObject: { [key: string]: any } = {};
+
+				for (const [key, _] of Object.entries(tp.data)) {
+					const Found = Object.entries(NewObject).find(([keyName, _]) => keyName === key);
+
+					if (!Found) continue;
+		
+					const [KeyName, Value] = Found;
+					
+					SortedObject[KeyName] = Value;
+				}
+
+				NewArray.push(SortedObject);
 			}
 		}
-		
+
 		return NewArray;
 	}
 

@@ -45,7 +45,8 @@
 		"start": "node dist/index.js",
 		"build": "tsup",
 		"lint": "prettier --check . && cross-env TIMING=1 eslint src --ext .js,.ts --format=pretty",
-		"format": "prettier --write . && cross-env TIMING=1 eslint src --ext .js,.ts --fix --format=pretty"
+		"format": "prettier --write . && cross-env TIMING=1 eslint src --ext .js,.ts --fix --format=pretty",
+		"dev": "yarn build && yarn start"
 	},
 	"keywords": [
 		"chatting"

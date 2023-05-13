@@ -104,8 +104,6 @@ class Encryption {
 					}
 				}
 
-				console.log(NewArray);
-
 				return NewArray;
 			} else {
 				const NewObject: any = {};
@@ -127,8 +125,6 @@ class Encryption {
 						NewObject[key] = item;
 					}
 				}
-
-				console.log(NewObject);
 
 				return NewObject;
 			}
@@ -166,8 +162,6 @@ class Encryption {
 					}
 				}
 
-				console.log(NewArray);
-
 				return NewArray;
 			} else {
 				const NewObject: any = {};
@@ -189,8 +183,6 @@ class Encryption {
 						NewObject[key] = item;
 					}
 				}
-
-				console.log(NewObject);
 
 				return NewObject;
 			}
