@@ -753,13 +753,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kastelll/core@npm:^0.2.4":
-  version: 0.2.4
-  resolution: "@kastelll/core@npm:0.2.4"
+"@kastelll/core@npm:^0.2.7":
+  version: 0.2.7
+  resolution: "@kastelll/core@npm:0.2.7"
   dependencies:
+    "@kastelll/internal": latest
     express: ^4.18.2
     ws: ^8.13.0
-  checksum: 5d5b7ec04c5a7a9b5cadd911e8630eee3980be425cf0e192b84f485607db9765be0a09327a0ed1b24eba91a2260579b7dfa864af96edc69fe79feeeb0fc409cc
+  checksum: c4ffd6a05496dfc403ad41ba8d286592768079cc3e710821c68bb840da204ae667517294990545b987e28d427900ecb68dfe6669159871f4bc6f342c50430382
   languageName: node
   linkType: hard
 
@@ -4817,7 +4818,7 @@ __metadata:
   dependencies:
     "@commitlint/cli": ^17.6.1
     "@commitlint/config-angular": ^17.6.1
-    "@kastelll/core": ^0.2.4
+    "@kastelll/core": ^0.2.7
     "@kastelll/util": ^0.2.1
     "@sentry/node": ^7.49.0
     "@types/bcrypt": ^5.0.0
