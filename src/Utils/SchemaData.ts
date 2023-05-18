@@ -56,8 +56,6 @@ const schemaData = (type: keyof typeof schemaExports, data: any): any => {
 		for (const [key, value] of Object.entries(tp.data)) {
 			const Found = Object.entries(NewObject).find(([keyName, _]) => keyName === key);
 
-			console.log(key, value, Found);
-
 			if (!Found) {
 				if (value.extended) {
 					console.log('Its Extended but not found (Debug)');
@@ -107,8 +105,6 @@ const schemaData = (type: keyof typeof schemaExports, data: any): any => {
 				// we go through tp.data and if something doesn't exist in the new object, we add it with the default value
 				for (const [key, value] of Object.entries(tp.data)) {
 					const Found = Object.entries(NewObject).find(([keyName, _]) => keyName === key);
-
-					console.log(key, value, Found);
 
 					if (!Found) {
 						if (value.extended) {

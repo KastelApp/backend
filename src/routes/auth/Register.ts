@@ -43,22 +43,22 @@ new Route(
 
 			if (!email)
 				Errors.AddError({
-					Email: { Code: 'EmailRequired', Message: 'Email is required' },
+					Email: { Code: 'EmailInvalid', Message: 'The provided email is invalid, missing or already in use' },
 				});
 
 			if (!password)
 				Errors.AddError({
 					password: {
-						Code: 'PasswordRequired',
-						Message: 'Password is required',
+						Code: 'PasswordInvalid',
+						Message: 'Password is invalid or missing',
 					},
 				});
 
 			if (!username)
 				Errors.AddError({
 					username: {
-						Code: 'UsernameRequired',
-						Message: 'Username is required',
+						Code: 'UsernameInvalid',
+						Message: 'Username is invalid or missing',
 					},
 				});
 
@@ -79,7 +79,7 @@ new Route(
 
 			if (UsersCache)
 				Errors.AddError({
-					Email: { Code: 'EmailTaken', Message: 'Email is taken' },
+					Email: { Code: 'AlreadyRegistered', Message: 'An account with this email is already registered' },
 				});
 
 			if (AllUsers.length >= Constants.Settings.Max.UsernameCount)
@@ -103,11 +103,11 @@ new Route(
 			const errors = new HTTPErrors(4_009);
 
 			if (!Config.Regexs.Password.test(password)) {
-				errors.AddError({ Password: { Code: 'PasswordInvalid', Message: 'Password is invalid' } });
+				errors.AddError({ Password: { Code: 'PasswordInvalid', Message: 'Password is invalid or missing' } });
 			}
 
 			if (!Config.Regexs.Email.test(email)) {
-				errors.AddError({ Email: { Code: 'EmailInvalid', Message: 'Email is invalid' } });
+				errors.AddError({ Email: { Code: 'EmailInvalid', Message: 'The provided email is invalid, missing or already in use' } });
 			}
 
 			if (
@@ -116,7 +116,7 @@ new Route(
 					username.length <= Constants.Settings.Max.UsernameLength
 				)
 			) {
-				errors.AddError({ Username: { Code: 'UsernameInvalid', Message: 'Username is invalid' } });
+				errors.AddError({ Username: { Code: 'UsernameInvalid', Message: 'Username is invalid or missing' } });
 			}
 
 			res.status(400).json(errors.toJSON());

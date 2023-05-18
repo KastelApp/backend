@@ -8,7 +8,7 @@ import schemaData from '../../../Utils/SchemaData.js';
 import { UserSchema } from '../../../Utils/Schemas/Schemas.js';
 
 new Route(
-	'/',
+	'/fetch',
 	'GET',
 	[
 		User({

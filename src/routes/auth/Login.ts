@@ -185,7 +185,7 @@ new Route(
 
 			Errors.AddError({
 				Email: {
-					Code: 'EmailNotFound',
+					Code: 'EmailInvalid',
 					Message: 'Email not found',
 				},
 			});

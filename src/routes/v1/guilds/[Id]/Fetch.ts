@@ -7,7 +7,7 @@ import schemaData from '../../../../Utils/SchemaData.js';
 import { GuildMemberSchema, GuildSchema } from '../../../../Utils/Schemas/Schemas.js';
 
 new Route(
-	'/',
+	'/fetch',
 	'GET',
 	[
 		User({
