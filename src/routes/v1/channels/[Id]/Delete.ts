@@ -53,9 +53,6 @@ new Route(
 			return;
 		}
 
-		res.status(200).json({
-			Success: true,
-			Message: 'Channel deleted successfully.',
-		});
+		res.status(204).end();
 	},
 );

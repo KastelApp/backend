@@ -65,6 +65,6 @@ new Route(
 			return;
 		}
 
-		res.status(204).send();
+		res.status(204).end();
 	},
 );

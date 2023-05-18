@@ -185,14 +185,22 @@ app.listen(Config.Server.Port ?? 62_250, async () => {
 		...Config.Redis,
 		AllowForDangerousCommands: true,
 	});
+	
+	cache.on('Connected', () => {
+		console.info('[Cache] Redis connected!');
+	});
+	
+	cache.on('Error', (error: any) => {
+		console.error('[Cache] Failed to connect to Redis', error);
+		
+		process.exit();
+	});
+	
+	cache.on('MissedPing', () => {
+		console.warn('[Cache] Missed ping from Redis');
+	})
 
-	await cache
-		.connect()
-		.then(() => console.info('[Cache] Redis connected!'))
-		.catch((error: any) => {
-			console.error('[Cache] Failed to connect to Redis', error);
-			process.exit();
-		});
+	await cache.connect()
 
 	if (Config.Server.Cache.ClearOnStart) {
 		await cache.flush('ratelimits');

@@ -52,6 +52,21 @@ const schemaData = (type: keyof typeof schemaExports, data: any): any => {
 			}
 		}
 
+		// we go through tp.data and if something doesn't exist in the new object, we add it with the default value
+		for (const [key, value] of Object.entries(tp.data)) {
+			const Found = Object.entries(NewObject).find(([keyName, _]) => keyName === key);
+
+			console.log(key, value, Found);
+
+			if (!Found) {
+				if (value.extended) {
+					console.log('Its Extended but not found (Debug)');
+				} else {
+					NewObject[key] = value.default;
+				}
+			}
+		}
+
 		// sorts through the new object to put the keys in the same order as the schema
 		const SortedObject: { [key: string]: any } = {};
 
@@ -61,10 +76,10 @@ const schemaData = (type: keyof typeof schemaExports, data: any): any => {
 			if (!Found) continue;
 
 			const [KeyName, Value] = Found;
-			
+
 			SortedObject[KeyName] = Value;
 		}
-		
+
 		return SortedObject;
 	}
 
@@ -89,6 +104,21 @@ const schemaData = (type: keyof typeof schemaExports, data: any): any => {
 					}
 				}
 
+				// we go through tp.data and if something doesn't exist in the new object, we add it with the default value
+				for (const [key, value] of Object.entries(tp.data)) {
+					const Found = Object.entries(NewObject).find(([keyName, _]) => keyName === key);
+
+					console.log(key, value, Found);
+
+					if (!Found) {
+						if (value.extended) {
+							console.log('Its Extended but not found (Debug)');
+						} else {
+							NewObject[key] = value.default;
+						}
+					}
+				}
+
 				// sorts through the new object to put the keys in the same order as the schema
 				const SortedObject: { [key: string]: any } = {};
 
@@ -96,9 +126,9 @@ const schemaData = (type: keyof typeof schemaExports, data: any): any => {
 					const Found = Object.entries(NewObject).find(([keyName, _]) => keyName === key);
 
 					if (!Found) continue;
-		
+
 					const [KeyName, Value] = Found;
-					
+
 					SortedObject[KeyName] = Value;
 				}
 

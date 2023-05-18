@@ -66,7 +66,7 @@ new Route(
 			return;
 		}
 
-		res.status(204).send();
+		res.status(204).end();
 
 		req.app.socket.Events.MessageDelete({
 			Id: MessageId,
