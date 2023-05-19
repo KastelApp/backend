@@ -7,7 +7,7 @@ import LinkGeneration from '../../../Utils/Classes/LinkGeneration.js';
 import { UserSchema, VerifcationLinkSchema } from '../../../Utils/Schemas/Schemas.js';
 
 new Route(
-	'/verify',
+	'/',
 	'POST',
 	[
 		Captcha({
