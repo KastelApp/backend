@@ -63,8 +63,7 @@ new Route(
 			newPassword,
 		} = req.body as EditUserBody;
 
-		// eslint-disable-next-line eqeqeq -- expected to use ==
-		if (tag && tag == '0000') {
+		if (tag && tag === '0000') {
 			const Errors = new HTTPErrors(4_014);
 
 			Errors.AddError({

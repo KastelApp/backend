@@ -19,8 +19,8 @@ import IpUtils from '../../Utils/Classes/IpUtils.js';
 new Route('/restart', 'GET', [], (req, res) => {
 	const FourOhFourError = new HTTPErrors(404, {
 		routes: {
-			code: 'RouteNotFound',
-			message: 'The route you requested does not exist.',
+			Code: 'RouteNotFound',
+			Message: 'The route you requested does not exist.',
 		},
 	}).toJSON();
 

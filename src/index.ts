@@ -51,9 +51,9 @@ const Routes = Route.LoadRoutes(join(__dirname, 'routes'));
 const app = express();
 
 const FourOhFourError = new HTTPErrors(404, {
-	routes: {
-		code: 'RouteNotFound',
-		message: 'The route you requested does not exist.',
+	Routes: {
+		Code: 'RouteNotFound',
+		Message: 'The route you requested does not exist.',
 	},
 }).toJSON();
 
@@ -132,9 +132,9 @@ app.use((req, res, next) => {
 
 	if (!app.ready) {
 		res.status(503).json({
-			error: {
-				code: 'ServiceUnavailable',
-				message: 'The service is currently unavailable.',
+			Error: {
+				Code: 'ServiceUnavailable',
+				Message: 'The service is currently unavailable.',
 			},
 		});
 

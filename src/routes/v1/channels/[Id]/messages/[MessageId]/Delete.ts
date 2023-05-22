@@ -24,8 +24,8 @@ new Route(
 
 			Errors.AddError({
 				MessageIds: {
-					code: 'InvalidMessageIds',
-					message: 'The message ids are invalid.',
+					Code: 'InvalidMessageIds',
+					Message: 'The message ids are invalid.',
 				},
 			});
 
@@ -39,8 +39,8 @@ new Route(
 
 			MissingPermissions.AddError({
 				Channel: {
-					code: 'MissingPermissions',
-					message: 'You are missing the permissions to manage messages in this channel.',
+					Code: 'MissingPermissions',
+					Message: 'You are missing the permissions to manage messages in this channel.',
 				},
 			});
 
@@ -56,8 +56,8 @@ new Route(
 
 			Errors.AddError({
 				MessageIds: {
-					code: 'InvalidMessageIds',
-					message: 'The message ids are invalid.',
+					Code: 'InvalidMessageIds',
+					Message: 'The message ids are invalid.',
 				},
 			});
 

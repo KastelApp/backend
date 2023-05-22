@@ -155,7 +155,7 @@ class SystemSocket {
 	}
 
 	public HandleDisconnect(Force: boolean = false): void {
-		if (!Force && this.Ws) return;
+		if (Force && this.Ws) return;
 
 		if (this.HeartbeatInterval) {
 			clearInterval(this.HeartbeatInterval);

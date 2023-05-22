@@ -32,9 +32,9 @@ new Route(
 			const Errors = new HTTPErrors(4_014);
 
 			Errors.AddError({
-				id: {
-					code: 'InvalidUser',
-					message: 'The user ID provided is invalid.',
+				Id: {
+					Code: 'InvalidUser',
+					Message: 'The user ID provided is invalid.',
 				},
 			});
 
@@ -47,9 +47,9 @@ new Route(
 			const Errors = new HTTPErrors(4_014);
 
 			Errors.AddError({
-				friend: {
-					code: 'InvalidBlocked',
-					message: 'The Blocked parameter must be a boolean.',
+				Friend: {
+					Code: 'InvalidBlocked',
+					Message: 'The Blocked parameter must be a boolean.',
 				},
 			});
 
@@ -73,9 +73,9 @@ new Route(
 				const Errors = new HTTPErrors(4_015);
 
 				Errors.AddError({
-					friend: {
-						code: 'NotBlocked',
-						message: 'The user is not blocked.',
+					Friend: {
+						Code: 'NotBlocked',
+						Message: 'The user is not blocked.',
 					},
 				});
 
@@ -92,9 +92,7 @@ new Route(
 
 			await Block.save();
 
-			res.status(200).json({
-				message: 'User has been blocked.',
-			});
+			res.status(204).end();
 
 			return;
 		}
@@ -107,9 +105,7 @@ new Route(
 						Sender: Encryption.encrypt(Id),
 					});
 
-					res.status(200).json({
-						message: 'User has been unblocked.',
-					});
+					res.status(204).end();
 
 					return;
 				}
@@ -117,9 +113,9 @@ new Route(
 				const Errors = new HTTPErrors(4_015);
 
 				Errors.AddError({
-					friend: {
-						code: 'AlreadyBlocked',
-						message: 'The user is already blocked.',
+					Friend: {
+						Code: 'AlreadyBlocked',
+						Message: 'The user is already blocked.',
 					},
 				});
 
@@ -138,9 +134,7 @@ new Route(
 				},
 			);
 
-			res.status(200).json({
-				message: 'User has been blocked.',
-			});
+			res.status(204).end();
 
 			return;
 		}
@@ -153,9 +147,7 @@ new Route(
 						Receiver: Encryption.encrypt(Id),
 					});
 
-					res.status(200).json({
-						message: 'User has been unblocked.',
-					});
+					res.status(204).end();
 
 					return;
 				}
@@ -163,9 +155,9 @@ new Route(
 				const Errors = new HTTPErrors(4_015);
 
 				Errors.AddError({
-					friend: {
-						code: 'AlreadyBlocked',
-						message: 'The user is already blocked.',
+					Friend: {
+						Code: 'AlreadyBlocked',
+						Message: 'The user is already blocked.',
 					},
 				});
 
@@ -184,15 +176,11 @@ new Route(
 				},
 			);
 
-			res.status(200).json({
-				message: 'User has been blocked.',
-			});
+			res.status(204).end();
 
 			return;
 		}
 
-		res.status(500).json({
-			message: 'Something went wrong.',
-		});
+		res.status(500).send('Internal Server Error')
 	},
 );

@@ -35,6 +35,7 @@ new Route(
 		}),
 	],
 	async (req, res) => {
+
 		const { username, email, password }: { email: string; invite?: string; password: string; username: string } =
 			req.body;
 
@@ -87,39 +88,46 @@ new Route(
 					Username: { Code: 'UsernameTaken', Message: 'Username is taken' },
 				});
 
+			if (Object.keys(Errors.Errors).length === 0) {
+				Errors.AddError({ Unknown: { Code: 'Unknown', Message: 'Unknown error (1)' } });
+
+				res.status(500).json(Errors.toJSON());
+
+				return;
+			}
+
 			res.status(400).json(Errors.toJSON());
 
 			return;
 		}
 
-		if (
-			!Config.Regexs.Password.test(password) ||
-			!Config.Regexs.Email.test(email) ||
-			!(
-				Constants.Settings.Min.UsernameLength <= username.length &&
-				username.length <= Constants.Settings.Max.UsernameLength
-			)
-		) {
-			const errors = new HTTPErrors(4_009);
+		const PasswordRegex = new RegExp(Config.Regexs.Password);
+		const EmailRegex = new RegExp(Config.Regexs.Email);
+		const InvalidStuff = new HTTPErrors(4_009);
 
-			if (!Config.Regexs.Password.test(password)) {
-				errors.AddError({ Password: { Code: 'PasswordInvalid', Message: 'Password is invalid or missing' } });
-			}
+		if (!PasswordRegex.test(password)) {
+			InvalidStuff.AddError({ Password: { Code: 'PasswordInvalid', Message: 'Password is invalid or missing' } });
+		}
 
-			if (!Config.Regexs.Email.test(email)) {
-				errors.AddError({ Email: { Code: 'EmailInvalid', Message: 'The provided email is invalid, missing or already in use' } });
-			}
+		if (!EmailRegex.test(email)) {
+			InvalidStuff.AddError({
+				Email: { Code: 'EmailInvalid', Message: 'The provided email is invalid, missing or already in use' },
+			});
+		}
 
+		for (const check of Constants.Settings.DisallowedWords.Username) {
 			if (
-				!(
-					Constants.Settings.Min.UsernameLength <= username.length &&
-					username.length <= Constants.Settings.Max.UsernameLength
-				)
+				(typeof check === 'string' && username.toLowerCase().includes(check.toLowerCase())) ||
+				(check instanceof RegExp && check.test(username))
 			) {
-				errors.AddError({ Username: { Code: 'UsernameInvalid', Message: 'Username is invalid or missing' } });
+				InvalidStuff.AddError({ Username: { Code: 'UsernameInvalid', Message: 'Username is invalid or missing' } });
+				break;
 			}
+		}
 
-			res.status(400).json(errors.toJSON());
+		if (Object.keys(InvalidStuff.Errors).length > 0) {
+			res.status(400).json(InvalidStuff.toJSON());
+			
 			return;
 		}
 

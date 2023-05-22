@@ -26,8 +26,8 @@ new Route(
 
 			MissingPermissions.AddError({
 				Channel: {
-					code: 'MissingPermissions',
-					message: 'You are missing the permissions to manage channels in this guild.',
+					Code: 'MissingPermissions',
+					Message: 'You are missing the permissions to manage channels in this guild.',
 				},
 			});
 
@@ -43,8 +43,8 @@ new Route(
 
 			Errors.AddError({
 				ChannelId: {
-					code: 'InvalidChannelId',
-					message: 'The channel id is invalid.',
+					Code: 'InvalidChannelId',
+					Message: 'The channel id is invalid.',
 				},
 			});
 

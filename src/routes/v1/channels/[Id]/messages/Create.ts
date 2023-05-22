@@ -47,16 +47,16 @@ new Route(
 		if (!content)
 			CommonErrors.AddError({
 				Content: {
-					code: 'MissingContent',
-					message: 'The content of the message is missing.',
+					Code: 'MissingContent',
+					Message: 'The content of the message is missing.',
 				},
 			});
 
 		if (content?.length > Constants.Settings.Max.MessageLength)
 			CommonErrors.AddError({
 				Content: {
-					code: 'MessageTooLong',
-					message: 'The message is too long.',
+					Code: 'MessageTooLong',
+					Message: 'The message is too long.',
 				},
 			});
 
@@ -76,8 +76,8 @@ new Route(
 			if (NonceExists)
 				CommonErrors.AddError({
 					Nonce: {
-						code: 'NonceExists',
-						message: 'The nonce you provided already exists.',
+						Code: 'NonceExists',
+						Message: 'The nonce you provided already exists.',
 					},
 				});
 
@@ -95,8 +95,8 @@ new Route(
 
 			MissingPermissions.AddError({
 				Content: {
-					code: 'UnknownChannel',
-					message:
+					Code: 'UnknownChannel',
+					Message:
 						'The channel you are trying to send a message to does not exist or you do not have permission to send messages to it.',
 				},
 			});
@@ -111,8 +111,8 @@ new Route(
 		if (!FetchedAuthor) {
 			const Error = new HTTPErrors(4_050, {
 				GuildMember: {
-					code: 'UnknownMember',
-					message: 'The Member that tried to send a message does not exist.',
+					Code: 'UnknownMember',
+					Message: 'The Member that tried to send a message does not exist.',
 				},
 			}).toJSON();
 

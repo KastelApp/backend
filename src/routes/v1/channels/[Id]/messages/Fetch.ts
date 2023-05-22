@@ -23,8 +23,8 @@ new Route(
 
 			MissingPermissions.AddError({
 				Channel: {
-					code: 'MissingPermissions',
-					message: 'You are missing the permissions to read messages in this channel.',
+					Code: 'MissingPermissions',
+					Message: 'You are missing the permissions to read messages in this channel.',
 				},
 			});
 
