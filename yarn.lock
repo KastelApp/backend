@@ -241,12 +241,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/config-angular@npm:^17.6.1":
-  version: 17.6.1
-  resolution: "@commitlint/config-angular@npm:17.6.1"
+"@commitlint/config-angular@npm:^17.6.5":
+  version: 17.6.5
+  resolution: "@commitlint/config-angular@npm:17.6.5"
   dependencies:
     "@commitlint/config-angular-type-enum": ^17.4.0
-  checksum: 66d833db2585a788ae9360afb14827b7087891abe8c1a4c8cd95fe6a5b62d0a7743c2bdabaa3c9dfc373f1f3744ed9e3086405f5b7c0a6c1a06206d980ce8b9a
+  checksum: a380aee9e42c7b8250b66189ad40e178a7e2010d6c02cd6394b28740b2fcdaf6df7ff8da18aabcb4fa24751da2f4be7a2acd4fc31a3fb8e10a0ce51bf0d41162
   languageName: node
   linkType: hard
 
@@ -4816,7 +4816,7 @@ __metadata:
   resolution: "kastel@workspace:."
   dependencies:
     "@commitlint/cli": ^17.6.1
-    "@commitlint/config-angular": ^17.6.1
+    "@commitlint/config-angular": ^17.6.5
     "@kastelll/core": ^0.2.4
     "@kastelll/util": ^0.2.1
     "@sentry/node": ^7.49.0
