@@ -22,7 +22,7 @@
 		"ws": "^8.13.0"
 	},
 	"devDependencies": {
-		"@commitlint/cli": "^17.6.1",
+		"@commitlint/cli": "^17.6.7",
 		"@commitlint/config-angular": "^17.6.1",
 		"@types/bcrypt": "^5.0.0",
 		"@types/cookie-parser": "^1.4.3",
