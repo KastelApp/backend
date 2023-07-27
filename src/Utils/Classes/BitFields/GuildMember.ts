@@ -43,7 +43,7 @@ class GuildMemberFlags {
 			obj[key as keyof typeof GMF] = this.has(GMF[key as keyof typeof GMF]);
 			return obj;
 			// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter -- I got no other ideas how to fix this
-		}, {} as Record<keyof typeof GMF, boolean>);
+		}, {});
 	}
 
 	public toArray(): string[] {

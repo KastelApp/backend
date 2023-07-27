@@ -9,14 +9,17 @@
  * GPL 3.0 Licensed
  */
 
-import process from 'node:process';
-import App from './Utils/Classes/App.js';
+import type Utils from '../Utils/Classes/MiscUtils/Utils';
+import type RequestUtils from '../Utils/Classes/RequestUtils';
+import type { LessUser } from './Users/Users';
 
-const Application = new App();
-
-// eslint-disable-next-line promise/prefer-await-to-callbacks 
-Application.Init().catch((error) => {
-	Application.Logger.fatal(error);
-
-	process.exit(1);
-});
+declare global {
+	namespace Express {
+		interface Request {
+			clientIp: string;
+			mutils: Utils;
+			user: LessUser;
+			utils: RequestUtils;
+		}
+	}
+}

@@ -84,16 +84,15 @@ class Encryption {
 
 		if (typeof items === 'object') {
 			if (Array.isArray(items)) {
-				
 				const NewArray: any[] = [];
-				
+
 				for (const item of items) {
 					if (!item || item === null) {
 						NewArray.push(item);
-						
+
 						continue;
 					}
-					
+
 					if (typeof item === 'object') {
 						NewArray.push(completeDecrypt(item));
 					} else if (item instanceof Date) {
@@ -104,35 +103,30 @@ class Encryption {
 						NewArray.push(item);
 					}
 				}
-				
-				console.log(NewArray)
-				
+
 				return NewArray;
 			} else {
-			const NewObject: any = {};
-			
-			for (const [key, item] of Object.entries(items)) {
-				
-				if (!item || item === null) {
-					NewObject[key] = item;
-					
-					continue;
+				const NewObject: any = {};
+
+				for (const [key, item] of Object.entries(items)) {
+					if (!item || item === null) {
+						NewObject[key] = item;
+
+						continue;
+					}
+
+					if (typeof item === 'object') {
+						NewObject[key] = completeDecrypt(item);
+					} else if (item instanceof Date) {
+						NewObject[key] = item;
+					} else if (typeof item === 'string' && isEncrypted(item)) {
+						NewObject[key] = decrypt(item);
+					} else {
+						NewObject[key] = item;
+					}
 				}
-				
-				if (typeof item === 'object') {
-					NewObject[key] = completeDecrypt(item);
-				} else if (item instanceof Date) {
-					NewObject[key] = item;
-				} else if (typeof item === 'string' && isEncrypted(item)) {
-					NewObject[key] = decrypt(item);
-				} else {
-					NewObject[key] = item;
-				}
-			}
-			
-			console.log(NewObject)
-			
-			return NewObject;
+
+				return NewObject;
 			}
 		} else if (typeof items === 'string' && isEncrypted(items)) {
 			return decrypt(items);
@@ -145,19 +139,18 @@ class Encryption {
 		const encrypt = Encryption.encrypt;
 		const completeEncrypt = Encryption.completeEncryption;
 		const isEncrypted = Encryption.isEncrypted;
-		
+
 		if (typeof items === 'object') {
 			if (Array.isArray(items)) {
-				
 				const NewArray: any[] = [];
-				
+
 				for (const item of items) {
 					if (!item || item === null) {
 						NewArray.push(item);
-						
+
 						continue;
 					}
-					
+
 					if (typeof item === 'object') {
 						NewArray.push(completeEncrypt(item));
 					} else if (item instanceof Date) {
@@ -168,35 +161,30 @@ class Encryption {
 						NewArray.push(item);
 					}
 				}
-				
-				console.log(NewArray)
-				
+
 				return NewArray;
 			} else {
-			const NewObject: any = {};
-			
-			for (const [key, item] of Object.entries(items)) {
-				
-				if (!item || item === null) {
-					NewObject[key] = item;
-					
-					continue;
+				const NewObject: any = {};
+
+				for (const [key, item] of Object.entries(items)) {
+					if (!item || item === null) {
+						NewObject[key] = item;
+
+						continue;
+					}
+
+					if (typeof item === 'object') {
+						NewObject[key] = completeEncrypt(item);
+					} else if (item instanceof Date) {
+						NewObject[key] = item;
+					} else if (typeof item === 'string' && !isEncrypted(item)) {
+						NewObject[key] = encrypt(item);
+					} else {
+						NewObject[key] = item;
+					}
 				}
-				
-				if (typeof item === 'object') {
-					NewObject[key] = completeEncrypt(item);
-				} else if (item instanceof Date) {
-					NewObject[key] = item;
-				} else if (typeof item === 'string' && !isEncrypted(item)) {
-					NewObject[key] = encrypt(item);
-				} else {
-					NewObject[key] = item;
-				}
-			}
-			
-			console.log(NewObject)
-			
-			return NewObject;
+
+				return NewObject;
 			}
 		} else if (typeof items === 'string' && !isEncrypted(items)) {
 			return encrypt(items);

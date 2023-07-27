@@ -36,58 +36,103 @@ const schemaData = (type: keyof typeof schemaExports, data: any): any => {
 	}
 
 	if (tp.type === Object) {
-		const newObject: { [key: string]: any } = {};
+		const NewObject: { [key: string]: any } = {};
 
-		for (const [item, tpData] of Object.entries(tp.data)) {
-			if (!tpData) {
-				throw new Error(`Couldn't find ${item} in ${type}`);
-			}
+		for (const [key, value] of Object.entries(data)) {
+			const Found = Object.entries(tp.data).find(([, val]) => val.name === key);
 
-			const gotItem = data[tpData.name];
+			if (!Found) continue;
 
-			if (tpData.extended) {
-				newObject[item] = schemaData(tpData.extends, gotItem);
-			} else if (typeof gotItem !== tpData.expected.name.toLowerCase() && !(gotItem instanceof tpData.expected)) {
-				newObject[item] =
-					tpData.expected.name.toLowerCase() === 'date' && typeof gotItem === 'number' ? gotItem : tpData.default;
+			const [NewName, SchemaStuff] = Found;
+
+			if (SchemaStuff.extended) {
+				NewObject[NewName] = schemaData(SchemaStuff.extends, value);
 			} else {
-				newObject[item] = gotItem;
+				NewObject[NewName] = value;
 			}
 		}
 
-		return newObject;
+		// we go through tp.data and if something doesn't exist in the new object, we add it with the default value
+		for (const [key, value] of Object.entries(tp.data)) {
+			const Found = Object.entries(NewObject).find(([keyName, _]) => keyName === key);
+
+			if (!Found) {
+				if (value.extended) {
+					console.log('Its Extended but not found (Debug)');
+				} else {
+					NewObject[key] = value.default;
+				}
+			}
+		}
+
+		// sorts through the new object to put the keys in the same order as the schema
+		const SortedObject: { [key: string]: any } = {};
+
+		for (const [key, _] of Object.entries(tp.data)) {
+			const Found = Object.entries(NewObject).find(([keyName, _]) => keyName === key);
+
+			if (!Found) continue;
+
+			const [KeyName, Value] = Found;
+
+			SortedObject[KeyName] = Value;
+		}
+
+		return SortedObject;
 	}
 
 	if (tp.type === Array) {
-		const newArray: any[] = [];
+		const NewArray: any[] = [];
 
 		for (const item of data) {
-			const newObject: { [key: string]: any } = {};
+			if (typeof item === 'object') {
+				const NewObject: { [key: string]: any } = {};
 
-			for (const [key, tpData] of Object.entries(tp.data)) {
-				if (!tpData) {
-					throw new Error(`Couldn't find ${key} in ${type}`);
-				}
+				for (const [key, value] of Object.entries(item)) {
+					const Found = Object.entries(tp.data).find(([, val]) => val.name === key);
 
-				if (tpData.name === key) {
-					const gotItem = item[key];
-					const arewethere = tp?.data?.[key]?.name ?? key;
+					if (!Found) continue;
 
-					if (tpData.extended) {
-						newObject[arewethere] = schemaData(tpData.extends, gotItem);
-					} else if (typeof gotItem !== tpData.expected.name.toLowerCase() && !(gotItem instanceof tpData.expected)) {
-						newObject[arewethere] =
-							tpData.expected.name.toLowerCase() === 'date' && typeof gotItem === 'number' ? gotItem : tpData.default;
+					const [NewName, SchemaStuff] = Found;
+
+					if (SchemaStuff.extended) {
+						NewObject[NewName] = schemaData(SchemaStuff.extends, value);
 					} else {
-						newObject[arewethere] = gotItem;
+						NewObject[NewName] = value;
 					}
 				}
-			}
 
-			newArray.push(newObject);
+				// we go through tp.data and if something doesn't exist in the new object, we add it with the default value
+				for (const [key, value] of Object.entries(tp.data)) {
+					const Found = Object.entries(NewObject).find(([keyName, _]) => keyName === key);
+
+					if (!Found) {
+						if (value.extended) {
+							console.log('Its Extended but not found (Debug)');
+						} else {
+							NewObject[key] = value.default;
+						}
+					}
+				}
+
+				// sorts through the new object to put the keys in the same order as the schema
+				const SortedObject: { [key: string]: any } = {};
+
+				for (const [key, _] of Object.entries(tp.data)) {
+					const Found = Object.entries(NewObject).find(([keyName, _]) => keyName === key);
+
+					if (!Found) continue;
+
+					const [KeyName, Value] = Found;
+
+					SortedObject[KeyName] = Value;
+				}
+
+				NewArray.push(SortedObject);
+			}
 		}
 
-		return newArray;
+		return NewArray;
 	}
 
 	return data;

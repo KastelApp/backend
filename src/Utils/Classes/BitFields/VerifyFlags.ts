@@ -43,7 +43,7 @@ class VerifyFields {
 			obj[key as keyof typeof VerificationFlags] = this.has(VerificationFlags[key as keyof typeof VerificationFlags]);
 			return obj;
 			// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter -- I got no other ideas how to fix this
-		}, {} as Record<keyof typeof VerificationFlags, boolean>);
+		}, {});
 	}
 
 	public toArray(): string[] {

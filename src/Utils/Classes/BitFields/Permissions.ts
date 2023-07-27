@@ -43,7 +43,7 @@ class Permissions {
 			obj[key as keyof typeof Perms] = this.has(Perms[key as keyof typeof Perms]);
 			return obj;
 			// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter -- I got no other ideas how to fix this
-		}, {} as Record<keyof typeof Perms, boolean>);
+		}, {});
 	}
 
 	public toArray(): string[] {

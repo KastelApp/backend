@@ -9,14 +9,34 @@
  * GPL 3.0 Licensed
  */
 
-import process from 'node:process';
-import App from './Utils/Classes/App.js';
+import type { Request, Response } from "express";
+import type App from "../Utils/Classes/App";
+import Route from "../Utils/Classes/Route.js";
 
-const Application = new App();
-
-// eslint-disable-next-line promise/prefer-await-to-callbacks 
-Application.Init().catch((error) => {
-	Application.Logger.fatal(error);
-
-	process.exit(1);
-});
+export default class Main extends Route {
+	public constructor(App: App) {
+		super(App);
+		
+		this.Methods = ['GET'];
+		
+		this.Middleware = [];
+		
+		this.AllowedContentTypes = [];
+		
+		this.Routes = ['/'];
+	}
+	
+	public override Request(_: Request, Res: Response): void {
+		Res.send({
+			Code: 200,
+			Message: {
+				Status: 'OK',
+				Message: 'Welcome to the Kastel API',
+				LatestVersions: {
+					API: 1,
+					Ws: 1,
+				},
+			},
+		});
+	}
+}
