@@ -38,3 +38,6 @@ dtests/
 # Cache
 .prettiercache
 .eslintcache
+
+# Old Stuff
+oldApiRoutes

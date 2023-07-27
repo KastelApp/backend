@@ -43,7 +43,7 @@ class FlagFields {
 			obj[key as keyof typeof Flags] = this.has(Flags[key as keyof typeof Flags]);
 			return obj;
 			// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter -- I got no other ideas how to fix this
-		}, {} as Record<keyof typeof Flags, boolean>);
+		}, {});
 	}
 
 	public toArray(): string[] {

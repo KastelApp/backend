@@ -9,12 +9,12 @@
  * GPL 3.0 Licensed
  */
 
-import { HTTPErrors } from '@kastelll/util';
 import type { NextFunction, Request, Response } from 'express';
 import type { UserMiddleware } from '../Types/Routes';
 import type { LessUser, PopulatedUserWJ } from '../Types/Users/Users';
 import FlagFields from '../Utils/Classes/BitFields/Flags.js';
 import Encryption from '../Utils/Classes/Encryption.js';
+import ErrorGen from '../Utils/Classes/ErrorGen.js';
 import Utils from '../Utils/Classes/MiscUtils/Utils.js';
 import Token from '../Utils/Classes/Token.js';
 import schemaData from '../Utils/SchemaData.js';
@@ -28,17 +28,23 @@ import { SettingSchema } from '../Utils/Schemas/Schemas.js';
  */
 
 const User = (options: UserMiddleware) => {
-	return async (req: Request, res: Response, next: NextFunction) => {
-		let AuthHeader = req.headers.authorization;
+	return async (Req: Request, Res: Response, next: NextFunction) => {
+		let AuthHeader = Req.headers.authorization;
+
+		const UnAuthorized = ErrorGen.UnAuthorized();
 
 		if (
 			(AuthHeader?.includes('Bot') && options.AllowedRequesters === 'User') ||
 			(!AuthHeader?.includes('Bot') && options.AllowedRequesters === 'Bot')
 		) {
-			res.status(401).json({
-				Code: 4_011,
-				Message: 'You are not allowed to access this endpoint.',
+			UnAuthorized.AddError({
+				User: {
+					Code: 'InvalidUserType',
+					Message: 'You are not allowed to access this endpoint.',
+				}
 			});
+
+			Res.status(401).json(UnAuthorized.toJSON());
 
 			return;
 		}
@@ -46,19 +52,27 @@ const User = (options: UserMiddleware) => {
 		AuthHeader = AuthHeader?.split(' ').length === 2 ? AuthHeader.split(' ')[1] : AuthHeader;
 
 		if (options.AccessType === 'LoggedIn' && !AuthHeader) {
-			res.status(401).json({
-				Code: 4_010,
-				Message: 'You need to be logged in to access this endpoint',
+			UnAuthorized.AddError({
+				User: {
+					Code: 'NotLoggedIn',
+					Message: 'You need to be logged in to access this endpoint',
+				}
 			});
+
+			Res.status(401).json(UnAuthorized.toJSON());
 
 			return;
 		}
 
 		if (options.AccessType === 'LoggedOut' && AuthHeader) {
-			res.status(401).json({
-				Code: 4_011,
-				Message: 'You are not allowed to access this endpoint.',
+			UnAuthorized.AddError({
+				User: {
+					Code: 'LoggedIn',
+					Message: 'You are not allowed to access this endpoint.',
+				}
 			});
+
+			Res.status(401).json(UnAuthorized.toJSON());
 
 			return;
 		}
@@ -67,10 +81,14 @@ const User = (options: UserMiddleware) => {
 			const VaildatedToken = Token.ValidateToken(AuthHeader);
 
 			if (!VaildatedToken) {
-				res.status(401).json({
-					Code: 4_012,
-					Message: 'Unauthorized',
+				UnAuthorized.AddError({
+					User: {
+						Code: 'InvalidToken',
+						Message: 'Unauthorized',
+					}
 				});
+
+				Res.status(401).json(UnAuthorized.toJSON());
 
 				return;
 			}
@@ -86,116 +104,112 @@ const User = (options: UserMiddleware) => {
 			}>('User');
 
 			if (!UsersSettings) {
-				res.status(401).json({
-					Code: 4_012,
-					Message: 'Unauthorized',
+				UnAuthorized.AddError({
+					User: {
+						Code: 'InvalidToken',
+						Message: 'Unauthorized',
+					}
 				});
+
+				Res.status(401).json(UnAuthorized.toJSON());
 
 				return;
 			}
 
 			if (!UsersSettings.User) {
-				res.status(401).json({
-					Code: 4_012,
-					Message: 'Unauthorized',
+				UnAuthorized.AddError({
+					User: {
+						Code: 'InvalidToken',
+						Message: 'Unauthorized',
+					}
 				});
+
+				Res.status(401).json(UnAuthorized.toJSON());
 
 				return;
 			}
 
-			const UsersFlags = new FlagFields(UsersSettings.User.Flags);
+			const UserFlags = new FlagFields(UsersSettings.User.Flags);
 
-			if (UsersSettings.User.Banned) {
-				const Errors = new HTTPErrors(4_002);
+			if (UserFlags.hasString('AccountDeleted') || UserFlags.hasString('WaitingOnDisableDataUpdate') || UserFlags.hasString('WaitingOnAccountDeletion')) {
+				const Error = ErrorGen.AccountNotAvailable();
 
-				Errors.AddError({
+				Error.AddError({
 					Email: {
-						Code: 'AccountTerminated',
-						Message: 'Your account has been terminated.',
-						Reason: UsersSettings.User.BanReason,
-					},
+						Code: 'AccountDeleted',
+						Message: 'The Account has been deleted',
+					}
 				});
 
-				res.status(400).json(Errors.toJSON());
+				Res.send(Error.toJSON());
 
 				return;
 			}
 
-			if (UsersSettings.User.Locked) {
-				const Errors = new HTTPErrors(4_003);
+			if (UserFlags.hasString('Terminated') || UserFlags.hasString('Disabled')) {
+				const Error = ErrorGen.AccountNotAvailable();
 
-				Errors.AddError({
+				Error.AddError({
 					Email: {
 						Code: 'AccountDisabled',
-						Message: 'Your account is disabled, please contact support!',
-					},
+						Message: 'The Account has been disabled',
+					}
 				});
 
-				res.status(400).json(Errors.toJSON());
+				Res.send(Error.toJSON());
 
 				return;
 			}
 
-			if (UsersSettings.User.AccountDeletionInProgress) {
-				const Errors = new HTTPErrors(4_004);
-
-				Errors.AddError({
-					Email: {
-						Code: 'AccountDeletionInProgress',
-						Message:
-							'Your account is currently being deleted, If you would like to cancel this, please contact support',
-					},
-				});
-
-				res.status(400).json(Errors.toJSON());
-
-				return;
-			}
-
-			// if (
-			//   !UsersSettings.User.Tokens.find(
-			//     (Token) => Token.Token === Encryption.encrypt(AuthHeader as string)
-			//   )
-			// ) {
-			//   res.status(401).json({
-			//     Code: 4012,
-			//     Message: "Unauthorized",
-			//   });
-
-			//   return;
-			// }
 
 			if (
 				options.AllowedRequesters === 'User' &&
-				(UsersFlags.hasString('Bot') || UsersFlags.hasString('VerifiedBot'))
+				(UserFlags.hasString('Bot') || UserFlags.hasString('VerifiedBot'))
 			) {
-				res.status(401).json({
-					Code: 4_011,
-					Message: 'You are not allowed to access this endpoint.',
+				UnAuthorized.AddError({
+					User: {
+						Code: 'InvalidToken',
+						Message: 'Unauthorized',
+					}
 				});
+
+				Res.status(401).json(UnAuthorized.toJSON());
 
 				return;
 			}
 
 			if (
 				options.AllowedRequesters === 'Bot' &&
-				!(UsersFlags.hasString('Bot') || UsersFlags.hasString('VerifiedBot'))
+				!(UserFlags.hasString('Bot') || UserFlags.hasString('VerifiedBot'))
 			) {
-				res.status(401).json({
-					Code: 4_011,
-					Message: 'You are not allowed to access this endpoint.',
+				// res.status(401).json({
+				// 	Code: 4_011,
+				// 	Message: 'You are not allowed to access this endpoint.',
+				// });
+
+				UnAuthorized.AddError({
+					User: {
+						Code: 'InvalidToken',
+						Message: 'Unauthorized',
+					}
 				});
+
+				Res.status(401).json(UnAuthorized.toJSON());
 
 				return;
 			}
 
 			if (options.Flags && options.Flags.length > 0) {
 				for (const Flag of options.Flags) {
-					if (!UsersFlags.hasString(Flag)) {
-						res.status(401).json({
-							Code: 4_011,
-							Message: 'You are not allowed to access this endpoint.',
+					if (!UserFlags.hasString(Flag)) {
+						UnAuthorized.AddError({
+							User: {
+								Code: 'InvalidToken',
+								Message: 'Unauthorized',
+							}
 						});
+
+						Res.status(401).json(UnAuthorized.toJSON());
 
 						return;
 					}
@@ -204,11 +218,15 @@ const User = (options: UserMiddleware) => {
 
 			if (options.DisallowedFlags && options.DisallowedFlags.length > 0) {
 				for (const Flag of options.DisallowedFlags) {
-					if (UsersFlags.hasString(Flag)) {
-						res.status(401).json({
-							Code: 4_011,
-							Message: 'You are not allowed to access this endpoint.',
+					if (UserFlags.hasString(Flag)) {
+						UnAuthorized.AddError({
+							User: {
+								Code: 'InvalidToken',
+								Message: 'Unauthorized',
+							}
 						});
+
+						Res.status(401).json(UnAuthorized.toJSON());
 
 						return;
 					}
@@ -219,14 +237,14 @@ const User = (options: UserMiddleware) => {
 
 			const SchemaUserd = schemaData('RawUser', CompleteDecrypted);
 
-			req.user = {
+			Req.user = {
 				...SchemaUserd,
 				Token: AuthHeader,
 				Bot: false,
 				FlagsUtil: new FlagFields(SchemaUserd.Flags),
 			} as LessUser;
 
-			req.mutils = new Utils(req.user.Token, req, res);
+			Req.mutils = new Utils(Req.user.Token, Req, Res);
 
 			next();
 

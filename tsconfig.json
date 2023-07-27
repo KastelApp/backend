@@ -11,11 +11,9 @@
 		"strict": true,
 		"useUnknownInCatchVariables": true,
 		"noUncheckedIndexedAccess": true,
-
 		"module": "ESNext",
 		"moduleResolution": "node",
 		"resolveJsonModule": true,
-
 		"declaration": true,
 		"declarationMap": true,
 		"importHelpers": true,
@@ -27,12 +25,11 @@
 		"sourceMap": true,
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
-
 		"experimentalDecorators": true,
 		"lib": ["ESNext", "DOM"],
-		"target": "ES2021",
+		"target": "ES2022",
 		"useDefineForClassFields": true
 	},
-	"include": ["src/**/*"],
+	"include": ["src/**/*", "scripts/**/*"],
 	"exclude": ["node_modules", "dist"]
 }

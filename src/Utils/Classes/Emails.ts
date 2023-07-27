@@ -15,7 +15,7 @@ class Emails {
 
 	private transporter?: nodemailer.Transporter | undefined;
 
-	public constructor(host: string, port: number, secure: boolean, email: string, password: string) {
+	public constructor(host: string, port: number, secure: boolean, email: string, password: string | undefined) {
 		this.host = host;
 
 		this.port = port;
