@@ -959,59 +959,59 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry-internal/tracing@npm:7.59.3":
-  version: 7.59.3
-  resolution: "@sentry-internal/tracing@npm:7.59.3"
+"@sentry-internal/tracing@npm:7.60.1":
+  version: 7.60.1
+  resolution: "@sentry-internal/tracing@npm:7.60.1"
   dependencies:
-    "@sentry/core": 7.59.3
-    "@sentry/types": 7.59.3
-    "@sentry/utils": 7.59.3
+    "@sentry/core": 7.60.1
+    "@sentry/types": 7.60.1
+    "@sentry/utils": 7.60.1
     tslib: ^2.4.1 || ^1.9.3
-  checksum: abd574086fbb173d805d90ed651a7049efcd2dd8eabbeac65b24f4c5da6162c7a36805c987406adb037cd454bda32251d36474600a1e26e945537422d11b0aa1
+  checksum: b5d4bca6ce673639662e647ce733a831c8b5ee2ba14866b4d9b22dd14a7955bdfe1cbcca6cfca198ad3c5dc9e3e1e06c9d8dc74ed47999b75a0d10b9945f737a
   languageName: node
   linkType: hard
 
-"@sentry/core@npm:7.59.3":
-  version: 7.59.3
-  resolution: "@sentry/core@npm:7.59.3"
+"@sentry/core@npm:7.60.1":
+  version: 7.60.1
+  resolution: "@sentry/core@npm:7.60.1"
   dependencies:
-    "@sentry/types": 7.59.3
-    "@sentry/utils": 7.59.3
+    "@sentry/types": 7.60.1
+    "@sentry/utils": 7.60.1
     tslib: ^2.4.1 || ^1.9.3
-  checksum: 88820e1fe38373c617872e0d4d417e83c66a219549c476b0db1597683cf5a3c2437a05775e1da861a03febb5c35abbbcfdfa8f3cfb7e707dd7414345b3899051
+  checksum: 19366e7d7b71ac29c333120dbcae9450ba50c886883665b24c05efcdb72d55eb42dd17379ca20f737f6dacbc30df9248f8677daec024225da35ea31a38cb2e4b
   languageName: node
   linkType: hard
 
-"@sentry/node@npm:^7.59.3":
-  version: 7.59.3
-  resolution: "@sentry/node@npm:7.59.3"
+"@sentry/node@npm:^7.60.1":
+  version: 7.60.1
+  resolution: "@sentry/node@npm:7.60.1"
   dependencies:
-    "@sentry-internal/tracing": 7.59.3
-    "@sentry/core": 7.59.3
-    "@sentry/types": 7.59.3
-    "@sentry/utils": 7.59.3
+    "@sentry-internal/tracing": 7.60.1
+    "@sentry/core": 7.60.1
+    "@sentry/types": 7.60.1
+    "@sentry/utils": 7.60.1
     cookie: ^0.4.1
     https-proxy-agent: ^5.0.0
     lru_map: ^0.3.3
     tslib: ^2.4.1 || ^1.9.3
-  checksum: 06d2e4c3335864fbdb233e2886ad1ed019307378d84ac229859a434ce70250f60cd9d0ade7b62b15618378ff4a5a49a994055d221179253f06486a3dea6aa7bd
+  checksum: 5f2e70e0bb84611bf1db0590340355ab054181526afa5e0a50686e5188fbd3a0de5dc96ad78889501972b1e4a72387bc5757040da38f062ff2e9135fdba5daa8
   languageName: node
   linkType: hard
 
-"@sentry/types@npm:7.59.3":
-  version: 7.59.3
-  resolution: "@sentry/types@npm:7.59.3"
-  checksum: bbf2991a72fefc91caa01efd7efa94f7c6afd4c6a59a39269e7d0874cc60164062d08c2e7f06fc10480c440046a66b53f74ca45e64a100c46624ad7127a180f0
+"@sentry/types@npm:7.60.1":
+  version: 7.60.1
+  resolution: "@sentry/types@npm:7.60.1"
+  checksum: 56a756edec5ed6783b0ed955832d85a77e1fbadfcc23e9cfbee74d52b9eb70ee333c2d9a2fdc5a07f50ebf3b29d7d6dbf76964682b8687c6d6ce64b1a7e77c79
   languageName: node
   linkType: hard
 
-"@sentry/utils@npm:7.59.3":
-  version: 7.59.3
-  resolution: "@sentry/utils@npm:7.59.3"
+"@sentry/utils@npm:7.60.1":
+  version: 7.60.1
+  resolution: "@sentry/utils@npm:7.60.1"
   dependencies:
-    "@sentry/types": 7.59.3
+    "@sentry/types": 7.60.1
     tslib: ^2.4.1 || ^1.9.3
-  checksum: 30a2d2115433c32f8ac80e75c9ffd1d7bf4ec04b630955da811827756320af03276db1a970dc6f65db869ba326cfb7b705a0e18c013c53bb7485724852b3aac9
+  checksum: a3bab34c7e023c33c07fb3db5f357325beebf5cf559b1713a725e38927e73298f22e67bac3e5ea9e1c4e5af6a2a6351e5ded214631f6d979297b58462044e8b7
   languageName: node
   linkType: hard
 
@@ -5618,7 +5618,7 @@ __metadata:
     "@commitlint/config-angular": ^17.6.7
     "@kastelll/core": ^0.2.8
     "@kastelll/util": ^0.2.2
-    "@sentry/node": ^7.59.3
+    "@sentry/node": ^7.60.1
     "@types/archiver": ^5.3.2
     "@types/bcrypt": ^5.0.0
     "@types/cookie-parser": ^1.4.3
@@ -9160,11 +9160,11 @@ __metadata:
 
 "typescript@patch:typescript@^4.6.4 || ^5.0.0#~builtin<compat/typescript>":
   version: 5.0.4
-  resolution: "typescript@patch:typescript@npm%3A5.0.4#~builtin<compat/typescript>::version=5.0.4&hash=b5f058"
+  resolution: "typescript@patch:typescript@npm%3A5.0.4#~builtin<compat/typescript>::version=5.0.4&hash=d73830"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: d26b6ba97b6d163c55dbdffd9bbb4c211667ebebc743accfeb2c8c0154aace7afd097b51165a72a5bad2cf65a4612259344ff60f8e642362aa1695c760d303ac
+  checksum: 6a1fe9a77bb9c5176ead919cc4a1499ee63e46b4e05bf667079f11bf3a8f7887f135aa72460a4c3b016e6e6bb65a822cb8689a6d86cbfe92d22cc9f501f09213
   languageName: node
   linkType: hard
 
