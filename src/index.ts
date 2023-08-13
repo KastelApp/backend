@@ -14,7 +14,7 @@ import App from './Utils/Classes/App.js';
 
 const Application = new App();
 
-// eslint-disable-next-line promise/prefer-await-to-callbacks 
+// eslint-disable-next-line promise/prefer-await-to-callbacks
 Application.Init().catch((error) => {
 	Application.Logger.fatal(error);
 

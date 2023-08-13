@@ -14,8 +14,8 @@ import { GuildMemberFlags as GMF } from '../../../Constants.js';
 class GuildMemberFlags {
 	public bits: number;
 
-	public constructor(bits: number) {
-		this.bits = bits;
+	public constructor(bits: number | string) {
+		this.bits = Number(bits);
 	}
 
 	public has(bit: number) {
@@ -43,6 +43,7 @@ class GuildMemberFlags {
 			obj[key as keyof typeof GMF] = this.has(GMF[key as keyof typeof GMF]);
 			return obj;
 			// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter -- I got no other ideas how to fix this
+			// @ts-expect-error -- not sure how to fix this :/
 		}, {});
 	}
 

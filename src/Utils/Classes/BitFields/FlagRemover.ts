@@ -22,6 +22,12 @@ const FlagRemover = {
 		const invalidFlags = flags & ~validFlags.reduce((acc, flg) => acc | flg, 0);
 		return flags & ~invalidFlags;
 	},
+
+	InvalidFlagsRemover(flags: bigint) {
+		const validFlags = Object.values(Flags);
+		const invalidFlags = flags & ~validFlags.reduce((acc, flg) => acc | flg, 0n);
+		return flags & ~invalidFlags;
+	},
 };
 
 export default FlagRemover;

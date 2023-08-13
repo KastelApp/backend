@@ -11,7 +11,7 @@
 
 import type {
 	Encryption as EncrpytionConfigType,
-	MongoDB as MongoDBConfigType,
+	ScyllaDB as ScyllaDBConfigType,
 	Redis as RedisConfigType,
 	Regexs as RegexsConfigType,
 	Server as ServerConfigType,
@@ -23,8 +23,8 @@ import type {
 
 const Server: ServerConfigType = {
 	Port: 62_250,
-	CookieSecrets: ['tests'],
-	Domain: 'kastelapp.org',
+	CookieSecrets: [''],
+	Domain: '',
 	Secure: true, // https or http
 	WorkerId: 1,
 	Cache: {
@@ -51,8 +51,8 @@ const Encryption: EncrpytionConfigType = {
 };
 
 const Ws: WsConfigType = {
-	Url: 'ws://localhost:8080/system',
-	Password: '123',
+	Url: '',
+	Password: '',
 };
 
 const Redis: RedisConfigType = {
@@ -63,14 +63,12 @@ const Redis: RedisConfigType = {
 	DB: 0,
 };
 
-const MongoDB: MongoDBConfigType = {
-	User: '',
-	Host: '',
-	Port: '80',
+const ScyllaDB: ScyllaDBConfigType = {
+	Nodes: ['localhost'],
+	Keyspace: 'kstl',
+	Username: '',
 	Password: '',
-	Database: '',
-	AuthSource: '',
-	Uri: '',
+	CassandraOptions: {}
 };
 
 const MailServer: MailServerConfigType = {
@@ -98,7 +96,7 @@ const MailServer: MailServerConfigType = {
 const EmailTemplates: EmailTemplatesConfigType = {
 	VerifyEmail: {
 		Subject: 'Verify your email',
-		Template: '', // can be a url or a file path
+		Template: 'https://example.com', // can be a url or a file path
 		PlaceHolders: {
 			Username: '{{USERNAME}}',
 			VerifyLink: '{{VERIFICATION_LINK}}',
@@ -126,11 +124,10 @@ const EmailTemplates: EmailTemplatesConfigType = {
 };
 
 const Regexs: RegexsConfigType = {
-	// Source: https://regexr.com/2rhq7
-	Email:
-		/[\d!#$%&'*+/=?^_`a-z{|}~-]+(?:\.[\d!#$%&'*+/=?^_`a-z{|}~-]+)*@(?:[\da-z](?:[\da-z-]*[\da-z])?\.)+[\da-z](?:[\da-z-]*[\da-z])?/g,
-	// Source: https://regexr.com/3bfsi
-	Password: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[A-Za-z]).{8,72}$/g,
+	PlusReplace: /./g,
+	PasswordValidtor: /./g,
+	EmailValidator: /./g,
+	UsernameValidator: /./g,
 };
 
 const Config: ConfigType = {
@@ -138,13 +135,13 @@ const Config: ConfigType = {
 	Encryption,
 	Ws,
 	Redis,
-	MongoDB,
+	ScyllaDB,
 	Regexs,
 	MailServer,
 	EmailTemplates,
 };
 
-export { Config, Server, Encryption, Ws, Redis, MongoDB, Regexs, MailServer, EmailTemplates };
+export { Config, Server, Encryption, Ws, Redis, ScyllaDB, Regexs, MailServer, EmailTemplates };
 
 export default {
 	Config,
@@ -152,7 +149,7 @@ export default {
 	Encryption,
 	Ws,
 	Redis,
-	MongoDB,
+	ScyllaDB,
 	Regexs,
 	MailServer,
 	EmailTemplates,

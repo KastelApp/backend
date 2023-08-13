@@ -3,7 +3,7 @@ import type { Channel } from '../../Types/Guilds/Channel';
 import type { Guild } from '../../Types/Guilds/Guild';
 import type { GuildMember } from '../../Types/Guilds/GuildMember';
 import type { Role } from '../../Types/Guilds/Role';
-import type { RawUser } from '../../Types/Users/Users';
+import type { LessUser } from '../../Types/Users/Users';
 import {
 	ChannelSchema,
 	GuildMemberSchema,
@@ -12,6 +12,7 @@ import {
 	UserSchema,
 	VerifcationLinkSchema,
 } from '../Schemas/Schemas.js';
+import type App from './App';
 import FlagRemover from './BitFields/FlagRemover.js';
 import Encryption from './Encryption.js';
 import LinkGeneration from './LinkGeneration.js';
@@ -21,13 +22,17 @@ class RequestUtils {
 
 	public res: Response<any, Record<string, any>>;
 
-	public constructor(req: Request, res: Response) {
+	public App: App;
+
+	public constructor(App: App, req: Request, res: Response) {
 		this.req = req;
 
 		this.res = res;
+
+		this.App = App;
 	}
 
-	public async FetchUser(Id: string): Promise<RawUser | null> {
+	public async FetchUser(Id: string): Promise<LessUser | null> {
 		const UserData = await UserSchema.findById(Encryption.encrypt(Id));
 
 		if (!UserData) return null;
@@ -71,7 +76,7 @@ class RequestUtils {
 	}
 
 	public async VerificationLink(type: number, id: string) {
-		const CodeId = this.req.app.snowflake.Generate();
+		const CodeId = this.App.Snowflake.Generate();
 
 		const Code = LinkGeneration.VerifcationLink(CodeId);
 

@@ -10,6 +10,7 @@
  */
 
 import type { Flags } from '../Constants.js';
+import type App from '../Utils/Classes/App.js';
 
 export type Methods =
 	| 'ALL'
@@ -36,9 +37,11 @@ export interface UserMiddleware {
 	// If you need to be logged in to access the endpoint
 	AccessType: 'All' | 'LoggedIn' | 'LoggedOut';
 	AllowedRequesters: 'All' | 'Bot' | 'User';
-	DisallowedFlags?: (keyof typeof Flags)[];
+	// The flags that are not allowed to access the endpoint (Default: null)
+	App: App,
+	DisallowedFlags?: (keyof typeof Flags)[]; 
 	// The type of user that can access the endpoint (Default: 'All')
-	Flags?: (keyof typeof Flags)[]; // The flags that are not allowed to access the endpoint (Default: null)
+	Flags?: (keyof typeof Flags)[];
 }
 
 interface RateLimitObjectItem {
