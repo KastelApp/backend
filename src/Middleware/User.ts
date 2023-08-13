@@ -128,7 +128,7 @@ const User = (options: UserMiddleware) => {
 				return;
 			}
 			
-			if (!UsersSettings.Tokens.some((Token) => Token.Token === Encryption.encrypt(AuthHeader as string))) {
+			if (!UsersSettings?.Tokens?.some((Token) => Token.Token === Encryption.encrypt(AuthHeader as string))) {
 				App.StaticLogger.debug('Token not found in the user settings');
 
 				UnAuthorized.AddError({
