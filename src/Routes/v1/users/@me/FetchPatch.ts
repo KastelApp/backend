@@ -350,34 +350,6 @@ export default class FetchPatchUser extends Route {
 			}
 		}
 
-		// if (FilteredItems.Username || FilteredItems.Tag) {
-		// 	const MaxUsers = await this.MaxUsernamesReached(FilteredItems.Username);
-
-		// 	if (MaxUsers) {
-		// 		Error.AddError({
-		// 			Username: {
-		// 				Code: 'MaxUsernames',
-		// 				Message: 'The Username provided is Invalid',
-		// 			},
-		// 			Tag: {
-		// 				Code: 'MaxTags',
-		// 				Message: 'The Tag provided is Invalid',
-		// 			},
-		// 		});
-		// 	} else if (FilteredItems.Username && FilteredItems.Tag) {
-		// 		const FoundUser = await this.UserExists(FilteredItems.Username, FilteredItems.Tag);
-
-		// 		if (FoundUser) {
-		// 			Error.AddError({
-		// 				Username: {
-		// 					Code: 'InvalidUsername',
-		// 					Message: 'The Username is Invalid (Already taken :()',
-		// 				},
-		// 			});
-		// 		}
-		// 	}
-		// }
-		
 		if (FilteredItems.Username && FetchedUser.Username !== FilteredItems.Username) {
 			const MaxUsers = await this.MaxUsernamesReached(FilteredItems.Username);
 

@@ -1,3 +1,5 @@
+import type { types } from "@kastelll/cassandra-driver";
+
 interface Roles {
     AllowedMentions: number;
     AllowedNsfw: boolean;
@@ -6,7 +8,7 @@ interface Roles {
     GuildId: string;
     Hoisted: boolean;
     Name: string;
-    Permissions: string;
+    Permissions: types.Long;
     Position: number;
     RoleId: string;
 }
