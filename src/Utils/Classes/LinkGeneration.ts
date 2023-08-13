@@ -13,6 +13,7 @@ import crypto from 'node:crypto';
 import { Snowflake as SnowflakeBuilder, Base64 } from '@kastelll/util';
 import { Encryption } from '../../Config.js';
 import Constants from '../../Constants.js';
+import App from './App.js';
 
 const Snowflake = new SnowflakeBuilder(Constants.Snowflake);
 
@@ -42,17 +43,18 @@ class LinkGeneration {
 		const snowflake = Base64.Decode(base64snowflake);
 		const CreatedDate = Base64.Decode(base64createdDate);
 
-		console.log('Snowflake', snowflake);
+		App.StaticLogger.debug('Snowflake', snowflake);
+
 		if (!Snowflake.Validate(snowflake)) return false;
 
-		console.log('Snowflake good');
+		App.StaticLogger.debug('Snowflake good');
 
 		const CreatedDateParsed = new Date(CreatedDate);
 
 		// the max age of these will be around 2 weeks (MAX) so just hard code the check here
 		if (CreatedDateParsed.getTime() + 1_209_600_000 < Date.now()) return false;
 
-		console.log('Date good');
+		App.StaticLogger.debug('Date good');
 
 		const hmac = crypto.createHmac('sha256', Encryption.JwtKey);
 
@@ -60,16 +62,16 @@ class LinkGeneration {
 
 		const Newsecret = Base64.OldBase64(hmac.digest('base64'));
 
-		console.log('New Secret', Newsecret);
-		console.log('Old Secret', secret);
+		App.StaticLogger.debug('New Secret', Newsecret);
+		App.StaticLogger.debug('Old Secret', secret);
 
 		if (Newsecret !== secret) return false;
 
-		console.log('New vs Old = Yes');
+		App.StaticLogger.debug('New vs Old = Yes');
 
 		if (link !== Base64.Encode(`${base64snowflake}.${base64createdDate}.${nonce}.${secret}`)) return false;
 
-		console.log('Verified Link');
+		App.StaticLogger.debug('Verified Link');
 
 		return true;
 	}

@@ -1,13 +1,12 @@
 /* eslint-disable id-length */
 import type { Buffer } from 'node:buffer';
-import process from 'node:process';
 import { setTimeout, setInterval, clearInterval } from 'node:timers';
 import zlib from 'node:zlib';
 import WebSocket from 'ws';
 import Config from '../../../Config.js';
 import type { AuthedPayload, NormalPayload } from '../../../Types/Socket/MiscPayloads';
 import type App from '../App.js';
-import { OpCodes } from '../WsUtils.js';
+import { OpCodes, SystemOpCodes } from '../WsUtils.js';
 import Events from './Events.js';
 
 class SystemSocket {
@@ -78,8 +77,6 @@ class SystemSocket {
 			});
 
 			this.Ws.on('message', (data: Buffer) => {
-				// data is a buffer and a zlib compressed buffer (Should be since we sent c=true in the query)
-				// so we need to decompress it
 				const decoded = this.decode(data);
 
 				if (decoded?.s) this.Sequence = decoded.s;
@@ -127,10 +124,10 @@ class SystemSocket {
 							this.App.Logger.debug(`Heartbeat Acknowledged`);
 							break;
 
-						case Object.values(OpCodes).find((op) => op === NormalPayload.op):
+						case Object.values(SystemOpCodes).find((op) => op === NormalPayload.op):
 							this.App.Logger.debug(
-								`Received Event: ${Object.keys(OpCodes).find(
-									(op) => OpCodes[op as keyof typeof OpCodes] === NormalPayload.op,
+								`Received Event: ${Object.keys(SystemOpCodes).find(
+									(op) => SystemOpCodes[op as keyof typeof SystemOpCodes] === NormalPayload.op,
 								)}`,
 							);
 							break;
@@ -173,7 +170,7 @@ class SystemSocket {
 		this.FailedConnectionAttempts++;
 		this.Ws = null;
 
-		this.App.Logger.info(`Attempting to reconnect to System Socket, attempt ${this.FailedConnectionAttempts}`);
+		this.App.Logger.debug(`Attempting to reconnect to System Socket, attempt ${this.FailedConnectionAttempts}`);
 
 		setTimeout(async () => {
 			await this.Connect();

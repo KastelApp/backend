@@ -1,4 +1,5 @@
 const OpCodes = {
+	Hello: 0, // This is the first thing you get when you connect (just so you know we know you exist)
 	Auth: 1, // You send this to Identify yourself
 	Authed: 2, // This gets sent to you when you are authenticated
 	HeartBeat: 3, // This is a heartbeat to keep the connection alive (you send this)
@@ -25,6 +26,12 @@ const OpCodes = {
 	MemberBan: 24, // This is a member being banned from a guild
 	MemberUpdate: 25, // This is a member being updated
 	Resume: 26, // This is a resume request
+	LazyRequestMembers: 27, // This is a request for members
+	LazyRequestGuild: 28, // This is a request for a guild
+	NewSession: 29,
+	DeleteSession: 30,
+	SelfUpdate: 31,
+	RelationshipUpdate: 32,
 };
 
 const SystemOpCodes = {
@@ -49,6 +56,10 @@ const SystemOpCodes = {
 	MemberLeaveAck: 19,
 	MemberBanAck: 20,
 	MemberUpdateAck: 21,
+	NewSessionAck: 22,
+	DeleteSessionAck: 23,
+	SelfUpdateAck: 24,
+	RelationshipUpdateAck: 25,
 };
 
 export { OpCodes, SystemOpCodes };

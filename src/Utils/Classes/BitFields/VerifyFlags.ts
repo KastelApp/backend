@@ -14,8 +14,8 @@ import { VerificationFlags } from '../../../Constants.js';
 class VerifyFields {
 	public bits: number;
 
-	public constructor(bits: number) {
-		this.bits = bits;
+	public constructor(bits: number | string) {
+		this.bits = Number(bits);
 	}
 
 	public has(bit: number) {
@@ -43,6 +43,7 @@ class VerifyFields {
 			obj[key as keyof typeof VerificationFlags] = this.has(VerificationFlags[key as keyof typeof VerificationFlags]);
 			return obj;
 			// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter -- I got no other ideas how to fix this
+			// @ts-expect-error -- not sure how to fix this :/
 		}, {});
 	}
 

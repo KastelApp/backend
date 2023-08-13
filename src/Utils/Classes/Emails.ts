@@ -11,11 +11,20 @@ class Emails {
 
 	private readonly password!: string;
 
+	private readonly auth: boolean = true;
+
 	public totalEmailsSent: number;
 
 	private transporter?: nodemailer.Transporter | undefined;
 
-	public constructor(host: string, port: number, secure: boolean, email: string, password: string | undefined) {
+	public constructor(
+		host: string,
+		port: number,
+		secure: boolean,
+		auth: boolean,
+		email: string,
+		password: string | undefined,
+	) {
 		this.host = host;
 
 		this.port = port;
@@ -41,6 +50,13 @@ class Emails {
 		Object.defineProperty(this, 'transporter', {
 			value: undefined,
 			writable: true,
+			enumerable: false,
+			configurable: false,
+		});
+
+		Object.defineProperty(this, 'auth', {
+			value: auth,
+			writable: false,
 			enumerable: false,
 			configurable: false,
 		});
@@ -81,10 +97,14 @@ class Emails {
 				host: this.host,
 				port: this.port,
 				secure: this.secure,
-				auth: {
-					user: this.email,
-					pass: this.password,
-				},
+				...(this.auth
+					? {
+							auth: {
+								user: this.email,
+								pass: this.password,
+							},
+					  }
+					: {}),
 			});
 		}
 

@@ -14,7 +14,7 @@ import { Flags } from '../../../Constants.js';
 class FlagFields {
 	public bits: bigint;
 
-	public constructor(bits: number) {
+	public constructor(bits: bigint | number | string) {
 		this.bits = BigInt(bits);
 	}
 
@@ -43,6 +43,7 @@ class FlagFields {
 			obj[key as keyof typeof Flags] = this.has(Flags[key as keyof typeof Flags]);
 			return obj;
 			// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter -- I got no other ideas how to fix this
+			// @ts-expect-error -- not sure how to fix this :/
 		}, {});
 	}
 
@@ -55,6 +56,14 @@ class FlagFields {
 
 	public hasString(bit: keyof typeof Flags) {
 		return this.has(Flags[bit as keyof typeof Flags]);
+	}
+
+	public removeString(bit: keyof typeof Flags) {
+		return this.remove(Flags[bit]);
+	}
+
+	public addString(bit: keyof typeof Flags) {
+		return this.add(Flags[bit]);
 	}
 
 	public static deserialize(bits: bigint): FlagFields {
@@ -81,6 +90,10 @@ class FlagFields {
 
 	public static RemovePrivateFlags(flags: bigint): bigint {
 		return flags & ((1n << 25n) - 1n);
+	}
+
+	public toString() {
+		return String(this.bits);
 	}
 }
 

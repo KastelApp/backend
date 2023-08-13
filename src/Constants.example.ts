@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prefer-math-trunc */
 /* eslint-disable sonarjs/no-identical-expressions */
 /* !
  *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
@@ -21,7 +22,6 @@ const Settings = {
 		BanCount: Number.POSITIVE_INFINITY,
 		FriendCount: 100,
 		MemberCount: 500,
-		UsernameLength: 32,
 		// The max amount of usernames, lets say the name is "cat" there can be 9999 accounts then once we
 		// hit the max nobody can switch tags, So we limit to 5k so people can switch tags
 		UsernameCount: 5_000,
@@ -29,7 +29,7 @@ const Settings = {
 		GuildDescriptionLength: 500,
 		GuildFetchLimit: 100, // The amount they can request in the /guilds/fetch route
 		MessageLength: 1_000, // The max amount of characters in a message
-		MaxFileSize: 8 * 1_024 * 1_024, // 8MB
+		MaxFileSize: 12 * 1_024 * 1_024, // 8MB
 	},
 	Min: {
 		UsernameLength: 2,
@@ -53,7 +53,9 @@ const Settings = {
 		],
 		Guilds: [],
 		Channels: [],
-		Global: [],
+		Global: [
+			/\b(?:kastel|discord|kastelapp\.com|discordapp\.com)\b/gi, // Blocks Discord & Kastel Stuff (just so people don't try to use it)
+		],
 	},
 };
 
@@ -73,23 +75,23 @@ const AllowedMentions: {
 AllowedMentions.All = AllowedMentions.Everyone | AllowedMentions.Here | AllowedMentions.Roles | AllowedMentions.Users;
 
 const GuildFlags = {
-	Verified: 1,
+	Verified: 1 << 0,
 	Partnered: 1 << 1,
 	Official: 1 << 2,
-	NoOwner: 1 << 10, // NoOwner is a rare flag, Should never be found in the wild (but it is possible)
+	NoOwner: 1 << 10,
 };
 
 const GuildMemberFlags = {
-	Left: 1, // If they left the guild
-	In: 1 << 1, // If they are in the guild
-	Kicked: 1 << 2, // If they were kicked from the guild
-	Banned: 1 << 3, // If they were banned from the guild
-	Owner: 1 << 4, // If they are the owner of the guild
-	CoOwner: 1 << 5, // If they are a co-owner of the guild (Pretty much the same as Owner but they can't delete the guild (or change the owner)))
+	Left: 1 << 0,
+	In: 1 << 1,
+	Kicked: 1 << 2,
+	Banned: 1 << 3,
+	Owner: 1 << 4,
+	CoOwner: 1 << 5,
 };
 
 const ChannelTypes = {
-	GuildCategory: 1,
+	GuildCategory: 1 << 0,
 	GuildText: 1 << 1,
 	GuildNews: 1 << 2,
 	GuildRules: 1 << 3,
@@ -100,14 +102,14 @@ const ChannelTypes = {
 };
 
 const Presence = {
-	Online: 1,
+	Online: 1 << 0,
 	Idle: 1 << 1,
 	Dnd: 1 << 2,
 	Offline: 1 << 3,
 };
 
 const MessageFlags = {
-	System: 1,
+	System: 1 << 0,
 	Normal: 1 << 1,
 	Reply: 1 << 2,
 };
@@ -135,19 +137,23 @@ const Flags = {
 	GuildBan: 1n << 33n,
 	FriendBan: 1n << 34n,
 	GroupchatBan: 1n << 35n,
-	// We just got this flag so we can find all accounst with it and do the deletion stuff as well as giving them a 30 day period to recover their account
-	// The plan is just to remove their email,phonenumber,username,tag,avatar and password
-	// After we do that we will go through all messages and remove the content (replacing it with "[Deleted Message]"),
-	// We will also remove all guilds they are in and remove all friends they have
 	WaitingOnAccountDeletion: 1n << 36n,
-	// This is for when the user is waiting on their data to be updated after they disabled their account
-	// Like changing their username & Tag and such
 	WaitingOnDisableDataUpdate: 1n << 37n,
+	AccountDeleted: 1n << 38n,
+	EmailVerified: 1n << 39n,
+	Disabled: 1n << 40n,
+	Terminated: 1n << 41n,
+	TwoFaEnabled: 1n << 42n,
+	TwoFaVerified: 1n << 43n,
+	// Temp Increased Values (Testing)
+	IncreasedGuildCount100: 1n << 80n,
+	IncreasedGuildCount200: 1n << 81n,
+	IncreasedGuildCount500: 1n << 82n,
+	IncreasedMessageLength2k: 1n << 83n,
+	IncreasedMessageLength4k: 1n << 84n,
+	IncreasedMessageLength8k: 1n << 85n,
 };
 
-// These are BigInts since BigInt Bitfields don't loop around to One after 32 (1 << 32 loops 1 but 1n << 32n goes to 4294967296n)
-
-// Mixed Permissions are stuff for like roles and channels
 const MixedPermissions = {
 	ManageMessages: 1n << 9n,
 	SendMessages: 1n << 10n,
@@ -187,7 +193,7 @@ const Permissions = {
 };
 
 const RelationshipFlags = {
-	Blocked: 1,
+	Blocked: 1 << 0,
 	FriendRequest: 1 << 1,
 	Friend: 1 << 2,
 	Denied: 1 << 3,
@@ -201,13 +207,9 @@ const Relative = {
 };
 
 const VerificationFlags = {
-	// Just flags for Verification Links
-	VerifyEmail: 1,
-	ResetPassword: 1 << 1,
-	ForgotPassword: 1 << 2,
-	ChangeEmail: 1 << 3,
-	ChangePassword: 1 << 4,
-	Used: 1 << 5,
+	VerifyEmail: 1 << 0,
+	ForgotPassword: 1 << 1,
+	ChangeEmail: 1 << 2,
 };
 
 const Snowflake = {

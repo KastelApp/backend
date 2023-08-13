@@ -12,49 +12,36 @@
 import type FlagFields from '../../Utils/Classes/BitFields/Flags.js';
 
 export interface LessUser {
-	AccountDeletionInProgress: boolean;
-	AvatarHash: string;
-	// the hashed version of the password
-	Banned: boolean;
-	BannedReason: string;
-	Bot: boolean;
+	Avatar: string;
+	Bots: string[];
+	Dms: string[];
 	Email: string;
-	EmailVerified: boolean;
-	Flags: number;
-	FlagsUtil: FlagFields;
-	// Less user is just less data but important data
+	Flags: string;
+	GlobalNickname: string;
+	Guilds: string[];
 	Id: string;
-	Locked: boolean;
+	Ips: string[];
 	Password: string;
+	PhoneNumber: string;
 	Tag: string;
-	Token: string;
-	TwoFa: boolean;
-	TwoFaVerified: boolean;
+	TwoFaSecret: string;
 	Username: string;
 }
 
 export interface RawUser {
-	AccountDeletionInProgress: boolean;
-	AvatarHash: string | null;
-	BanReason: string | null;
-	Banned: boolean;
+	Avatar: string;
 	Bots: string[];
 	Dms: string[];
 	Email: string;
-	EmailVerified: boolean;
-	Flags: number;
-	GroupChats: string[];
+	Flags: string;
+	GlobalNickname: string;
 	Guilds: string[];
 	Ips: string[];
-	Locked: boolean;
-	Password: string | null;
-	PhoneNumber: string | null;
+	Password: string;
+	PhoneNumber: string;
 	Tag: string;
-	TwoFa: boolean;
-	TwoFaSecret: string | null;
-	TwoFaVerified: boolean;
+	TwoFaSecret: string;
 	Username: string;
-	__v: number;
 	_id: string;
 }
 
@@ -70,7 +57,7 @@ export interface UserAtMe {
 	Email: string;
 	EmailVerified: boolean;
 	PhoneNumber: string | null;
-	PublicFlags: number;
+	PublicFlags: string;
 	Tag: string;
 	TwoFa: boolean;
 	TwoFaVerified: boolean;

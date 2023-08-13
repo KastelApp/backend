@@ -1,5 +1,5 @@
 interface RawGuildMember {
-	Flags: number;
+	Flags: string;
 	Guild: string;
 	JoinedAt: number;
 	Roles: string[];
@@ -43,7 +43,7 @@ interface RawUser {
 	Dms: any[];
 	Email: string;
 	EmailVerified: boolean;
-	Flags: number;
+	Flags: string;
 	GroupChats: any[];
 	Guilds: string[];
 	Ips: any[];
@@ -65,7 +65,7 @@ export interface GuildPermissions {
 	CoOwners: string[];
 	Description: string;
 	Emojis: string[];
-	Flags: number;
+	Flags: string;
 	Invites: string[];
 	MaxMembers: number;
 	Members?: RawGuildMember[];

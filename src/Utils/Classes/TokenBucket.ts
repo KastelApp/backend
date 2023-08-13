@@ -1,5 +1,6 @@
-import { HTTPErrors } from '@kastelll/util';
 import type { NextFunction, Request, Response } from 'express';
+import App from './App.js';
+import ErrorGen from './ErrorGen.js';
 
 interface RateLimitData {
 	Blocked: boolean;
@@ -7,18 +8,21 @@ interface RateLimitData {
 	ExecutorId: string;
 	ExpiresAt: Date;
 	FailedHits: number;
-	hits: number;
+	Hits: number;
 }
 
 const RateLimitCache = new Map<string, RateLimitData>();
 
 interface RateLimitOptions {
+	App?: App;
 	Bot?: {
 		inherit?: boolean; // if we should inherit the count from the normal count if so the other counts below this will be ignored
 	};
 	Bucket?: string;
-	Count: number; // in ms
-	Error?: boolean; // If we should should remove a token if the request was a 4xx or 5xx
+	Count: number;
+	// in ms
+	Error?: boolean;
+	// If we should should remove a token if the request was a 4xx or 5xx
 	Failed?: {
 		Boosts: {
 			// if you get this many failed hits, then you get boosted by Y
@@ -35,35 +39,39 @@ interface RateLimitOptions {
 	Window: number;
 }
 
-const Hit = async (opts: { BucketId: string; ClientId: string; Failed: boolean; MaxHits: number; Window: number }) => {
-	const BucketId = `${opts.ClientId}-${opts.BucketId}`;
+const Hit = async (options: {
+	BucketId: string;
+	ClientId: string;
+	Failed: boolean;
+	MaxHits: number;
+	Window: number;
+}) => {
+	const BucketId = `${options.ClientId}-${options.BucketId}`;
 
 	let Client = RateLimitCache.get(BucketId);
 
 	if (!Client) {
 		Client = {
-			Bucket: opts.BucketId,
-			ExecutorId: opts.ClientId,
-			ExpiresAt: new Date(Date.now() + opts.Window),
-			hits: 0,
+			Bucket: options.BucketId,
+			ExecutorId: options.ClientId,
+			ExpiresAt: new Date(Date.now() + options.Window),
+			Hits: 0,
 			Blocked: false,
-			FailedHits: opts.Failed ? 1 : 0,
+			FailedHits: options.Failed ? 1 : 0,
 		};
 
 		RateLimitCache.set(BucketId, Client);
 	}
 
-	Client.hits++;
+	Client.Hits++;
 
-	if (opts.Failed) {
+	if (options.Failed) {
 		Client.FailedHits++;
 	}
 
-	if (Client.hits >= opts.MaxHits) {
+	if (Client.Hits >= options.MaxHits) {
 		Client.Blocked = true;
 	}
-
-	console.log(Client);
 };
 
 const RateLimit = (options: RateLimitOptions) => {
@@ -73,7 +81,13 @@ const RateLimit = (options: RateLimitOptions) => {
 		let ClientId = req.clientIp;
 		const MaxHits = options.Count;
 
-		if (!options.IpCheck && req.user.Id) ClientId = req.user.Id;
+		if (!options.IpCheck && req.user?.Id) ClientId = req.user?.Id;
+
+		if (!ClientId) {
+			App.StaticLogger.debug('No Client Id');
+
+			ClientId = req.clientIp;
+		}
 
 		// if (options.bot && req.user.Bot) maxHits = options.bot;
 
@@ -83,7 +97,7 @@ const RateLimit = (options: RateLimitOptions) => {
 			const ResetAfterMs = Client.ExpiresAt.getTime() - Date.now();
 
 			if (ResetAfterMs <= 0) {
-				Client.hits = 0;
+				Client.Hits = 0;
 				Client.ExpiresAt = new Date(Date.now() + options.Window);
 				Client.Blocked = false;
 			}
@@ -97,19 +111,23 @@ const RateLimit = (options: RateLimitOptions) => {
 			const IsGlobal = BucketId === 'global';
 			const ResetAfterSecond = ResetAfterMs / 1_000;
 
-			res.set({
-				'X-RateLimit-Limit': `${MaxHits}`,
-				'X-RateLimit-Remaining': `${MaxHits - Client.hits}`,
-				'X-RateLimit-Global': `${IsGlobal}`,
-				'X-RateLimit-Bucket': `${BucketId}`,
-			});
+			if (!IsGlobal) {
+				res.set({
+					'X-RateLimit-Limit': `${MaxHits}`,
+					'X-RateLimit-Remaining': `${MaxHits - Client.Hits}`,
+					'X-RateLimit-Bucket': `${BucketId}`,
+					'X-RateLimit-Global': `${IsGlobal}`,
+				});
+			}
 
 			if (Client.Blocked) {
-				console.log(`blocked: ${BucketId} ${ClientId}`, ResetAfterMs);
+				App.StaticLogger.debug(`blocked: ${BucketId} ${ClientId}`, ResetAfterMs);
 
 				Client.FailedHits++;
 
-				const Error = new HTTPErrors(4_200, {
+				const Error = ErrorGen.RateLimited();
+
+				Error.AddError({
 					RateLimit: {
 						Message: 'You are being rate limited.',
 						RetryAfter: ResetAfterSecond,
@@ -117,11 +135,23 @@ const RateLimit = (options: RateLimitOptions) => {
 					},
 				});
 
-				res.set({
-					'Retry-After': `${Math.ceil(ResetAfterSecond)}`,
-					'X-RateLimit-Reset': `${Client.ExpiresAt.getTime()}`,
-					'X-RateLimit-Reset-After': `${ResetAfterSecond}`,
-				});
+				if (!IsGlobal) {
+					res.set({
+						'Retry-After': `${Math.ceil(ResetAfterSecond)}`,
+						'X-RateLimit-Reset': `${Client.ExpiresAt.getTime()}`,
+						'X-RateLimit-Reset-After': `${ResetAfterSecond}`,
+					});
+				}
+
+				if (IsGlobal) {
+					res.set({
+						'X-RateLimit-Bucket': `${BucketId}`,
+						'X-RateLimit-Global': `${IsGlobal}`,
+						'X-Retry-After': `${Math.ceil(ResetAfterSecond)}`,
+						'X-RateLimit-Reset': `${Client.ExpiresAt.getTime()}`,
+						'X-RateLimit-Reset-After': `${ResetAfterSecond}`,
+					});
+				}
 
 				res.status(429).json(Error.toJSON());
 

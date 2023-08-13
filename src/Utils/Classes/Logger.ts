@@ -9,12 +9,14 @@ import {
 	rmSync,
 } from 'node:fs';
 import { join } from 'node:path';
-import process from 'node:process';
 import { setInterval } from 'node:timers';
 import { URL } from 'node:url';
 import * as ark from 'archiver';
+import ProcessArgs from '../ProcessArgs.js';
 
-type Logtypes = 'debug' | 'error' | 'fatal' | 'info' | 'timer' | 'trace' | 'warn';
+type Logtypes = 'debug' | 'error' | 'fatal' | 'importantDebug' | 'info' | 'timer' | 'trace' | 'verbose' | 'warn';
+
+const Args = ProcessArgs(['debug', 'no-verbose', 'no-console', 'super-debug']);
 
 class Logger {
 	private readonly logDirectory: string;
@@ -31,6 +33,7 @@ class Logger {
 		date: Date;
 		file: 'error' | 'latest';
 		message: any[];
+		toShow?: string;
 		type: Logtypes;
 	}[]; // when we are compressing logs we haven't saved yet need to be kept here.
 
@@ -71,8 +74,7 @@ class Logger {
 
 		this.errorLogs = join(this.logDirectory, 'errors.log');
 
-		// eslint-disable-next-line @typescript-eslint/no-floating-promises
-		this.init();
+		void this.init();
 
 		this.prevDate = new Date();
 
@@ -117,12 +119,15 @@ class Logger {
 
 		this.colorTypes = {
 			info: '#78C3FB',
+			verbose: '#78C3FB',
 			warn: '#E6AF2E',
 			error: '#941C2F',
 			debug: '#666A86',
 			fatal: '#941C2F',
 			trace: '#026C7C',
 			timer: '#026C7C',
+			// important debug should be bright, catch the eye
+			importantDebug: '#5d6af0',
 			...options.Colors,
 		};
 
@@ -252,7 +257,7 @@ class Logger {
 	}
 
 	private supersecretdebug(...msg: string[]) {
-		if (process.env.SSDBKSTL) console.log(`[DEBUG] [LOGGER]: ${msg.join(' ')}`);
+		if (Args.Valid.includes('super-debug')) console.log(`[DEBUG] [LOGGER]: ${msg.join(' ')}`);
 	}
 
 	private next(): boolean {
@@ -277,19 +282,29 @@ class Logger {
 		return true;
 	}
 
-	private addLog(options: { console?: boolean; date: Date; file: 'error' | 'latest'; message: any[]; type: Logtypes }) {
+	private addLog(options: {
+		console?: boolean;
+		date: Date;
+		file: 'error' | 'latest';
+		message: any[];
+		toShow?: string;
+		type: Logtypes;
+	}) {
 		if (this.compressing) {
 			this.backlog.push({
 				type: options.type,
 				message: options.message,
 				date: options.date,
 				file: options.file,
+				...(options.toShow && { toShow: options.toShow }),
 			});
 
 			return;
 		}
 
-		const Message = `[${options.date.toLocaleTimeString()}] [MASTER / ${options.type.toUpperCase()}]:`;
+		const Message = `[${options.date.toLocaleTimeString()}] [MASTER / ${
+			options.toShow ? options.toShow.toUpperCase() : options.type.toUpperCase()
+		}]:`;
 
 		const Messages = [];
 
@@ -382,7 +397,7 @@ class Logger {
 	}
 
 	public debug(...message: any[]) {
-		if (!process.env.KSTLDEBUG) return this;
+		if (!Args.Valid.includes('debug')) return this;
 
 		this.addLog({
 			type: 'debug',
@@ -390,6 +405,21 @@ class Logger {
 			file: 'latest',
 			message,
 			console: this.console,
+		});
+
+		return this;
+	}
+
+	public importantDebug(...message: any[]) {
+		if (!Args.Valid.includes('debug')) return this;
+
+		this.addLog({
+			type: 'importantDebug',
+			date: new Date(),
+			file: 'latest',
+			message,
+			console: this.console,
+			toShow: 'Debug',
 		});
 
 		return this;
@@ -419,6 +449,21 @@ class Logger {
 		return this;
 	}
 
+	public verbose(...message: any[]) {
+		if (Args.Valid.includes('no-verbose')) return this;
+
+		this.addLog({
+			type: 'verbose',
+			date: new Date(),
+			file: 'latest',
+			message,
+			console: this.console,
+			toShow: 'Info',
+		});
+
+		return this;
+	}
+
 	public startTimer(name: string, debug: boolean = false) {
 		this.timers.set(name, {
 			start: new Date(),
@@ -437,7 +482,7 @@ class Logger {
 
 		const diff = end.getTime() - timer.start.getTime();
 
-		if (timer.debug && !process.env.KSTLDEBUG) return this;
+		if (timer.debug && !Args.Valid.includes('debug')) return this;
 
 		this.addLog({
 			type: 'timer',
@@ -449,7 +494,7 @@ class Logger {
 
 		return this;
 	}
-	
+
 	public hex(hex: string) {
 		return (...message: string[]) => {
 			const color = this.hexToAnsi(hex);

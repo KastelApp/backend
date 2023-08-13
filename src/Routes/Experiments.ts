@@ -9,42 +9,24 @@
  * GPL 3.0 Licensed
  */
 
-import { MongoDB } from '../Config.js';
+import type { Request, Response } from 'express';
+import type App from '../Utils/Classes/App';
+import Route from '../Utils/Classes/Route.js';
 
-const uriGenerator = (): string => {
-	const { Uri, User, Host, Port, Password, Database, AuthSource } = MongoDB;
+export default class Experiments extends Route {
+	public constructor(App: App) {
+		super(App);
 
-	if (Uri) {
-		return Uri;
+		this.Methods = ['GET'];
+
+		this.Middleware = [];
+
+		this.AllowedContentTypes = ['application/json'];
+
+		this.Routes = ['/experiments'];
 	}
 
-	let uri = 'mongodb://';
-
-	if (User) {
-		uri += encodeURIComponent(User);
-
-		if (Password) {
-			uri += `:${encodeURIComponent(Password)}`;
-		}
-
-		uri += '@';
+	public override Request(_: Request, Res: Response): void {
+		Res.send([]);
 	}
-
-	uri += Host;
-
-	if (Port) {
-		uri += `:${Port}`;
-	}
-
-	uri += `/${Database}`;
-
-	if (AuthSource) {
-		uri += `?authSource=${encodeURIComponent(AuthSource)}`;
-	}
-
-	return uri;
-};
-
-export default uriGenerator;
-
-export { uriGenerator };
+}

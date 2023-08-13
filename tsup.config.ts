@@ -16,5 +16,5 @@ export default defineConfig({
 	dts: false,
 	sourcemap: false,
 	esbuildPlugins: [],
-	bundle: false,
+	bundle: false
 });

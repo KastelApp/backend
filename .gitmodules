@@ -1,8 +1,0 @@
-[submodule "src/Utils/Schemas"]
-	path = src/Utils/Schemas
-	url = https://github.com/Kastelll/Schemas
-	branch = master
-[submodule "src/Utils/SchemaTypes"]
-	path = src/Utils/SchemaTypes
-	url = https://github.com/Kastelll/Schemas.git
-	branch = schema-types
