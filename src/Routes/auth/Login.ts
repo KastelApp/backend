@@ -170,10 +170,6 @@ export default class Login extends Route {
 			Flags: 0,
 		});
 		
-		// const Mapped: ({created_date: number; flags: number; ip: string; token_: string; token_id: string}[])[] = this.App.Cassandra.UnderScoreCqlToPascalCaseMappings.ObjectToDbRow(NewTokens) as unknown as ({created_date: number; flags: number; ip: string; token_: string; token_id: string}[])[];
-		
-		// console.log(Mapped)
-		
 		await this.App.Cassandra.Models.Settings.update({
 			UserId: Encryption.encrypt(FetchedUser.UserId),
 			Tokens: NewTokens

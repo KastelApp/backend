@@ -126,8 +126,6 @@ export default class Sessions extends Route {
 			SessionId: Id,
 		});
 		
-		// const Mapped: ({created_date: number; flags: number; ip: string; token_: string; token_id: string}[])[] = this.App.Cassandra.UnderScoreCqlToPascalCaseMappings.ObjectToDbRow(FilteredSessions) as unknown as ({created_date: number; flags: number; ip: string; token_: string; token_id: string}[])[];
-		
 		await this.App.Cassandra.Models.Settings.update({
 			UserId: Encryption.encrypt(Req.user.Id),
 			Tokens: FilteredSessions

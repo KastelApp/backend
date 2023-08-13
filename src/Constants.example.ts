@@ -59,6 +59,28 @@ const Settings = {
 	},
 };
 
+// Note: You should NOT change these at all unless you know what you are doing
+// The frontend depends on these
+const GuildFeatures = [{
+	Name: 'Partnered',
+	Deprecated: false, // deprecated means it will be removed in the future
+	Default: false, // If servers are given this by default on guild creation
+	Settable: false, // if a user can set it themselves
+	NewDefault: false // If its a "new default" this means if we lets say fetch a guild we need to add this
+}, {
+	Name: 'Verified',
+	Deprecated: false,
+	Enabled: false,
+	Settable: false,
+	NewDefault: false
+}, {
+	Name: 'Official',
+	Deprecated: false,
+	Enabled: false,
+	Settable: false,
+	NewDefault: false
+}] as const;
+
 const AllowedMentions: {
 	All?: number;
 	Everyone: number;
@@ -239,6 +261,7 @@ export default {
 	ChannelPermissions,
 	VerificationFlags,
 	Snowflake,
+	GuildFeatures,
 };
 
 export {
@@ -259,4 +282,5 @@ export {
 	ChannelPermissions,
 	VerificationFlags,
 	Snowflake,
+	GuildFeatures,
 };
