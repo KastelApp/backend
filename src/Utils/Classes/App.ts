@@ -264,6 +264,7 @@ class App {
 		this.ExpressApp.use((req, res, next) => {
 			req.clientIp = IpUtils.GetIp(req);
 			req.methodi = req.method as ExpressMethodCap;
+			req.captcha = new Turnstile(this.Config.Server.CaptchaEnabled, this.Config.Server.TurnstileSecret ?? 'secret');
 
 			req.fourohfourit = () => {
 				const Error = ErrorGen.NotFound();

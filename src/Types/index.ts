@@ -9,6 +9,7 @@
  * GPL 3.0 Licensed
  */
 
+import type { Turnstile } from '@kastelll/util';
 import type FlagFields from '../Utils/Classes/BitFields/Flags';
 
 export interface ExpressUser {
@@ -25,6 +26,7 @@ export type ExpressMethodCap = 'DELETE' | 'GET' | 'HEAD' | 'OPTIONS' | 'PATCH' |
 declare global {
 	namespace Express {
 		interface Request {
+			captcha: Turnstile,
 			clientIp: string;
 			fourohfourit(): true;
 			methodi: ExpressMethodCap;

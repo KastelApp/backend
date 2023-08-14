@@ -52,7 +52,7 @@
 		"build": "tsup && yarn postbuild",
 		"lint": "prettier --check . && cross-env TIMING=1 eslint src --ext .js,.ts --format=pretty",
 		"format": "prettier --write . && cross-env TIMING=1 eslint src --ext .js,.ts --fix --format=pretty",
-		"dev": "yarn build && yarn start",
+		"dev": "yarn build && node dist/index.js --dev",
 		"postbuild": "copyfiles -u 1 \"src/Utils/Cql/Tables/*\" dist"
 	},
 	"keywords": [
