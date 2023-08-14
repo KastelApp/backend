@@ -46,6 +46,9 @@ const ErrorGen = {
 	InvalidUser: () => {
 		return new HTTPErrors(4_014);
 	},
+	InvalidSnowflake: () => {
+		return new HTTPErrors(4_015);
+	}
 };
 
 export default ErrorGen;
