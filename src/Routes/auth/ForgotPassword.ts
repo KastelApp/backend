@@ -132,7 +132,7 @@ export default class ForgotPassword extends Route {
 			Ip: Encryption.encrypt(ip),
 			UserId: Encryption.encrypt(id),
 		};
-		
+
 		await this.App.Cassandra.Models.VerificationLink.insert(Link);
 
 		return {

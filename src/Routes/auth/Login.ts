@@ -161,7 +161,7 @@ export default class Login extends Route {
 		}
 
 		const NewTokens = Tokens.Tokens ? Tokens.Tokens : [];
-		
+
 		NewTokens.push({
 			TokenId: SessionId,
 			Token: Encryption.encrypt(NewToken),
@@ -169,7 +169,7 @@ export default class Login extends Route {
 			Ip: Encryption.encrypt(Req.ip),
 			Flags: 0,
 		});
-		
+
 		await this.App.Cassandra.Models.Settings.update({
 			UserId: Encryption.encrypt(FetchedUser.UserId),
 			Tokens: NewTokens

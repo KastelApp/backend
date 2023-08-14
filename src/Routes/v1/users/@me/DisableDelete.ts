@@ -85,7 +85,7 @@ export default class DisableDelete extends Route {
 		await this.App.Cassandra.Models.Settings.update({
 			UserId: Encryption.encrypt(FetchedUser.UserId),
 			Tokens: []
-		})
+		});
 
 		const Flags = new FlagFields(FetchedUser.Flags);
 
@@ -93,22 +93,21 @@ export default class DisableDelete extends Route {
 			Req.path.endsWith('/delete')
 				? 'WaitingOnAccountDeletion'
 				: Req.path.endsWith('/disable')
-				? 'WaitingOnDisableDataUpdate'
-				: 'Disabled',
+					? 'WaitingOnDisableDataUpdate'
+					: 'Disabled',
 		);
 		Flags.addString('Disabled');
 
 		this.App.Logger.debug(
-			`😭 someone is ${
-				Req.path.endsWith('/delete') ? 'Deleting' : Req.path.endsWith('/disable') ? 'Disabling' : `Idk lol ${Req.path}`
+			`😭 someone is ${Req.path.endsWith('/delete') ? 'Deleting' : Req.path.endsWith('/disable') ? 'Disabling' : `Idk lol ${Req.path}`
 			} their account :(`,
 		);
 
 		await this.App.Cassandra.Models.User.update({
 			UserId: Encryption.encrypt(FetchedUser.UserId),
 			Flags: Flags.toString(),
-		})
-		
+		});
+
 		Res.send('See you next time!');
 	}
 

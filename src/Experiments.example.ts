@@ -38,7 +38,7 @@ export const Experiments: Experiment[] = [
 					MaxMembers: 0, // if set to 0, no max
 					RequiredFlags: null, // if set to null, no flag
 					RequiredFeatures: [], // if set to [], no feature required
-					Overrides: [], 
+					Overrides: [],
 					ReleasePercentage: 1, // This is the % of guilds that will be in this treatment
 					Priority: 0, // The priority of this treatment is so if the guild has multiple treatments, the one with the highest priority will be used
 				},
@@ -111,4 +111,4 @@ export const Experiments: Experiment[] = [
 export type {
 	Experiment,
 	Treatment,
-}
+};

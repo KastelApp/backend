@@ -93,7 +93,7 @@ export default class Friends extends Route {
 		}
 	}
 
-	private async GetRelationships(Req: Request<{ userId?: string; }>, Res: Response) {}
+	private async GetRelationships(Req: Request<{ userId?: string; }>, Res: Response) { }
 
 
 	private async PostRelationship(Req: Request<any, any, NewRelationshipsBody>, Res: Response) {
@@ -175,7 +175,7 @@ export default class Friends extends Route {
 		});
 	}
 
-	private async FetchRelationship(UserId: string) {}
+	private async FetchRelationship(UserId: string) { }
 
-	private async CountFriends(UserId: string, RequiredFlags?: number) {}
+	private async CountFriends(UserId: string, RequiredFlags?: number) { }
 }

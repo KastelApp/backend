@@ -48,7 +48,7 @@ export default class FetchPatchUser extends Route {
 	}
 
 	public override async Request(Req: Request, Res: Response) {
-		const { userId } = Req.params as { userId: string };
+		const { userId } = Req.params as { userId: string; };
 		const { include } = Req.query;
 
 		const FetchedUser = await this.FetchUser(userId);

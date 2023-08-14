@@ -125,7 +125,7 @@ export default class Sessions extends Route {
 			UserId: Req.user.Id,
 			SessionId: Id,
 		});
-		
+
 		await this.App.Cassandra.Models.Settings.update({
 			UserId: Encryption.encrypt(Req.user.Id),
 			Tokens: FilteredSessions
@@ -156,9 +156,9 @@ export default class Sessions extends Route {
 		}, {
 			fields: ['tokens']
 		});
-		
+
 		if (!Settings) return [];
-		
+
 		return Settings.Tokens;
 	}
 }

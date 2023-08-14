@@ -45,11 +45,11 @@ import type { Ban, Bot, Channel, Dm, Emoji, File, Friend, Gift, Guild, GuildMemb
 
 //         return Output;
 //     }
-    
+
 //     public ObjecttoCorrectObject(obj: any): any {
 //         if (!Array.isArray(obj)) {
 //             const newObject: any = {};
-    
+
 //             for (const [key, value] of Object.entries(obj)) {
 //                 if (value instanceof Date || value === null || value instanceof cassandra.types.Long) {
 //                     newObject[this.getPropertyName(key)] = value;
@@ -59,19 +59,19 @@ import type { Ban, Bot, Channel, Dm, Emoji, File, Friend, Gift, Guild, GuildMemb
 //                     newObject[this.getPropertyName(key)] = value;
 //                 }
 //             }
-            
+
 //             return newObject;
 //         } else if (Array.isArray(obj)) {
 //             return obj.map((value) => this.ObjecttoCorrectObject(value));
 //         }
-        
+
 //         return obj;
 //     }
-    
+
 //     public ArrayOfObjectsToCqlObject(obj: any): any {
 //         if (!Array.isArray(obj)) {
 //             const newObject: any = {};
-    
+
 //             for (const [key, value] of Object.entries(obj)) {
 //                 if (value instanceof Date || value === null || value instanceof cassandra.types.Long) {
 //                     newObject[this.getColumnName(key)] = value;
@@ -81,12 +81,12 @@ import type { Ban, Bot, Channel, Dm, Emoji, File, Friend, Gift, Guild, GuildMemb
 //                     newObject[this.getColumnName(key)] = value;
 //                 }
 //             }
-            
+
 //             return newObject;
 //         } else if (Array.isArray(obj)) {
 //             return obj.map((value) => this.ArrayOfObjectsToCqlObject(value));
 //         }
-        
+
 //         return obj;
 //     }
 

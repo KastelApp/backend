@@ -107,7 +107,7 @@ export default class ResetPassword extends Route {
 		const LinkVerification = await this.App.Cassandra.Models.VerificationLink.get({
 			Code: Encryption.encrypt(Code),
 		});
-		
+
 		if (!LinkVerification) {
 			const Error = ErrorGen.MissingAuthField();
 
@@ -125,7 +125,7 @@ export default class ResetPassword extends Route {
 
 			return;
 		}
-		
+
 		if (LinkVerification.Flags !== this.App.Constants.VerificationFlags.ForgotPassword) {
 			const Error = ErrorGen.MissingAuthField();
 
@@ -159,20 +159,20 @@ export default class ResetPassword extends Route {
 
 			return;
 		}
-		
+
 		await this.App.Cassandra.Models.User.update({
 			UserId: Encryption.encrypt(FetchedUser.UserId),
 			Password: hashSync(NewPassword, 10),
-		})
+		});
 
 		await this.App.Cassandra.Models.Settings.update({
 			UserId: Encryption.encrypt(FetchedUser.UserId),
 			Tokens: [],
 		});
-		
+
 		await this.App.Cassandra.Models.VerificationLink.remove({
 			Code: Encryption.encrypt(Code)
-		})
+		});
 
 		Res.status(204).end();
 	}

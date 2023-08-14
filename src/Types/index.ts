@@ -10,8 +10,6 @@
  */
 
 import type FlagFields from '../Utils/Classes/BitFields/Flags';
-import type RequestUtils from '../Utils/Classes/RequestUtils';
-import type { User } from '../Utils/Cql/Types';
 
 export interface ExpressUser {
 	Bot: boolean;
@@ -31,7 +29,6 @@ declare global {
 			fourohfourit(): true;
 			methodi: ExpressMethodCap;
 			user: ExpressUser;
-			utils: RequestUtils;
 		}
 	}
 }

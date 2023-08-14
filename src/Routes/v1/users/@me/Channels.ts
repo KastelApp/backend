@@ -21,7 +21,7 @@ interface CreateChannelBody {
 	Recipients: string[];
 }
 
-export default class Sessions extends Route {
+export default class Channels extends Route {
 	public constructor(App: App) {
 		super(App);
 
@@ -78,7 +78,7 @@ export default class Sessions extends Route {
 		}
 	}
 
-	private async GetChannels(Req: Request<{ channelId?: string }>, Res: Response) {}
+	private async GetChannels(Req: Request<{ channelId?: string; }>, Res: Response) { }
 
 	private async CreateDm(Req: Request<any, any, CreateChannelBody>, Res: Response) {
 		const { Flags, Recipients } = Req.body;
@@ -86,7 +86,7 @@ export default class Sessions extends Route {
 		this.App.Logger.debug(`Flags: ${Flags}, Recipients: ${Recipients?.join(', ')}`);
 	}
 
-	private async DeleteDm(Req: Request<{ channelId?: string }>, Res: Response) {}
+	private async DeleteDm(Req: Request<{ channelId?: string; }>, Res: Response) { }
 
-	private async GetAllChannels(UserId: string) {}
+	private async GetAllChannels(UserId: string) { }
 }

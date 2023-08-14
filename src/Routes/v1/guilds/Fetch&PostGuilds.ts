@@ -195,7 +195,7 @@ export default class Guilds extends Route {
 
             Guilds.splice(BeforeIndex);
         }
-        
+
         Guilds.splice(Limit);
 
         const BuildGuilds = [];

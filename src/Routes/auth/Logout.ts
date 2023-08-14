@@ -52,9 +52,9 @@ export default class Logout extends Route {
 
 			return;
 		}
-		
+
 		const FoundSession = Tokens.find((session) => session.Token === Encryption.encrypt(Req.user.Token));
-		
+
 		if (!FoundSession) {
 			this.App.Logger.debug(`Weird, No session found for the user? ID: ${Req.user.Id}`);
 
@@ -62,14 +62,14 @@ export default class Logout extends Route {
 
 			return;
 		}
-		
+
 		const FilteredSessions = Tokens.filter((session) => session.Token !== Encryption.encrypt(Req.user.Token));
 
 		this.App.SystemSocket.Events.DeletedSession({
 			UserId: Req.user.Id,
 			SessionId: Encryption.decrypt(FoundSession.TokenId),
 		});
-		
+
 		await this.App.Cassandra.Models.Settings.update({
 			UserId: Encryption.encrypt(Req.user.Id),
 			Tokens: FilteredSessions

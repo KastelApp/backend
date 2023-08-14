@@ -27,7 +27,7 @@ import Token from '../Utils/Classes/Token.js';
 
 const User = (options: UserMiddleware) => {
 	return async (Req: Request, Res: Response, next: NextFunction) => {
-		
+
 		let AuthHeader = Req.headers.authorization;
 		const AuthIsBot = Req.headers.authorization?.toLowerCase()?.includes('bot');
 
@@ -111,11 +111,11 @@ const User = (options: UserMiddleware) => {
 			}, {
 				fields: ['email', 'user_id', 'flags', 'password']
 			});
-			
+
 			if (!UsersSettings || !UserData) {
 				App.StaticLogger.debug("User settings wasn't found", (DecodedToken.Snowflake));
-				App.StaticLogger.debug(UserData, UsersSettings)
-				
+				App.StaticLogger.debug(UserData, UsersSettings);
+
 				UnAuthorized.AddError({
 					User: {
 						Code: 'InvalidToken',
@@ -127,7 +127,7 @@ const User = (options: UserMiddleware) => {
 
 				return;
 			}
-			
+
 			if (!UsersSettings?.Tokens?.some((Token) => Token.Token === Encryption.encrypt(AuthHeader as string))) {
 				App.StaticLogger.debug('Token not found in the user settings');
 
@@ -142,7 +142,7 @@ const User = (options: UserMiddleware) => {
 
 				return;
 			}
-			
+
 			const UserFlags = new FlagFields(UserData.Flags);
 
 			if (
@@ -274,7 +274,7 @@ const User = (options: UserMiddleware) => {
 				}
 			}
 
-			const CompleteDecrypted: { Email: string, Flags: string, Password: string, UserId: string } = Encryption.completeDecryption({
+			const CompleteDecrypted: { Email: string, Flags: string, Password: string, UserId: string; } = Encryption.completeDecryption({
 				...UserData,
 				Flags: UserData.Flags.toString()
 			});

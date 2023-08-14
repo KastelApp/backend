@@ -96,7 +96,7 @@ export default class Register extends Route {
 			return;
 		}
 
-		const FetchedUsers = await this.FetchUsers(Username , ['username', 'tag']);
+		const FetchedUsers = await this.FetchUsers(Username, ['username', 'tag']);
 		const CleanedEmail = Email.replaceAll(PlusReplace, '');
 		const UserExists = await this.FetchUser(CleanedEmail);
 		const MaxUsernamesReached = await this.MaxUsernamesReached(undefined, FetchedUsers?.length ?? 0);
@@ -127,7 +127,7 @@ export default class Register extends Route {
 		}
 
 		const Tag = await this.GenerateTag(undefined, FetchedUsers ?? []);
-		
+
 		const UserObject = {
 			Avatar: '',
 			Email: Encryption.encrypt(CleanedEmail),
@@ -164,12 +164,12 @@ export default class Register extends Route {
 			UserId: UserObject.UserId,
 			Bio: '',
 		};
-		
+
 		await Promise.all([
 			this.App.Cassandra.Models.User.insert(UserObject),
 			this.App.Cassandra.Models.Settings.insert(SettingsObject)
-		])
-		
+		]);
+
 		Res.send({
 			Token: NewToken,
 			User: {
@@ -209,7 +209,7 @@ export default class Register extends Route {
 
 	private async MaxUsernamesReached(Username?: string, Count?: number): Promise<boolean> {
 		let FoundCount = 0;
-		
+
 		if (Count) {
 			FoundCount = Count;
 		} else if (Username) {
@@ -217,9 +217,9 @@ export default class Register extends Route {
 				'SELECT COUNT(1) FROM users WHERE username = ?',
 				[Encryption.encrypt(Username)]
 			);
-			
+
 			const Value: number = FoundUsers?.first()?.get('count').toNumber() ?? 0;
-			
+
 			FoundCount = Value;
 		}
 

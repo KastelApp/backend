@@ -1,6 +1,6 @@
 CREATE TYPE IF NOT EXISTS membertimeouts (
 	channel_id text,
-	timeout_until date,
+	timeout_until timestamp,
 );
 
 CREATE TABLE IF NOT EXISTS guild_members (

@@ -302,9 +302,8 @@ class Logger {
 			return;
 		}
 
-		const Message = `[${options.date.toLocaleTimeString()}] [MASTER / ${
-			options.toShow ? options.toShow.toUpperCase() : options.type.toUpperCase()
-		}]:`;
+		const Message = `[${options.date.toLocaleTimeString()}] [MASTER / ${options.toShow ? options.toShow.toUpperCase() : options.type.toUpperCase()
+			}]:`;
 
 		const Messages = [];
 

@@ -140,26 +140,26 @@ class App {
 		this.Cassandra.on('Connected', () => this.Logger.info('Connected to ScyllaDB'));
 		this.Cassandra.on('Error', (err) => {
 			this.Logger.fatal(err);
-			
+
 			process.exit(1);
 		});
-		
+
 		await Promise.all([
 			this.SystemSocket.Connect(),
 			this.Cassandra.Connect(),
 			this.Cache.connect(),
 		]);
 
-		this.Logger.info('Creating ScyllaDB Tables.. This may take a while..')
-		
+		this.Logger.info('Creating ScyllaDB Tables.. This may take a while..');
+
 		const TablesCreated = await this.Cassandra.CreateTables();
-		
+
 		if (TablesCreated) {
 			this.Logger.info('Created ScyllaDB tables');
 		} else {
-			this.Logger.warn('whar')
+			this.Logger.warn('whar');
 		}
-		
+
 		if (Config.MailServer.Enabled) {
 			const Support = Config.MailServer.Users.find((user) => user.ShortCode === 'Support');
 			const NoReply = Config.MailServer.Users.find((user) => user.ShortCode === 'NoReply');
@@ -196,7 +196,7 @@ class App {
 				]);
 			} catch (error) {
 				this.Logger.fatal('Failed to connect to Mail Server', error);
-				
+
 				process.exit(1);
 			}
 

@@ -361,7 +361,7 @@ export default class FetchPatchUser extends Route {
 					},
 				});
 			} else {
-				const FoundUser = await this.UserExists(FilteredItems.Username, FilteredItems.Tag ?? FetchedUser.Tag)
+				const FoundUser = await this.UserExists(FilteredItems.Username, FilteredItems.Tag ?? FetchedUser.Tag);
 
 				if (FoundUser) {
 					Error.AddError({

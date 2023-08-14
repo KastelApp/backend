@@ -39,7 +39,7 @@ export interface UserMiddleware {
 	AllowedRequesters: 'All' | 'Bot' | 'User';
 	// The flags that are not allowed to access the endpoint (Default: null)
 	App: App,
-	DisallowedFlags?: (keyof typeof Flags)[]; 
+	DisallowedFlags?: (keyof typeof Flags)[];
 	// The type of user that can access the endpoint (Default: 'All')
 	Flags?: (keyof typeof Flags)[];
 }
