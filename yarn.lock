@@ -767,15 +767,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kastelll/cassandra-driver@npm:^4.6.12":
-  version: 4.6.12
-  resolution: "@kastelll/cassandra-driver@npm:4.6.12"
+"@kastelll/cassandra-driver@npm:^4.6.13":
+  version: 4.6.13
+  resolution: "@kastelll/cassandra-driver@npm:4.6.13"
   dependencies:
     "@types/long": ^4.0.0
     "@types/node": ">=8"
     adm-zip: ^0.5.3
     long: ^2.2.0
-  checksum: 24ca00c5f17544d6537c29a3a934484ac9ffbaf27f6a66c9bdbd66382d3b54c971f1283f32befd98dfe1eb5c45fb0625217d807494920b88739cba75e91f46eb
+  checksum: 94b499ec3f59b84de9721c881f5ae584cc6fbcec28a7609e896debd07c0e43b890a0dcf5d48f907addf26acda94b74199aae4b852ecd942c72a8cac653a709f8
   languageName: node
   linkType: hard
 
@@ -797,14 +797,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kastelll/util@npm:^0.2.2":
-  version: 0.2.2
-  resolution: "@kastelll/util@npm:0.2.2"
+"@kastelll/util@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "@kastelll/util@npm:0.2.3"
   dependencies:
     "@kastelll/internal": latest
     ioredis: ^5.3.2
     undici: ^5.22.0
-  checksum: 7f2144376f2aeff85981a71c418dd38eb43d1530bf2f700ab24d15df9c1bf6f75d640f34bb046daa715fede35f4a48bde5c89c361c7129fa2002b0e2a4c69e7e
+  checksum: a24ecebbfe5820081651f1cc795f345d8264778b430a5c8fd44071f0fcc9c4a5bccb3ce2a9526da9e3a58fe7a870c00ec8fdfd18590862874b9de5163723fd23
   languageName: node
   linkType: hard
 
@@ -5628,9 +5628,9 @@ __metadata:
   dependencies:
     "@commitlint/cli": ^17.7.1
     "@commitlint/config-angular": ^17.7.0
-    "@kastelll/cassandra-driver": ^4.6.12
+    "@kastelll/cassandra-driver": ^4.6.13
     "@kastelll/core": ^0.3.0
-    "@kastelll/util": ^0.2.2
+    "@kastelll/util": ^0.2.3
     "@mapbox/node-pre-gyp": ^1.0.11
     "@sentry/node": ^7.63.0
     "@types/archiver": ^5.3.2

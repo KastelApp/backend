@@ -137,7 +137,7 @@ class Connection extends EventEmitter {
         Webhook: cassandra.mapping.ModelMapper<Webhook>;
     };
 
-    public UnderScoreCqlToPascalCaseMappings: mapping.UnderscoreCqlToPascalCaseMappings = new mapping.UnderscoreCqlToPascalCaseMappings();
+    public UnderScoreCqlToPascalCaseMappings: mapping.UnderscoreCqlToPascalCaseMappings = new mapping.UnderscoreCqlToPascalCaseMappings(true);
 
     public constructor(
         nodes: string[],

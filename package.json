@@ -4,9 +4,9 @@
 	"version": "0.0.6",
 	"main": "dist/index.js",
 	"dependencies": {
-		"@kastelll/cassandra-driver": "^4.6.12",
+		"@kastelll/cassandra-driver": "^4.6.13",
 		"@kastelll/core": "^0.3.0",
-		"@kastelll/util": "^0.2.2",
+		"@kastelll/util": "^0.2.3",
 		"@mapbox/node-pre-gyp": "^1.0.11",
 		"@sentry/node": "^7.63.0",
 		"archiver": "^5.3.1",
