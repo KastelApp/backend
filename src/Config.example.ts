@@ -47,7 +47,7 @@ const Encryption: EncrpytionConfigType = {
 	Algorithm: '',
 	InitVector: '',
 	SecurityKey: '',
-	JwtKey: '',
+	TokenKey: '',
 };
 
 const Ws: WsConfigType = {

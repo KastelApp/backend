@@ -145,6 +145,8 @@ export default class Register extends Route {
 
 		const NewToken = Token.GenerateToken(Encryption.decrypt(UserObject.UserId));
 
+		console.log(Encryption.decrypt(UserObject.UserId))
+		
 		const SettingsObject: Settings = {
 			Language: 'en-US',
 			MaxFileUploadSize: Constants.Settings.Max.MaxFileSize,

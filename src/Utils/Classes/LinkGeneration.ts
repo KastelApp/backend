@@ -24,7 +24,7 @@ class LinkGeneration {
 		const nonce = Base64.OldBase64(crypto.randomBytes(16).toString('base64'));
 		const snowflake = Base64.Encode(snowflakeId);
 
-		const hmac = crypto.createHmac('sha256', Encryption.JwtKey);
+		const hmac = crypto.createHmac('sha256', Encryption.TokenKey);
 
 		hmac.update(`${snowflake}.${CurrentDate}.${nonce}`);
 
@@ -56,7 +56,7 @@ class LinkGeneration {
 
 		App.StaticLogger.debug('Date good');
 
-		const hmac = crypto.createHmac('sha256', Encryption.JwtKey);
+		const hmac = crypto.createHmac('sha256', Encryption.TokenKey);
 
 		hmac.update(`${base64snowflake}.${base64createdDate}.${nonce}`);
 

@@ -93,8 +93,6 @@ class Logger {
 
 			const Now = new Date();
 
-			// if the days, months, years etc etc are different then we need to compress the logs.
-
 			if (
 				Now.getDate() !== this.prevDate.getDate() ||
 				Now.getMonth() !== this.prevDate.getMonth() ||
@@ -102,15 +100,12 @@ class Logger {
 			) {
 				this.supersecretdebug(`Date changed, compressing logs`);
 
-				// eslint-disable-next-line @typescript-eslint/no-floating-promises
-				this.init();
+				void this.init();
 
 				this.prevDate = Now;
 
 				this.supersecretdebug(`Compressed logs`);
 			}
-
-			// this.supersecretdebug(`Date did not change, not compressing logs`);
 		}, 25);
 
 		setInterval(() => {

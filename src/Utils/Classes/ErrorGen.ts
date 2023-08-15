@@ -48,6 +48,9 @@ const ErrorGen = {
 	},
 	InvalidSnowflake: () => {
 		return new HTTPErrors(4_015);
+	},
+	UnknownGuild: () => {
+		return new HTTPErrors(4_016);
 	}
 };
 

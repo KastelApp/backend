@@ -54,7 +54,7 @@ interface ReturnedGuild {
 // to do: add guilds to gateway events & fetch co-owners
 export default class Guilds extends Route {
 
-    public Includeable: Includeable[] = ['channels', 'cowners', 'owner', 'roles'];
+    public Includeable: Includeable[] = ['cowners', 'owner', 'roles'];
 
     public constructor(App: App) {
         super(App);
@@ -208,7 +208,6 @@ export default class Guilds extends Route {
             if (!Guild) continue;
 
             const FixedRoles = [];
-            const FixedChannels = [];
             const FixedGuild: Partial<ReturnedGuild> = {
                 Id: Guild.GuildId,
                 ...Guild,
@@ -219,28 +218,6 @@ export default class Guilds extends Route {
             };
 
             delete FixedGuild.GuildId;
-
-            if (Include.includes('channels')) {
-                const Channels = await this.App.Cassandra.Models.Channel.find({
-                    GuildId: Encryption.encrypt(GuildId)
-                });
-
-                for (const Channel of Channels.toArray()) {
-                    FixedChannels.push({
-                        Id: Channel.ChannelId,
-                        Name: Channel.Name,
-                        AllowedMenions: Channel.AllowedMentions,
-                        Children: Channel.Children ?? [],
-                        Description: Channel.Description.length === 0 ? null : Channel.Description,
-                        Nsfw: Channel.Nsfw,
-                        ParentId: Channel.ParentId.length === 0 ? null : Channel.ParentId,
-                        PermissionsOverrides: Channel.PermissionsOverrides,
-                        Position: Channel.Position,
-                        Slowmode: Channel.Slowmode,
-                        Type: Channel.Type
-                    });
-                }
-            }
 
             if (Include.includes('roles')) {
                 const Roles = await this.App.Cassandra.Models.Role.find({
@@ -281,8 +258,7 @@ export default class Guilds extends Route {
 
             BuildGuilds.push({
                 ...FixedGuild,
-                Roles: FixedRoles,
-                Channels: FixedChannels
+                Roles: FixedRoles
             });
         }
 
@@ -402,7 +378,7 @@ export default class Guilds extends Route {
             this.App.Cassandra.Models.GuildMember.insert(GuildMember),
             this.App.Cassandra.Models.User.update({
                 UserId: Encryption.encrypt(Req.user.Id),
-                Guilds: [...Guilds, GuildId]
+                Guilds: [...Encryption.completeEncryption(Guilds), Encryption.encrypt(GuildId)]
             })
         ]);
 
@@ -473,7 +449,7 @@ export default class Guilds extends Route {
 
         if (!User || !Array.isArray(User.Guilds)) return [];
 
-        return User.Guilds;
+        return Encryption.completeDecryption(User.Guilds);
     }
 
     private async FetchUser(UserId?: string): Promise<UserRawType | null> {

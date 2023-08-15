@@ -10,7 +10,10 @@
  */
 
 import type { Request, Response } from 'express';
+import User from '../../../../Middleware/User.js';
 import type App from '../../../../Utils/Classes/App';
+import Encryption from '../../../../Utils/Classes/Encryption.js';
+import ErrorGen from '../../../../Utils/Classes/ErrorGen.js';
 import Route from '../../../../Utils/Classes/Route.js';
 
 export default class Channels extends Route {
@@ -19,14 +22,38 @@ export default class Channels extends Route {
 
         this.Methods = ['GET', 'POST'];
 
-        this.Middleware = [];
+        this.Middleware = [
+            User({
+                AccessType: 'LoggedIn',
+                AllowedRequesters: 'User',
+                App,
+            })
+        ];
 
         this.AllowedContentTypes = ['application/json'];
 
         this.Routes = ['/channels'];
     }
 
-    public override async Request(Req: Request, Res: Response) {
+    public override async Request(Req: Request<{ guildId: string; }>, Res: Response) {
+
+        const ValidatedGuild = await this.VerifyGuild(Req.user.Id, Req.params.guildId);
+
+        if (!ValidatedGuild) {
+            const Error = ErrorGen.UnknownGuild();
+
+            Error.AddError({
+                GuildId: {
+                    Code: 'UnknownGuild',
+                    Message: 'The guild is Invalid, Does not exist or you are not in it.'
+                }
+            });
+
+            Res.status(404).json(Error.toJSON());
+
+            return;
+        }
+
         switch (Req.methodi) {
             case "GET": {
                 await this.FetchChannels(Req, Res);
@@ -54,7 +81,41 @@ export default class Channels extends Route {
         }
     }
 
-    public async FetchChannels(Req: Request, Res: Response) { }
+    public async FetchChannels(Req: Request<{ guildId: string; }>, Res: Response) {
+        const FixedChannels = [];
+        
+        const Channels = await this.App.Cassandra.Models.Channel.find({
+            GuildId: Encryption.encrypt(Req.params.guildId)
+        });
+        
+        for (const Channel of Channels.toArray()) {
+            FixedChannels.push({
+                Id: Channel.ChannelId,
+                Name: Channel.Name,
+                AllowedMenions: Channel.AllowedMentions,
+                Children: Channel.Children ?? [],
+                Description: Channel.Description.length === 0 ? null : Channel.Description,
+                Nsfw: Channel.Nsfw,
+                ParentId: Channel.ParentId.length === 0 ? null : Channel.ParentId,
+                PermissionsOverrides: Channel.PermissionsOverrides,
+                Position: Channel.Position,
+                Slowmode: Channel.Slowmode,
+                Type: Channel.Type
+            });
+        }
+        
+        Res.send(Encryption.completeDecryption(FixedChannels));
+    }
 
-    public async PostChannels(Req: Request, Res: Response) { }
+    public async PostChannels(Req: Request<{ guildId: string; }>, Res: Response) { }
+
+    public async VerifyGuild(UserId: string, GuidlId: string) {
+        const User = await this.App.Cassandra.Models.User.get({
+            UserId: Encryption.encrypt(UserId),
+        }, { fields: ['guilds'] });
+
+        if (!User?.Guilds) return false;
+        
+        return User.Guilds.includes(Encryption.encrypt(GuidlId));
+    }
 }
