@@ -202,7 +202,7 @@ export default class Guilds extends Route {
 
         for (const GuildId of Guilds) {
             const Guild = await this.App.Cassandra.Models.Guild.get({
-                GuildId: Encryption.encrypt(GuildId)
+                GuildId: Encryption.Encrypt(GuildId)
             });
 
             if (!Guild) continue;
@@ -221,7 +221,7 @@ export default class Guilds extends Route {
 
             if (Include.includes('roles')) {
                 const Roles = await this.App.Cassandra.Models.Role.find({
-                    GuildId: Encryption.encrypt(GuildId)
+                    GuildId: Encryption.Encrypt(GuildId)
                 });
 
                 for (const Role of Roles.toArray()) {
@@ -242,7 +242,7 @@ export default class Guilds extends Route {
             if (Include.includes('owner')) {
                 delete FixedGuild.OwnerId;
 
-                const Owner = await this.FetchUser(Encryption.decrypt(Guild.OwnerId));
+                const Owner = await this.FetchUser(Encryption.Decrypt(Guild.OwnerId));
 
                 if (Owner) {
                     FixedGuild.Owner = {
@@ -262,7 +262,7 @@ export default class Guilds extends Route {
             });
         }
 
-        Res.send(Encryption.completeDecryption(BuildGuilds));
+        Res.send(Encryption.CompleteDecryption(BuildGuilds));
     }
 
     private async PostGuilds(Req: Request<any, any, NewGuildBody>, Res: Response): Promise<void> {
@@ -306,11 +306,11 @@ export default class Guilds extends Route {
 
         const CategoryObject: Channels = {
             AllowedMentions: this.App.Constants.AllowedMentions.All as number,
-            ChannelId: Encryption.encrypt(this.App.Snowflake.Generate()),
+            ChannelId: Encryption.Encrypt(this.App.Snowflake.Generate()),
             Children: [],
             Description: '',
-            GuildId: Encryption.encrypt(GuildId),
-            Name: Encryption.encrypt('General Category'),
+            GuildId: Encryption.Encrypt(GuildId),
+            Name: Encryption.Encrypt('General Category'),
             Nsfw: false,
             ParentId: '',
             PermissionsOverrides: [],
@@ -319,13 +319,13 @@ export default class Guilds extends Route {
             Slowmode: 0
         };
         const ChannelObject: Channels = {
-            ChannelId: Encryption.encrypt(this.App.Snowflake.Generate()),
+            ChannelId: Encryption.Encrypt(this.App.Snowflake.Generate()),
             Type: this.App.Constants.ChannelTypes.GuildText,
             AllowedMentions: this.App.Constants.AllowedMentions.All as number,
             Children: [],
             Description: '',
-            GuildId: Encryption.encrypt(GuildId),
-            Name: Encryption.encrypt('general'),
+            GuildId: Encryption.Encrypt(GuildId),
+            Name: Encryption.Encrypt('general'),
             Nsfw: false,
             ParentId: CategoryObject.ChannelId,
             PermissionsOverrides: [],
@@ -336,38 +336,38 @@ export default class Guilds extends Route {
         CategoryObject.Children.push(ChannelObject.ChannelId);
 
         const RoleObject: Roles = {
-            Name: Encryption.encrypt('everyone'),
+            Name: Encryption.Encrypt('everyone'),
             AllowedMentions: this.App.Constants.AllowedMentions.All as number,
             AllowedNsfw: false,
             Color: 0,
             Deleteable: false,
-            GuildId: Encryption.encrypt(GuildId),
+            GuildId: Encryption.Encrypt(GuildId),
             Hoisted: false,
             Permissions: types.Long.fromString('0'),
             Position: 0,
-            RoleId: Encryption.encrypt(GuildId)
+            RoleId: Encryption.Encrypt(GuildId)
         };
 
         const GuildObject: Guild = {
             CoOwners: [],
-            Description: Description ? Encryption.encrypt(Description) : '',
+            Description: Description ? Encryption.Encrypt(Description) : '',
             Features: [],
             Flags: 0,
-            GuildId: Encryption.encrypt(GuildId),
+            GuildId: Encryption.Encrypt(GuildId),
             Icon: '',
             MaxMembers: this.App.Constants.Settings.Max.MemberCount,
-            Name: Name ? Encryption.encrypt(Name) : Encryption.encrypt('New Guild'),
-            OwnerId: Encryption.encrypt(Req.user.Id),
+            Name: Name ? Encryption.Encrypt(Name) : Encryption.Encrypt('New Guild'),
+            OwnerId: Encryption.Encrypt(Req.user.Id),
         };
 
         const GuildMember: GuildMember = {
             Flags: this.App.Constants.GuildMemberFlags.Owner | this.App.Constants.GuildMemberFlags.In,
-            GuildId: Encryption.encrypt(GuildId),
+            GuildId: Encryption.Encrypt(GuildId),
             JoinedAt: new Date(),
             Nickname: '',
             Roles: [RoleObject.RoleId],
             Timeouts: [],
-            UserId: Encryption.encrypt(Req.user.Id)
+            UserId: Encryption.Encrypt(Req.user.Id)
         };
 
         await Promise.all([
@@ -377,8 +377,8 @@ export default class Guilds extends Route {
             this.App.Cassandra.Models.Role.insert(RoleObject),
             this.App.Cassandra.Models.GuildMember.insert(GuildMember),
             this.App.Cassandra.Models.User.update({
-                UserId: Encryption.encrypt(Req.user.Id),
-                Guilds: [...Encryption.completeEncryption(Guilds), Encryption.encrypt(GuildId)]
+                UserId: Encryption.Encrypt(Req.user.Id),
+                Guilds: [...Encryption.CompleteEncryption(Guilds), Encryption.Encrypt(GuildId)]
             })
         ]);
 
@@ -437,31 +437,31 @@ export default class Guilds extends Route {
             })
         };
 
-        Res.status(201).send(Encryption.completeDecryption(UndefinesRemoved));
+        Res.status(201).send(Encryption.CompleteDecryption(UndefinesRemoved));
     }
 
     private async FetchUserGuilds(UserId: string): Promise<string[]> {
         const User = await this.App.Cassandra.Models.User.get({
-            UserId: Encryption.encrypt(UserId)
+            UserId: Encryption.Encrypt(UserId)
         }, {
             fields: ['guilds']
         });
 
         if (!User || !Array.isArray(User.Guilds)) return [];
 
-        return Encryption.completeDecryption(User.Guilds);
+        return Encryption.CompleteDecryption(User.Guilds);
     }
 
     private async FetchUser(UserId?: string): Promise<UserRawType | null> {
         const FetchedUser = await this.App.Cassandra.Models.User.get({
-            ...(UserId ? { UserId: Encryption.encrypt(UserId) } : {}),
+            ...(UserId ? { UserId: Encryption.Encrypt(UserId) } : {}),
         }, {
             fields: ['avatar', 'flags', 'global_nickname', 'user_id', 'tag', 'username']
         });
 
         if (!FetchedUser) return null;
 
-        return Encryption.completeDecryption({
+        return Encryption.CompleteDecryption({
             ...FetchedUser,
             Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
         });

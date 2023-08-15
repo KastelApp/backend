@@ -82,12 +82,12 @@ export default class FetchPatchUser extends Route {
 		if (SplitInclude.includes('bio') && !Req.user.Bot) {
 			// darkerink: Bots should not be allowed to fetch this (Personal info bots no need access to)
 			const Settings = await this.App.Cassandra.Models.Settings.get({
-				UserId: Encryption.encrypt(UserObject.Id),
+				UserId: Encryption.Encrypt(UserObject.Id),
 			}, {
 				fields: ['bio']
 			});
 
-			UserObject.Bio = Settings?.Bio ? Encryption.decrypt(Settings.Bio) : null;
+			UserObject.Bio = Settings?.Bio ? Encryption.Decrypt(Settings.Bio) : null;
 		}
 
 		Res.send(UserObject);
@@ -95,13 +95,13 @@ export default class FetchPatchUser extends Route {
 
 	private async FetchUser(UserId?: string, Email?: string): Promise<UserType | null> {
 		const FetchedUser = await this.App.Cassandra.Models.User.get({
-			...(UserId ? { UserId: Encryption.encrypt(UserId) } : {}),
-			...(Email ? { Email: Encryption.encrypt(Email) } : {}),
+			...(UserId ? { UserId: Encryption.Encrypt(UserId) } : {}),
+			...(Email ? { Email: Encryption.Encrypt(Email) } : {}),
 		});
 
 		if (!FetchedUser) return null;
 
-		return Encryption.completeDecryption({
+		return Encryption.CompleteDecryption({
 			...FetchedUser,
 			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
 		});

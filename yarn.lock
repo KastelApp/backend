@@ -767,15 +767,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kastelll/cassandra-driver@npm:^4.6.13":
-  version: 4.6.13
-  resolution: "@kastelll/cassandra-driver@npm:4.6.13"
+"@kastelll/cassandra-driver@npm:^4.6.15":
+  version: 4.6.15
+  resolution: "@kastelll/cassandra-driver@npm:4.6.15"
   dependencies:
     "@types/long": ^4.0.0
     "@types/node": ">=8"
     adm-zip: ^0.5.3
     long: ^2.2.0
-  checksum: 94b499ec3f59b84de9721c881f5ae584cc6fbcec28a7609e896debd07c0e43b890a0dcf5d48f907addf26acda94b74199aae4b852ecd942c72a8cac653a709f8
+  checksum: 58930c708fd874cb82683e2d176059e122abd7ba3153ee87ba91f83226ef31f0986fc02f5dcb89b43c2e446f953ca229b45ce3fd2629187d4485d6384f26ed50
   languageName: node
   linkType: hard
 
@@ -5628,7 +5628,7 @@ __metadata:
   dependencies:
     "@commitlint/cli": ^17.7.1
     "@commitlint/config-angular": ^17.7.0
-    "@kastelll/cassandra-driver": ^4.6.13
+    "@kastelll/cassandra-driver": ^4.6.15
     "@kastelll/core": ^0.3.0
     "@kastelll/util": ^0.2.3
     "@mapbox/node-pre-gyp": ^1.0.11

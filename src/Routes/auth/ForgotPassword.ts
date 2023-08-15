@@ -105,13 +105,13 @@ export default class ForgotPassword extends Route {
 
 	private async FetchUser(UserId?: string, Email?: string): Promise<UserType | null> {
 		const FetchedUser = await this.App.Cassandra.Models.User.get({
-			...(UserId ? { UserId: Encryption.encrypt(UserId) } : {}),
-			...(Email ? { Email: Encryption.encrypt(Email) } : {}),
+			...(UserId ? { UserId: Encryption.Encrypt(UserId) } : {}),
+			...(Email ? { Email: Encryption.Encrypt(Email) } : {}),
 		});
 
 		if (!FetchedUser) return null;
 
-		return Encryption.completeDecryption({
+		return Encryption.CompleteDecryption({
 			...FetchedUser,
 			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
 		});
@@ -125,12 +125,12 @@ export default class ForgotPassword extends Route {
 		const FixedFlags = FlagRemover.VerifyFlagsInvalidRemover(type);
 
 		const Link: VerificationLink = {
-			Code: Encryption.encrypt(Code),
+			Code: Encryption.Encrypt(Code),
 			CreatedDate: new Date(),
 			ExpireDate: new Date(Date.now() + 1_000 * 60 * 60 * 24),
 			Flags: FixedFlags,
-			Ip: Encryption.encrypt(ip),
-			UserId: Encryption.encrypt(id),
+			Ip: Encryption.Encrypt(ip),
+			UserId: Encryption.Encrypt(id),
 		};
 
 		await this.App.Cassandra.Models.VerificationLink.insert(Link);

@@ -16,6 +16,24 @@ import Encryption from '../../../../Utils/Classes/Encryption.js';
 import ErrorGen from '../../../../Utils/Classes/ErrorGen.js';
 import Route from '../../../../Utils/Classes/Route.js';
 
+interface CreateChannelBody {
+    Children?: string[];
+    Description?: string;
+    Name: string;
+    Nsfw?: boolean;
+    ParentId?: string;
+    PermissionsOverrides?: {
+        [key: string]: {
+            Allow: string;
+            Deny: string;
+            Slowmode: number;
+        };
+    },
+    Position?: number;
+    Slowmode?: number;
+    Type?: number;
+}
+
 export default class Channels extends Route {
     public constructor(App: App) {
         super(App);
@@ -83,11 +101,11 @@ export default class Channels extends Route {
 
     public async FetchChannels(Req: Request<{ guildId: string; }>, Res: Response) {
         const FixedChannels = [];
-        
+
         const Channels = await this.App.Cassandra.Models.Channel.find({
-            GuildId: Encryption.encrypt(Req.params.guildId)
+            GuildId: Encryption.Encrypt(Req.params.guildId)
         });
-        
+
         for (const Channel of Channels.toArray()) {
             FixedChannels.push({
                 Id: Channel.ChannelId,
@@ -103,19 +121,21 @@ export default class Channels extends Route {
                 Type: Channel.Type
             });
         }
-        
-        Res.send(Encryption.completeDecryption(FixedChannels));
+
+        Res.send(Encryption.CompleteDecryption(FixedChannels));
     }
 
-    public async PostChannels(Req: Request<{ guildId: string; }>, Res: Response) { }
+    public async PostChannels(Req: Request<{ guildId: string; }, any, CreateChannelBody>, Res: Response) {
+        const { Name, Children, Description, Nsfw, ParentId, PermissionsOverrides, Position, Slowmode, Type } = Req.body;
+    }
 
     public async VerifyGuild(UserId: string, GuidlId: string) {
         const User = await this.App.Cassandra.Models.User.get({
-            UserId: Encryption.encrypt(UserId),
+            UserId: Encryption.Encrypt(UserId),
         }, { fields: ['guilds'] });
 
         if (!User?.Guilds) return false;
-        
-        return User.Guilds.includes(Encryption.encrypt(GuidlId));
+
+        return User.Guilds.includes(Encryption.Encrypt(GuidlId));
     }
 }

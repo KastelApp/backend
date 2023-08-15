@@ -381,7 +381,7 @@ export default class FetchPatchUser extends Route {
 		}
 
 		await this.App.Cassandra.Models.User.update({
-			...Encryption.completeEncryption(FetchedUser),
+			...Encryption.CompleteEncryption(FetchedUser),
 			Tag: FetchedUser.Tag,
 			Password: FetchedUser.Password,
 			Flags: FetchedUser.Flags,
@@ -406,8 +406,8 @@ export default class FetchPatchUser extends Route {
 			UserObject.Bio = String(FilteredItems.Bio);
 
 			await this.App.Cassandra.Models.Settings.update({
-				UserId: Encryption.encrypt(UserObject.Id),
-				Bio: Encryption.encrypt(String(UserObject.Bio)),
+				UserId: Encryption.Encrypt(UserObject.Id),
+				Bio: Encryption.Encrypt(String(UserObject.Bio)),
 			});
 		}
 
@@ -448,12 +448,12 @@ export default class FetchPatchUser extends Route {
 
 		if (SplitInclude.includes('bio')) {
 			const Settings = await this.App.Cassandra.Models.Settings.get({
-				UserId: Encryption.encrypt(UserObject.Id),
+				UserId: Encryption.Encrypt(UserObject.Id),
 			}, {
 				fields: ['bio']
 			});
 
-			UserObject.Bio = Settings?.Bio ? Encryption.decrypt(Settings.Bio) : null;
+			UserObject.Bio = Settings?.Bio ? Encryption.Decrypt(Settings.Bio) : null;
 		}
 
 		Res.send(UserObject);
@@ -461,13 +461,13 @@ export default class FetchPatchUser extends Route {
 
 	private async FetchUser(UserId?: string, Email?: string): Promise<UserType | null> {
 		const FetchedUser = await this.App.Cassandra.Models.User.get({
-			...(UserId ? { UserId: Encryption.encrypt(UserId) } : {}),
-			...(Email ? { Email: Encryption.encrypt(Email) } : {}),
+			...(UserId ? { UserId: Encryption.Encrypt(UserId) } : {}),
+			...(Email ? { Email: Encryption.Encrypt(Email) } : {}),
 		});
 
 		if (!FetchedUser) return null;
 
-		return Encryption.completeDecryption({
+		return Encryption.CompleteDecryption({
 			...FetchedUser,
 			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
 		});
@@ -481,7 +481,7 @@ export default class FetchPatchUser extends Route {
 		} else if (Username) {
 			const FoundUsers = await this.App.Cassandra.Execute(
 				'SELECT COUNT(1) FROM users WHERE username = ?',
-				[Encryption.encrypt(Username)]
+				[Encryption.Encrypt(Username)]
 			);
 
 			const Value: number = FoundUsers?.first()?.get('count').toNumber() ?? 0;
@@ -494,7 +494,7 @@ export default class FetchPatchUser extends Route {
 
 	private async UserExists(Username: string, Tag: string): Promise<boolean> {
 		const Users = await this.App.Cassandra.Models.User.find({
-			Username: Encryption.encrypt(Username),
+			Username: Encryption.Encrypt(Username),
 		}, {
 			fields: ['tag']
 		});

@@ -83,7 +83,7 @@ export default class DisableDelete extends Route {
 		}
 
 		await this.App.Cassandra.Models.Settings.update({
-			UserId: Encryption.encrypt(FetchedUser.UserId),
+			UserId: Encryption.Encrypt(FetchedUser.UserId),
 			Tokens: []
 		});
 
@@ -104,7 +104,7 @@ export default class DisableDelete extends Route {
 		);
 
 		await this.App.Cassandra.Models.User.update({
-			UserId: Encryption.encrypt(FetchedUser.UserId),
+			UserId: Encryption.Encrypt(FetchedUser.UserId),
 			Flags: Flags.toString(),
 		});
 
@@ -113,14 +113,14 @@ export default class DisableDelete extends Route {
 
 	private async FetchUser(UserId: string, Fields: string[]): Promise<UserType | null> {
 		const FetchedUser = await this.App.Cassandra.Models.User.get({
-			UserId: Encryption.encrypt(UserId),
+			UserId: Encryption.Encrypt(UserId),
 		}, {
 			fields: Fields
 		});
 
 		if (!FetchedUser) return null;
 
-		return Encryption.completeDecryption({
+		return Encryption.CompleteDecryption({
 			...FetchedUser,
 			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
 		});

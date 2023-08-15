@@ -51,12 +51,12 @@ class Token {
 
 		const Snowflake = Buffer.from(
 			snowflakeBase64,
-			'base64',
+			'base64url',
 		).toString('utf8');
 
 		const DecodedTimestamp = Buffer.from(
 			StringDated,
-			'base64',
+			'base64url',
 		).toString('utf8');
 
 		return { Snowflake, Timestamp: Number.parseInt(DecodedTimestamp, 10) };

@@ -149,10 +149,10 @@ export default class Login extends Route {
 		const NewToken = Token.GenerateToken(FetchedUser.UserId);
 
 		const Tokens = await this.App.Cassandra.Models.Settings.get({
-			UserId: Encryption.encrypt(FetchedUser.UserId)
+			UserId: Encryption.Encrypt(FetchedUser.UserId)
 		}, { fields: ['tokens'] });
 
-		const SessionId = Encryption.encrypt(this.App.Snowflake.Generate());
+		const SessionId = Encryption.Encrypt(this.App.Snowflake.Generate());
 
 		if (!Tokens) {
 			Res.status(500).send('Internal Server Error :(');
@@ -164,20 +164,20 @@ export default class Login extends Route {
 
 		NewTokens.push({
 			TokenId: SessionId,
-			Token: Encryption.encrypt(NewToken),
+			Token: Encryption.Encrypt(NewToken),
 			CreatedDate: new Date(),
-			Ip: Encryption.encrypt(Req.ip),
+			Ip: Encryption.Encrypt(Req.ip),
 			Flags: 0,
 		});
 
 		await this.App.Cassandra.Models.Settings.update({
-			UserId: Encryption.encrypt(FetchedUser.UserId),
+			UserId: Encryption.Encrypt(FetchedUser.UserId),
 			Tokens: NewTokens
 		});
 
 		this.App.SystemSocket.Events.NewSession({
 			UserId: FetchedUser.UserId,
-			SessionId: Encryption.decrypt(SessionId),
+			SessionId: Encryption.Decrypt(SessionId),
 		});
 
 		Res.send({
@@ -187,13 +187,13 @@ export default class Login extends Route {
 
 	private async FetchUser(UserId?: string, Email?: string): Promise<UserType | null> {
 		const FetchedUser = await this.App.Cassandra.Models.User.get({
-			...(UserId ? { UserId: Encryption.encrypt(UserId) } : {}),
-			...(Email ? { Email: Encryption.encrypt(Email) } : {}),
+			...(UserId ? { UserId: Encryption.Encrypt(UserId) } : {}),
+			...(Email ? { Email: Encryption.Encrypt(Email) } : {}),
 		});
 
 		if (!FetchedUser) return null;
 
-		return Encryption.completeDecryption({
+		return Encryption.CompleteDecryption({
 			...FetchedUser,
 			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
 		});

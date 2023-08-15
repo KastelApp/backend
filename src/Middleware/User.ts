@@ -101,13 +101,13 @@ const User = (options: UserMiddleware) => {
 			const DecodedToken = Token.DecodeToken(AuthHeader);
 
 			const UsersSettings = await options.App.Cassandra.Models.Settings.get({
-				UserId: Encryption.encrypt(DecodedToken.Snowflake),
+				UserId: Encryption.Encrypt(DecodedToken.Snowflake),
 			}, {
 				fields: ['tokens']
 			});
 
 			const UserData = await options.App.Cassandra.Models.User.get({
-				UserId: Encryption.encrypt(DecodedToken.Snowflake),
+				UserId: Encryption.Encrypt(DecodedToken.Snowflake),
 			}, {
 				fields: ['email', 'user_id', 'flags', 'password']
 			});
@@ -128,7 +128,7 @@ const User = (options: UserMiddleware) => {
 				return;
 			}
 
-			if (!UsersSettings?.Tokens?.some((Token) => Token.Token === Encryption.encrypt(AuthHeader as string))) {
+			if (!UsersSettings?.Tokens?.some((Token) => Token.Token === Encryption.Encrypt(AuthHeader as string))) {
 				App.StaticLogger.debug('Token not found in the user settings');
 
 				UnAuthorized.AddError({
@@ -274,7 +274,7 @@ const User = (options: UserMiddleware) => {
 				}
 			}
 
-			const CompleteDecrypted: { Email: string, Flags: string, Password: string, UserId: string; } = Encryption.completeDecryption({
+			const CompleteDecrypted: { Email: string, Flags: string, Password: string, UserId: string; } = Encryption.CompleteDecryption({
 				...UserData,
 				Flags: UserData.Flags.toString()
 			});

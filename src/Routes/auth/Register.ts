@@ -130,7 +130,7 @@ export default class Register extends Route {
 
 		const UserObject = {
 			Avatar: '',
-			Email: Encryption.encrypt(CleanedEmail),
+			Email: Encryption.Encrypt(CleanedEmail),
 			Flags: '0',
 			GlobalNickname: '',
 			Guilds: [],
@@ -139,14 +139,14 @@ export default class Register extends Route {
 			PhoneNumber: '',
 			Tag,
 			TwoFaSecret: '',
-			UserId: Encryption.encrypt(this.App.Snowflake.Generate()),
-			Username: Encryption.encrypt(Username),
+			UserId: Encryption.Encrypt(this.App.Snowflake.Generate()),
+			Username: Encryption.Encrypt(Username),
 		};
 
-		const NewToken = Token.GenerateToken(Encryption.decrypt(UserObject.UserId));
+		const NewToken = Token.GenerateToken(Encryption.Decrypt(UserObject.UserId));
 
-		console.log(Encryption.decrypt(UserObject.UserId))
-		
+		console.log(Encryption.Decrypt(UserObject.UserId));
+
 		const SettingsObject: Settings = {
 			Language: 'en-US',
 			MaxFileUploadSize: Constants.Settings.Max.MaxFileSize,
@@ -159,9 +159,9 @@ export default class Register extends Route {
 			Tokens: [{
 				CreatedDate: new Date(),
 				Flags: 0,
-				Ip: Encryption.encrypt(Req.clientIp),
-				Token: Encryption.encrypt(NewToken),
-				TokenId: Encryption.encrypt(this.App.Snowflake.Generate()),
+				Ip: Encryption.Encrypt(Req.clientIp),
+				Token: Encryption.Encrypt(NewToken),
+				TokenId: Encryption.Encrypt(this.App.Snowflake.Generate()),
 			}],
 			UserId: UserObject.UserId,
 			Bio: '',
@@ -175,7 +175,7 @@ export default class Register extends Route {
 		Res.send({
 			Token: NewToken,
 			User: {
-				Id: Encryption.decrypt(UserObject.UserId),
+				Id: Encryption.Decrypt(UserObject.UserId),
 				Email: CleanedEmail,
 				Username,
 				Tag,
@@ -193,7 +193,7 @@ export default class Register extends Route {
 
 	private async FetchUser(Email: string): Promise<Users | null> {
 		const FetchedUser = await this.App.Cassandra.Models.User.get({
-			Email: Encryption.encrypt(Email)
+			Email: Encryption.Encrypt(Email)
 		}, { fields: ['email'] });
 
 		if (!FetchedUser) return null;
@@ -203,7 +203,7 @@ export default class Register extends Route {
 
 	private async FetchUsers(Username: string, Fields?: string[]): Promise<Users[] | null> {
 		const FetchedUsers = await this.App.Cassandra.Models.User.find({
-			Username: Encryption.encrypt(Username)
+			Username: Encryption.Encrypt(Username)
 		}, { fields: Fields ?? [] });
 
 		return FetchedUsers.toArray();
@@ -217,7 +217,7 @@ export default class Register extends Route {
 		} else if (Username) {
 			const FoundUsers = await this.App.Cassandra.Execute(
 				'SELECT COUNT(1) FROM users WHERE username = ?',
-				[Encryption.encrypt(Username)]
+				[Encryption.Encrypt(Username)]
 			);
 
 			const Value: number = FoundUsers?.first()?.get('count').toNumber() ?? 0;

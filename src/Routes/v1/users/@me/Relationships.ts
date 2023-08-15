@@ -163,13 +163,13 @@ export default class Friends extends Route {
 
 	private async FetchUser(UserId?: string, Email?: string): Promise<UserType | null> {
 		const FetchedUser = await this.App.Cassandra.Models.User.get({
-			...(UserId ? { UserId: Encryption.encrypt(UserId) } : {}),
-			...(Email ? { Email: Encryption.encrypt(Email) } : {}),
+			...(UserId ? { UserId: Encryption.Encrypt(UserId) } : {}),
+			...(Email ? { Email: Encryption.Encrypt(Email) } : {}),
 		});
 
 		if (!FetchedUser) return null;
 
-		return Encryption.completeDecryption({
+		return Encryption.CompleteDecryption({
 			...FetchedUser,
 			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
 		});
