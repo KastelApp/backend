@@ -176,6 +176,22 @@ const Flags = {
 	IncreasedMessageLength8k: 1n << 85n,
 };
 
+const PublicFlags: (keyof typeof Flags)[] = [
+	"StaffBadge",
+	"GhostBadge",
+	"SponsorBadge",
+	"DeveloperBadge",
+	"VerifiedBotDeveloperBadge",
+	"OriginalUserBadge",
+	"PartnerBadge",
+	"ModeratorBadge",
+	"MinorBugHunterBadge",
+	"IntermediateBugHunterBadge",
+	"MajorBugHunterBadge",
+	"VerifiedBot",
+	"Spammer"
+];
+
 const MixedPermissions = {
 	ManageMessages: 1n << 9n,
 	SendMessages: 1n << 10n,
@@ -243,6 +259,12 @@ const Snowflake = {
 	WorkerIdBytes: 12,
 };
 
+const PermissionOverrideTypes = {
+	Role: 1 << 0,
+	Member: 1 << 1,
+	Everyone: 1 << 2
+}
+
 export default {
 	Settings,
 	AllowedMentions,
@@ -261,7 +283,9 @@ export default {
 	ChannelPermissions,
 	VerificationFlags,
 	Snowflake,
+	PublicFlags,
 	GuildFeatures,
+	PermissionOverrideTypes
 };
 
 export {
@@ -282,5 +306,7 @@ export {
 	ChannelPermissions,
 	VerificationFlags,
 	Snowflake,
+	PublicFlags,
 	GuildFeatures,
+	PermissionOverrideTypes
 };

@@ -51,7 +51,10 @@ const ErrorGen = {
 	},
 	UnknownGuild: () => {
 		return new HTTPErrors(4_016);
-	}
+	},
+	FailedToCreateChannel: () => {
+		return new HTTPErrors(4_017);
+	},
 };
 
 export default ErrorGen;

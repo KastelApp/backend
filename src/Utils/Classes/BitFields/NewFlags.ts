@@ -81,6 +81,33 @@ class FlagUtilsBInt<
 	public removeString(bit: keyof (typeof this)['Flags']) {
 		return this.remove(this.Flags[bit] ?? 0n);
 	}
+	
+	
+	public get count() {
+		return this.toArray().length;
+	}
+	
+	public hasStringArray(bits: (keyof (typeof this)['Flags'])[]) {
+		return bits.every((bit) => this.hasString(bit));
+	}
+
+	public addString(bit: keyof (typeof this)['Flags']) {
+		return this.add(this.Flags[bit] ?? 0n);
+	}
+	
+	public get cleaned() {
+		return Object.keys(this.Flags).reduce<bigint>((bits: bigint, key) => {
+			let newBits = bits;
+			
+			if (this.has(this.Flags[key] ?? 0n)) newBits |= this.Flags[key] ?? 0n
+			
+			return newBits;
+		}, 0n);
+	}
+	
+	public hasOneArrayString(bits: (keyof (typeof this)['Flags'])[]) {
+		return bits.some((bit) => this.hasString(bit));
+	}
 }
 
 class FlagUtils<
@@ -152,6 +179,32 @@ class FlagUtils<
 
 	public removeString(bit: keyof (typeof this)['Flags']) {
 		return this.remove(this.Flags[bit] ?? 0);
+	}
+	
+	public get count() {
+		return this.toArray().length;
+	}
+	
+	public hasStringArray(bits: (keyof (typeof this)['Flags'])[]) {
+		return bits.every((bit) => this.hasString(bit));
+	}
+
+	public addString(bit: keyof (typeof this)['Flags']) {
+		return this.add(this.Flags[bit] ?? 0);
+	}
+	
+	public get cleaned() {
+		return Object.keys(this.Flags).reduce<number>((bits: number, key) => {
+			let newBits = bits;
+			
+			if (this.has(this.Flags[key] ?? 0)) newBits |= this.Flags[key] ?? 0
+			
+			return newBits;
+		}, 0);
+	}
+	
+	public hasOneArrayString(bits: (keyof (typeof this)['Flags'])[]) {
+		return bits.some((bit) => this.hasString(bit));
 	}
 }
 
