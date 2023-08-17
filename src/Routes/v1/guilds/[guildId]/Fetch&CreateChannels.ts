@@ -310,14 +310,14 @@ export default class Channels extends Route {
             PermissionsOverrides: CorrectPermissionOverrides,
             Position: Position ?? 0,
             Slowmode: Slowmode ?? 0,
-            Type: ChannelFlags.cleaned
+            Type: ChannelFlags.cleaned,
+            AllowedMentions: 0
         };
 
         const InsertChannel = {
             ...BuiltChannel,
             PermissionsOverrides: BuiltChannel.PermissionsOverrides.map((override) => override.PermissionId),
             GuildId: Encryption.Encrypt(Req.params.guildId),
-            AllowedMentions: 0,
             ChannelId: Encryption.Encrypt(ChannelId)
         };
 
