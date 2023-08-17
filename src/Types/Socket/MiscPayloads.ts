@@ -5,11 +5,11 @@ export interface AuthedPayload {
 		HeartbeatInterval: number | null;
 		SessionId: string;
 	};
-	s: number;
+	S: number;
 }
 
 export interface NormalPayload {
-	d?: any;
-	op: number; // data
-	s?: number; // sequence
+	D?: any;
+	Op: number; // data
+	S?: number; // sequence
 }

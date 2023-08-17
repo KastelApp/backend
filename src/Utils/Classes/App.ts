@@ -298,9 +298,15 @@ class App {
 					Route.route,
 					...Route.default.Middleware,
 					(req: Request, res: Response) => {
+						this.Logger.verbose(`Request for ${req.path} (${req.method}) ${req?.user?.Id ? `from ${req.user.Id}` : 'from a logged out user.'}`);
+
 						const ContentType = req.headers['content-type'] ?? '';
 
-						res.on('finish', () => Route.default.Finish(res, res.statusCode, new Date()));
+						res.on('finish', () => {
+							this.Logger.verbose(`Request for ${req.path} (${req.method}) ${req?.user?.Id ? `from ${req.user.Id}` : 'from a logged out user.'} finished with status code ${res.statusCode}`);
+							
+							Route.default.Finish(res, res.statusCode, new Date())
+						});
 
 						if (
 							Route.default.AllowedContentTypes.length > 0 &&

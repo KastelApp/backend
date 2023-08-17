@@ -42,7 +42,6 @@ class FlagFields {
 		return Object.keys(Flags).reduce<Record<keyof typeof Flags, boolean>>((obj, key) => {
 			obj[key as keyof typeof Flags] = this.has(Flags[key as keyof typeof Flags]);
 			return obj;
-			// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter -- I got no other ideas how to fix this
 			// @ts-expect-error -- not sure how to fix this :/
 		}, {});
 	}
@@ -55,17 +54,40 @@ class FlagFields {
 	}
 
 	public hasString(bit: keyof typeof Flags) {
-		return this.has(Flags[bit as keyof typeof Flags]);
+		return this.has(Flags[bit] ?? 0n);
 	}
 
 	public removeString(bit: keyof typeof Flags) {
-		return this.remove(Flags[bit]);
+		return this.remove(Flags[bit] ?? 0n);
+	}
+	
+	
+	public get count() {
+		return this.toArray().length;
+	}
+	
+	public hasStringArray(bits: (keyof typeof Flags)[]) {
+		return bits.every((bit) => this.hasString(bit));
 	}
 
 	public addString(bit: keyof typeof Flags) {
-		return this.add(Flags[bit]);
+		return this.add(Flags[bit] ?? 0n);
 	}
-
+	
+	public get cleaned() {
+		return Object.keys(Flags).reduce<bigint>((bits: bigint, key) => {
+			let newBits = bits;
+			
+			if (this.has(Flags[key as keyof typeof Flags] ?? 0n)) newBits |= Flags[key as keyof typeof Flags] ?? 0n
+			
+			return newBits;
+		}, 0n);
+	}
+	
+	public hasOneArrayString(bits: (keyof typeof Flags)[]) {
+		return bits.some((bit) => this.hasString(bit));
+	}
+	
 	public static deserialize(bits: bigint): FlagFields {
 		return new FlagFields(Number(bits));
 	}
@@ -91,7 +113,7 @@ class FlagFields {
 	public static RemovePrivateFlags(flags: bigint): bigint {
 		return flags & ((1n << 25n) - 1n);
 	}
-
+	
 	public toString() {
 		return String(this.bits);
 	}
