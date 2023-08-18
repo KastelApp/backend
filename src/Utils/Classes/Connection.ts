@@ -25,6 +25,10 @@ class Connection extends EventEmitter {
 
     public Mapper: mapping.Mapper;
 
+    private readonly NetworkTopologyStrategy: {
+		[DataCenter: string]: number;
+	}
+    
     public Models: {
         Ban: cassandra.mapping.ModelMapper<Ban>;
         Bot: cassandra.mapping.ModelMapper<Bot>;
@@ -47,19 +51,25 @@ class Connection extends EventEmitter {
     };
 
     public UnderScoreCqlToPascalCaseMappings: mapping.UnderscoreCqlToPascalCaseMappings = new mapping.UnderscoreCqlToPascalCaseMappings(true);
+    
+    public DurableWrites: boolean;
 
     public constructor(
         nodes: string[],
         username: string,
         password: string,
         keyspace: string,
+        networkTopologyStrategy: {
+            [DataCenter: string]: number;
+        },
+        durableWrites: boolean,
         options: Omit<ClientOptions, 'credentials' | 'keyspace'> = {},
     ) {
         super();
 
         this.Client = new cassandra.Client({
             contactPoints: nodes,
-            localDataCenter: 'datacenter1',
+            localDataCenter: Object.keys(networkTopologyStrategy)?.[0] ?? 'datacenter1',
             credentials: {
                 username,
                 password,
@@ -70,6 +80,10 @@ class Connection extends EventEmitter {
         this.KeySpace = keyspace;
 
         this.Connected = false;
+        
+        this.NetworkTopologyStrategy = networkTopologyStrategy
+        
+        this.DurableWrites = durableWrites;
 
         this.MappingOptions = {
             models: {
@@ -132,7 +146,19 @@ class Connection extends EventEmitter {
 
             this.Connected = true;
 
-            await this.Execute(`CREATE KEYSPACE IF NOT EXISTS ${this.KeySpace} WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };`);
+            let CreateKeySpace =  `CREATE KEYSPACE IF NOT EXISTS ${this.KeySpace}`
+            
+            if (this.NetworkTopologyStrategy) {
+                CreateKeySpace += ` WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', ${Object.entries(this.NetworkTopologyStrategy).map(([DataCenter, ReplicationFactor]) => `'${DataCenter}' : ${ReplicationFactor}`).join(', ')} }`
+            } else {
+                CreateKeySpace += ` WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }`
+            }
+            
+            CreateKeySpace += ` AND DURABLE_WRITES = ${this.DurableWrites};`
+            
+            await this.Execute(CreateKeySpace).catch((error) => {
+                this.emit('Error', error);
+            });
 
             await this.Execute(`USE ${this.KeySpace};`);
 

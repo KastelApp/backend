@@ -107,7 +107,7 @@ class App {
 			AllowForDangerousCommands: true,
 		});
 
-		this.Cassandra = new Connection(Config.ScyllaDB.Nodes, Config.ScyllaDB.Username, Config.ScyllaDB.Password, Config.ScyllaDB.Keyspace);
+		this.Cassandra = new Connection(Config.ScyllaDB.Nodes, Config.ScyllaDB.Username, Config.ScyllaDB.Password, Config.ScyllaDB.Keyspace, Config.ScyllaDB.NetworkTopologyStrategy, Config.ScyllaDB.DurableWrites, Config.ScyllaDB.CassandraOptions);
 
 		this.Turnstile = new Turnstile(Config.Server.CaptchaEnabled, Config.Server.TurnstileSecret ?? 'secret');
 
@@ -141,7 +141,7 @@ class App {
 		this.Cassandra.on('Error', (err) => {
 			this.Logger.fatal(err);
 
-			process.exit(1);
+			// process.exit(1);
 		});
 
 		await Promise.all([
