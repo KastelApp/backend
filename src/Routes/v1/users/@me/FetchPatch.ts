@@ -21,7 +21,7 @@ import Route from '../../../../Utils/Classes/Route.js';
 import type { User as UserType } from '../../../../Utils/Cql/Types/index.js';
 import { TagValidator } from '../../../../Utils/TagGenerator.js';
 
-interface EditableSchema {
+interface EditableUser {
 	AFlags: number;
 	Avatar: string;
 	Bio: string;
@@ -40,7 +40,7 @@ interface EditableSchema {
 	Username: string;
 }
 
-type SchemaUser = Omit<EditableSchema, 'AFlags' | 'Bio' | 'NewPassword' | 'RFlags'>;
+type SchemaUser = Omit<EditableUser, 'AFlags' | 'Bio' | 'NewPassword' | 'RFlags'>;
 
 interface UserObject {
 	Avatar: string | null;
@@ -77,7 +77,7 @@ export default class FetchPatchUser extends Route {
 
 	private readonly BotCantEdit: (keyof UpdateUserBody)[];
 
-	private readonly Editable: (keyof EditableSchema)[];
+	private readonly Editable: (keyof EditableUser)[];
 
 	public constructor(App: App) {
 		super(App);
@@ -223,7 +223,7 @@ export default class FetchPatchUser extends Route {
 
 		const FilteredItems = Object.entries(Req.body)
 			.filter(([key]) => {
-				return this.Editable.includes(key as keyof EditableSchema);
+				return this.Editable.includes(key as keyof EditableUser);
 			})
 			.reduce<{ [key: string]: number | string | null; }>((prev, [key, value]) => {
 				if (!['string', 'number'].includes(typeof value)) prev[key as string] = null;
