@@ -316,7 +316,7 @@ class Logger {
 			} else {
 				const Strongified = JSON.stringify(msg, null, 2);
 
-				for (const line of Strongified.split('\n')) {
+				for (const line of (Strongified?.split('\n') ?? [])) {
 					Messages.push(`${Message} ${line}`);
 				}
 			}
