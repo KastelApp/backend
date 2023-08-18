@@ -141,9 +141,12 @@ class App {
 		this.Cassandra.on('Error', (err) => {
 			this.Logger.fatal(err);
 
-			// process.exit(1);
+			process.exit(1);
 		});
 
+		this.Logger.info('Connecting to ScyllaDB');
+		this.Logger.warn('IT IS NOT FROZEN, ScyllaDB may take a while to connect')
+		
 		await Promise.all([
 			this.SystemSocket.Connect(),
 			this.Cassandra.Connect(),
@@ -151,7 +154,8 @@ class App {
 		]);
 
 		this.Logger.info('Creating ScyllaDB Tables.. This may take a while..');
-
+		this.Logger.warn('IT IS NOT FROZEN, ScyllaDB may take a while to create the tables')
+		
 		const TablesCreated = await this.Cassandra.CreateTables();
 
 		if (TablesCreated) {
