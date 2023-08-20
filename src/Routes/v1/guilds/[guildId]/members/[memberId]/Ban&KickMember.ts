@@ -10,23 +10,30 @@
  */
 
 import type { Request, Response } from 'express';
+import User from '../../../../../../Middleware/User.js';
 import type App from '../../../../../../Utils/Classes/App';
 import Route from '../../../../../../Utils/Classes/Route.js';
 
-export default class Main extends Route {
+export default class BanAndKickMember extends Route {
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ['GET'];
+		this.Methods = ['PUT'];
 
-		this.Middleware = [];
+		this.Middleware = [
+			User({
+				AccessType: 'LoggedIn',
+				AllowedRequesters: 'User',
+				App
+			})
+		];
 
 		this.AllowedContentTypes = [];
 
-		this.Routes = ['/'];
+		this.Routes = ['/ban', '/kick'];
 	}
 
 	public override Request(_: Request, Res: Response): void {
-		Res.send('ok')
+		Res.send('ok');
 	}
 }

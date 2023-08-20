@@ -10,15 +10,15 @@
  */
 
 import type { Request, Response } from 'express';
-import User from '../../../../Middleware/User.js';
-import type App from '../../../../Utils/Classes/App';
-import Route from '../../../../Utils/Classes/Route.js';
+import User from '../../../../../../Middleware/User.js';
+import type App from '../../../../../../Utils/Classes/App.js';
+import Route from '../../../../../../Utils/Classes/Route.js';
 
-export default class FetchAndUpdateGuild extends Route {
+export default class FetchAndPatchMember extends Route {
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ['GET', 'POST'];
+		this.Methods = ['GET', 'PATCH'];
 
 		this.Middleware = [
 			User({

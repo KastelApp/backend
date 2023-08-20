@@ -779,17 +779,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kastelll/core@npm:^0.3.0":
-  version: 0.3.0
-  resolution: "@kastelll/core@npm:0.3.0"
-  dependencies:
-    "@kastelll/internal": latest
-    express: ^4.18.2
-    ws: ^8.13.0
-  checksum: 6ecdbea2be8c7458b12c579864bdb1ce5c8cc3fdbc9b4d660cf441d5b619535f47eae8493f13fdd38f66ca3350c2e8c02df7a0714138d5bfbcae6ff746adbe41
-  languageName: node
-  linkType: hard
-
 "@kastelll/internal@latest":
   version: 0.1.1
   resolution: "@kastelll/internal@npm:0.1.1"
@@ -5635,7 +5624,6 @@ __metadata:
     "@commitlint/cli": ^17.7.1
     "@commitlint/config-angular": ^17.7.0
     "@kastelll/cassandra-driver": ^4.6.15
-    "@kastelll/core": ^0.3.0
     "@kastelll/util": ^0.2.3
     "@mapbox/node-pre-gyp": ^1.0.11
     "@sentry/node": ^7.64.0
