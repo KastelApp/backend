@@ -26,7 +26,7 @@ interface NewGuildBody {
     Name: string;
 }
 
-type Includeable = 'channels' | 'cowners' | 'owner' | 'roles';
+type Includeable = 'cowners' | 'owner' | 'roles';
 
 interface UserType {
     Avatar: string | null;

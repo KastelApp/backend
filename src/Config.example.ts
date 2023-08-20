@@ -68,7 +68,9 @@ const ScyllaDB: ScyllaDBConfigType = {
 	Keyspace: 'kstl',
 	Username: '',
 	Password: '',
-	CassandraOptions: {}
+	CassandraOptions: {},
+	DurableWrites: true,
+	NetworkTopologyStrategy: {}
 };
 
 const MailServer: MailServerConfigType = {
