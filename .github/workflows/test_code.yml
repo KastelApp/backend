@@ -18,14 +18,23 @@ jobs:
       with:
         node-version: 20
 
-    - name: Enable Corepack & Install stable yarn
-      run: corepack enable && yarn set version stable && npm i -g typescript
-
+    - name: Corepack Enable
+      run: corepack enable
+      
+    - name: Yarn Stable
+      run: yarn set version stable
+      
+    - name: Install TypeScript
+      run: npm i -g typescript
+        
     - name: Install dependencies
       run: yarn install
       
     - name: Copy Configs
       run: cp src/Constants.example.ts src/Constants.ts && cp src/Config.example.ts src/Config.ts
+      
+    - name: Version Outputs
+      run: "echo \"TypeScript Version: $(tsc -v) | Yarn Version: $(yarn -v) | Node Version: $(node -v)\""
       
     - name: Build TypeScript
       run: tsc -p . --noEmit
