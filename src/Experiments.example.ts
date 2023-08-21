@@ -1,4 +1,4 @@
-import type { Flags } from "./Constants";
+import type { PrivateFlags } from "./Constants";
 
 // Experiment Naming System: YYYY-MM-DD-<name_here> so for example "2023-08-12-voice_channel_release"
 
@@ -13,7 +13,7 @@ interface Treatment {
 		Priority: number;
 		ReleasePercentage: number;
 		RequiredFeatures: string[];
-		RequiredFlags: (keyof typeof Flags)[] | null;
+		RequiredFlags: (keyof typeof PrivateFlags)[] | null;
 	},
 	Description: string;
 	Treatment: string;

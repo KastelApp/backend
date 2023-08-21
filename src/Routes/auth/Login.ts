@@ -110,12 +110,12 @@ export default class Login extends Route {
 			return;
 		}
 
-		const UserFlags = new FlagFields(FetchedUser.Flags);
+		const UserFlags = new FlagFields(FetchedUser.Flags, FetchedUser.PublicFlags);
 
 		if (
-			UserFlags.hasString('AccountDeleted') ||
-			UserFlags.hasString('WaitingOnDisableDataUpdate') ||
-			UserFlags.hasString('WaitingOnAccountDeletion')
+			UserFlags.has('AccountDeleted') ||
+			UserFlags.has('WaitingOnDisableDataUpdate') ||
+			UserFlags.has('WaitingOnAccountDeletion')
 		) {
 			const Error = ErrorGen.AccountNotAvailable();
 
@@ -131,7 +131,7 @@ export default class Login extends Route {
 			return;
 		}
 
-		if (UserFlags.hasString('Terminated') || UserFlags.hasString('Disabled')) {
+		if (UserFlags.has('Terminated') || UserFlags.has('Disabled')) {
 			const Error = ErrorGen.AccountNotAvailable();
 
 			Error.AddError({

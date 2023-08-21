@@ -7,7 +7,7 @@ logs/
 npm-debug.log*
 
 # Runtime data
-pids
+pids/
 *.pid
 *.seed
 
@@ -15,10 +15,10 @@ pids
 Constants.ts
 Config.ts
 
-# Dist
+# Distribution
 dist/
 
-# Miscellaneous
+# Temporary files
 .tmp/
 .vscode/*
 !.vscode/extensions.json
@@ -28,17 +28,19 @@ dist/
 .npmrc
 tsconfig.tsbuildinfo
 scripts/
+bin/
+
 # Developer Tests
 dtests/
 
-# yarn
+# Yarn
 .pnp.*
-.yarn/*
+.yarn/
 
 # Cache
 .prettiercache
 .eslintcache
 
 # Old Stuff
-oldApiRoutes
-old
+oldApiRoutes/
+old/

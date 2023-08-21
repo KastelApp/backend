@@ -21,6 +21,7 @@ import Route from '../../Utils/Classes/Route.js';
 import Token from '../../Utils/Classes/Token.js';
 import type Settings from '../../Utils/Cql/Types/Settings.js';
 import type Users from '../../Utils/Cql/Types/User.js';
+import type { User as UserType } from '../../Utils/Cql/Types/index.js';
 import TagGenerator from '../../Utils/TagGenerator.js';
 
 interface RegisterBody {
@@ -128,9 +129,10 @@ export default class Register extends Route {
 
 		const Tag = await this.GenerateTag(undefined, FetchedUsers ?? []);
 
-		const UserObject = {
+		const UserObject: UserType = {
 			Avatar: '',
 			Email: Encryption.Encrypt(CleanedEmail),
+			PublicFlags: '0',
 			Flags: '0',
 			GlobalNickname: '',
 			Guilds: [],

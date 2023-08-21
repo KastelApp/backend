@@ -61,7 +61,7 @@ export default class DisableDelete extends Route {
 			return;
 		}
 
-		const FetchedUser = await this.FetchUser(Req.user.Id, ['password', 'flags']);
+		const FetchedUser = await this.FetchUser(Req.user.Id, ['password', 'flags', 'public_flags']);
 
 		if (!FetchedUser) {
 			Res.status(500).send('Internal Server Error :(');
@@ -87,16 +87,17 @@ export default class DisableDelete extends Route {
 			Tokens: []
 		});
 
-		const Flags = new FlagFields(FetchedUser.Flags);
+		const Flags = new FlagFields(FetchedUser.Flags, FetchedUser.PublicFlags);
 
-		Flags.addString(
+		Flags.PrivateFlags.add(
 			Req.path.endsWith('/delete')
 				? 'WaitingOnAccountDeletion'
 				: Req.path.endsWith('/disable')
 					? 'WaitingOnDisableDataUpdate'
 					: 'Disabled',
 		);
-		Flags.addString('Disabled');
+
+		Flags.PrivateFlags.add('Disabled');
 
 		this.App.Logger.debug(
 			`😭 someone is ${Req.path.endsWith('/delete') ? 'Deleting' : Req.path.endsWith('/disable') ? 'Disabling' : `Idk lol ${Req.path}`
@@ -105,7 +106,7 @@ export default class DisableDelete extends Route {
 
 		await this.App.Cassandra.Models.User.update({
 			UserId: Encryption.Encrypt(FetchedUser.UserId),
-			Flags: Flags.toString(),
+			Flags: String(Flags.PrivateFlags.bits),
 		});
 
 		Res.send('See you next time!');

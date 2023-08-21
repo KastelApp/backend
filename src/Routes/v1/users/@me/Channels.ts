@@ -12,8 +12,6 @@
 import type { Request, Response } from 'express';
 import User from '../../../../Middleware/User.js';
 import type App from '../../../../Utils/Classes/App';
-import Encryption from '../../../../Utils/Classes/Encryption.js';
-import ErrorGen from '../../../../Utils/Classes/ErrorGen.js';
 import Route from '../../../../Utils/Classes/Route.js';
 
 interface CreateChannelBody {
@@ -78,15 +76,13 @@ export default class Channels extends Route {
 		}
 	}
 
-	private async GetChannels(Req: Request<{ channelId?: string; }>, Res: Response) { }
+	private async GetChannels(_: Request<{ channelId?: string; }>, __: Response) { }
 
-	private async CreateDm(Req: Request<any, any, CreateChannelBody>, Res: Response) {
+	private async CreateDm(Req: Request<any, any, CreateChannelBody>, _: Response) {
 		const { Flags, Recipients } = Req.body;
 
 		this.App.Logger.debug(`Flags: ${Flags}, Recipients: ${Recipients?.join(', ')}`);
 	}
 
-	private async DeleteDm(Req: Request<{ channelId?: string; }>, Res: Response) { }
-
-	private async GetAllChannels(UserId: string) { }
+	private async DeleteDm(_: Request<{ channelId?: string; }>, __: Response) { }
 }

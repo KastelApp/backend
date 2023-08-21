@@ -12,7 +12,7 @@
 import type { Request, Response } from 'express';
 import User from '../../../../Middleware/User.js';
 import type App from '../../../../Utils/Classes/App.js';
-import FlagRemover from '../../../../Utils/Classes/BitFields/FlagRemover.js';
+import FlagFields from '../../../../Utils/Classes/BitFields/Flags.js';
 import Encryption from '../../../../Utils/Classes/Encryption.js';
 import ErrorGen from '../../../../Utils/Classes/ErrorGen.js';
 import Route from '../../../../Utils/Classes/Route.js';
@@ -21,6 +21,7 @@ import type { User as UserType } from '../../../../Utils/Cql/Types/index.js';
 interface UserObject {
 	Avatar: string | null;
 	Bio?: string;
+	Flags: number;
 	GlobalNickname: string | null;
 	Id: string;
 	PublicFlags: number;
@@ -70,13 +71,16 @@ export default class FetchPatchUser extends Route {
 
 		const SplitInclude = String(include).split(',');
 
+		const FlagUtils = new FlagFields(FetchedUser.Flags, FetchedUser.PublicFlags);
+
 		const UserObject: UserObject = {
 			Id: FetchedUser.UserId,
 			Username: FetchedUser.Username,
 			GlobalNickname: FetchedUser.GlobalNickname.length === 0 ? null : FetchedUser.GlobalNickname,
 			Tag: FetchedUser.Tag,
 			Avatar: FetchedUser.Avatar.length === 0 ? null : FetchedUser.Avatar,
-			PublicFlags: Number(FlagRemover.RemovePrivateNormalFlags(BigInt(FetchedUser.Flags))),
+			PublicFlags: Number(FlagUtils.PublicFlags.cleaned),
+			Flags: Number(FlagUtils.PublicPrivateFlags)
 		};
 
 		if (SplitInclude.includes('bio') && !Req.user.Bot) {

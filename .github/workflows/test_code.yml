@@ -1,0 +1,31 @@
+name: Build TypeScript
+
+on:
+  pull_request:
+    branches:
+      - development
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: 20
+
+    - name: Enable Corepack & Install stable yarn
+      run: corepack enable && yarn set version stable && npm i -g typescript
+
+    - name: Install dependencies
+      run: yarn install
+      
+    - name: Copy Configs
+      run: cp src/Constants.example.ts src/Constants.ts && cp src/Config.example.ts src/Config.ts
+      
+    - name: Build TypeScript
+      run: tsc -p . --noEmit

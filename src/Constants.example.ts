@@ -19,7 +19,7 @@ const Settings = {
 		ChannelCount: 250,
 		RoleCount: 250,
 		InviteCount: 500,
-		BanCount: Number.POSITIVE_INFINITY,
+		BanCount: 5_000, // ikik, 5k bans isn't much but its only temp, Nobody should hit this limit in beta
 		FriendCount: 100,
 		MemberCount: 500,
 		// The max amount of usernames, lets say the name is "cat" there can be 9999 accounts then once we
@@ -31,10 +31,7 @@ const Settings = {
 		MessageLength: 1_000, // The max amount of characters in a message
 		MaxFileSize: 12 * 1_024 * 1_024, // 8MB
 	},
-	Min: {
-		UsernameLength: 2,
-		GuildNameLength: 2,
-	},
+	Min: {},
 	Captcha: {
 		// The routes that have captcha (If you want them to have captcha)
 		Login: false,
@@ -53,9 +50,7 @@ const Settings = {
 		],
 		Guilds: [],
 		Channels: [],
-		Global: [
-			/\b(?:kastel|discord|kastelapp\.com|discordapp\.com)\b/gi, // Blocks Discord & Kastel Stuff (just so people don't try to use it)
-		],
+		Global: [],
 	},
 };
 
@@ -64,21 +59,31 @@ const Settings = {
 const GuildFeatures = [{
 	Name: 'Partnered',
 	Deprecated: false, // deprecated means it will be removed in the future
-	Default: false, // If servers are given this by default on guild creation
+	Default: false, // If guilds are given this by default on guild creation
 	Settable: false, // if a user can set it themselves
 	NewDefault: false // If its a "new default" this means if we lets say fetch a guild we need to add this
 }, {
-	Name: 'Verified',
+	Name: 'Verified', // Ran by an official company / person
 	Deprecated: false,
 	Enabled: false,
 	Settable: false,
 	NewDefault: false
 }, {
-	Name: 'Official',
+	Name: 'Official', // Ran by Kastel themselves (Think the Kastel Developers guild)
 	Deprecated: false,
 	Enabled: false,
 	Settable: false,
 	NewDefault: false
+}, {
+	Name: 'Maintenance', // Disallows anyone without ManageGuild to view the guild / access it
+	Deprecated: false,
+	Enabled: true,
+	Settable: true,
+}, {
+	Name: 'InternalStaffGuild', // Staff only, for internal use (This is where Community Announcements will be made and some other stuff)
+	Deprecated: false,
+	Enabled: false,
+	Settable: false,
 }] as const;
 
 const AllowedMentions: {
@@ -95,13 +100,6 @@ const AllowedMentions: {
 };
 
 AllowedMentions.All = AllowedMentions.Everyone | AllowedMentions.Here | AllowedMentions.Roles | AllowedMentions.Users;
-
-const GuildFlags = {
-	Verified: 1 << 0,
-	Partnered: 1 << 1,
-	Official: 1 << 2,
-	NoOwner: 1 << 10,
-};
 
 const GuildMemberFlags = {
 	Left: 1 << 0,
@@ -134,9 +132,11 @@ const MessageFlags = {
 	System: 1 << 0,
 	Normal: 1 << 1,
 	Reply: 1 << 2,
+	Deleted: 1 << 3, // NOTE: this is only used when the message has the reported flag
+	Reported: 1 << 4, // Note: this is private to the users (they won't receive the flag)
 };
 
-const Flags = {
+const PublicFlags = {
 	StaffBadge: 1n << 0n,
 	GhostBadge: 1n << 1n,
 	SponsorBadge: 1n << 2n,
@@ -148,49 +148,37 @@ const Flags = {
 	MinorBugHunterBadge: 1n << 8n,
 	IntermediateBugHunterBadge: 1n << 9n,
 	MajorBugHunterBadge: 1n << 10n,
-	Ghost: 1n << 25n,
-	System: 1n << 26n,
-	Staff: 1n << 27n,
-	BetaTester: 1n << 28n,
-	Bot: 1n << 29n,
-	VerifiedBot: 1n << 30n,
-	Spammer: 1n << 31n,
-	Tos: 1n << 32n,
-	GuildBan: 1n << 33n,
-	FriendBan: 1n << 34n,
-	GroupchatBan: 1n << 35n,
-	WaitingOnAccountDeletion: 1n << 36n,
-	WaitingOnDisableDataUpdate: 1n << 37n,
-	AccountDeleted: 1n << 38n,
-	EmailVerified: 1n << 39n,
-	Disabled: 1n << 40n,
-	Terminated: 1n << 41n,
-	TwoFaEnabled: 1n << 42n,
-	TwoFaVerified: 1n << 43n,
-	// Temp Increased Values (Testing)
-	IncreasedGuildCount100: 1n << 80n,
-	IncreasedGuildCount200: 1n << 81n,
-	IncreasedGuildCount500: 1n << 82n,
-	IncreasedMessageLength2k: 1n << 83n,
-	IncreasedMessageLength4k: 1n << 84n,
-	IncreasedMessageLength8k: 1n << 85n,
-};
+}
 
-const PublicFlags: (keyof typeof Flags)[] = [
-	"StaffBadge",
-	"GhostBadge",
-	"SponsorBadge",
-	"DeveloperBadge",
-	"VerifiedBotDeveloperBadge",
-	"OriginalUserBadge",
-	"PartnerBadge",
-	"ModeratorBadge",
-	"MinorBugHunterBadge",
-	"IntermediateBugHunterBadge",
-	"MajorBugHunterBadge",
-	"VerifiedBot",
-	"Spammer"
-];
+const PrivateFlags = {
+	Ghost: 1n << 0n,
+	System: 1n << 1n,
+	Staff: 1n << 2n,
+	BetaTester: 1n << 3n,
+	Bot: 1n << 4n,
+	VerifiedBot: 1n << 5n,
+	Spammer: 1n << 6n,
+	Tos: 1n << 7n,
+	GuildBan: 1n << 8n,
+	FriendBan: 1n << 9n,
+	GroupchatBan: 1n << 10n,
+	WaitingOnAccountDeletion: 1n << 11n,
+	WaitingOnDisableDataUpdate: 1n << 12n,
+	AccountDeleted: 1n << 13n,
+	EmailVerified: 1n << 14n,
+	Disabled: 1n << 15n,
+	Terminated: 1n << 16n,
+	TwoFaEnabled: 1n << 17n,
+	TwoFaVerified: 1n << 18n,
+	// Temp Increased Values (Testing)
+	IncreasedGuildCount100: 1n << 25n,
+	IncreasedGuildCount200: 1n << 26n,
+	IncreasedGuildCount500: 1n << 27n,
+	IncreasedMessageLength2k: 1n << 28n,
+	IncreasedMessageLength4k: 1n << 29n,
+	IncreasedMessageLength8k: 1n << 30n
+
+}
 
 const MixedPermissions = {
 	ManageMessages: 1n << 9n,
@@ -231,11 +219,12 @@ const Permissions = {
 };
 
 const RelationshipFlags = {
-	Blocked: 1 << 0,
-	FriendRequest: 1 << 1,
-	Friend: 1 << 2,
-	Denied: 1 << 3,
-	MutualFriend: 1 << 4,
+	None: 1 << 0,
+	Blocked: 1 << 1,
+	FriendRequest: 1 << 2,
+	Friend: 1 << 3,
+	Denied: 1 << 4,
+	MutualFriend: 1 << 5,
 };
 
 const AuditLogActions = {};
@@ -247,16 +236,16 @@ const Relative = {
 const VerificationFlags = {
 	VerifyEmail: 1 << 0,
 	ForgotPassword: 1 << 1,
-	ChangeEmail: 1 << 2,
+	ChangeEmail: 1 << 2
 };
 
 const Snowflake = {
-	Epoch: 1_641_016_800_000,
-	ProcessId: process.pid,
-	ProcessIdBytes: 1,
+	Epoch: 1_641_016_800_000n,
 	SequenceBytes: 6,
-	WorkerId: 5,
 	WorkerIdBytes: 12,
+	ProcessIdBytes: 1,
+	WorkerId: 5,
+	ProcessId: process.pid
 };
 
 const PermissionOverrideTypes = {
@@ -268,10 +257,9 @@ const PermissionOverrideTypes = {
 export default {
 	Settings,
 	AllowedMentions,
-	GuildFlags,
 	ChannelTypes,
 	Presence,
-	Flags,
+	PrivateFlags,
 	Permissions,
 	RelationshipFlags,
 	AuditLogActions,
@@ -291,10 +279,9 @@ export default {
 export {
 	Settings,
 	AllowedMentions,
-	GuildFlags,
 	ChannelTypes,
 	Presence,
-	Flags,
+	PrivateFlags,
 	Permissions,
 	RelationshipFlags,
 	AuditLogActions,

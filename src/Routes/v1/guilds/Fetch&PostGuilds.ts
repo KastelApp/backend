@@ -456,7 +456,7 @@ export default class Guilds extends Route {
         const FetchedUser = await this.App.Cassandra.Models.User.get({
             ...(UserId ? { UserId: Encryption.Encrypt(UserId) } : {}),
         }, {
-            fields: ['avatar', 'flags', 'global_nickname', 'user_id', 'tag', 'username']
+            fields: ['avatar', 'flags', 'global_nickname', 'user_id', 'tag', 'username', 'public_flags']
         });
 
         if (!FetchedUser) return null;
@@ -468,9 +468,9 @@ export default class Guilds extends Route {
     }
 
     private CheckGuildCount(User: ExpressUser, Count: number): boolean {
-        if (User.FlagsUtil.hasString('IncreasedGuildCount500')) return Count >= 500;
-        if (User.FlagsUtil.hasString('IncreasedGuildCount200')) return Count >= 200;
-        if (User.FlagsUtil.hasString('IncreasedGuildCount100')) return Count >= 100;
+        if (User.FlagsUtil.PrivateFlags.has('IncreasedGuildCount500')) return Count >= 500;
+        if (User.FlagsUtil.PrivateFlags.has('IncreasedGuildCount200')) return Count >= 200;
+        if (User.FlagsUtil.PrivateFlags.has('IncreasedGuildCount100')) return Count >= 100;
 
         return Count >= this.App.Constants.Settings.Max.GuildCount;
     }

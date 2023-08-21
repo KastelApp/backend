@@ -36,19 +36,29 @@ class FlagUtilsBInt<
 		this.Flags = flags;
 	}
 
-	public has(bit: bigint) {
-		return (this.bits & bit) === bit;
+	public has(bit: bigint | number | keyof (typeof this['Flags'])) {
+		const Bits = typeof bit === 'string' ? this.Flags[bit] ?? 0n : BigInt(bit as number);
+
+		return (this.bits & Bits) === Bits;
 	}
 
-	public add(bit: bigint): this {
-		if (this.has(bit)) return this;
-		this.bits |= bit;
+	public add(bit: bigint | number | keyof (typeof this['Flags'])): this {
+		const Bits = typeof bit === 'string' ? this.Flags[bit] ?? 0n : BigInt(bit as number);
+
+		if (this.has(Bits)) return this;
+
+		this.bits |= Bits;
+
 		return this;
 	}
 
-	public remove(bit: bigint): this {
-		if (!this.has(bit)) return this;
-		this.bits ^= bit;
+	public remove(bit: bigint | number | keyof (typeof this['Flags'])): this {
+		const Bits = typeof bit === 'string' ? this.Flags[bit] ?? 0n : BigInt(bit as number);
+
+		if (!this.has(Bits)) return this;
+
+		this.bits ^= Bits;
+
 		return this;
 	}
 
@@ -56,57 +66,46 @@ class FlagUtilsBInt<
 		return this.bits;
 	}
 
-	public toJSON() {
-		return Object.keys(this.Flags).reduce<Record<keyof (typeof this)['Flags'], boolean>>(
-			(obj, key: keyof (typeof this)['Flags']) => {
-				obj[key] = this.has(this.Flags[key] ?? 0n);
-				return obj;
-			},
-			// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter
-			{} as Record<keyof (typeof this)['Flags'], boolean>
-		);
+	public toArray(): (keyof typeof this['Flags'])[] {
+		return Object.entries(this.Flags)
+			.filter(([, value]) => this.has(value))
+			.map(([key]) => key) as (keyof typeof this['Flags'])[];
 	}
 
-	public toArray(): string[] {
-		return Object.keys(this.Flags).reduce<string[]>((arr, key) => {
-			if (this.has(this.Flags[key as keyof (typeof this)['Flags']] ?? 0n)) arr.push(key);
-			return arr;
-		}, []);
+	public toJSON(): Record<keyof typeof this['Flags'], boolean> {
+		return Object.fromEntries(Object.entries(this.Flags).map(([key, value]) => [key, this.has(value)])) as Record<keyof typeof this['Flags'], boolean>;
 	}
 
-	public hasString(bit: keyof (typeof this)['Flags']) {
-		return this.has(this.Flags[bit] ?? 0n);
+	public hasArray(bits: (keyof (typeof this['Flags']))[]) {
+		return bits.every((bit) => this.has(bit));
 	}
 
-	public removeString(bit: keyof (typeof this)['Flags']) {
-		return this.remove(this.Flags[bit] ?? 0n);
+	public hasOneArray(bits: (keyof (typeof this['Flags']))[]) {
+		return bits.some((bit) => this.has(bit));
 	}
 	
-	
-	public get count() {
-		return this.toArray().length;
-	}
-	
-	public hasStringArray(bits: (keyof (typeof this)['Flags'])[]) {
-		return bits.every((bit) => this.hasString(bit));
+	public clean(bits: (keyof (typeof this['Flags']))[]) {
+		let finishedBits = 0n;
+		
+		for (const bit of bits) {
+			if (this.has(bit)) finishedBits |= this.Flags[bit as any] ?? 0n;
+		}
+		
+		return finishedBits;
 	}
 
-	public addString(bit: keyof (typeof this)['Flags']) {
-		return this.add(this.Flags[bit] ?? 0n);
-	}
-	
 	public get cleaned() {
-		return Object.keys(this.Flags).reduce<bigint>((bits: bigint, key) => {
+		return Object.keys(this.Flags).reduce<bigint>((bits, key) => {
 			let newBits = bits;
-			
-			if (this.has(this.Flags[key] ?? 0n)) newBits |= this.Flags[key] ?? 0n
-			
+
+			if (this.has(this.Flags[key] ?? 0n)) newBits |= this.Flags[key] ?? 0n;
+
 			return newBits;
 		}, 0n);
 	}
-	
-	public hasOneArrayString(bits: (keyof (typeof this)['Flags'])[]) {
-		return bits.some((bit) => this.hasString(bit));
+
+	public get count() {
+		return this.toArray().length;
 	}
 }
 
@@ -136,19 +135,29 @@ class FlagUtils<
 		this.Flags = flags;
 	}
 
-	public has(bit: number) {
-		return (this.bits & bit) === bit;
+	public has(bit: bigint | number | keyof (typeof this['Flags'])) {
+		const Bits = typeof bit === 'string' ? this.Flags[bit] ?? 0 : Number(bit);
+
+		return (this.bits & Bits) === Bits;
 	}
 
-	public add(bit: number): this {
-		if (this.has(bit)) return this;
-		this.bits |= bit;
+	public add(bit: bigint | number | keyof (typeof this['Flags'])): this {
+		const Bits = typeof bit === 'string' ? this.Flags[bit] ?? 0 : Number(bit);
+
+		if (this.has(Bits)) return this;
+
+		this.bits |= Bits;
+
 		return this;
 	}
 
-	public remove(bit: number): this {
-		if (!this.has(bit)) return this;
-		this.bits ^= bit;
+	public remove(bit: bigint | number | keyof (typeof this['Flags'])): this {
+		const Bits = typeof bit === 'string' ? this.Flags[bit] ?? 0 : Number(bit);
+
+		if (!this.has(Bits)) return this;
+
+		this.bits ^= Bits;
+
 		return this;
 	}
 
@@ -156,56 +165,47 @@ class FlagUtils<
 		return this.bits;
 	}
 
-	public toJSON() {
-		return Object.keys(this.Flags).reduce<Record<keyof (typeof this)['Flags'], boolean>>(
-			(obj, key: keyof (typeof this)['Flags']) => {
-				obj[key] = this.has(this.Flags[key] ?? 0);
-
-				return obj;
-				// eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter
-			}, {} as Record<keyof (typeof this)['Flags'], boolean>);
+	public toArray(): (keyof typeof this['Flags'])[] {
+		return Object.entries(this.Flags)
+			.filter(([, value]) => this.has(value))
+			.map(([key]) => key) as (keyof typeof this['Flags'])[];
 	}
 
-	public toArray(): string[] {
-		return Object.keys(this.Flags).reduce<string[]>((arr, key) => {
-			if (this.has(this.Flags[key as keyof (typeof this)['Flags']] ?? 0)) arr.push(key);
-			return arr;
-		}, []);
+	public toJSON(): Record<keyof typeof this['Flags'], boolean> {
+		return Object.fromEntries(Object.entries(this.Flags).map(([key, value]) => [key, this.has(value)])) as Record<keyof typeof this['Flags'], boolean>;
 	}
 
-	public hasString(bit: keyof (typeof this)['Flags']) {
-		return this.has(this.Flags[bit] ?? 0);
+	public hasOneArray(bits: (keyof (typeof this['Flags']))[]) {
+		return bits.some((bit) => this.has(bit));
 	}
 
-	public removeString(bit: keyof (typeof this)['Flags']) {
-		return this.remove(this.Flags[bit] ?? 0);
-	}
-	
-	public get count() {
-		return this.toArray().length;
-	}
-	
-	public hasStringArray(bits: (keyof (typeof this)['Flags'])[]) {
-		return bits.every((bit) => this.hasString(bit));
+	public hasArray(bits: (keyof (typeof this['Flags']))[]) {
+		return bits.every((bit) => this.has(bit));
 	}
 
-	public addString(bit: keyof (typeof this)['Flags']) {
-		return this.add(this.Flags[bit] ?? 0);
+	public clean(bits: (keyof (typeof this['Flags']))[]) {
+		let finishedBits = 0;
+		
+		for (const bit of bits) {
+			if (this.has(bit)) finishedBits |= this.Flags[bit as any] ?? 0;
+		}
+		
+		return finishedBits;
 	}
 	
 	public get cleaned() {
-		return Object.keys(this.Flags).reduce<number>((bits: number, key) => {
+		return Object.keys(this.Flags).reduce<number>((bits, key) => {
 			let newBits = bits;
-			
-			if (this.has(this.Flags[key] ?? 0)) newBits |= this.Flags[key] ?? 0
-			
+
+			if (this.has(this.Flags[key] ?? 0)) newBits |= this.Flags[key] ?? 0;
+
 			return newBits;
 		}, 0);
 	}
-	
-	public hasOneArrayString(bits: (keyof (typeof this)['Flags'])[]) {
-		return bits.some((bit) => this.hasString(bit));
-	}
+
+	public get count() {
+		return this.toArray().length;
+	}	
 }
 
 export default FlagUtilsBInt;

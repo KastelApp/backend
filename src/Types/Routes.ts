@@ -9,7 +9,7 @@
  * GPL 3.0 Licensed
  */
 
-import type { Flags } from '../Constants.js';
+import type { PrivateFlags } from '../Constants.js';
 import type App from '../Utils/Classes/App.js';
 
 export type Methods =
@@ -39,9 +39,9 @@ export interface UserMiddleware {
 	AllowedRequesters: 'All' | 'Bot' | 'User';
 	// The flags that are not allowed to access the endpoint (Default: null)
 	App: App,
-	DisallowedFlags?: (keyof typeof Flags)[];
+	DisallowedFlags?: (keyof typeof PrivateFlags)[];
 	// The type of user that can access the endpoint (Default: 'All')
-	Flags?: (keyof typeof Flags)[];
+	Flags?: (keyof typeof PrivateFlags)[];
 }
 
 interface RateLimitObjectItem {

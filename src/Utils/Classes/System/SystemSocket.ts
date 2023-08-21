@@ -71,7 +71,7 @@ class SystemSocket {
 			});
 
 			this.Ws.on('close', (code, reason) => {
-				this.App.Logger.warn('Disconnected from System Socket', reason.toString());
+				this.App.Logger.warn('Disconnected from System Socket', reason.toString(), code);
 
 				this.HandleDisconnect();
 			});

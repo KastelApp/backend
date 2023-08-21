@@ -55,6 +55,9 @@ const ErrorGen = {
 	FailedToCreateChannel: () => {
 		return new HTTPErrors(4_017);
 	},
+	MissingPermissions: () => {
+		return new HTTPErrors(4_018);
+	}
 };
 
 export default ErrorGen;

@@ -13,7 +13,6 @@ import { compareSync, hashSync } from 'bcrypt';
 import type { Request, Response } from 'express';
 import User from '../../../../Middleware/User.js';
 import type App from '../../../../Utils/Classes/App';
-import FlagRemover from '../../../../Utils/Classes/BitFields/FlagRemover.js';
 import FlagFields from '../../../../Utils/Classes/BitFields/Flags.js';
 import Encryption from '../../../../Utils/Classes/Encryption.js';
 import ErrorGen from '../../../../Utils/Classes/ErrorGen.js';
@@ -47,6 +46,7 @@ interface UserObject {
 	Bio?: string;
 	Email: string;
 	EmailVerified: boolean;
+	Flags: number;
 	GlobalNickname: string | null;
 	Id: string;
 	PhoneNumber: string | null;
@@ -194,7 +194,7 @@ export default class FetchPatchUser extends Route {
 		}
 
 		const FetchedUser = await this.FetchUser(Req.user.Id);
-		const ParsedFlags = new FlagFields(FetchedUser?.Flags ?? 0);
+		const ParsedFlags = new FlagFields(FetchedUser?.Flags ?? 0, FetchedUser?.PublicFlags ?? 0);
 
 		if (!FetchedUser) {
 			this.App.Logger.debug(`Couldn't fetch the user..? Id: ${Req.user.Id}, Email: ${Req.user.Email}`);
@@ -294,7 +294,7 @@ export default class FetchPatchUser extends Route {
 
 			// darkerink: Is there a better way to do this? yes, we could instead allow updating all flags but I would rather just support
 			// removing and adding flags here and there (RFlags = Remove Flags, AFlags = Add Flags)
-			if ((item === 'RFlags' || item === 'AFlags') && ParsedFlags.hasString('Staff')) {
+			if ((item === 'RFlags' || item === 'AFlags') && ParsedFlags.has('Staff')) {
 				const Flags = FilteredItems[item] as number;
 
 				this.App.Logger.warn(
@@ -303,15 +303,14 @@ export default class FetchPatchUser extends Route {
 				);
 
 				const FilteredFlagsParsed = new FlagFields(
-					FlagRemover.RemovePrivateNormalFlags(FlagRemover.InvalidFlagsRemover(BigInt(Flags))),
+					0n,
+					Flags
 				);
 
-				FilteredFlagsParsed.removeString('Staff'); // darkerink: We will not allow them to remove the staff flag, the staff badge is fine tho
+				if (item === 'RFlags') ParsedFlags.PublicFlags.remove(FilteredFlagsParsed.PublicFlags.cleaned);
+				if (item === 'AFlags') ParsedFlags.PublicFlags.add(FilteredFlagsParsed.PublicFlags.cleaned);
 
-				if (item === 'RFlags') ParsedFlags.remove(FilteredFlagsParsed.bits);
-				if (item === 'AFlags') ParsedFlags.add(FilteredFlagsParsed.bits);
-
-				FetchedUser.Flags = String(ParsedFlags.bits);
+				FetchedUser.PublicFlags = String(ParsedFlags.PublicFlags.cleaned);
 
 				continue;
 			}
@@ -332,11 +331,11 @@ export default class FetchPatchUser extends Route {
 		if (FilteredItems.Email) {
 			this.App.Logger.debug('Before', ParsedFlags.toArray());
 
-			ParsedFlags.removeString('EmailVerified');
+			ParsedFlags.PrivateFlags.remove('EmailVerified');
 
 			this.App.Logger.debug('After', ParsedFlags.toArray());
 
-			FetchedUser.Flags = String(ParsedFlags.bits);
+			FetchedUser.Flags = String(ParsedFlags.PrivateFlags.cleaned);
 
 			const FoundUser = await this.FetchUser(undefined, FilteredItems.Email);
 
@@ -391,15 +390,16 @@ export default class FetchPatchUser extends Route {
 		const UserObject: UserObject = {
 			Id: FetchedUser.UserId,
 			Email: FetchedUser.Email,
-			EmailVerified: ParsedFlags.hasString('EmailVerified'),
+			EmailVerified: ParsedFlags.has('EmailVerified'),
 			Username: FetchedUser.Username,
 			GlobalNickname: FetchedUser.GlobalNickname.length === 0 ? null : FetchedUser.GlobalNickname,
 			Tag: FetchedUser.Tag,
 			Avatar: FetchedUser.Avatar.length === 0 ? null : FetchedUser.Avatar,
-			PublicFlags: Number(FlagRemover.RemovePrivateNormalFlags(BigInt(FetchedUser.Flags))),
+			PublicFlags: Number(ParsedFlags.PublicFlags.cleaned),
+			Flags: Number(ParsedFlags.PublicPrivateFlags),
 			PhoneNumber: null,
-			TwoFaEnabled: ParsedFlags.hasString('TwoFaEnabled'),
-			TwoFaVerified: ParsedFlags.hasString('TwoFaVerified'),
+			TwoFaEnabled: ParsedFlags.has('TwoFaEnabled'),
+			TwoFaVerified: ParsedFlags.has('TwoFaVerified'),
 		};
 
 		if (FilteredItems.Bio) {
@@ -429,21 +429,22 @@ export default class FetchPatchUser extends Route {
 			return;
 		}
 
-		const Flags = new FlagFields(FetchedUser.Flags);
+		const Flags = new FlagFields(FetchedUser.Flags, FetchedUser.PublicFlags);
 		const SplitInclude = String(include).split(',');
 
 		const UserObject: UserObject = {
 			Id: FetchedUser.UserId,
 			Email: FetchedUser.Email,
-			EmailVerified: Flags.hasString('EmailVerified'),
+			EmailVerified: Flags.has('EmailVerified'),
 			Username: FetchedUser.Username,
 			GlobalNickname: FetchedUser.GlobalNickname.length === 0 ? null : FetchedUser.GlobalNickname,
 			Tag: FetchedUser.Tag,
 			Avatar: FetchedUser.Avatar.length === 0 ? null : FetchedUser.Avatar,
-			PublicFlags: Number(FlagRemover.RemovePrivateNormalFlags(BigInt(FetchedUser.Flags))),
+			PublicFlags: Number(Flags.PublicFlags.cleaned),
+			Flags: Number(Flags.PublicPrivateFlags),
 			PhoneNumber: null,
-			TwoFaEnabled: Flags.hasString('TwoFaEnabled'),
-			TwoFaVerified: Flags.hasString('TwoFaVerified'),
+			TwoFaEnabled: Flags.has('TwoFaEnabled'),
+			TwoFaVerified: Flags.has('TwoFaVerified'),
 		};
 
 		if (SplitInclude.includes('bio')) {
@@ -470,6 +471,7 @@ export default class FetchPatchUser extends Route {
 		return Encryption.CompleteDecryption({
 			...FetchedUser,
 			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
+			PublicFlags: FetchedUser?.PublicFlags ? String(FetchedUser.PublicFlags) : '0',
 		});
 	}
 

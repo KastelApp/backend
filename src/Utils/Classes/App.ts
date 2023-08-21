@@ -6,7 +6,6 @@ import { URL } from 'node:url';
 import { Snowflake, Turnstile, CacheManager } from '@kastelll/util';
 import * as Sentry from '@sentry/node';
 import bodyParser from 'body-parser';
-import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import type { Request, Response } from 'express';
 import express from 'express';
@@ -252,7 +251,6 @@ class App {
 			.use(bodyParser.json())
 			.use(bodyParser.urlencoded({ extended: true }))
 			.use(bodyParser.raw())
-			.use(cookieParser(Config.Server.CookieSecrets))
 			.disable('x-powered-by');
 
 		if (Config.Server.Sentry.Enabled) {

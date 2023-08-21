@@ -11,19 +11,20 @@
 
 import { types } from '@kastelll/cassandra-driver';
 import type { Request, Response } from 'express';
-import { ChannelPermissions, ChannelTypes, MixedPermissions, PermissionOverrideTypes } from '../../../../Constants.js';
+import { ChannelPermissions, ChannelTypes, GuildMemberFlags, MixedPermissions, PermissionOverrideTypes } from '../../../../Constants.js';
 import User from '../../../../Middleware/User.js';
 import type App from '../../../../Utils/Classes/App';
-import GuildMemberFlags from '../../../../Utils/Classes/BitFields/GuildMember.js';
 import FlagUtilsBInt, { FlagUtils } from '../../../../Utils/Classes/BitFields/NewFlags.js';
 import Encryption from '../../../../Utils/Classes/Encryption.js';
 import ErrorGen from '../../../../Utils/Classes/ErrorGen.js';
 import Route from '../../../../Utils/Classes/Route.js';
+import type Roles from '../../../../Utils/Cql/Types/Role.js';
 import type {
     PermissionOverride,
 } from '../../../../Utils/Cql/Types/index.js';
 import { FixChannelPositions } from '../../../../Utils/Versioning/v1/FixChannelPositions.js';
 import { GetEditedChannels } from '../../../../Utils/Versioning/v1/GetEditedChannels.js';
+import PermissionHandler from '../../../../Utils/Versioning/v1/PermissionCheck.js';
 
 
 interface CreateChannelBody {
@@ -168,12 +169,22 @@ export default class Channels extends Route {
 
         if (!Member) return; // will never happen
 
-        const MemberFlags = new GuildMemberFlags(Member.Flags);
-        const ChannelFlags = new FlagUtils<typeof ChannelTypes>(Type ?? 0, ChannelTypes);
+        const FoundRoles = await this.FetchRoles(Member.Roles);
 
+        const MemberFlags = new FlagUtils<typeof GuildMemberFlags>(Member.Flags, GuildMemberFlags);
+        const PermissionCheck = new PermissionHandler(Req.user.Id, MemberFlags.cleaned, FoundRoles.map((role) => {
+            return {
+                Id: role.RoleId,
+                Permissions: role.Permissions.toString(),
+                Position: role.Position
+            };
+        }));
+        const ChannelFlags = new FlagUtils<typeof ChannelTypes>(Type ?? 0, ChannelTypes);
         const FailedToCreateChannel = ErrorGen.FailedToCreateChannel();
 
-        if (ChannelFlags.count === 0 || ChannelFlags.count > 1 || ChannelFlags.hasString('GuildCategory') && ParentId) {
+        if (!PermissionCheck.HasAnyRole('ManageChannels')) { }
+
+        if (ChannelFlags.count === 0 || ChannelFlags.count > 1 || ChannelFlags.has('GuildCategory') && ParentId) {
             FailedToCreateChannel.AddError({
                 Type: {
                     Code: 'InvalidType',
@@ -222,10 +233,6 @@ export default class Channels extends Route {
             Res.status(400).json(FailedToCreateChannel.toJSON());
 
             return;
-        }
-
-        if (!MemberFlags.hasString('Owner') || !MemberFlags.hasString('CoOwner')) {
-            // do other stuff (perm checks)
         }
 
         const CorrectPermissionOverrides: PermissionOverride[] = [];
@@ -352,9 +359,9 @@ export default class Channels extends Route {
 
         if (!Member) return false;
 
-        const MemberFlags = new GuildMemberFlags(Member.Flags);
+        const MemberFlags = new FlagUtils<typeof GuildMemberFlags>(Member.Flags, GuildMemberFlags);
 
-        return MemberFlags.hasString('In');
+        return MemberFlags.has('In');
     }
 
     private async FetchGuilds(UserId: string) {
@@ -378,6 +385,26 @@ export default class Channels extends Route {
         if (!Member) return null;
 
         return Encryption.CompleteDecryption(Member);
+    }
+
+    private async FetchRoles(Roles: string[]) {
+        const RolePromises = [];
+
+        for (const RoleId of Roles) {
+            RolePromises.push(this.App.Cassandra.Models.Role.get({
+                RoleId: Encryption.Encrypt(RoleId)
+            }));
+        }
+
+        const FetchedRoles = (await Promise.all(RolePromises));
+
+        const NonNullRoles: Roles[] = [];
+
+        for (const Role of FetchedRoles) {
+            if (Role) NonNullRoles.push(Role);
+        }
+
+        return NonNullRoles.map((Role) => Encryption.CompleteDecryption(Role));
     }
 
     private async FetchGuildChannels(GuildId: string) {

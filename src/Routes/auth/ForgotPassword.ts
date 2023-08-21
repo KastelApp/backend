@@ -13,7 +13,7 @@ import type { Request, Response } from 'express';
 import Constants from '../../Constants.js';
 import User from '../../Middleware/User.js';
 import type App from '../../Utils/Classes/App';
-import FlagRemover from '../../Utils/Classes/BitFields/FlagRemover.js';
+import VerifyFields from '../../Utils/Classes/BitFields/VerifyFlags.js';
 import Encryption from '../../Utils/Classes/Encryption.js';
 import ErrorGen from '../../Utils/Classes/ErrorGen.js';
 import LinkGeneration from '../../Utils/Classes/LinkGeneration.js';
@@ -118,17 +118,17 @@ export default class ForgotPassword extends Route {
 	}
 
 	private async VerificationLink(type: number, id: string, ip: string) {
+		const VerifyFlagType = new VerifyFields(type);
+
 		const CodeId = this.App.Snowflake.Generate();
 
 		const Code = LinkGeneration.VerifcationLink(CodeId);
-
-		const FixedFlags = FlagRemover.VerifyFlagsInvalidRemover(type);
 
 		const Link: VerificationLink = {
 			Code: Encryption.Encrypt(Code),
 			CreatedDate: new Date(),
 			ExpireDate: new Date(Date.now() + 1_000 * 60 * 60 * 24),
-			Flags: FixedFlags,
+			Flags: VerifyFlagType.cleaned,
 			Ip: Encryption.Encrypt(ip),
 			UserId: Encryption.Encrypt(id),
 		};
