@@ -20,7 +20,7 @@ import type {
 	MailServer as MailServerConfigType,
 	Config as ConfigType,
 	EmailTemplates as EmailTemplatesConfigType,
-} from './Types/Config';
+} from './Types/ConfigTypes';
 
 const Server: ServerConfigType = {
 	Port: 62_250,
