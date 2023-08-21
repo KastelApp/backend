@@ -29,7 +29,10 @@ jobs:
         
     - name: Install dependencies
       run: yarn install
-      
+    
+    - name: Pull Submodules
+      run: git submodule update --init --recursive
+    
     - name: Copy Configs
       run: cp src/Constants.example.ts src/Constants.ts && cp src/Config.example.ts src/Config.ts
       
