@@ -318,6 +318,7 @@ export default class Guilds extends Route {
             Position: 0,
             Slowmode: 0
         };
+
         const ChannelObject: Channels = {
             ChannelId: Encryption.Encrypt(this.App.Snowflake.Generate()),
             Type: this.App.Constants.ChannelTypes.GuildText,
@@ -369,7 +370,7 @@ export default class Guilds extends Route {
             Timeouts: [],
             UserId: Encryption.Encrypt(Req.user.Id)
         };
-
+        
         await Promise.all([
             this.App.Cassandra.Models.Guild.insert(GuildObject),
             this.App.Cassandra.Models.Channel.insert(ChannelObject),
@@ -381,7 +382,7 @@ export default class Guilds extends Route {
                 Guilds: [...Encryption.CompleteEncryption(Guilds), Encryption.Encrypt(GuildId)]
             })
         ]);
-
+        
         const FormattedPaylaod = {
             Id: GuildObject.GuildId,
             Name: GuildObject.Name,

@@ -148,7 +148,7 @@ class Connection extends EventEmitter {
 
             let CreateKeySpace =  `CREATE KEYSPACE IF NOT EXISTS ${this.KeySpace}`
             
-            if (this.NetworkTopologyStrategy) {
+            if (this.NetworkTopologyStrategy && Object.keys(this.NetworkTopologyStrategy).length > 0) {
                 CreateKeySpace += ` WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy' ${Object.entries(this.NetworkTopologyStrategy).map(([DataCenter, ReplicationFactor]) => `, '${DataCenter}' : ${ReplicationFactor}`).join(', ')} }`
             } else {
                 CreateKeySpace += ` WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }`

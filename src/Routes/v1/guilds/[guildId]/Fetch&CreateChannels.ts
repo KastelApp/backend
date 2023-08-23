@@ -12,6 +12,7 @@
 import { types } from '@kastelll/cassandra-driver';
 import type { Request, Response } from 'express';
 import { ChannelPermissions, ChannelTypes, GuildMemberFlags, MixedPermissions, PermissionOverrideTypes } from '../../../../Constants.js';
+import Guild from '../../../../Middleware/Guild.js';
 import User from '../../../../Middleware/User.js';
 import type App from '../../../../Utils/Classes/App';
 import FlagUtilsBInt, { FlagUtils } from '../../../../Utils/Classes/BitFields/NewFlags.js';
@@ -59,6 +60,10 @@ export default class Channels extends Route {
                 AccessType: 'LoggedIn',
                 AllowedRequesters: 'User',
                 App,
+            }),
+            Guild({
+                App,
+                Required: true
             })
         ];
 
@@ -74,23 +79,6 @@ export default class Channels extends Route {
     }
 
     public override async Request(Req: Request<{ guildId: string; }>, Res: Response) {
-        const ValidatedGuild = await this.VerifyGuild(Req.user.Id, Req.params.guildId);
-
-        if (!ValidatedGuild) {
-            const Error = ErrorGen.UnknownGuild();
-
-            Error.AddError({
-                GuildId: {
-                    Code: 'UnknownGuild',
-                    Message: 'The guild is Invalid, Does not exist or you are not in it.'
-                }
-            });
-
-            Res.status(404).json(Error.toJSON());
-
-            return;
-        }
-
         switch (Req.methodi) {
             case "GET": {
                 await this.FetchChannels(Req, Res);
@@ -182,7 +170,20 @@ export default class Channels extends Route {
         const ChannelFlags = new FlagUtils<typeof ChannelTypes>(Type ?? 0, ChannelTypes);
         const FailedToCreateChannel = ErrorGen.FailedToCreateChannel();
 
-        if (!PermissionCheck.HasAnyRole('ManageChannels')) { }
+        if (!PermissionCheck.HasAnyRole('ManageChannels')) {
+            const MissingPermissions = ErrorGen.MissingPermissions();
+            
+            MissingPermissions.AddError({
+                Permissions: {
+                    Code: 'MissingPermissions',
+                    Message: 'You are missing the permissions to do this action.'
+                }
+            });
+            
+            Res.status(403).json(MissingPermissions.toJSON());
+            
+            return;
+        }
 
         if (ChannelFlags.count === 0 || ChannelFlags.count > 1 || ChannelFlags.has('GuildCategory') && ParentId) {
             FailedToCreateChannel.AddError({
@@ -267,8 +268,6 @@ export default class Channels extends Route {
                 continue;
             }
 
-            // to do: permission checks
-
             CorrectPermissionOverrides.push({
                 Allow: types.Long.fromString(String(Allow.cleaned)),
                 Deny: types.Long.fromString(String(Deny.cleaned)),
@@ -348,30 +347,6 @@ export default class Channels extends Route {
             Id: ChannelId,
             ...Encryption.CompleteDecryption(BuiltChannel)
         });
-    }
-
-    private async VerifyGuild(UserId: string, GuildId: string) {
-        const Guilds = await this.FetchGuilds(UserId);
-
-        if (!Guilds.includes(Encryption.Encrypt(GuildId))) return false;
-
-        const Member = await this.FetchMember(UserId, GuildId);
-
-        if (!Member) return false;
-
-        const MemberFlags = new FlagUtils<typeof GuildMemberFlags>(Member.Flags, GuildMemberFlags);
-
-        return MemberFlags.has('In');
-    }
-
-    private async FetchGuilds(UserId: string) {
-        const User = await this.App.Cassandra.Models.User.get({
-            UserId: Encryption.Encrypt(UserId),
-        }, { fields: ['guilds'] });
-
-        if (!User?.Guilds) return [];
-
-        return User.Guilds;
     }
 
     private async FetchMember(UserId: string, GuildId: string) {

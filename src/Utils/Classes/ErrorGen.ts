@@ -57,6 +57,15 @@ const ErrorGen = {
 	},
 	MissingPermissions: () => {
 		return new HTTPErrors(4_018);
+	},
+	FailedToCreateInvite: () => {
+		return new HTTPErrors(4_019);
+	},
+	TooLarge: () => {
+		return new HTTPErrors(4_020);
+	},
+	InvalidInvite: () => {
+		return new HTTPErrors(4_021)
 	}
 };
 

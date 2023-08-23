@@ -282,6 +282,22 @@ class App {
 
 				return true;
 			};
+			
+			// we have a hard limit of 1mb for requests, any higher and we 408 it
+			if (req.socket.bytesRead > 1e6) {
+				const Error = ErrorGen.TooLarge();
+
+				Error.AddError({
+					TooLarge: {
+						Code: 'TooLarge',
+						Message: 'Request body too large',
+					},
+				});
+
+				res.status(408).json(Error.toJSON());
+
+				return;
+			}
 
 			next();
 		});

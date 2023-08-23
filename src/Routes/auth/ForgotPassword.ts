@@ -46,7 +46,7 @@ export default class ForgotPassword extends Route {
 	public override async Request(Req: Request<any, any, ForgotBody>, Res: Response) {
 		const { Email } = Req.body;
 
-		if (!Email) {
+		if (typeof Email !== 'string') {
 			const Error = ErrorGen.MissingAuthField();
 
 			this.App.Logger.debug("[Forgot Password] Email wasn't provided :(");

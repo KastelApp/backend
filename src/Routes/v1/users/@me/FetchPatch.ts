@@ -390,7 +390,7 @@ export default class FetchPatchUser extends Route {
 		const UserObject: UserObject = {
 			Id: FetchedUser.UserId,
 			Email: FetchedUser.Email,
-			EmailVerified: ParsedFlags.has('EmailVerified'),
+			EmailVerified: ParsedFlags.PrivateFlags.has('EmailVerified'),
 			Username: FetchedUser.Username,
 			GlobalNickname: FetchedUser.GlobalNickname.length === 0 ? null : FetchedUser.GlobalNickname,
 			Tag: FetchedUser.Tag,
@@ -398,8 +398,8 @@ export default class FetchPatchUser extends Route {
 			PublicFlags: Number(ParsedFlags.PublicFlags.cleaned),
 			Flags: Number(ParsedFlags.PublicPrivateFlags),
 			PhoneNumber: null,
-			TwoFaEnabled: ParsedFlags.has('TwoFaEnabled'),
-			TwoFaVerified: ParsedFlags.has('TwoFaVerified'),
+			TwoFaEnabled: ParsedFlags.PrivateFlags.has('TwoFaEnabled'),
+			TwoFaVerified: ParsedFlags.PrivateFlags.has('TwoFaVerified'),
 		};
 
 		if (FilteredItems.Bio) {
@@ -435,7 +435,7 @@ export default class FetchPatchUser extends Route {
 		const UserObject: UserObject = {
 			Id: FetchedUser.UserId,
 			Email: FetchedUser.Email,
-			EmailVerified: Flags.has('EmailVerified'),
+			EmailVerified: Flags.PrivateFlags.has('EmailVerified'),
 			Username: FetchedUser.Username,
 			GlobalNickname: FetchedUser.GlobalNickname.length === 0 ? null : FetchedUser.GlobalNickname,
 			Tag: FetchedUser.Tag,
@@ -443,8 +443,8 @@ export default class FetchPatchUser extends Route {
 			PublicFlags: Number(Flags.PublicFlags.cleaned),
 			Flags: Number(Flags.PublicPrivateFlags),
 			PhoneNumber: null,
-			TwoFaEnabled: Flags.has('TwoFaEnabled'),
-			TwoFaVerified: Flags.has('TwoFaVerified'),
+			TwoFaEnabled: Flags.PrivateFlags.has('TwoFaEnabled'),
+			TwoFaVerified: Flags.PrivateFlags.has('TwoFaVerified'),
 		};
 
 		if (SplitInclude.includes('bio')) {

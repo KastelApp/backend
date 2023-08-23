@@ -13,7 +13,7 @@ import { HTTPErrors } from '@kastelll/util';
 import type { NextFunction, Request, Response } from 'express';
 import type { Captcha as CaptchaType } from '../Types/Routes.js';
 
-// TODO: Cdata support
+// TO DO: Cdata support
 
 const Captcha = (options: CaptchaType) => {
 	return async (req: Request, res: Response, next: NextFunction) => {

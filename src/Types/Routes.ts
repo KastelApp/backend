@@ -44,41 +44,23 @@ export interface UserMiddleware {
 	Flags?: (keyof typeof PrivateFlags)[];
 }
 
-interface RateLimitObjectItem {
-	date: number;
-	increment: number;
-}
-
-export interface RateLimitObject {
-	id: string;
-	increment: number;
-	lastRequest: number;
-	method: Methods;
-	regex: string;
-	requests: RateLimitObjectItem[];
-}
-
-interface RequestOptions {
-	max?: number;
-	reset?: number;
-}
-
-interface FlagOptions {
-	bypass: boolean;
-	flag: number;
-}
-
-export interface Options {
-	flags: FlagOptions[];
-	requests: RequestOptions;
+export interface GuildMiddleware {
+	App: App,
+	Required: boolean;
 }
 
 export interface Captcha {
 	// The expected cdata of the captcha (done client side) (session id stuffs)
 	BodyTrigger?: string[];
-	Enabled: boolean;
 	// If the captcha is enabled
-	ExpectedAction?: string;
+	Enabled: boolean;
 	// The expected action of the captcha (login, register, etc.) (done client side)
-	ExpectedCData?: string; // The body key that triggers the captcha (like the username field or password field etc)
+	ExpectedAction?: string;
+	// The body key that triggers the captcha (like the username field or password field etc)
+	ExpectedCData?: string;
+}
+
+
+export interface RatelimitConfig {
+	App: App;
 }

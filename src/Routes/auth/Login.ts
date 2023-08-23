@@ -52,10 +52,10 @@ export default class Login extends Route {
 	public override async Request(Req: Request<any, any, LoginBody>, Res: Response) {
 		const { Email, Password } = Req.body;
 
-		if (!Email || !Password) {
+		if (typeof Email !== 'string' || typeof Password !== 'string') {
 			const Error = ErrorGen.MissingAuthField();
 
-			if (!Email) {
+			if (typeof Email !== 'string') {
 				Error.AddError({
 					Email: {
 						Code: 'InvalidEmail',
@@ -64,7 +64,7 @@ export default class Login extends Route {
 				});
 			}
 
-			if (!Password) {
+			if (typeof Password !== 'string') {
 				Error.AddError({
 					Password: {
 						Code: 'InvalidPassword',
@@ -113,9 +113,9 @@ export default class Login extends Route {
 		const UserFlags = new FlagFields(FetchedUser.Flags, FetchedUser.PublicFlags);
 
 		if (
-			UserFlags.has('AccountDeleted') ||
-			UserFlags.has('WaitingOnDisableDataUpdate') ||
-			UserFlags.has('WaitingOnAccountDeletion')
+			UserFlags.PrivateFlags.has('AccountDeleted') ||
+			UserFlags.PrivateFlags.has('WaitingOnDisableDataUpdate') ||
+			UserFlags.PrivateFlags.has('WaitingOnAccountDeletion')
 		) {
 			const Error = ErrorGen.AccountNotAvailable();
 
@@ -131,7 +131,7 @@ export default class Login extends Route {
 			return;
 		}
 
-		if (UserFlags.has('Terminated') || UserFlags.has('Disabled')) {
+		if (UserFlags.PrivateFlags.has('Terminated') || UserFlags.PrivateFlags.has('Disabled')) {
 			const Error = ErrorGen.AccountNotAvailable();
 
 			Error.AddError({

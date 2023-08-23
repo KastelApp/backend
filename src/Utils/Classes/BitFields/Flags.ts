@@ -12,7 +12,7 @@
 import { PrivateFlags, PublicFlags } from "../../../Constants.js";
 import FlagUtilsBInt from "./NewFlags.js";
 
-const PublicPrivateFlags: (keyof typeof PrivateFlags)[] = ["System", "Ghost", "Spammer"]
+const PublicPrivateFlags: (keyof typeof PrivateFlags)[] = ["System", "Ghost", "Spammer", "VerifiedBot", "Bot"]
 
 class FlagFields {
 

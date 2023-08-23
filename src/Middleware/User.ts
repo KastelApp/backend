@@ -29,7 +29,7 @@ const User = (options: UserMiddleware) => {
 	return async (Req: Request, Res: Response, next: NextFunction) => {
 
 		let AuthHeader = Req.headers.authorization;
-		const AuthIsBot = Req.headers.authorization?.toLowerCase()?.includes('bot');
+		const AuthIsBot = Req.headers.authorization?.toLowerCase()?.startsWith('bot ') ?? false;
 
 		const UnAuthorized = ErrorGen.UnAuthorized();
 
@@ -109,7 +109,7 @@ const User = (options: UserMiddleware) => {
 			const UserData = await options.App.Cassandra.Models.User.get({
 				UserId: Encryption.Encrypt(DecodedToken.Snowflake),
 			}, {
-				fields: ['email', 'user_id', 'flags', 'password']
+				fields: ['email', 'user_id', 'flags', 'password', 'public_flags', 'guilds']
 			});
 
 			if (!UsersSettings || !UserData) {
@@ -274,7 +274,7 @@ const User = (options: UserMiddleware) => {
 				}
 			}
 
-			const CompleteDecrypted: { Email: string, Flags: string, Password: string, UserId: string; } = Encryption.CompleteDecryption({
+			const CompleteDecrypted: { Email: string, Flags: string, Guilds: string[], Password: string, UserId: string } = Encryption.CompleteDecryption({
 				...UserData,
 				Flags: UserData.Flags.toString()
 			});
@@ -286,6 +286,7 @@ const User = (options: UserMiddleware) => {
 				Email: CompleteDecrypted.Email,
 				Id: CompleteDecrypted.UserId,
 				Password: CompleteDecrypted.Password,
+				Guilds: CompleteDecrypted.Guilds ?? []
 			} as ExpressUser;
 
 			next();

@@ -50,10 +50,10 @@ export default class ResetPassword extends Route {
 
 		this.App.Logger.debug(`[Reset Password] Email: ${Email}, Password: ${NewPassword}, Code: ${Code}`);
 
-		if (!Email || !PasswordValidtor.test(NewPassword) || !Code) {
+		if (typeof Email !== 'string' || !PasswordValidtor.test(NewPassword) || typeof Code !== 'string') {
 			const Error = ErrorGen.MissingAuthField();
 
-			if (!Email) {
+			if (typeof Email !== 'string') {
 				Error.AddError({
 					Email: {
 						Code: 'InvalidEmail',
@@ -71,7 +71,7 @@ export default class ResetPassword extends Route {
 				});
 			}
 
-			if (!Code) {
+			if (typeof Code !== 'string') {
 				Error.AddError({
 					Code: {
 						Code: 'InvalidCode',
