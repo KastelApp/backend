@@ -5661,7 +5661,7 @@ __metadata:
     prettier: ^3.0.1
     simple-git: ^3.19.1
     speakeasy: ^2.0.0
-    systeminformation: ^5.18.15
+    systeminformation: ^5.21.3
     terminal-kit: ^3.0.0
     tsup: ^7.2.0
     undici: ^5.23.0
@@ -8749,12 +8749,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"systeminformation@npm:^5.18.15":
-  version: 5.18.15
-  resolution: "systeminformation@npm:5.18.15"
+"systeminformation@npm:^5.21.3":
+  version: 5.21.3
+  resolution: "systeminformation@npm:5.21.3"
   bin:
     systeminformation: lib/cli.js
-  checksum: 15555c2c0fac29ca8146153c5b9ad146f5fe5ffe109f0cbc20d2d2b902f8b4d2cc57a1add233edc4914c13f984b96250a51ce351bd570a1ac6ba369ed3caa974
+  checksum: acc7c81eaf1046d5bc022af45e9622749a2726179cfbef3718fab1dcd603ec9ddeaa09fbfb6180f98c895e429ae691d4e36cd9e05369338a38b6741e8fd97a01
   conditions: (os=darwin | os=linux | os=win32 | os=freebsd | os=openbsd | os=netbsd | os=sunos | os=android)
   languageName: node
   linkType: hard
@@ -9195,11 +9195,11 @@ __metadata:
 
 "typescript@patch:typescript@^4.6.4 || ^5.0.0#~builtin<compat/typescript>":
   version: 4.9.5
-  resolution: "typescript@patch:typescript@npm%3A4.9.5#~builtin<compat/typescript>::version=4.9.5&hash=289587"
+  resolution: "typescript@patch:typescript@npm%3A4.9.5#~builtin<compat/typescript>::version=4.9.5&hash=d73830"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 1f8f3b6aaea19f0f67cba79057674ba580438a7db55057eb89cc06950483c5d632115c14077f6663ea76fd09fce3c190e6414bb98582ec80aa5a4eaf345d5b68
+  checksum: 2eee5c37cad4390385db5db5a8e81470e42e8f1401b0358d7390095d6f681b410f2c4a0c496c6ff9ebd775423c7785cdace7bcdad76c7bee283df3d9718c0f20
   languageName: node
   linkType: hard
 
