@@ -136,6 +136,13 @@ const MessageFlags = {
 	Reported: 1 << 4, // Note: this is private to the users (they won't receive the flag)
 };
 
+const InviteFlags = {
+	Normal: 1 << 0, // invite for a guild channel
+	GroupChat: 1 << 1, // invite for a gdm
+	FriendLink: 1 << 2, // This lets you "add" a friend rather then having them send you a friend request, this is an instant friend 
+	Vanity: 1 << 3, // This is a vanity invite (like kastelapp.com/invite/kastel) Undeleatable 1 per guild
+}
+
 const PublicFlags = {
 	StaffBadge: 1n << 0n,
 	GhostBadge: 1n << 1n,
@@ -273,7 +280,8 @@ export default {
 	Snowflake,
 	PublicFlags,
 	GuildFeatures,
-	PermissionOverrideTypes
+	PermissionOverrideTypes,
+	InviteFlags
 };
 
 export {
@@ -295,5 +303,6 @@ export {
 	Snowflake,
 	PublicFlags,
 	GuildFeatures,
-	PermissionOverrideTypes
+	PermissionOverrideTypes,
+	InviteFlags
 };
