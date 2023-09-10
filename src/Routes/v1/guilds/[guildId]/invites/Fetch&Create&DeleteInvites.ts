@@ -68,7 +68,7 @@ export default class FetchCreateAndDeleteInvites extends Route {
 
 		switch (Req.methodi) {
 			case "DELETE": {
-				await this.DeleteInvite(Req, Res);
+				// await this.DeleteInvite(Req, Res);
 
 				break;
 			}
@@ -218,7 +218,7 @@ export default class FetchCreateAndDeleteInvites extends Route {
 		}));
 	}
 
-	public async DeleteInvite(Req: Request<{ inviteId?: string; }>, Res: Response): Promise<void> { }
+	// public async DeleteInvite(Req: Request<{ inviteId?: string; }>, Res: Response): Promise<void> { }
 
 	public async FetchInvites(Req: Request, Res: Response): Promise<void> {
 		const Member = await this.FetchMember(Req.user.Id, Req.guild.Guild.Id);
