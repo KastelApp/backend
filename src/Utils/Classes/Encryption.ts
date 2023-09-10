@@ -10,6 +10,7 @@
  */
 
 import crypto from 'node:crypto';
+import { types } from '@kastelll/cassandra-driver';
 import { Encryption as En } from '../../Config.js';
 
 const algorithm = En.Algorithm;
@@ -17,7 +18,7 @@ const initVector = En.InitVector;
 const securityKey = En.SecurityKey;
 
 class Encryption {
-	public static encrypt(data: string): string {
+	public static Encrypt(data: string): string {
 		try {
 			const cipher = crypto.createCipheriv(algorithm, securityKey, initVector);
 
@@ -26,12 +27,12 @@ class Encryption {
 			};
 
 			return cipher.update(Encryption.fixData(dd), 'utf8', 'hex') + cipher.final('hex');
-		} catch (error) {
-			throw new Error(`Failed to encrypt\n${error}`);
+		} catch {
+			throw new Error(`Failed to encrypt data ${data}`);
 		}
 	}
 
-	public static decrypt(data: string, raw = false): any {
+	public static Decrypt(data: string, raw = false): any {
 		try {
 			const decipher = crypto.createDecipheriv(algorithm, securityKey, initVector);
 			const decrypted = decipher.update(data, 'hex', 'utf8') + decipher.final('utf8');
@@ -40,14 +41,14 @@ class Encryption {
 			if (raw) return cleaned;
 
 			return cleaned.data;
-		} catch (error: any) {
-			throw new Error(`Failed to decrypt (${error.message})`);
+		} catch {
+			throw new Error(`Failed to decrypt data ${data}`);
 		}
 	}
 
 	public static isEncrypted(item: string): boolean {
 		try {
-			Encryption.decrypt(item);
+			Encryption.Decrypt(item);
 
 			return true;
 		} catch {
@@ -77,120 +78,65 @@ class Encryption {
 		}
 	}
 
-	public static completeDecryption(items: any, raw = false): any {
-		const decrypt = (item: string) => Encryption.decrypt(item, raw);
-		const completeDecrypt = (item: any) => Encryption.completeDecryption(item, raw);
-		const isEncrypted = Encryption.isEncrypted;
+	public static CompleteDecryption<T = any>(items: T, raw = false): T {
+		if (typeof items === 'string') {
+			if (Encryption.isEncrypted(items)) return Encryption.Decrypt(items, raw);
 
-		if (typeof items === 'object') {
-			if (Array.isArray(items)) {
-				const NewArray: any[] = [];
-
-				for (const item of items) {
-					if (!item || item === null) {
-						NewArray.push(item);
-
-						continue;
-					}
-
-					if (typeof item === 'object') {
-						NewArray.push(completeDecrypt(item));
-					} else if (item instanceof Date) {
-						NewArray.push(item);
-					} else if (typeof item === 'string' && isEncrypted(item)) {
-						NewArray.push(decrypt(item));
-					} else {
-						NewArray.push(item);
-					}
-				}
-
-				return NewArray;
-			} else {
-				const NewObject: any = {};
-
-				for (const [key, item] of Object.entries(items)) {
-					if (!item || item === null) {
-						NewObject[key] = item;
-
-						continue;
-					}
-
-					if (typeof item === 'object') {
-						NewObject[key] = completeDecrypt(item);
-					} else if (item instanceof Date) {
-						NewObject[key] = item;
-					} else if (typeof item === 'string' && isEncrypted(item)) {
-						NewObject[key] = decrypt(item);
-					} else {
-						NewObject[key] = item;
-					}
-				}
-
-				return NewObject;
-			}
-		} else if (typeof items === 'string' && isEncrypted(items)) {
-			return decrypt(items);
-		} else {
 			return items;
 		}
+
+		if (typeof items !== 'object' || items === null) return items;
+
+		if (!Array.isArray(items)) {
+			const newObject: any = {};
+
+			for (const [key, value] of Object.entries(items)) {
+				if (value instanceof Date || value === null || value instanceof types.Long) {
+					newObject[key] = value;
+				} else if (typeof value === 'object') {
+					newObject[key] = this.CompleteDecryption(value);
+				} else {
+					newObject[key] = Encryption.isEncrypted(value) ? Encryption.Decrypt(value, raw) : value;
+				}
+			}
+
+			return newObject;
+		} else if (Array.isArray(items)) {
+			return items.map((value) => this.CompleteDecryption(value)) as T;
+		}
+
+		return items;
 	}
 
-	public static completeEncryption(items: any): any {
-		const encrypt = Encryption.encrypt;
-		const completeEncrypt = Encryption.completeEncryption;
-		const isEncrypted = Encryption.isEncrypted;
+	public static CompleteEncryption<T = any>(items: T): T {
+		if (typeof items === 'string') {
+			if (Encryption.isEncrypted(items)) return items;
 
-		if (typeof items === 'object') {
-			if (Array.isArray(items)) {
-				const NewArray: any[] = [];
-
-				for (const item of items) {
-					if (!item || item === null) {
-						NewArray.push(item);
-
-						continue;
-					}
-
-					if (typeof item === 'object') {
-						NewArray.push(completeEncrypt(item));
-					} else if (item instanceof Date) {
-						NewArray.push(item);
-					} else if (typeof item === 'string' && !isEncrypted(item)) {
-						NewArray.push(encrypt(item));
-					} else {
-						NewArray.push(item);
-					}
-				}
-
-				return NewArray;
-			} else {
-				const NewObject: any = {};
-
-				for (const [key, item] of Object.entries(items)) {
-					if (!item || item === null) {
-						NewObject[key] = item;
-
-						continue;
-					}
-
-					if (typeof item === 'object') {
-						NewObject[key] = completeEncrypt(item);
-					} else if (item instanceof Date) {
-						NewObject[key] = item;
-					} else if (typeof item === 'string' && !isEncrypted(item)) {
-						NewObject[key] = encrypt(item);
-					} else {
-						NewObject[key] = item;
-					}
-				}
-
-				return NewObject;
-			}
-		} else if (typeof items === 'string' && !isEncrypted(items)) {
-			return encrypt(items);
-		} else {
-			return items;
+			return Encryption.Encrypt(items) as T;
 		}
+
+		if (typeof items !== 'object' || items === null) return items;
+
+		if (!Array.isArray(items)) {
+			const newObject: any = {};
+
+			for (const [key, value] of Object.entries(items)) {
+				if (value instanceof Date || value === null || value instanceof types.Long) {
+					newObject[key] = value;
+				} else if (typeof value === 'object') {
+					newObject[key] = this.CompleteEncryption(value);
+				} else {
+					newObject[key] = Encryption.isEncrypted(value) ? value : Encryption.Encrypt(value);
+				}
+			}
+
+			return newObject;
+		} else if (Array.isArray(items)) {
+			return items.map((value) => this.CompleteEncryption(value)) as T;
+		}
+
+		return items;
+
 	}
 }
 

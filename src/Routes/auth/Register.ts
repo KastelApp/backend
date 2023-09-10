@@ -21,6 +21,7 @@ import Route from '../../Utils/Classes/Route.js';
 import Token from '../../Utils/Classes/Token.js';
 import type Settings from '../../Utils/Cql/Types/Settings.js';
 import type Users from '../../Utils/Cql/Types/User.js';
+import type { User as UserType } from '../../Utils/Cql/Types/index.js';
 import TagGenerator from '../../Utils/TagGenerator.js';
 
 interface RegisterBody {
@@ -96,7 +97,7 @@ export default class Register extends Route {
 			return;
 		}
 
-		const FetchedUsers = await this.FetchUsers(Username , ['username', 'tag']);
+		const FetchedUsers = await this.FetchUsers(Username, ['username', 'tag']);
 		const CleanedEmail = Email.replaceAll(PlusReplace, '');
 		const UserExists = await this.FetchUser(CleanedEmail);
 		const MaxUsernamesReached = await this.MaxUsernamesReached(undefined, FetchedUsers?.length ?? 0);
@@ -127,10 +128,11 @@ export default class Register extends Route {
 		}
 
 		const Tag = await this.GenerateTag(undefined, FetchedUsers ?? []);
-		
-		const UserObject = {
+
+		const UserObject: UserType = {
 			Avatar: '',
-			Email: Encryption.encrypt(CleanedEmail),
+			Email: Encryption.Encrypt(CleanedEmail),
+			PublicFlags: '0',
 			Flags: '0',
 			GlobalNickname: '',
 			Guilds: [],
@@ -139,11 +141,11 @@ export default class Register extends Route {
 			PhoneNumber: '',
 			Tag,
 			TwoFaSecret: '',
-			UserId: Encryption.encrypt(this.App.Snowflake.Generate()),
-			Username: Encryption.encrypt(Username),
+			UserId: Encryption.Encrypt(this.App.Snowflake.Generate()),
+			Username: Encryption.Encrypt(Username),
 		};
 
-		const NewToken = Token.GenerateToken(Encryption.decrypt(UserObject.UserId));
+		const NewToken = Token.GenerateToken(Encryption.Decrypt(UserObject.UserId));
 
 		const SettingsObject: Settings = {
 			Language: 'en-US',
@@ -157,23 +159,23 @@ export default class Register extends Route {
 			Tokens: [{
 				CreatedDate: new Date(),
 				Flags: 0,
-				Ip: Encryption.encrypt(Req.clientIp),
-				Token: Encryption.encrypt(NewToken),
-				TokenId: Encryption.encrypt(this.App.Snowflake.Generate()),
+				Ip: Encryption.Encrypt(Req.clientIp),
+				Token: Encryption.Encrypt(NewToken),
+				TokenId: Encryption.Encrypt(this.App.Snowflake.Generate()),
 			}],
 			UserId: UserObject.UserId,
 			Bio: '',
 		};
-		
+
 		await Promise.all([
 			this.App.Cassandra.Models.User.insert(UserObject),
 			this.App.Cassandra.Models.Settings.insert(SettingsObject)
-		])
-		
+		]);
+
 		Res.send({
 			Token: NewToken,
 			User: {
-				Id: Encryption.decrypt(UserObject.UserId),
+				Id: Encryption.Decrypt(UserObject.UserId),
 				Email: CleanedEmail,
 				Username,
 				Tag,
@@ -191,7 +193,7 @@ export default class Register extends Route {
 
 	private async FetchUser(Email: string): Promise<Users | null> {
 		const FetchedUser = await this.App.Cassandra.Models.User.get({
-			Email: Encryption.encrypt(Email)
+			Email: Encryption.Encrypt(Email)
 		}, { fields: ['email'] });
 
 		if (!FetchedUser) return null;
@@ -201,7 +203,7 @@ export default class Register extends Route {
 
 	private async FetchUsers(Username: string, Fields?: string[]): Promise<Users[] | null> {
 		const FetchedUsers = await this.App.Cassandra.Models.User.find({
-			Username: Encryption.encrypt(Username)
+			Username: Encryption.Encrypt(Username)
 		}, { fields: Fields ?? [] });
 
 		return FetchedUsers.toArray();
@@ -209,17 +211,17 @@ export default class Register extends Route {
 
 	private async MaxUsernamesReached(Username?: string, Count?: number): Promise<boolean> {
 		let FoundCount = 0;
-		
+
 		if (Count) {
 			FoundCount = Count;
 		} else if (Username) {
 			const FoundUsers = await this.App.Cassandra.Execute(
 				'SELECT COUNT(1) FROM users WHERE username = ?',
-				[Encryption.encrypt(Username)]
+				[Encryption.Encrypt(Username)]
 			);
-			
+
 			const Value: number = FoundUsers?.first()?.get('count').toNumber() ?? 0;
-			
+
 			FoundCount = Value;
 		}
 

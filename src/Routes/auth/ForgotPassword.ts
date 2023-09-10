@@ -13,7 +13,7 @@ import type { Request, Response } from 'express';
 import Constants from '../../Constants.js';
 import User from '../../Middleware/User.js';
 import type App from '../../Utils/Classes/App';
-import FlagRemover from '../../Utils/Classes/BitFields/FlagRemover.js';
+import VerifyFields from '../../Utils/Classes/BitFields/VerifyFlags.js';
 import Encryption from '../../Utils/Classes/Encryption.js';
 import ErrorGen from '../../Utils/Classes/ErrorGen.js';
 import LinkGeneration from '../../Utils/Classes/LinkGeneration.js';
@@ -46,7 +46,7 @@ export default class ForgotPassword extends Route {
 	public override async Request(Req: Request<any, any, ForgotBody>, Res: Response) {
 		const { Email } = Req.body;
 
-		if (!Email) {
+		if (typeof Email !== 'string') {
 			const Error = ErrorGen.MissingAuthField();
 
 			this.App.Logger.debug("[Forgot Password] Email wasn't provided :(");
@@ -105,34 +105,34 @@ export default class ForgotPassword extends Route {
 
 	private async FetchUser(UserId?: string, Email?: string): Promise<UserType | null> {
 		const FetchedUser = await this.App.Cassandra.Models.User.get({
-			...(UserId ? { UserId: Encryption.encrypt(UserId) } : {}),
-			...(Email ? { Email: Encryption.encrypt(Email) } : {}),
+			...(UserId ? { UserId: Encryption.Encrypt(UserId) } : {}),
+			...(Email ? { Email: Encryption.Encrypt(Email) } : {}),
 		});
 
 		if (!FetchedUser) return null;
 
-		return Encryption.completeDecryption({
+		return Encryption.CompleteDecryption({
 			...FetchedUser,
 			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
 		});
 	}
 
 	private async VerificationLink(type: number, id: string, ip: string) {
+		const VerifyFlagType = new VerifyFields(type);
+
 		const CodeId = this.App.Snowflake.Generate();
 
 		const Code = LinkGeneration.VerifcationLink(CodeId);
 
-		const FixedFlags = FlagRemover.VerifyFlagsInvalidRemover(type);
-
 		const Link: VerificationLink = {
-			Code: Encryption.encrypt(Code),
+			Code: Encryption.Encrypt(Code),
 			CreatedDate: new Date(),
 			ExpireDate: new Date(Date.now() + 1_000 * 60 * 60 * 24),
-			Flags: FixedFlags,
-			Ip: Encryption.encrypt(ip),
-			UserId: Encryption.encrypt(id),
+			Flags: VerifyFlagType.cleaned,
+			Ip: Encryption.Encrypt(ip),
+			UserId: Encryption.Encrypt(id),
 		};
-		
+
 		await this.App.Cassandra.Models.VerificationLink.insert(Link);
 
 		return {

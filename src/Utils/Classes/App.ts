@@ -6,7 +6,6 @@ import { URL } from 'node:url';
 import { Snowflake, Turnstile, CacheManager } from '@kastelll/util';
 import * as Sentry from '@sentry/node';
 import bodyParser from 'body-parser';
-import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import type { Request, Response } from 'express';
 import express from 'express';
@@ -107,7 +106,7 @@ class App {
 			AllowForDangerousCommands: true,
 		});
 
-		this.Cassandra = new Connection(Config.ScyllaDB.Nodes, Config.ScyllaDB.Username, Config.ScyllaDB.Password, Config.ScyllaDB.Keyspace);
+		this.Cassandra = new Connection(Config.ScyllaDB.Nodes, Config.ScyllaDB.Username, Config.ScyllaDB.Password, Config.ScyllaDB.Keyspace, Config.ScyllaDB.NetworkTopologyStrategy, Config.ScyllaDB.DurableWrites, Config.ScyllaDB.CassandraOptions);
 
 		this.Turnstile = new Turnstile(Config.Server.CaptchaEnabled, Config.Server.TurnstileSecret ?? 'secret');
 
@@ -140,9 +139,12 @@ class App {
 		this.Cassandra.on('Connected', () => this.Logger.info('Connected to ScyllaDB'));
 		this.Cassandra.on('Error', (err) => {
 			this.Logger.fatal(err);
-			
+
 			process.exit(1);
 		});
+
+		this.Logger.info('Connecting to ScyllaDB');
+		this.Logger.warn('IT IS NOT FROZEN, ScyllaDB may take a while to connect')
 		
 		await Promise.all([
 			this.SystemSocket.Connect(),
@@ -150,16 +152,17 @@ class App {
 			this.Cache.connect(),
 		]);
 
-		this.Logger.info('Creating ScyllaDB Tables.. This may take a while..')
+		this.Logger.info('Creating ScyllaDB Tables.. This may take a while..');
+		this.Logger.warn('IT IS NOT FROZEN, ScyllaDB may take a while to create the tables')
 		
 		const TablesCreated = await this.Cassandra.CreateTables();
-		
+
 		if (TablesCreated) {
 			this.Logger.info('Created ScyllaDB tables');
 		} else {
-			this.Logger.warn('whar')
+			this.Logger.warn('whar');
 		}
-		
+
 		if (Config.MailServer.Enabled) {
 			const Support = Config.MailServer.Users.find((user) => user.ShortCode === 'Support');
 			const NoReply = Config.MailServer.Users.find((user) => user.ShortCode === 'NoReply');
@@ -196,7 +199,7 @@ class App {
 				]);
 			} catch (error) {
 				this.Logger.fatal('Failed to connect to Mail Server', error);
-				
+
 				process.exit(1);
 			}
 
@@ -248,7 +251,6 @@ class App {
 			.use(bodyParser.json())
 			.use(bodyParser.urlencoded({ extended: true }))
 			.use(bodyParser.raw())
-			.use(cookieParser(Config.Server.CookieSecrets))
 			.disable('x-powered-by');
 
 		if (Config.Server.Sentry.Enabled) {
@@ -264,6 +266,7 @@ class App {
 		this.ExpressApp.use((req, res, next) => {
 			req.clientIp = IpUtils.GetIp(req);
 			req.methodi = req.method as ExpressMethodCap;
+			req.captcha = new Turnstile(this.Config.Server.CaptchaEnabled, this.Config.Server.TurnstileSecret ?? 'secret');
 
 			req.fourohfourit = () => {
 				const Error = ErrorGen.NotFound();
@@ -279,6 +282,22 @@ class App {
 
 				return true;
 			};
+			
+			// we have a hard limit of 1mb for requests, any higher and we 408 it
+			if (req.socket.bytesRead > 1e6) {
+				const Error = ErrorGen.TooLarge();
+
+				Error.AddError({
+					TooLarge: {
+						Code: 'TooLarge',
+						Message: 'Request body too large',
+					},
+				});
+
+				res.status(408).json(Error.toJSON());
+
+				return;
+			}
 
 			next();
 		});
@@ -297,9 +316,15 @@ class App {
 					Route.route,
 					...Route.default.Middleware,
 					(req: Request, res: Response) => {
+						this.Logger.verbose(`Request for ${req.path} (${req.method}) ${req?.user?.Id ? `from ${req.user.Id}` : 'from a logged out user.'}`);
+
 						const ContentType = req.headers['content-type'] ?? '';
 
-						res.on('finish', () => Route.default.Finish(res, res.statusCode, new Date()));
+						res.on('finish', () => {
+							this.Logger.verbose(`Request for ${req.path} (${req.method}) ${req?.user?.Id ? `from ${req.user.Id}` : 'from a logged out user.'} finished with status code ${res.statusCode}`);
+							
+							Route.default.Finish(res, res.statusCode, new Date())
+						});
 
 						if (
 							Route.default.AllowedContentTypes.length > 0 &&

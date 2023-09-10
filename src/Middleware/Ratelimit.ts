@@ -20,7 +20,7 @@ import type { NextFunction, Request, Response } from 'express';
 // and the reset time longer
 
 const Ratelimit = () => {
-	return async (req: Request, res: Response, next: NextFunction) => {
+	return async (_: Request, __: Response, next: NextFunction) => {
 		next();
 	};
 };

@@ -46,6 +46,27 @@ const ErrorGen = {
 	InvalidUser: () => {
 		return new HTTPErrors(4_014);
 	},
+	InvalidSnowflake: () => {
+		return new HTTPErrors(4_015);
+	},
+	UnknownGuild: () => {
+		return new HTTPErrors(4_016);
+	},
+	FailedToCreateChannel: () => {
+		return new HTTPErrors(4_017);
+	},
+	MissingPermissions: () => {
+		return new HTTPErrors(4_018);
+	},
+	FailedToCreateInvite: () => {
+		return new HTTPErrors(4_019);
+	},
+	TooLarge: () => {
+		return new HTTPErrors(4_020);
+	},
+	InvalidInvite: () => {
+		return new HTTPErrors(4_021)
+	}
 };
 
 export default ErrorGen;

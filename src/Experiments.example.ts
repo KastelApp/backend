@@ -1,4 +1,4 @@
-import type { Flags } from "./Constants";
+import type { PrivateFlags } from "./Constants";
 
 // Experiment Naming System: YYYY-MM-DD-<name_here> so for example "2023-08-12-voice_channel_release"
 
@@ -13,7 +13,7 @@ interface Treatment {
 		Priority: number;
 		ReleasePercentage: number;
 		RequiredFeatures: string[];
-		RequiredFlags: (keyof typeof Flags)[] | null;
+		RequiredFlags: (keyof typeof PrivateFlags)[] | null;
 	},
 	Description: string;
 	Treatment: string;
@@ -38,7 +38,7 @@ export const Experiments: Experiment[] = [
 					MaxMembers: 0, // if set to 0, no max
 					RequiredFlags: null, // if set to null, no flag
 					RequiredFeatures: [], // if set to [], no feature required
-					Overrides: [], 
+					Overrides: [],
 					ReleasePercentage: 1, // This is the % of guilds that will be in this treatment
 					Priority: 0, // The priority of this treatment is so if the guild has multiple treatments, the one with the highest priority will be used
 				},
@@ -111,4 +111,4 @@ export const Experiments: Experiment[] = [
 export type {
 	Experiment,
 	Treatment,
-}
+};

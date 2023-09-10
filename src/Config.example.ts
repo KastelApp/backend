@@ -9,6 +9,7 @@
  * GPL 3.0 Licensed
  */
 
+// import type { Encryption, MongoDB, Redis, Regexs, Server, Ws, MailServer, Config, EmailTemplates } from './Types/Config';
 import type {
 	Encryption as EncrpytionConfigType,
 	ScyllaDB as ScyllaDBConfigType,
@@ -19,12 +20,11 @@ import type {
 	MailServer as MailServerConfigType,
 	Config as ConfigType,
 	EmailTemplates as EmailTemplatesConfigType,
-} from './Types/Config';
+} from './Types/ConfigTypes';
 
 const Server: ServerConfigType = {
 	Port: 62_250,
-	CookieSecrets: [''],
-	Domain: '',
+	Domain: 'kastelapp.com',
 	Secure: true, // https or http
 	WorkerId: 1,
 	Cache: {
@@ -35,40 +35,48 @@ const Server: ServerConfigType = {
 	CaptchaEnabled: true,
 	TurnstileSecret: '',
 	Sentry: {
-		Enabled: true,
+		Enabled: false,
 		Dsn: '',
 		TracesSampleRate: 1,
-		OtherOptions: {},
-		RequestOptions: {},
+		OtherOptions: {
+			environment: 'development',
+		},
+		RequestOptions: {
+			user: ['email', 'id'],
+			ip: true,
+		},
 	},
+	LocalIps: ['0.0.0.0', 'localhost'], // These are for local tests, and to allow the WebSocket to make HTTP requests to the server
 };
 
 const Encryption: EncrpytionConfigType = {
-	Algorithm: '',
+	Algorithm: 'aes-256-cbc',
 	InitVector: '',
 	SecurityKey: '',
-	JwtKey: '',
+	TokenKey: '',
 };
 
 const Ws: WsConfigType = {
-	Url: '',
-	Password: '',
+	Url: 'ws://localhost:8080/system',
+	Password: '123',
 };
 
 const Redis: RedisConfigType = {
-	Host: '',
-	Port: 5_001,
+	Host: 'localhost',
+	Port: 6_379,
 	Username: '',
 	Password: '',
 	DB: 0,
 };
 
 const ScyllaDB: ScyllaDBConfigType = {
-	Nodes: ['localhost'],
-	Keyspace: 'kstl',
-	Username: '',
+	Nodes: ["localhost"],
+	Keyspace: 'kastel',
+	Username: 'kstl',
 	Password: '',
-	CassandraOptions: {}
+	CassandraOptions: {},
+	DurableWrites: true,
+	NetworkTopologyStrategy: {}
 };
 
 const MailServer: MailServerConfigType = {
@@ -78,7 +86,7 @@ const MailServer: MailServerConfigType = {
 			Host: '',
 			Port: 465,
 			Secure: true,
-			User: '',
+			User: 'no-reply@kastelapp.com',
 			Password: '',
 			ShortCode: 'NoReply',
 		},
@@ -86,17 +94,18 @@ const MailServer: MailServerConfigType = {
 			Host: '',
 			Port: 465,
 			Secure: true,
-			User: '',
+			User: 'support@kastelapp.com',
 			Password: '',
 			ShortCode: 'Support',
 		},
 	],
 };
 
+
 const EmailTemplates: EmailTemplatesConfigType = {
 	VerifyEmail: {
 		Subject: 'Verify your email',
-		Template: 'https://example.com', // can be a url or a file path
+		Template: '', // can be a url or a file path
 		PlaceHolders: {
 			Username: '{{USERNAME}}',
 			VerifyLink: '{{VERIFICATION_LINK}}',
@@ -124,10 +133,10 @@ const EmailTemplates: EmailTemplatesConfigType = {
 };
 
 const Regexs: RegexsConfigType = {
-	PlusReplace: /./g,
-	PasswordValidtor: /./g,
-	EmailValidator: /./g,
-	UsernameValidator: /./g,
+	PlusReplace: /\+([^@]+)/g, // eslint-disable-line prefer-named-capture-group
+	PasswordValidtor: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()-=_+{};:<>,.?/~]{6,72}$/g, // eslint-disable-line unicorn/better-regex
+	EmailValidator: /^[\w%+.-]+@[\d.A-Za-z-]+\.[A-Za-z]{2,}$/g,
+	UsernameValidator: /^(?=.*[a-zA-Z0-9!$%^&*()\-_~>.<?/\s\u0020-\uD7FF\uE000-\uFFFD])[a-zA-Z0-9!$%^&*()\-_~>.<?/\s\u0020-\uD7FF\uE000-\uFFFD]{2,30}$/g, // eslint-disable-line unicorn/better-regex
 };
 
 const Config: ConfigType = {

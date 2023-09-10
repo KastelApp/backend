@@ -52,10 +52,10 @@ export default class Login extends Route {
 	public override async Request(Req: Request<any, any, LoginBody>, Res: Response) {
 		const { Email, Password } = Req.body;
 
-		if (!Email || !Password) {
+		if (typeof Email !== 'string' || typeof Password !== 'string') {
 			const Error = ErrorGen.MissingAuthField();
 
-			if (!Email) {
+			if (typeof Email !== 'string') {
 				Error.AddError({
 					Email: {
 						Code: 'InvalidEmail',
@@ -64,7 +64,7 @@ export default class Login extends Route {
 				});
 			}
 
-			if (!Password) {
+			if (typeof Password !== 'string') {
 				Error.AddError({
 					Password: {
 						Code: 'InvalidPassword',
@@ -110,12 +110,12 @@ export default class Login extends Route {
 			return;
 		}
 
-		const UserFlags = new FlagFields(FetchedUser.Flags);
+		const UserFlags = new FlagFields(FetchedUser.Flags, FetchedUser.PublicFlags);
 
 		if (
-			UserFlags.hasString('AccountDeleted') ||
-			UserFlags.hasString('WaitingOnDisableDataUpdate') ||
-			UserFlags.hasString('WaitingOnAccountDeletion')
+			UserFlags.PrivateFlags.has('AccountDeleted') ||
+			UserFlags.PrivateFlags.has('WaitingOnDisableDataUpdate') ||
+			UserFlags.PrivateFlags.has('WaitingOnAccountDeletion')
 		) {
 			const Error = ErrorGen.AccountNotAvailable();
 
@@ -131,7 +131,7 @@ export default class Login extends Route {
 			return;
 		}
 
-		if (UserFlags.hasString('Terminated') || UserFlags.hasString('Disabled')) {
+		if (UserFlags.PrivateFlags.has('Terminated') || UserFlags.PrivateFlags.has('Disabled')) {
 			const Error = ErrorGen.AccountNotAvailable();
 
 			Error.AddError({
@@ -149,10 +149,10 @@ export default class Login extends Route {
 		const NewToken = Token.GenerateToken(FetchedUser.UserId);
 
 		const Tokens = await this.App.Cassandra.Models.Settings.get({
-			UserId: Encryption.encrypt(FetchedUser.UserId)
+			UserId: Encryption.Encrypt(FetchedUser.UserId)
 		}, { fields: ['tokens'] });
 
-		const SessionId = Encryption.encrypt(this.App.Snowflake.Generate());
+		const SessionId = Encryption.Encrypt(this.App.Snowflake.Generate());
 
 		if (!Tokens) {
 			Res.status(500).send('Internal Server Error :(');
@@ -161,23 +161,23 @@ export default class Login extends Route {
 		}
 
 		const NewTokens = Tokens.Tokens ? Tokens.Tokens : [];
-		
+
 		NewTokens.push({
 			TokenId: SessionId,
-			Token: Encryption.encrypt(NewToken),
+			Token: Encryption.Encrypt(NewToken),
 			CreatedDate: new Date(),
-			Ip: Encryption.encrypt(Req.ip),
+			Ip: Encryption.Encrypt(Req.ip),
 			Flags: 0,
 		});
-		
+
 		await this.App.Cassandra.Models.Settings.update({
-			UserId: Encryption.encrypt(FetchedUser.UserId),
+			UserId: Encryption.Encrypt(FetchedUser.UserId),
 			Tokens: NewTokens
 		});
 
 		this.App.SystemSocket.Events.NewSession({
 			UserId: FetchedUser.UserId,
-			SessionId: Encryption.decrypt(SessionId),
+			SessionId: Encryption.Decrypt(SessionId),
 		});
 
 		Res.send({
@@ -187,13 +187,13 @@ export default class Login extends Route {
 
 	private async FetchUser(UserId?: string, Email?: string): Promise<UserType | null> {
 		const FetchedUser = await this.App.Cassandra.Models.User.get({
-			...(UserId ? { UserId: Encryption.encrypt(UserId) } : {}),
-			...(Email ? { Email: Encryption.encrypt(Email) } : {}),
+			...(UserId ? { UserId: Encryption.Encrypt(UserId) } : {}),
+			...(Email ? { Email: Encryption.Encrypt(Email) } : {}),
 		});
 
 		if (!FetchedUser) return null;
 
-		return Encryption.completeDecryption({
+		return Encryption.CompleteDecryption({
 			...FetchedUser,
 			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
 		});

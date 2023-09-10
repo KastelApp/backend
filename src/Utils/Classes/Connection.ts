@@ -3,98 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { URL } from 'node:url';
 import cassandra, { mapping, type ClientOptions } from '@kastelll/cassandra-driver';
-// ts-expect-error -- no types (some stupid reason they don't export this)
-// import { TableMappings } from '@kastelll/cassandra-driver/lib/mapping/table-mappings.js';
 import type { Ban, Bot, Channel, Dm, Emoji, File, Friend, Gift, Guild, GuildMember, Invite, Message, PermissionOverride, Role, Settings, User, VerificationLink, Webhook } from '../Cql/Types';
-
-// class UnderscoreCqlToPascalCaseMappings extends TableMappings {
-//     public ReservedWords: string[];
-
-//     public constructor() {
-//         super();
-
-//         this.ReservedWords = [
-//             'ADD', 'ALLOW', 'ALTER', 'AND', 'APPLY', 'ASC', 'AUTHORIZE', 'BATCH', 'BEGIN', 'BY', 'COLUMNFAMILY', 'CREATE', 'DELETE', 'DESC', 'DESCRIBE', 'DROP', 'ENTRIES', 'EXECUTE', 'FROM', 'FULL', 'GRANT', 'IF', 'IN', 'INDEX', 'INFINITY', 'INSERT', 'INTO', 'KEYSPACE', 'LIMIT', 'MODIFY', 'NAN', 'NORECURSIVE', 'NOT', 'NULL', 'OF', 'ON', 'OR', 'ORDER', 'PRIMARY', 'RENAME', 'REPLACE', 'REVOKE', 'SCHEMA', 'SELECT', 'SET', 'TABLE', 'TO', 'TOKEN', 'TRUNCATE', 'UNLOGGED', 'UPDATE', 'USE', 'USING', 'VIEW', 'WHERE', 'WITH'
-//         ].map((word) => word.toLowerCase());
-
-//     }
-
-//     public getColumnName(PropName: string) {
-//         const Propertyname = PropName.split(/(?=[A-Z])/).join('_').toLowerCase();
-
-//         if (this.ReservedWords.includes(Propertyname)) {
-//             return `${Propertyname}_`;
-//         } else {
-//             return Propertyname;
-//         }
-//     }
-
-//     public getPropertyName(ColumnName: string) {
-//         return ColumnName.split('_').map((word) => {
-//             return word.charAt(0).toUpperCase() + word.slice(1);
-//         }).join('');
-//     }
-
-//     public ObjectToDbRow(obj: any): Record<string, unknown>[] {
-//         const Output: any[] = [];
-
-//         for (const [_, value] of Object.entries(obj)) {
-//             if (typeof value === "object") Output.push(this.ArrayOfObjectsToCqlObject(value));
-//             else Output.push(value);
-//         }
-
-//         return Output;
-//     }
-    
-//     public ObjecttoCorrectObject(obj: any): any {
-//         if (!Array.isArray(obj)) {
-//             const newObject: any = {};
-    
-//             for (const [key, value] of Object.entries(obj)) {
-//                 if (value instanceof Date || value === null || value instanceof cassandra.types.Long) {
-//                     newObject[this.getPropertyName(key)] = value;
-//                 } else if (typeof value === 'object') {
-//                     newObject[this.getPropertyName(key)] = this.ObjecttoCorrectObject(value);
-//                 } else {
-//                     newObject[this.getPropertyName(key)] = value;
-//                 }
-//             }
-            
-//             return newObject;
-//         } else if (Array.isArray(obj)) {
-//             return obj.map((value) => this.ObjecttoCorrectObject(value));
-//         }
-        
-//         return obj;
-//     }
-    
-//     public ArrayOfObjectsToCqlObject(obj: any): any {
-//         if (!Array.isArray(obj)) {
-//             const newObject: any = {};
-    
-//             for (const [key, value] of Object.entries(obj)) {
-//                 if (value instanceof Date || value === null || value instanceof cassandra.types.Long) {
-//                     newObject[this.getColumnName(key)] = value;
-//                 } else if (typeof value === 'object') {
-//                     newObject[this.getColumnName(key)] = this.ArrayOfObjectsToCqlObject(value);
-//                 } else {
-//                     newObject[this.getColumnName(key)] = value;
-//                 }
-//             }
-            
-//             return newObject;
-//         } else if (Array.isArray(obj)) {
-//             return obj.map((value) => this.ArrayOfObjectsToCqlObject(value));
-//         }
-        
-//         return obj;
-//     }
-
-
-//     public newObjectInstance() {
-//         return {};
-//     }
-// }
 
 interface Connection {
     emit(event: 'Error', error: unknown): boolean;
@@ -116,6 +25,10 @@ class Connection extends EventEmitter {
 
     public Mapper: mapping.Mapper;
 
+    private readonly NetworkTopologyStrategy: {
+		[DataCenter: string]: number;
+	}
+    
     public Models: {
         Ban: cassandra.mapping.ModelMapper<Ban>;
         Bot: cassandra.mapping.ModelMapper<Bot>;
@@ -137,20 +50,26 @@ class Connection extends EventEmitter {
         Webhook: cassandra.mapping.ModelMapper<Webhook>;
     };
 
-    public UnderScoreCqlToPascalCaseMappings: mapping.UnderscoreCqlToPascalCaseMappings = new mapping.UnderscoreCqlToPascalCaseMappings();
+    public UnderScoreCqlToPascalCaseMappings: mapping.UnderscoreCqlToPascalCaseMappings = new mapping.UnderscoreCqlToPascalCaseMappings(true);
+    
+    public DurableWrites: boolean;
 
     public constructor(
         nodes: string[],
         username: string,
         password: string,
         keyspace: string,
+        networkTopologyStrategy: {
+            [DataCenter: string]: number;
+        },
+        durableWrites: boolean,
         options: Omit<ClientOptions, 'credentials' | 'keyspace'> = {},
     ) {
         super();
 
         this.Client = new cassandra.Client({
             contactPoints: nodes,
-            localDataCenter: 'datacenter1',
+            localDataCenter: Object.keys(networkTopologyStrategy)?.[0] ?? 'datacenter1',
             credentials: {
                 username,
                 password,
@@ -161,6 +80,10 @@ class Connection extends EventEmitter {
         this.KeySpace = keyspace;
 
         this.Connected = false;
+        
+        this.NetworkTopologyStrategy = networkTopologyStrategy
+        
+        this.DurableWrites = durableWrites;
 
         this.MappingOptions = {
             models: {
@@ -223,7 +146,19 @@ class Connection extends EventEmitter {
 
             this.Connected = true;
 
-            await this.Execute(`CREATE KEYSPACE IF NOT EXISTS ${this.KeySpace} WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };`);
+            let CreateKeySpace =  `CREATE KEYSPACE IF NOT EXISTS ${this.KeySpace}`
+            
+            if (this.NetworkTopologyStrategy && Object.keys(this.NetworkTopologyStrategy).length > 0) {
+                CreateKeySpace += ` WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy' ${Object.entries(this.NetworkTopologyStrategy).map(([DataCenter, ReplicationFactor]) => `, '${DataCenter}' : ${ReplicationFactor}`).join(', ')} }`
+            } else {
+                CreateKeySpace += ` WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }`
+            }
+            
+            CreateKeySpace += ` AND DURABLE_WRITES = ${this.DurableWrites};`
+            
+            await this.Execute(CreateKeySpace).catch((error) => {
+                this.emit('Error', error);
+            });
 
             await this.Execute(`USE ${this.KeySpace};`);
 

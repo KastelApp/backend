@@ -26,9 +26,9 @@
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 		"experimentalDecorators": true,
-		"lib": ["ESNext", "DOM"],
+		"lib": ["ESNext"],
 		"target": "ES2022",
-		"useDefineForClassFields": true
+		"useDefineForClassFields": true,
 	},
 	"include": ["src/**/*", "scripts/**/*"],
 	"exclude": ["node_modules", "dist"]

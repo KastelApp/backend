@@ -13,7 +13,6 @@ import { compareSync, hashSync } from 'bcrypt';
 import type { Request, Response } from 'express';
 import User from '../../../../Middleware/User.js';
 import type App from '../../../../Utils/Classes/App';
-import FlagRemover from '../../../../Utils/Classes/BitFields/FlagRemover.js';
 import FlagFields from '../../../../Utils/Classes/BitFields/Flags.js';
 import Encryption from '../../../../Utils/Classes/Encryption.js';
 import ErrorGen from '../../../../Utils/Classes/ErrorGen.js';
@@ -21,7 +20,7 @@ import Route from '../../../../Utils/Classes/Route.js';
 import type { User as UserType } from '../../../../Utils/Cql/Types/index.js';
 import { TagValidator } from '../../../../Utils/TagGenerator.js';
 
-interface EditableSchema {
+interface EditableUser {
 	AFlags: number;
 	Avatar: string;
 	Bio: string;
@@ -40,13 +39,14 @@ interface EditableSchema {
 	Username: string;
 }
 
-type SchemaUser = Omit<EditableSchema, 'AFlags' | 'Bio' | 'NewPassword' | 'RFlags'>;
+type SchemaUser = Omit<EditableUser, 'AFlags' | 'Bio' | 'NewPassword' | 'RFlags'>;
 
 interface UserObject {
 	Avatar: string | null;
 	Bio?: string;
 	Email: string;
 	EmailVerified: boolean;
+	Flags: number;
 	GlobalNickname: string | null;
 	Id: string;
 	PhoneNumber: string | null;
@@ -77,7 +77,7 @@ export default class FetchPatchUser extends Route {
 
 	private readonly BotCantEdit: (keyof UpdateUserBody)[];
 
-	private readonly Editable: (keyof EditableSchema)[];
+	private readonly Editable: (keyof EditableUser)[];
 
 	public constructor(App: App) {
 		super(App);
@@ -194,7 +194,7 @@ export default class FetchPatchUser extends Route {
 		}
 
 		const FetchedUser = await this.FetchUser(Req.user.Id);
-		const ParsedFlags = new FlagFields(FetchedUser?.Flags ?? 0);
+		const ParsedFlags = new FlagFields(FetchedUser?.Flags ?? 0, FetchedUser?.PublicFlags ?? 0);
 
 		if (!FetchedUser) {
 			this.App.Logger.debug(`Couldn't fetch the user..? Id: ${Req.user.Id}, Email: ${Req.user.Email}`);
@@ -223,7 +223,7 @@ export default class FetchPatchUser extends Route {
 
 		const FilteredItems = Object.entries(Req.body)
 			.filter(([key]) => {
-				return this.Editable.includes(key as keyof EditableSchema);
+				return this.Editable.includes(key as keyof EditableUser);
 			})
 			.reduce<{ [key: string]: number | string | null; }>((prev, [key, value]) => {
 				if (!['string', 'number'].includes(typeof value)) prev[key as string] = null;
@@ -294,7 +294,7 @@ export default class FetchPatchUser extends Route {
 
 			// darkerink: Is there a better way to do this? yes, we could instead allow updating all flags but I would rather just support
 			// removing and adding flags here and there (RFlags = Remove Flags, AFlags = Add Flags)
-			if ((item === 'RFlags' || item === 'AFlags') && ParsedFlags.hasString('Staff')) {
+			if ((item === 'RFlags' || item === 'AFlags') && ParsedFlags.has('Staff')) {
 				const Flags = FilteredItems[item] as number;
 
 				this.App.Logger.warn(
@@ -303,15 +303,14 @@ export default class FetchPatchUser extends Route {
 				);
 
 				const FilteredFlagsParsed = new FlagFields(
-					FlagRemover.RemovePrivateNormalFlags(FlagRemover.InvalidFlagsRemover(BigInt(Flags))),
+					0n,
+					Flags
 				);
 
-				FilteredFlagsParsed.removeString('Staff'); // darkerink: We will not allow them to remove the staff flag, the staff badge is fine tho
+				if (item === 'RFlags') ParsedFlags.PublicFlags.remove(FilteredFlagsParsed.PublicFlags.cleaned);
+				if (item === 'AFlags') ParsedFlags.PublicFlags.add(FilteredFlagsParsed.PublicFlags.cleaned);
 
-				if (item === 'RFlags') ParsedFlags.remove(FilteredFlagsParsed.bits);
-				if (item === 'AFlags') ParsedFlags.add(FilteredFlagsParsed.bits);
-
-				FetchedUser.Flags = String(ParsedFlags.bits);
+				FetchedUser.PublicFlags = String(ParsedFlags.PublicFlags.cleaned);
 
 				continue;
 			}
@@ -332,11 +331,11 @@ export default class FetchPatchUser extends Route {
 		if (FilteredItems.Email) {
 			this.App.Logger.debug('Before', ParsedFlags.toArray());
 
-			ParsedFlags.removeString('EmailVerified');
+			ParsedFlags.PrivateFlags.remove('EmailVerified');
 
 			this.App.Logger.debug('After', ParsedFlags.toArray());
 
-			FetchedUser.Flags = String(ParsedFlags.bits);
+			FetchedUser.Flags = String(ParsedFlags.PrivateFlags.cleaned);
 
 			const FoundUser = await this.FetchUser(undefined, FilteredItems.Email);
 
@@ -361,7 +360,7 @@ export default class FetchPatchUser extends Route {
 					},
 				});
 			} else {
-				const FoundUser = await this.UserExists(FilteredItems.Username, FilteredItems.Tag ?? FetchedUser.Tag)
+				const FoundUser = await this.UserExists(FilteredItems.Username, FilteredItems.Tag ?? FetchedUser.Tag);
 
 				if (FoundUser) {
 					Error.AddError({
@@ -381,7 +380,7 @@ export default class FetchPatchUser extends Route {
 		}
 
 		await this.App.Cassandra.Models.User.update({
-			...Encryption.completeEncryption(FetchedUser),
+			...Encryption.CompleteEncryption(FetchedUser),
 			Tag: FetchedUser.Tag,
 			Password: FetchedUser.Password,
 			Flags: FetchedUser.Flags,
@@ -391,23 +390,24 @@ export default class FetchPatchUser extends Route {
 		const UserObject: UserObject = {
 			Id: FetchedUser.UserId,
 			Email: FetchedUser.Email,
-			EmailVerified: ParsedFlags.hasString('EmailVerified'),
+			EmailVerified: ParsedFlags.PrivateFlags.has('EmailVerified'),
 			Username: FetchedUser.Username,
 			GlobalNickname: FetchedUser.GlobalNickname.length === 0 ? null : FetchedUser.GlobalNickname,
 			Tag: FetchedUser.Tag,
 			Avatar: FetchedUser.Avatar.length === 0 ? null : FetchedUser.Avatar,
-			PublicFlags: Number(FlagRemover.RemovePrivateNormalFlags(BigInt(FetchedUser.Flags))),
+			PublicFlags: Number(ParsedFlags.PublicFlags.cleaned),
+			Flags: Number(ParsedFlags.PublicPrivateFlags),
 			PhoneNumber: null,
-			TwoFaEnabled: ParsedFlags.hasString('TwoFaEnabled'),
-			TwoFaVerified: ParsedFlags.hasString('TwoFaVerified'),
+			TwoFaEnabled: ParsedFlags.PrivateFlags.has('TwoFaEnabled'),
+			TwoFaVerified: ParsedFlags.PrivateFlags.has('TwoFaVerified'),
 		};
 
 		if (FilteredItems.Bio) {
 			UserObject.Bio = String(FilteredItems.Bio);
 
 			await this.App.Cassandra.Models.Settings.update({
-				UserId: Encryption.encrypt(UserObject.Id),
-				Bio: Encryption.encrypt(String(UserObject.Bio)),
+				UserId: Encryption.Encrypt(UserObject.Id),
+				Bio: Encryption.Encrypt(String(UserObject.Bio)),
 			});
 		}
 
@@ -429,31 +429,32 @@ export default class FetchPatchUser extends Route {
 			return;
 		}
 
-		const Flags = new FlagFields(FetchedUser.Flags);
+		const Flags = new FlagFields(FetchedUser.Flags, FetchedUser.PublicFlags);
 		const SplitInclude = String(include).split(',');
 
 		const UserObject: UserObject = {
 			Id: FetchedUser.UserId,
 			Email: FetchedUser.Email,
-			EmailVerified: Flags.hasString('EmailVerified'),
+			EmailVerified: Flags.PrivateFlags.has('EmailVerified'),
 			Username: FetchedUser.Username,
 			GlobalNickname: FetchedUser.GlobalNickname.length === 0 ? null : FetchedUser.GlobalNickname,
 			Tag: FetchedUser.Tag,
 			Avatar: FetchedUser.Avatar.length === 0 ? null : FetchedUser.Avatar,
-			PublicFlags: Number(FlagRemover.RemovePrivateNormalFlags(BigInt(FetchedUser.Flags))),
+			PublicFlags: Number(Flags.PublicFlags.cleaned),
+			Flags: Number(Flags.PublicPrivateFlags),
 			PhoneNumber: null,
-			TwoFaEnabled: Flags.hasString('TwoFaEnabled'),
-			TwoFaVerified: Flags.hasString('TwoFaVerified'),
+			TwoFaEnabled: Flags.PrivateFlags.has('TwoFaEnabled'),
+			TwoFaVerified: Flags.PrivateFlags.has('TwoFaVerified'),
 		};
 
 		if (SplitInclude.includes('bio')) {
 			const Settings = await this.App.Cassandra.Models.Settings.get({
-				UserId: Encryption.encrypt(UserObject.Id),
+				UserId: Encryption.Encrypt(UserObject.Id),
 			}, {
 				fields: ['bio']
 			});
 
-			UserObject.Bio = Settings?.Bio ? Encryption.decrypt(Settings.Bio) : null;
+			UserObject.Bio = Settings?.Bio ? Encryption.Decrypt(Settings.Bio) : null;
 		}
 
 		Res.send(UserObject);
@@ -461,15 +462,16 @@ export default class FetchPatchUser extends Route {
 
 	private async FetchUser(UserId?: string, Email?: string): Promise<UserType | null> {
 		const FetchedUser = await this.App.Cassandra.Models.User.get({
-			...(UserId ? { UserId: Encryption.encrypt(UserId) } : {}),
-			...(Email ? { Email: Encryption.encrypt(Email) } : {}),
+			...(UserId ? { UserId: Encryption.Encrypt(UserId) } : {}),
+			...(Email ? { Email: Encryption.Encrypt(Email) } : {}),
 		});
 
 		if (!FetchedUser) return null;
 
-		return Encryption.completeDecryption({
+		return Encryption.CompleteDecryption({
 			...FetchedUser,
 			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
+			PublicFlags: FetchedUser?.PublicFlags ? String(FetchedUser.PublicFlags) : '0',
 		});
 	}
 
@@ -481,7 +483,7 @@ export default class FetchPatchUser extends Route {
 		} else if (Username) {
 			const FoundUsers = await this.App.Cassandra.Execute(
 				'SELECT COUNT(1) FROM users WHERE username = ?',
-				[Encryption.encrypt(Username)]
+				[Encryption.Encrypt(Username)]
 			);
 
 			const Value: number = FoundUsers?.first()?.get('count').toNumber() ?? 0;
@@ -494,7 +496,7 @@ export default class FetchPatchUser extends Route {
 
 	private async UserExists(Username: string, Tag: string): Promise<boolean> {
 		const Users = await this.App.Cassandra.Models.User.find({
-			Username: Encryption.encrypt(Username),
+			Username: Encryption.Encrypt(Username),
 		}, {
 			fields: ['tag']
 		});

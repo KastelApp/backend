@@ -11,30 +11,22 @@
 
 import { Buffer } from 'node:buffer';
 import crypto from 'node:crypto';
-import { Base64 } from '@kastelll/util';
 import { Encryption } from '../../Config.js';
 
 class Token {
 	public static GenerateToken(UserId: string): string {
-		const snowflakeBase64 = Base64.Encode(UserId);
+		const snowflakeBase64 = this.Encode(UserId);
 		const nonce = crypto
 			.randomBytes(16)
-			.toString('base64')
-			.replaceAll('+', 'F')
-			.replaceAll('/', 'q')
-			.replace(/=+$/, 'zT');
+			.toString('base64url');
 
-		const StringDated = Base64.Encode(String(Date.now()) + nonce);
+		const StringDated = this.Encode(String(Date.now()) + nonce);
 
-		const hmac = crypto.createHmac('sha256', Encryption.JwtKey);
+		const hmac = crypto.createHmac('sha256', Encryption.TokenKey);
 
 		hmac.update(`${snowflakeBase64}.${StringDated}`);
 
-		return `${snowflakeBase64}.${StringDated}.${hmac
-			.digest('base64')
-			.replaceAll('+', 'F')
-			.replaceAll('/', 'q')
-			.replace(/=+$/, 'zT')}`;
+		return `${snowflakeBase64}.${StringDated}.${hmac.digest('base64url')}`;
 	}
 
 	public static ValidateToken(Token: string): boolean {
@@ -42,11 +34,11 @@ class Token {
 
 		if (!snowflakeBase64 || !StringDated || !hmacSignature) return false;
 
-		const hmac = crypto.createHmac('sha256', Encryption.JwtKey);
+		const hmac = crypto.createHmac('sha256', Encryption.TokenKey);
 
 		hmac.update(`${snowflakeBase64}.${StringDated}`);
 
-		return hmac.digest('base64').replaceAll('+', 'F').replaceAll('/', 'q').replace(/=+$/, 'zT') === hmacSignature;
+		return hmac.digest('base64url') === hmacSignature;
 	}
 
 	public static DecodeToken(Token: string): {
@@ -58,16 +50,20 @@ class Token {
 		if (!snowflakeBase64 || !StringDated) throw new Error('Invalid token provided.');
 
 		const Snowflake = Buffer.from(
-			snowflakeBase64.replaceAll('F', '+').replaceAll('q', '/').replace(/zT/, '='),
-			'base64',
+			snowflakeBase64,
+			'base64url',
 		).toString('utf8');
 
 		const DecodedTimestamp = Buffer.from(
-			StringDated.replaceAll('F', '+').replaceAll('q', '/').replace(/zT/, '='),
-			'base64',
+			StringDated,
+			'base64url',
 		).toString('utf8');
 
 		return { Snowflake, Timestamp: Number.parseInt(DecodedTimestamp, 10) };
+	}
+
+	private static Encode(item: string) {
+		return Buffer.from(item, 'utf8').toString('base64url');
 	}
 }
 

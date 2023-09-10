@@ -61,7 +61,7 @@ export default class DisableDelete extends Route {
 			return;
 		}
 
-		const FetchedUser = await this.FetchUser(Req.user.Id, ['password', 'flags']);
+		const FetchedUser = await this.FetchUser(Req.user.Id, ['password', 'flags', 'public_flags']);
 
 		if (!FetchedUser) {
 			Res.status(500).send('Internal Server Error :(');
@@ -83,45 +83,45 @@ export default class DisableDelete extends Route {
 		}
 
 		await this.App.Cassandra.Models.Settings.update({
-			UserId: Encryption.encrypt(FetchedUser.UserId),
+			UserId: Encryption.Encrypt(FetchedUser.UserId),
 			Tokens: []
-		})
+		});
 
-		const Flags = new FlagFields(FetchedUser.Flags);
+		const Flags = new FlagFields(FetchedUser.Flags, FetchedUser.PublicFlags);
 
-		Flags.addString(
+		Flags.PrivateFlags.add(
 			Req.path.endsWith('/delete')
 				? 'WaitingOnAccountDeletion'
 				: Req.path.endsWith('/disable')
-				? 'WaitingOnDisableDataUpdate'
-				: 'Disabled',
+					? 'WaitingOnDisableDataUpdate'
+					: 'Disabled',
 		);
-		Flags.addString('Disabled');
+
+		Flags.PrivateFlags.add('Disabled');
 
 		this.App.Logger.debug(
-			`😭 someone is ${
-				Req.path.endsWith('/delete') ? 'Deleting' : Req.path.endsWith('/disable') ? 'Disabling' : `Idk lol ${Req.path}`
+			`😭 someone is ${Req.path.endsWith('/delete') ? 'Deleting' : Req.path.endsWith('/disable') ? 'Disabling' : `Idk lol ${Req.path}`
 			} their account :(`,
 		);
 
 		await this.App.Cassandra.Models.User.update({
-			UserId: Encryption.encrypt(FetchedUser.UserId),
-			Flags: Flags.toString(),
-		})
-		
+			UserId: Encryption.Encrypt(FetchedUser.UserId),
+			Flags: String(Flags.PrivateFlags.bits),
+		});
+
 		Res.send('See you next time!');
 	}
 
 	private async FetchUser(UserId: string, Fields: string[]): Promise<UserType | null> {
 		const FetchedUser = await this.App.Cassandra.Models.User.get({
-			UserId: Encryption.encrypt(UserId),
+			UserId: Encryption.Encrypt(UserId),
 		}, {
 			fields: Fields
 		});
 
 		if (!FetchedUser) return null;
 
-		return Encryption.completeDecryption({
+		return Encryption.CompleteDecryption({
 			...FetchedUser,
 			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
 		});

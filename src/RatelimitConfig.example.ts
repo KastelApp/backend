@@ -2,6 +2,10 @@
 
 const GlobalRatelimit = {};
 
-export default {};
+export default {
+    GlobalRatelimit,
+};
 
-export {};
+export {
+    GlobalRatelimit,
+};

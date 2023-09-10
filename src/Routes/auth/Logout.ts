@@ -52,9 +52,9 @@ export default class Logout extends Route {
 
 			return;
 		}
-		
-		const FoundSession = Tokens.find((session) => session.Token === Encryption.encrypt(Req.user.Token));
-		
+
+		const FoundSession = Tokens.find((session) => session.Token === Encryption.Encrypt(Req.user.Token));
+
 		if (!FoundSession) {
 			this.App.Logger.debug(`Weird, No session found for the user? ID: ${Req.user.Id}`);
 
@@ -62,16 +62,16 @@ export default class Logout extends Route {
 
 			return;
 		}
-		
-		const FilteredSessions = Tokens.filter((session) => session.Token !== Encryption.encrypt(Req.user.Token));
+
+		const FilteredSessions = Tokens.filter((session) => session.Token !== Encryption.Encrypt(Req.user.Token));
 
 		this.App.SystemSocket.Events.DeletedSession({
 			UserId: Req.user.Id,
-			SessionId: Encryption.decrypt(FoundSession.TokenId),
+			SessionId: Encryption.Decrypt(FoundSession.TokenId),
 		});
-		
+
 		await this.App.Cassandra.Models.Settings.update({
-			UserId: Encryption.encrypt(Req.user.Id),
+			UserId: Encryption.Encrypt(Req.user.Id),
 			Tokens: FilteredSessions
 		});
 
@@ -80,7 +80,7 @@ export default class Logout extends Route {
 
 	private async FetchSessions(UserId: string): Promise<Tokens[]> {
 		const Settings = await this.App.Cassandra.Models.Settings.get({
-			UserId: Encryption.encrypt(UserId),
+			UserId: Encryption.Encrypt(UserId),
 		}, {
 			fields: ['tokens']
 		});

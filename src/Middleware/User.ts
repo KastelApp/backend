@@ -27,9 +27,9 @@ import Token from '../Utils/Classes/Token.js';
 
 const User = (options: UserMiddleware) => {
 	return async (Req: Request, Res: Response, next: NextFunction) => {
-		
+
 		let AuthHeader = Req.headers.authorization;
-		const AuthIsBot = Req.headers.authorization?.toLowerCase()?.includes('bot');
+		const AuthIsBot = Req.headers.authorization?.toLowerCase()?.startsWith('bot ') ?? false;
 
 		const UnAuthorized = ErrorGen.UnAuthorized();
 
@@ -101,21 +101,21 @@ const User = (options: UserMiddleware) => {
 			const DecodedToken = Token.DecodeToken(AuthHeader);
 
 			const UsersSettings = await options.App.Cassandra.Models.Settings.get({
-				UserId: Encryption.encrypt(DecodedToken.Snowflake),
+				UserId: Encryption.Encrypt(DecodedToken.Snowflake),
 			}, {
 				fields: ['tokens']
 			});
 
 			const UserData = await options.App.Cassandra.Models.User.get({
-				UserId: Encryption.encrypt(DecodedToken.Snowflake),
+				UserId: Encryption.Encrypt(DecodedToken.Snowflake),
 			}, {
-				fields: ['email', 'user_id', 'flags', 'password']
+				fields: ['email', 'user_id', 'flags', 'password', 'public_flags', 'guilds']
 			});
-			
+
 			if (!UsersSettings || !UserData) {
 				App.StaticLogger.debug("User settings wasn't found", (DecodedToken.Snowflake));
-				App.StaticLogger.debug(UserData, UsersSettings)
-				
+				App.StaticLogger.debug(UserData, UsersSettings);
+
 				UnAuthorized.AddError({
 					User: {
 						Code: 'InvalidToken',
@@ -127,8 +127,8 @@ const User = (options: UserMiddleware) => {
 
 				return;
 			}
-			
-			if (!UsersSettings?.Tokens?.some((Token) => Token.Token === Encryption.encrypt(AuthHeader as string))) {
+
+			if (!UsersSettings?.Tokens?.some((Token) => Token.Token === Encryption.Encrypt(AuthHeader as string))) {
 				App.StaticLogger.debug('Token not found in the user settings');
 
 				UnAuthorized.AddError({
@@ -142,13 +142,13 @@ const User = (options: UserMiddleware) => {
 
 				return;
 			}
-			
-			const UserFlags = new FlagFields(UserData.Flags);
+
+			const UserFlags = new FlagFields(UserData.Flags, UserData.PublicFlags);
 
 			if (
-				UserFlags.hasString('AccountDeleted') ||
-				UserFlags.hasString('WaitingOnDisableDataUpdate') ||
-				UserFlags.hasString('WaitingOnAccountDeletion')
+				UserFlags.PrivateFlags.has('AccountDeleted') ||
+				UserFlags.PrivateFlags.has('WaitingOnDisableDataUpdate') ||
+				UserFlags.PrivateFlags.has('WaitingOnAccountDeletion')
 			) {
 				const Error = ErrorGen.AccountNotAvailable();
 
@@ -166,7 +166,7 @@ const User = (options: UserMiddleware) => {
 				return;
 			}
 
-			if (UserFlags.hasString('Terminated') || UserFlags.hasString('Disabled')) {
+			if (UserFlags.PrivateFlags.has('Terminated') || UserFlags.PrivateFlags.has('Disabled')) {
 				const Error = ErrorGen.AccountNotAvailable();
 
 				App.StaticLogger.debug('Account Is Disabled or Terminated');
@@ -184,14 +184,14 @@ const User = (options: UserMiddleware) => {
 			}
 
 			if (
-				(AuthIsBot && (!UserFlags.hasString('Bot') || !UserFlags.hasString('VerifiedBot'))) ||
-				(!AuthIsBot && (UserFlags.hasString('Bot') || UserFlags.hasString('VerifiedBot')))
+				(AuthIsBot && (!UserFlags.PrivateFlags.has('Bot') || !UserFlags.PrivateFlags.has('VerifiedBot'))) ||
+				(!AuthIsBot && (UserFlags.PrivateFlags.has('Bot') || UserFlags.PrivateFlags.has('VerifiedBot')))
 			) {
 				App.StaticLogger.debug(
 					'The user has a (or is missing) a flag its not meant to (bot) and is using an invalid header tbh idk how to log this well',
 					AuthIsBot,
-					(!AuthIsBot && UserFlags.hasString('Bot')) || UserFlags.hasString('VerifiedBot'),
-					(AuthIsBot && !UserFlags.hasString('Bot')) || !UserFlags.hasString('VerifiedBot'),
+					(!AuthIsBot && UserFlags.PrivateFlags.has('Bot')) || UserFlags.PrivateFlags.has('VerifiedBot'),
+					(AuthIsBot && !UserFlags.PrivateFlags.has('Bot')) || !UserFlags.PrivateFlags.has('VerifiedBot'),
 				);
 
 				UnAuthorized.AddError({
@@ -206,7 +206,7 @@ const User = (options: UserMiddleware) => {
 				return;
 			}
 
-			if (options.AllowedRequesters === 'User' && (UserFlags.hasString('Bot') || UserFlags.hasString('VerifiedBot'))) {
+			if (options.AllowedRequesters === 'User' && (UserFlags.PrivateFlags.has('Bot') || UserFlags.PrivateFlags.has('VerifiedBot'))) {
 				App.StaticLogger.debug('User only endpoint though user is a bot');
 
 				UnAuthorized.AddError({
@@ -221,7 +221,7 @@ const User = (options: UserMiddleware) => {
 				return;
 			}
 
-			if (options.AllowedRequesters === 'Bot' && !(UserFlags.hasString('Bot') || UserFlags.hasString('VerifiedBot'))) {
+			if (options.AllowedRequesters === 'Bot' && !(UserFlags.PrivateFlags.has('Bot') || UserFlags.PrivateFlags.has('VerifiedBot'))) {
 				App.StaticLogger.debug('Bot only endpoint though user is not a bot');
 
 				UnAuthorized.AddError({
@@ -238,7 +238,7 @@ const User = (options: UserMiddleware) => {
 
 			if (options.Flags && options.Flags.length > 0) {
 				for (const Flag of options.Flags) {
-					if (!UserFlags.hasString(Flag)) {
+					if (!UserFlags.PrivateFlags.has(Flag)) {
 						App.StaticLogger.debug(`User is missing the ${Flag} flag`);
 
 						UnAuthorized.AddError({
@@ -257,7 +257,7 @@ const User = (options: UserMiddleware) => {
 
 			if (options.DisallowedFlags && options.DisallowedFlags.length > 0) {
 				for (const Flag of options.DisallowedFlags) {
-					if (UserFlags.hasString(Flag)) {
+					if (UserFlags.PrivateFlags.has(Flag)) {
 						App.StaticLogger.debug(`User has the ${Flag} flag`);
 
 						UnAuthorized.AddError({
@@ -274,18 +274,19 @@ const User = (options: UserMiddleware) => {
 				}
 			}
 
-			const CompleteDecrypted: { Email: string, Flags: string, Password: string, UserId: string } = Encryption.completeDecryption({
+			const CompleteDecrypted: { Email: string, Flags: string, Guilds: string[], Password: string, UserId: string } = Encryption.CompleteDecryption({
 				...UserData,
 				Flags: UserData.Flags.toString()
 			});
 
 			Req.user = {
 				Token: AuthHeader,
-				Bot: UserFlags.hasString('Bot') || UserFlags.hasString('VerifiedBot'),
+				Bot: UserFlags.PrivateFlags.has('Bot') || UserFlags.PrivateFlags.has('VerifiedBot'),
 				FlagsUtil: UserFlags,
 				Email: CompleteDecrypted.Email,
 				Id: CompleteDecrypted.UserId,
 				Password: CompleteDecrypted.Password,
+				Guilds: CompleteDecrypted.Guilds ?? []
 			} as ExpressUser;
 
 			next();

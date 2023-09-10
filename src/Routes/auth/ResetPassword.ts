@@ -50,10 +50,10 @@ export default class ResetPassword extends Route {
 
 		this.App.Logger.debug(`[Reset Password] Email: ${Email}, Password: ${NewPassword}, Code: ${Code}`);
 
-		if (!Email || !PasswordValidtor.test(NewPassword) || !Code) {
+		if (typeof Email !== 'string' || !PasswordValidtor.test(NewPassword) || typeof Code !== 'string') {
 			const Error = ErrorGen.MissingAuthField();
 
-			if (!Email) {
+			if (typeof Email !== 'string') {
 				Error.AddError({
 					Email: {
 						Code: 'InvalidEmail',
@@ -71,7 +71,7 @@ export default class ResetPassword extends Route {
 				});
 			}
 
-			if (!Code) {
+			if (typeof Code !== 'string') {
 				Error.AddError({
 					Code: {
 						Code: 'InvalidCode',
@@ -105,14 +105,14 @@ export default class ResetPassword extends Route {
 		}
 
 		const LinkVerification = await this.App.Cassandra.Models.VerificationLink.get({
-			Code: Encryption.encrypt(Code),
+			Code: Encryption.Encrypt(Code),
 		});
-		
+
 		if (!LinkVerification) {
 			const Error = ErrorGen.MissingAuthField();
 
 			this.App.Logger.debug("[Reset Password] Couldn't find the Code");
-			this.App.Logger.debug(`[Reset Password] ${Encryption.encrypt(Code)}`);
+			this.App.Logger.debug(`[Reset Password] ${Encryption.Encrypt(Code)}`);
 
 			Error.AddError({
 				Code: {
@@ -125,7 +125,7 @@ export default class ResetPassword extends Route {
 
 			return;
 		}
-		
+
 		if (LinkVerification.Flags !== this.App.Constants.VerificationFlags.ForgotPassword) {
 			const Error = ErrorGen.MissingAuthField();
 
@@ -159,33 +159,33 @@ export default class ResetPassword extends Route {
 
 			return;
 		}
-		
+
 		await this.App.Cassandra.Models.User.update({
-			UserId: Encryption.encrypt(FetchedUser.UserId),
+			UserId: Encryption.Encrypt(FetchedUser.UserId),
 			Password: hashSync(NewPassword, 10),
-		})
+		});
 
 		await this.App.Cassandra.Models.Settings.update({
-			UserId: Encryption.encrypt(FetchedUser.UserId),
+			UserId: Encryption.Encrypt(FetchedUser.UserId),
 			Tokens: [],
 		});
-		
+
 		await this.App.Cassandra.Models.VerificationLink.remove({
-			Code: Encryption.encrypt(Code)
-		})
+			Code: Encryption.Encrypt(Code)
+		});
 
 		Res.status(204).end();
 	}
 
 	private async FetchUser(UserId?: string, Email?: string): Promise<UserType | null> {
 		const FetchedUser = await this.App.Cassandra.Models.User.get({
-			...(UserId ? { UserId: Encryption.encrypt(UserId) } : {}),
-			...(Email ? { Email: Encryption.encrypt(Email) } : {}),
+			...(UserId ? { UserId: Encryption.Encrypt(UserId) } : {}),
+			...(Email ? { Email: Encryption.Encrypt(Email) } : {}),
 		});
 
 		if (!FetchedUser) return null;
 
-		return Encryption.completeDecryption({
+		return Encryption.CompleteDecryption({
 			...FetchedUser,
 			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
 		});

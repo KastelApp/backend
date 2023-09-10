@@ -99,11 +99,11 @@ class Emails {
 				secure: this.secure,
 				...(this.auth
 					? {
-							auth: {
-								user: this.email,
-								pass: this.password,
-							},
-					  }
+						auth: {
+							user: this.email,
+							pass: this.password,
+						},
+					}
 					: {}),
 			});
 		}

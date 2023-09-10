@@ -119,15 +119,15 @@ export default class Sessions extends Route {
 
 		const Sessions = await this.FetchSessions(Req.user.Id);
 
-		const FilteredSessions = Sessions.filter((session) => session.TokenId !== Encryption.encrypt(Id));
+		const FilteredSessions = Sessions.filter((session) => session.TokenId !== Encryption.Encrypt(Id));
 
 		this.App.SystemSocket.Events.DeletedSession({
 			UserId: Req.user.Id,
 			SessionId: Id,
 		});
-		
+
 		await this.App.Cassandra.Models.Settings.update({
-			UserId: Encryption.encrypt(Req.user.Id),
+			UserId: Encryption.Encrypt(Req.user.Id),
 			Tokens: FilteredSessions
 		});
 
@@ -141,10 +141,10 @@ export default class Sessions extends Route {
 		Res.send(
 			Sessions.map((Session) => {
 				return {
-					...Session,
-					Token: '*'.repeat(Session.Token.length), // Token: Session.Token.replaceAll(/./g, '*'),
-					Ip: Encryption.encrypt(Session.Ip),
 					Current: Session.Token === Req.user.Token, // darkerink: Current is just so we don't delete our session by mistake (and tbh I should have a check)
+					CreatedDate: Session.CreatedDate,
+					TokenId: Session.TokenId,
+					Flags: Session.Flags,
 				};
 			}),
 		);
@@ -152,13 +152,13 @@ export default class Sessions extends Route {
 
 	private async FetchSessions(UserId: string): Promise<Tokens[]> {
 		const Settings = await this.App.Cassandra.Models.Settings.get({
-			UserId: Encryption.encrypt(UserId),
+			UserId: Encryption.Encrypt(UserId)
 		}, {
 			fields: ['tokens']
 		});
-		
-		if (!Settings) return [];
-		
-		return Settings.Tokens;
+
+		if (!Settings?.Tokens) return [];
+
+		return Encryption.CompleteDecryption(Settings.Tokens);
 	}
 }

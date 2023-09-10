@@ -27,16 +27,6 @@ export default class Main extends Route {
 	}
 
 	public override Request(_: Request, Res: Response): void {
-		Res.send({
-			Code: 200,
-			Message: {
-				Status: 'OK',
-				Message: 'Welcome to the Kastel API',
-				LatestVersions: {
-					API: 1,
-					Ws: 1,
-				},
-			},
-		});
+		Res.send('ok')
 	}
 }

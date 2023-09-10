@@ -12,7 +12,7 @@
 import type { Request, Response } from 'express';
 import User from '../../../../Middleware/User.js';
 import type App from '../../../../Utils/Classes/App.js';
-import FlagRemover from '../../../../Utils/Classes/BitFields/FlagRemover.js';
+import FlagFields from '../../../../Utils/Classes/BitFields/Flags.js';
 import Encryption from '../../../../Utils/Classes/Encryption.js';
 import ErrorGen from '../../../../Utils/Classes/ErrorGen.js';
 import Route from '../../../../Utils/Classes/Route.js';
@@ -21,6 +21,7 @@ import type { User as UserType } from '../../../../Utils/Cql/Types/index.js';
 interface UserObject {
 	Avatar: string | null;
 	Bio?: string;
+	Flags: number;
 	GlobalNickname: string | null;
 	Id: string;
 	PublicFlags: number;
@@ -48,7 +49,7 @@ export default class FetchPatchUser extends Route {
 	}
 
 	public override async Request(Req: Request, Res: Response) {
-		const { userId } = Req.params as { userId: string };
+		const { userId } = Req.params as { userId: string; };
 		const { include } = Req.query;
 
 		const FetchedUser = await this.FetchUser(userId);
@@ -70,24 +71,27 @@ export default class FetchPatchUser extends Route {
 
 		const SplitInclude = String(include).split(',');
 
+		const FlagUtils = new FlagFields(FetchedUser.Flags, FetchedUser.PublicFlags);
+
 		const UserObject: UserObject = {
 			Id: FetchedUser.UserId,
 			Username: FetchedUser.Username,
 			GlobalNickname: FetchedUser.GlobalNickname.length === 0 ? null : FetchedUser.GlobalNickname,
 			Tag: FetchedUser.Tag,
 			Avatar: FetchedUser.Avatar.length === 0 ? null : FetchedUser.Avatar,
-			PublicFlags: Number(FlagRemover.RemovePrivateNormalFlags(BigInt(FetchedUser.Flags))),
+			PublicFlags: Number(FlagUtils.PublicFlags.cleaned),
+			Flags: Number(FlagUtils.PublicPrivateFlags)
 		};
 
 		if (SplitInclude.includes('bio') && !Req.user.Bot) {
 			// darkerink: Bots should not be allowed to fetch this (Personal info bots no need access to)
 			const Settings = await this.App.Cassandra.Models.Settings.get({
-				UserId: Encryption.encrypt(UserObject.Id),
+				UserId: Encryption.Encrypt(UserObject.Id),
 			}, {
 				fields: ['bio']
 			});
 
-			UserObject.Bio = Settings?.Bio ? Encryption.decrypt(Settings.Bio) : null;
+			UserObject.Bio = Settings?.Bio ? Encryption.Decrypt(Settings.Bio) : null;
 		}
 
 		Res.send(UserObject);
@@ -95,13 +99,13 @@ export default class FetchPatchUser extends Route {
 
 	private async FetchUser(UserId?: string, Email?: string): Promise<UserType | null> {
 		const FetchedUser = await this.App.Cassandra.Models.User.get({
-			...(UserId ? { UserId: Encryption.encrypt(UserId) } : {}),
-			...(Email ? { Email: Encryption.encrypt(Email) } : {}),
+			...(UserId ? { UserId: Encryption.Encrypt(UserId) } : {}),
+			...(Email ? { Email: Encryption.Encrypt(Email) } : {}),
 		});
 
 		if (!FetchedUser) return null;
 
-		return Encryption.completeDecryption({
+		return Encryption.CompleteDecryption({
 			...FetchedUser,
 			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
 		});

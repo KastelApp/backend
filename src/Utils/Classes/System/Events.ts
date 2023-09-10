@@ -39,8 +39,8 @@ class Events {
 		if (this.SendEvents) {
 			this.SystemSocket.Ws?.send(
 				JSON.stringify({
-					op: OpCodes.MessageCreate,
-					d: {
+					Op: OpCodes.MessageCreate,
+					D: {
 						Message,
 					},
 				}),
@@ -48,8 +48,8 @@ class Events {
 		}
 
 		return JSON.stringify({
-			op: OpCodes.MessageCreate,
-			d: {
+			Op: OpCodes.MessageCreate,
+			D: {
 				Message,
 			},
 		});
@@ -59,8 +59,8 @@ class Events {
 		if (this.SendEvents) {
 			this.SystemSocket.Ws?.send(
 				JSON.stringify({
-					op: OpCodes.MessageDelete,
-					d: {
+					Op: OpCodes.MessageDelete,
+					D: {
 						Message,
 					},
 				}),
@@ -68,8 +68,8 @@ class Events {
 		}
 
 		return JSON.stringify({
-			op: OpCodes.MessageDelete,
-			d: {
+			Op: OpCodes.MessageDelete,
+			D: {
 				Message,
 			},
 		});
@@ -99,8 +99,8 @@ class Events {
 		UpdatedAt: number;
 	}) {
 		const StringifiedPayload = JSON.stringify({
-			op: OpCodes.MessageUpdate,
-			d: {
+			Op: OpCodes.MessageUpdate,
+			D: {
 				Message,
 			},
 		});
@@ -114,8 +114,8 @@ class Events {
 
 	public NewSession(data: { SessionId: string, UserId: string; }) {
 		const StringifiedPayload = JSON.stringify({
-			op: OpCodes.NewSession,
-			d: {
+			Op: OpCodes.NewSession,
+			D: {
 				SessionId: data.SessionId,
 				UserId: data.UserId,
 			},
@@ -130,8 +130,8 @@ class Events {
 
 	public DeletedSession(data: { SessionId: string, UserId: string; }) {
 		const StringifiedPayload = JSON.stringify({
-			op: OpCodes.DeleteSession,
-			d: {
+			Op: OpCodes.DeleteSession,
+			D: {
 				SessionId: data.SessionId,
 				UserId: data.UserId,
 			},
@@ -159,7 +159,7 @@ class Events {
 		Username: string;
 	}) {
 		const StringifiedPayload = JSON.stringify({
-			op: OpCodes.SelfUpdate,
+			Op: OpCodes.SelfUpdate,
 			d: User,
 		});
 
@@ -190,7 +190,7 @@ class Events {
 		delete Data.Causer.FlagsUtil;
 
 		const StringifiedPayload = JSON.stringify({
-			op: OpCodes.RelationshipUpdate,
+			Op: OpCodes.RelationshipUpdate,
 			d: Data,
 		});
 

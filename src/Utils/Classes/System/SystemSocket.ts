@@ -70,8 +70,8 @@ class SystemSocket {
 				this.App.Logger.info('Connected to System Socket');
 			});
 
-			this.Ws.on('close', () => {
-				this.App.Logger.warn('Disconnected from System Socket');
+			this.Ws.on('close', (code, reason) => {
+				this.App.Logger.warn('Disconnected from System Socket', reason.toString(), code);
 
 				this.HandleDisconnect();
 			});
@@ -79,7 +79,7 @@ class SystemSocket {
 			this.Ws.on('message', (data: Buffer) => {
 				const decoded = this.decode(data);
 
-				if (decoded?.s) this.Sequence = decoded.s;
+				if (decoded?.S) this.Sequence = decoded.S;
 
 				if (decoded?.Authed === true) {
 					this.App.Logger.info('Authed to System Socket');
@@ -98,8 +98,8 @@ class SystemSocket {
 							this.App.Logger.debug('Sending Heartbeat');
 							this.Ws?.send(
 								JSON.stringify({
-									op: OpCodes.HeartBeat,
-									d: {
+									Op: OpCodes.HeartBeat,
+									D: {
 										Sequence: this.Sequence,
 									},
 								}),
@@ -113,21 +113,21 @@ class SystemSocket {
 					resolve();
 				}
 
-				if (decoded?.op) {
+				if (decoded?.Op) {
 					const NormalPayload = decoded as NormalPayload;
 
 					this.App.Logger.debug(`Received Payload: ${JSON.stringify(NormalPayload)}`);
 
-					switch (NormalPayload.op) {
+					switch (NormalPayload.Op) {
 						case OpCodes.HeartBeatAck:
 							this.LastHeartbeatAck = Date.now();
 							this.App.Logger.debug(`Heartbeat Acknowledged`);
 							break;
 
-						case Object.values(SystemOpCodes).find((op) => op === NormalPayload.op):
+						case Object.values(SystemOpCodes).find((op) => op === NormalPayload.Op):
 							this.App.Logger.debug(
 								`Received Event: ${Object.keys(SystemOpCodes).find(
-									(op) => SystemOpCodes[op as keyof typeof SystemOpCodes] === NormalPayload.op,
+									(op) => SystemOpCodes[op as keyof typeof SystemOpCodes] === NormalPayload.Op,
 								)}`,
 							);
 							break;
