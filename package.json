@@ -21,7 +21,7 @@
 		"nodemailer": "^6.9.4",
 		"simple-git": "^3.19.1",
 		"speakeasy": "^2.0.0",
-		"systeminformation": "^5.18.15",
+		"systeminformation": "^5.21.9",
 		"terminal-kit": "^3.0.0",
 		"undici": "^5.23.0",
 		"ws": "^8.13.0"
