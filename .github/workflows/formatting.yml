@@ -21,15 +21,5 @@ jobs:
 
       - name: Check for formatting issues
         run: bun lint
-
-      - name: Commit changes
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git config --global pull.rebase false
-          git add -A
-          git commit -m "fix: linting and formatting issues" || echo "No changes to commit"
-          git stash
-          git pull --rebase origin HEAD:${{ github.head_ref }}
-          git stash pop
-          git push origin HEAD:${{ github.head_ref }}
+        
+      - uses: stefanzweifel/git-auto-commit-action@v4
