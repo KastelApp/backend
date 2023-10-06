@@ -9,6 +9,5 @@
 		"require-atomic-updates": "off",
 		"unicorn/no-unsafe-regex": "off",
 		"no-restricted-globals": "off" // off due to bun
-	},
-	"ignorePatterns": ["**/dist/*"]
+	}
 }
