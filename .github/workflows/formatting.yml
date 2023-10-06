@@ -27,7 +27,6 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git config --global pull.rebase false
-          git pull origin HEAD:${{ github.head_ref }}
           git add -A
-          git commit -m "fix: linting and formatting issues" || echo "No changes to commit"
+          git pull --rebase origin HEAD:${{ github.head_ref }}
           git push origin HEAD:${{ github.head_ref }}
