@@ -36,5 +36,8 @@
 		"allowImportingTsExtensions": true,
 		"moduleDetection": "force"
 	},
-	"include": ["src/**/*", "scripts/**/*"]
+	"include": ["src/**/*", "scripts/**/*"],
+	"exclude": [
+		".github"
+	]
 }
