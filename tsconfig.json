@@ -37,7 +37,5 @@
 		"moduleDetection": "force"
 	},
 	"include": ["src/**/*", "scripts/**/*"],
-	"exclude": [
-		".github"
-	]
+	"exclude": [".github"]
 }
