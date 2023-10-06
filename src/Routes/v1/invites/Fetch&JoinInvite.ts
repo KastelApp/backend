@@ -10,14 +10,14 @@
  */
 
 import type { Request, Response } from 'express';
-import User from '../../../Middleware/User.js';
-import type App from '../../../Utils/Classes/App.js';
-import FlagFields from '../../../Utils/Classes/BitFields/Flags.js';
-import GuildMemberFlags from '../../../Utils/Classes/BitFields/GuildMember.js';
-import Encryption from '../../../Utils/Classes/Encryption.js';
-import ErrorGen from '../../../Utils/Classes/ErrorGen.js';
-import Route from '../../../Utils/Classes/Route.js';
-import type { GuildMember } from '../../../Utils/Cql/Types/index.js';
+import User from '../../../Middleware/User.ts';
+import type App from '../../../Utils/Classes/App.ts';
+import FlagFields from '../../../Utils/Classes/BitFields/Flags.ts';
+import GuildMemberFlags from '../../../Utils/Classes/BitFields/GuildMember.ts';
+import Encryption from '../../../Utils/Classes/Encryption.ts';
+import ErrorGen from '../../../Utils/Classes/ErrorGen.ts';
+import Route from '../../../Utils/Classes/Route.ts';
+import type { GuildMember } from '../../../Utils/Cql/Types/index.ts';
 
 interface UserObject {
 	Avatar: string | null;
@@ -105,7 +105,7 @@ export default class FetchAndJoinInvite extends Route {
 		}
 
 		const Member = await this.FetchMember(Req.user.Id, Invite.GuildId);
-		const Guild = await this.FetchGuild(Invite.GuildId)
+		const Guild = await this.FetchGuild(Invite.GuildId);
 
 		if (Member) {
 			const MemberFlags = new GuildMemberFlags(Member.Flags);
@@ -186,7 +186,7 @@ export default class FetchAndJoinInvite extends Route {
 		}
 
 		const Guild = await this.FetchGuild(Invite.GuildId);
-		
+
 		if (Guild) {
 			ReturnPayload.Guild = Guild;
 		}

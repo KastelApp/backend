@@ -10,19 +10,19 @@
  */
 
 import type { Request, Response } from 'express';
-import { InviteFlags, PermissionOverrideTypes } from '../../../../../Constants.js';
-import Guild from '../../../../../Middleware/Guild.js';
-import User from '../../../../../Middleware/User.js';
-import type App from '../../../../../Utils/Classes/App.js';
-import GuildMemberFlags from '../../../../../Utils/Classes/BitFields/GuildMember.js';
-import { FlagUtils } from '../../../../../Utils/Classes/BitFields/NewFlags.js';
-import Encryption from '../../../../../Utils/Classes/Encryption.js';
-import ErrorGen from '../../../../../Utils/Classes/ErrorGen.js';
-import Route from '../../../../../Utils/Classes/Route.js';
-import type Roles from '../../../../../Utils/Cql/Types/Role.js';
-import type { Invite } from '../../../../../Utils/Cql/Types/index.js';
-import InviteGenerator from '../../../../../Utils/InviteGenerator.js';
-import PermissionHandler from '../../../../../Utils/Versioning/v1/PermissionCheck.js';
+import { InviteFlags, PermissionOverrideTypes } from '../../../../../Constants.ts';
+import Guild from '../../../../../Middleware/Guild.ts';
+import User from '../../../../../Middleware/User.ts';
+import type App from '../../../../../Utils/Classes/App.ts';
+import GuildMemberFlags from '../../../../../Utils/Classes/BitFields/GuildMember.ts';
+import { FlagUtils } from '../../../../../Utils/Classes/BitFields/NewFlags.ts';
+import Encryption from '../../../../../Utils/Classes/Encryption.ts';
+import ErrorGen from '../../../../../Utils/Classes/ErrorGen.ts';
+import Route from '../../../../../Utils/Classes/Route.ts';
+import type Roles from '../../../../../Utils/Cql/Types/Role.ts';
+import type { Invite } from '../../../../../Utils/Cql/Types/index.ts';
+import InviteGenerator from '../../../../../Utils/InviteGenerator.ts';
+import PermissionHandler from '../../../../../Utils/Versioning/v1/PermissionCheck.ts';
 
 interface InviteBody {
 	ChannelId: string;
@@ -236,7 +236,7 @@ export default class FetchCreateAndDeleteInvites extends Route {
 				Position: role.Position
 			};
 		}));
-		
+
 		if (!PermissionCheck.HasAnyRole('ManageInvites')) {
 			const MissingPermissions = ErrorGen.MissingPermissions();
 
@@ -251,13 +251,13 @@ export default class FetchCreateAndDeleteInvites extends Route {
 
 			return;
 		}
-		
+
 		const Invites = await this.App.Cassandra.Models.Invite.find({
 			GuildId: Encryption.Encrypt(Req.guild.Guild.Id)
 		});
-		
+
 		const FixedInvites = [];
-		
+
 		for (const InvitePayload of Invites.toArray()) {
 			FixedInvites.push({
 				Code: InvitePayload.Code,
@@ -265,11 +265,11 @@ export default class FetchCreateAndDeleteInvites extends Route {
 				ExpiresAt: InvitePayload.Expires,
 				MaxUses: InvitePayload.MaxUses,
 				Uses: InvitePayload.Uses,
-				Deleteable: InvitePayload.Deleteable	
-			})
+				Deleteable: InvitePayload.Deleteable
+			});
 		}
-		
-		Res.send(Encryption.CompleteDecryption(FixedInvites))
+
+		Res.send(Encryption.CompleteDecryption(FixedInvites));
 	}
 
 	private async ChannelExists(ChannelId: string) {

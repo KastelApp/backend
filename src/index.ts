@@ -10,13 +10,15 @@
  */
 
 import process from 'node:process';
-import App from './Utils/Classes/App.js';
+import App from './Utils/Classes/App.ts';
 
 const Application = new App();
 
-// eslint-disable-next-line promise/prefer-await-to-callbacks
-Application.Init().catch((error) => {
+try {
+	await Application.Init()
+} catch (error) {
+	Application.Logger.fatal("A fatal error occurred before the server could start.")
 	Application.Logger.fatal(error);
 
 	process.exit(1);
-});
+}

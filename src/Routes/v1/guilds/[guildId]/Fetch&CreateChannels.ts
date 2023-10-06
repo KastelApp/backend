@@ -11,21 +11,21 @@
 
 import { types } from '@kastelll/cassandra-driver';
 import type { Request, Response } from 'express';
-import { ChannelPermissions, ChannelTypes, GuildMemberFlags, MixedPermissions, PermissionOverrideTypes } from '../../../../Constants.js';
-import Guild from '../../../../Middleware/Guild.js';
-import User from '../../../../Middleware/User.js';
+import { ChannelPermissions, ChannelTypes, GuildMemberFlags, MixedPermissions, PermissionOverrideTypes } from '../../../../Constants.ts';
+import Guild from '../../../../Middleware/Guild.ts';
+import User from '../../../../Middleware/User.ts';
 import type App from '../../../../Utils/Classes/App';
-import FlagUtilsBInt, { FlagUtils } from '../../../../Utils/Classes/BitFields/NewFlags.js';
-import Encryption from '../../../../Utils/Classes/Encryption.js';
-import ErrorGen from '../../../../Utils/Classes/ErrorGen.js';
-import Route from '../../../../Utils/Classes/Route.js';
-import type Roles from '../../../../Utils/Cql/Types/Role.js';
+import FlagUtilsBInt, { FlagUtils } from '../../../../Utils/Classes/BitFields/NewFlags.ts';
+import Encryption from '../../../../Utils/Classes/Encryption.ts';
+import ErrorGen from '../../../../Utils/Classes/ErrorGen.ts';
+import Route from '../../../../Utils/Classes/Route.ts';
+import type Roles from '../../../../Utils/Cql/Types/Role.ts';
 import type {
     PermissionOverride,
-} from '../../../../Utils/Cql/Types/index.js';
-import { FixChannelPositions } from '../../../../Utils/Versioning/v1/FixChannelPositions.js';
-import { GetEditedChannels } from '../../../../Utils/Versioning/v1/GetEditedChannels.js';
-import PermissionHandler from '../../../../Utils/Versioning/v1/PermissionCheck.js';
+} from '../../../../Utils/Cql/Types/index.ts';
+import { FixChannelPositions } from '../../../../Utils/Versioning/v1/FixChannelPositions.ts';
+import { GetEditedChannels } from '../../../../Utils/Versioning/v1/GetEditedChannels.ts';
+import PermissionHandler from '../../../../Utils/Versioning/v1/PermissionCheck.ts';
 
 
 interface CreateChannelBody {
@@ -172,16 +172,16 @@ export default class Channels extends Route {
 
         if (!PermissionCheck.HasAnyRole('ManageChannels')) {
             const MissingPermissions = ErrorGen.MissingPermissions();
-            
+
             MissingPermissions.AddError({
                 Permissions: {
                     Code: 'MissingPermissions',
                     Message: 'You are missing the permissions to do this action.'
                 }
             });
-            
+
             Res.status(403).json(MissingPermissions.toJSON());
-            
+
             return;
         }
 

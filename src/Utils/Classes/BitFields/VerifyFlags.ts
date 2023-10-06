@@ -9,8 +9,8 @@
  * GPL 3.0 Licensed
  */
 
-import { VerificationFlags } from '../../../Constants.js';
-import { FlagUtils } from './NewFlags.js';
+import { VerificationFlags } from '../../../Constants.ts';
+import { FlagUtils } from './NewFlags.ts';
 
 class VerifyFields extends FlagUtils<typeof VerificationFlags> {
 	public constructor(

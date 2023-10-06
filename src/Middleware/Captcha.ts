@@ -11,7 +11,7 @@
 
 import { HTTPErrors } from '@kastelll/util';
 import type { NextFunction, Request, Response } from 'express';
-import type { Captcha as CaptchaType } from '../Types/Routes.js';
+import type { Captcha as CaptchaType } from '../Types/Routes.ts';
 
 // TO DO: Cdata support
 

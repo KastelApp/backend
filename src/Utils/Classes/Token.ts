@@ -11,7 +11,7 @@
 
 import { Buffer } from 'node:buffer';
 import crypto from 'node:crypto';
-import { Encryption } from '../../Config.js';
+import { Encryption } from '../../Config.ts';
 
 class Token {
 	public static GenerateToken(UserId: string): string {

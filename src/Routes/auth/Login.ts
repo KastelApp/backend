@@ -9,18 +9,17 @@
  * GPL 3.0 Licensed
  */
 
-import { compareSync } from 'bcrypt';
 import type { Request, Response } from 'express';
-import Constants from '../../Constants.js';
-import Captcha from '../../Middleware/Captcha.js';
-import User from '../../Middleware/User.js';
+import Constants from '../../Constants.ts';
+import Captcha from '../../Middleware/Captcha.ts';
+import User from '../../Middleware/User.ts';
 import type App from '../../Utils/Classes/App';
-import FlagFields from '../../Utils/Classes/BitFields/Flags.js';
-import Encryption from '../../Utils/Classes/Encryption.js';
-import ErrorGen from '../../Utils/Classes/ErrorGen.js';
-import Route from '../../Utils/Classes/Route.js';
-import Token from '../../Utils/Classes/Token.js';
-import type { User as UserType } from '../../Utils/Cql/Types/index.js';
+import FlagFields from '../../Utils/Classes/BitFields/Flags.ts';
+import Encryption from '../../Utils/Classes/Encryption.ts';
+import ErrorGen from '../../Utils/Classes/ErrorGen.ts';
+import Route from '../../Utils/Classes/Route.ts';
+import Token from '../../Utils/Classes/Token.ts';
+import type { User as UserType } from '../../Utils/Cql/Types/index.ts';
 
 interface LoginBody {
 	Email: string;
@@ -95,7 +94,7 @@ export default class Login extends Route {
 			return;
 		}
 
-		if (!compareSync(Password, FetchedUser.Password)) {
+		if (!await Bun.password.verify(Password, FetchedUser.Password)) {
 			const Error = ErrorGen.InvalidCredentials();
 
 			Error.AddError({

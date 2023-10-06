@@ -9,16 +9,15 @@
  * GPL 3.0 Licensed
  */
 
-import { compareSync, hashSync } from 'bcrypt';
 import type { Request, Response } from 'express';
-import User from '../../../../Middleware/User.js';
+import User from '../../../../Middleware/User.ts';
 import type App from '../../../../Utils/Classes/App';
-import FlagFields from '../../../../Utils/Classes/BitFields/Flags.js';
-import Encryption from '../../../../Utils/Classes/Encryption.js';
-import ErrorGen from '../../../../Utils/Classes/ErrorGen.js';
-import Route from '../../../../Utils/Classes/Route.js';
-import type { User as UserType } from '../../../../Utils/Cql/Types/index.js';
-import { TagValidator } from '../../../../Utils/TagGenerator.js';
+import FlagFields from '../../../../Utils/Classes/BitFields/Flags.ts';
+import Encryption from '../../../../Utils/Classes/Encryption.ts';
+import ErrorGen from '../../../../Utils/Classes/ErrorGen.ts';
+import Route from '../../../../Utils/Classes/Route.ts';
+import type { User as UserType } from '../../../../Utils/Cql/Types/index.ts';
+import { TagValidator } from '../../../../Utils/TagGenerator.ts';
 
 interface EditableUser {
 	AFlags: number;
@@ -204,7 +203,7 @@ export default class FetchPatchUser extends Route {
 			return;
 		}
 
-		if (PasswordRequiredKey && !compareSync(Password ?? '', FetchedUser.Password)) {
+		if (PasswordRequiredKey && !(await Bun.password.verify(Password ?? '', FetchedUser.Password))) {
 			this.App.Logger.debug(
 				'User tried to update an item that requires a password and they provided an invalid password :(',
 			);
@@ -281,7 +280,7 @@ export default class FetchPatchUser extends Route {
 			if (ContinuePast.includes(item)) continue;
 
 			if (item === 'NewPassword') {
-				FetchedUser.Password = hashSync(FilteredItems[item] as string, 10);
+				FetchedUser.Password = await Bun.password.hash(FilteredItems[item] as string, "argon2id");
 
 				continue;
 			}

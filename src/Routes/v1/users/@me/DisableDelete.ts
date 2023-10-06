@@ -9,15 +9,14 @@
  * GPL 3.0 Licensed
  */
 
-import { compareSync } from 'bcrypt';
 import type { Request, Response } from 'express';
-import User from '../../../../Middleware/User.js';
+import User from '../../../../Middleware/User.ts';
 import type App from '../../../../Utils/Classes/App';
-import FlagFields from '../../../../Utils/Classes/BitFields/Flags.js';
-import Encryption from '../../../../Utils/Classes/Encryption.js';
-import ErrorGen from '../../../../Utils/Classes/ErrorGen.js';
-import Route from '../../../../Utils/Classes/Route.js';
-import type { User as UserType } from '../../../../Utils/Cql/Types/index.js';
+import FlagFields from '../../../../Utils/Classes/BitFields/Flags.ts';
+import Encryption from '../../../../Utils/Classes/Encryption.ts';
+import ErrorGen from '../../../../Utils/Classes/ErrorGen.ts';
+import Route from '../../../../Utils/Classes/Route.ts';
+import type { User as UserType } from '../../../../Utils/Cql/Types/index.ts';
 
 interface Body {
 	Password: string;
@@ -69,7 +68,7 @@ export default class DisableDelete extends Route {
 			return;
 		}
 
-		if (!compareSync(Password, FetchedUser.Password)) {
+		if (!await Bun.password.verify(Password, FetchedUser.Password)) {
 			Error.AddError({
 				Password: {
 					Code: 'InvalidPassword',

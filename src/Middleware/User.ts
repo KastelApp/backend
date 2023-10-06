@@ -12,11 +12,11 @@
 import type { NextFunction, Request, Response } from 'express';
 import type { ExpressUser } from '../Types';
 import type { UserMiddleware } from '../Types/Routes';
-import App from '../Utils/Classes/App.js';
-import FlagFields from '../Utils/Classes/BitFields/Flags.js';
-import Encryption from '../Utils/Classes/Encryption.js';
-import ErrorGen from '../Utils/Classes/ErrorGen.js';
-import Token from '../Utils/Classes/Token.js';
+import App from '../Utils/Classes/App.ts';
+import FlagFields from '../Utils/Classes/BitFields/Flags.ts';
+import Encryption from '../Utils/Classes/Encryption.ts';
+import ErrorGen from '../Utils/Classes/ErrorGen.ts';
+import Token from '../Utils/Classes/Token.ts';
 
 /**
  * The Middleware on each and every request (well it should be on it)
@@ -123,7 +123,11 @@ const User = (options: UserMiddleware) => {
 					},
 				});
 
-				Res.status(401).json(UnAuthorized.toJSON());
+				if (UsersSettings || UserData) { // darkerink: just in case there is one but not the other (has happened in very rare cases) contacting support will be the only way to fix this (for now);
+					Res.status(500).send('Internal Server Error :(');
+				} else {
+					Res.status(401).json(UnAuthorized.toJSON());
+				}
 
 				return;
 			}
@@ -274,7 +278,7 @@ const User = (options: UserMiddleware) => {
 				}
 			}
 
-			const CompleteDecrypted: { Email: string, Flags: string, Guilds: string[], Password: string, UserId: string } = Encryption.CompleteDecryption({
+			const CompleteDecrypted: { Email: string, Flags: string, Guilds: string[], Password: string, UserId: string; } = Encryption.CompleteDecryption({
 				...UserData,
 				Flags: UserData.Flags.toString()
 			});

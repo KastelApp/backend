@@ -10,9 +10,9 @@
  */
 
 import type { Request, Response } from 'express';
-import User from '../../../../../Middleware/User.js';
-import type App from '../../../../../Utils/Classes/App.js';
-import Route from '../../../../../Utils/Classes/Route.js';
+import User from '../../../../../Middleware/User.ts';
+import type App from '../../../../../Utils/Classes/App.ts';
+import Route from '../../../../../Utils/Classes/Route.ts';
 
 export default class FetchMembers extends Route {
 	public constructor(App: App) {

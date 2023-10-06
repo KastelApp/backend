@@ -1,6 +1,6 @@
 /* eslint-disable id-length */
-import type { ExpressUser } from '../../../Types/index.js';
-import { OpCodes } from '../WsUtils.js';
+import type { ExpressUser } from '../../../Types/index.ts';
+import { OpCodes } from '../WsUtils.ts';
 import type { SystemSocket } from './SystemSocket';
 
 class Events {

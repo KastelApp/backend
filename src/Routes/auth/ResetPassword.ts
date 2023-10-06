@@ -9,14 +9,13 @@
  * GPL 3.0 Licensed
  */
 
-import { hashSync } from 'bcrypt';
 import type { Request, Response } from 'express';
-import User from '../../Middleware/User.js';
+import User from '../../Middleware/User.ts';
 import type App from '../../Utils/Classes/App';
-import Encryption from '../../Utils/Classes/Encryption.js';
-import ErrorGen from '../../Utils/Classes/ErrorGen.js';
-import Route from '../../Utils/Classes/Route.js';
-import type { User as UserType } from '../../Utils/Cql/Types/index.js';
+import Encryption from '../../Utils/Classes/Encryption.ts';
+import ErrorGen from '../../Utils/Classes/ErrorGen.ts';
+import Route from '../../Utils/Classes/Route.ts';
+import type { User as UserType } from '../../Utils/Cql/Types/index.ts';
 
 interface ResetBody {
 	Code: string;
@@ -162,7 +161,7 @@ export default class ResetPassword extends Route {
 
 		await this.App.Cassandra.Models.User.update({
 			UserId: Encryption.Encrypt(FetchedUser.UserId),
-			Password: hashSync(NewPassword, 10),
+			Password: await Bun.password.hash(NewPassword, "argon2id"),
 		});
 
 		await this.App.Cassandra.Models.Settings.update({

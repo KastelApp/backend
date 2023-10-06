@@ -11,13 +11,13 @@
 
 import { types } from '@kastelll/cassandra-driver';
 import type { Request, Response } from 'express';
-import User from '../../../Middleware/User.js';
-import type { ExpressUser } from '../../../Types/index.js';
+import User from '../../../Middleware/User.ts';
+import type { ExpressUser } from '../../../Types/index.ts';
 import type App from '../../../Utils/Classes/App';
-import Encryption from '../../../Utils/Classes/Encryption.js';
-import ErrorGen from '../../../Utils/Classes/ErrorGen.js';
-import Route from '../../../Utils/Classes/Route.js';
-import type { Guild, User as UserRawType, Role as Roles, Channel as Channels, GuildMember } from '../../../Utils/Cql/Types/index.js';
+import Encryption from '../../../Utils/Classes/Encryption.ts';
+import ErrorGen from '../../../Utils/Classes/ErrorGen.ts';
+import Route from '../../../Utils/Classes/Route.ts';
+import type { Guild, User as UserRawType, Role as Roles, Channel as Channels, GuildMember } from '../../../Utils/Cql/Types/index.ts';
 
 interface NewGuildBody {
     Description: string;
@@ -370,7 +370,7 @@ export default class Guilds extends Route {
             Timeouts: [],
             UserId: Encryption.Encrypt(Req.user.Id)
         };
-        
+
         await Promise.all([
             this.App.Cassandra.Models.Guild.insert(GuildObject),
             this.App.Cassandra.Models.Channel.insert(ChannelObject),
@@ -382,7 +382,7 @@ export default class Guilds extends Route {
                 Guilds: [...Encryption.CompleteEncryption(Guilds), Encryption.Encrypt(GuildId)]
             })
         ]);
-        
+
         const FormattedPaylaod = {
             Id: GuildObject.GuildId,
             Name: GuildObject.Name,

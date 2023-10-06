@@ -10,9 +10,9 @@
  */
 
 import type { Request, Response } from 'express';
-import User from '../../../../../../Middleware/User.js';
+import User from '../../../../../../Middleware/User.ts';
 import type App from '../../../../../../Utils/Classes/App';
-import Route from '../../../../../../Utils/Classes/Route.js';
+import Route from '../../../../../../Utils/Classes/Route.ts';
 
 export default class DeleteEditMessages extends Route {
 	public constructor(App: App) {
@@ -34,6 +34,6 @@ export default class DeleteEditMessages extends Route {
 	}
 
 	public override Request(_: Request, Res: Response): void {
-		Res.send('ok')
+		Res.send('ok');
 	}
 }

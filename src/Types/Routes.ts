@@ -9,8 +9,8 @@
  * GPL 3.0 Licensed
  */
 
-import type { PrivateFlags } from '../Constants.js';
-import type App from '../Utils/Classes/App.js';
+import type { PrivateFlags } from '../Constants.ts';
+import type App from '../Utils/Classes/App.ts';
 
 export type Methods =
 	| 'ALL'

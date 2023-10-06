@@ -1,5 +1,5 @@
-import { Permissions as PermissionConstants, GuildMemberFlags as GuildMemberFlagsConstant } from "../../../Constants.js";
-import { FlagUtils } from "../../Classes/BitFields/NewFlags.js";
+import { Permissions as PermissionConstants, GuildMemberFlags as GuildMemberFlagsConstant } from "../../../Constants.ts";
+import { FlagUtils } from "../../Classes/BitFields/NewFlags.ts";
 
 class PermissionHandler {
     public GuildMemberFlags: FlagUtils<typeof GuildMemberFlagsConstant>;

@@ -1,20 +1,21 @@
 /* eslint-disable id-length */
 import type { Buffer } from 'node:buffer';
-import { setTimeout, setInterval, clearInterval } from 'node:timers';
 import zlib from 'node:zlib';
-import WebSocket from 'ws';
-import Config from '../../../Config.js';
+import Config from '../../../Config.ts';
 import type { AuthedPayload, NormalPayload } from '../../../Types/Socket/MiscPayloads';
-import type App from '../App.js';
-import { OpCodes, SystemOpCodes } from '../WsUtils.js';
-import Events from './Events.js';
+import type App from '../App.ts';
+import { OpCodes, SystemOpCodes } from '../WsUtils.ts';
+import Events from './Events.ts';
+import { WebSocket } from 'ws';
+
+setInterval;
 
 class SystemSocket {
 	public Ws: WebSocket | null;
 
 	public Sequence: number;
 
-	public HeartbeatInterval: NodeJS.Timer | null;
+	public HeartbeatInterval: Timer | null;
 
 	public LastHeartbeat: number | null;
 
@@ -29,6 +30,8 @@ class SystemSocket {
 	public Events: Events;
 
 	public App: App;
+
+	private Resolved: boolean;
 
 	public constructor(App: App) {
 		this.App = App;
@@ -50,32 +53,51 @@ class SystemSocket {
 		this.FailedConnectionAttempts = 0; // We allow for 15 failed connection attempts before we stop trying to connect
 
 		this.Events = new Events(this);
+
+		this.Resolved = false;
 	}
 
 	public async Connect(): Promise<void> {
 		return new Promise<void>((resolve) => {
 			this.Ws = new WebSocket(
 				`${Config.Ws.Url}?v=${Config.Ws.version ?? 0}&p=${encodeURIComponent(Config.Ws.Password)}&c=true&encoding=json`,
+				{
+
+				}
 			);
 
+			// @ts-expect-error -- It does exist, though bun doing the funky with the internal ws module
 			this.Ws.on('error', () => {
 				this.App.Logger.error('Failed to connect to System Socket / Recieved an Error');
 
 				this.HandleDisconnect();
 
 				resolve();
+
+				if (!this.Resolved) {
+					this.Resolved = true;
+					resolve();
+				}
 			});
 
+			// @ts-expect-error -- It does exist, though bun doing the funky with the internal ws module
 			this.Ws.on('open', () => {
 				this.App.Logger.info('Connected to System Socket');
 			});
 
-			this.Ws.on('close', (code, reason) => {
-				this.App.Logger.warn('Disconnected from System Socket', reason.toString(), code);
+			// @ts-expect-error -- It does exist, though bun doing the funky with the internal ws module
+			this.Ws.on('close', (code: number, reason: string) => {
+				this.App.Logger.warn('Disconnected from System Socket', reason?.toString(), code);
 
 				this.HandleDisconnect();
+
+				if (!this.Resolved) {
+					this.Resolved = true;
+					resolve();
+				}
 			});
 
+			// @ts-expect-error -- It does exist, though bun doing the funky with the internal ws module
 			this.Ws.on('message', (data: Buffer) => {
 				const decoded = this.decode(data);
 
@@ -110,7 +132,10 @@ class SystemSocket {
 						}, AuthPayload.Misc.HeartbeatInterval - 2_000);
 					}
 
-					resolve();
+					if (!this.Resolved) {
+						this.Resolved = true;
+						resolve();
+					}
 				}
 
 				if (decoded?.Op) {
@@ -160,6 +185,7 @@ class SystemSocket {
 			this.HeartbeatInterval = null;
 		}
 
+		// @ts-expect-error -- It does exist, though bun doing the funky with the internal ws module
 		this.Ws?.removeAllListeners();
 
 		if (!Force && this.FailedConnectionAttempts >= 15) {

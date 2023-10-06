@@ -74,7 +74,7 @@ class Connection extends EventEmitter {
                 username,
                 password,
             },
-            ...options,
+            ...options
         });
 
         this.KeySpace = keyspace;

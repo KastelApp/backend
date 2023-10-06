@@ -10,15 +10,15 @@
  */
 
 import type { Request, Response } from 'express';
-import Constants from '../../Constants.js';
-import User from '../../Middleware/User.js';
+import Constants from '../../Constants.ts';
+import User from '../../Middleware/User.ts';
 import type App from '../../Utils/Classes/App';
-import VerifyFields from '../../Utils/Classes/BitFields/VerifyFlags.js';
-import Encryption from '../../Utils/Classes/Encryption.js';
-import ErrorGen from '../../Utils/Classes/ErrorGen.js';
-import LinkGeneration from '../../Utils/Classes/LinkGeneration.js';
-import Route from '../../Utils/Classes/Route.js';
-import type { User as UserType, VerificationLink } from '../../Utils/Cql/Types/index.js';
+import VerifyFields from '../../Utils/Classes/BitFields/VerifyFlags.ts';
+import Encryption from '../../Utils/Classes/Encryption.ts';
+import ErrorGen from '../../Utils/Classes/ErrorGen.ts';
+import LinkGeneration from '../../Utils/Classes/LinkGeneration.ts';
+import Route from '../../Utils/Classes/Route.ts';
+import type { User as UserType, VerificationLink } from '../../Utils/Cql/Types/index.ts';
 
 interface ForgotBody {
 	Email: string;

@@ -9,7 +9,6 @@
  * GPL 3.0 Licensed
  */
 
-// import type { Encryption, MongoDB, Redis, Regexs, Server, Ws, MailServer, Config, EmailTemplates } from './Types/Config';
 import type {
 	Encryption as EncrpytionConfigType,
 	ScyllaDB as ScyllaDBConfigType,
@@ -70,7 +69,7 @@ const Redis: RedisConfigType = {
 };
 
 const ScyllaDB: ScyllaDBConfigType = {
-	Nodes: ["localhost"],
+	Nodes: ["172.17.0.1"],
 	Keyspace: 'kastel',
 	Username: 'kstl',
 	Password: '',

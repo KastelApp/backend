@@ -10,10 +10,10 @@
  */
 
 import type { Request, Response } from 'express';
-import User from '../../Middleware/User.js';
+import User from '../../Middleware/User.ts';
 import type App from '../../Utils/Classes/App';
-import Encryption from '../../Utils/Classes/Encryption.js';
-import Route from '../../Utils/Classes/Route.js';
+import Encryption from '../../Utils/Classes/Encryption.ts';
+import Route from '../../Utils/Classes/Route.ts';
 
 interface Tokens {
 	CreatedDate: Date;

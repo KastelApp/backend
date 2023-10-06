@@ -10,9 +10,9 @@
  */
 
 import type { Request, Response } from 'express';
-import User from '../../../../Middleware/User.js';
-import type App from '../../../../Utils/Classes/App.js';
-import Route from '../../../../Utils/Classes/Route.js';
+import User from '../../../../Middleware/User.ts';
+import type App from '../../../../Utils/Classes/App.ts';
+import Route from '../../../../Utils/Classes/Route.ts';
 
 // note: add new gateway events for a relationship being edited / made >.<
 
@@ -80,6 +80,6 @@ export default class Friends extends Route {
 	private async GetRelationships(_: Request<{ userId?: string; }>, __: Response) { }
 
 
-	private async PostRelationship(_: Request<any, any, NewRelationshipsBody>, __: Response) {}
+	private async PostRelationship(_: Request<any, any, NewRelationshipsBody>, __: Response) { }
 
 }
