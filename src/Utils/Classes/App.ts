@@ -10,19 +10,19 @@ import cors from 'cors';
 import type { Request, Response } from 'express';
 import express from 'express';
 import { type SimpleGit, simpleGit } from 'simple-git';
-import { Config } from '../../Config.js';
-import Constants, { Relative } from '../../Constants.js';
-import type { ExpressMethodCap } from '../../Types/index.js';
-import ProcessArgs from '../ProcessArgs.js';
-import Connection from './Connection.js';
-import Emails from './Emails.js';
-import ErrorGen from './ErrorGen.js';
-import { IpUtils } from './IpUtils.js';
-import CustomLogger from './Logger.js';
-import type { ContentTypes, ExpressMethod } from './Route.js';
-import RouteBuilder from './Route.js';
-import SystemSocket from './System/SystemSocket.js';
-import SystemInfo from './SystemInfo.js';
+import { Config } from '../../Config.ts';
+import Constants, { Relative } from '../../Constants.ts';
+import type { ExpressMethodCap } from '../../Types/index.ts';
+import ProcessArgs from '../ProcessArgs.ts';
+import Connection from './Connection.ts';
+import Emails from './Emails.ts';
+import ErrorGen from './ErrorGen.ts';
+import { IpUtils } from './IpUtils.ts';
+import CustomLogger from './Logger.ts';
+import type { ContentTypes, ExpressMethod } from './Route.ts';
+import RouteBuilder from './Route.ts';
+import SystemSocket from './System/SystemSocket.ts';
+import SystemInfo from './SystemInfo.ts';
 
 type GitType = 'Added' | 'Copied' | 'Deleted' | 'Ignored' | 'Modified' | 'None' | 'Renamed' | 'Unmerged' | 'Untracked';
 
@@ -94,7 +94,8 @@ class App {
 		' ': 'None',
 	};
 
-	public Args: typeof SupportedArgs = ProcessArgs(SupportedArgs as unknown as string[]).Valid as unknown as typeof SupportedArgs;
+	public Args: typeof SupportedArgs = ProcessArgs(SupportedArgs as unknown as string[])
+		.Valid as unknown as typeof SupportedArgs;
 
 	public constructor() {
 		this.ExpressApp = express();
@@ -106,7 +107,15 @@ class App {
 			AllowForDangerousCommands: true,
 		});
 
-		this.Cassandra = new Connection(Config.ScyllaDB.Nodes, Config.ScyllaDB.Username, Config.ScyllaDB.Password, Config.ScyllaDB.Keyspace, Config.ScyllaDB.NetworkTopologyStrategy, Config.ScyllaDB.DurableWrites, Config.ScyllaDB.CassandraOptions);
+		this.Cassandra = new Connection(
+			Config.ScyllaDB.Nodes,
+			Config.ScyllaDB.Username,
+			Config.ScyllaDB.Password,
+			Config.ScyllaDB.Keyspace,
+			Config.ScyllaDB.NetworkTopologyStrategy,
+			Config.ScyllaDB.DurableWrites,
+			Config.ScyllaDB.CassandraOptions,
+		);
 
 		this.Turnstile = new Turnstile(Config.Server.CaptchaEnabled, Config.Server.TurnstileSecret ?? 'secret');
 
@@ -121,13 +130,14 @@ class App {
 
 	public async Init(): Promise<void> {
 		this.Logger.hex('#ca8911')(
-			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${Relative.Version ? `v${Relative.Version}` : 'Unknown version'
-			} of Kastel's Backend. Node.js version ${process.version
+			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${
+				Relative.Version ? `v${Relative.Version}` : 'Unknown version'
+			} of Kastel's Backend. Bun version ${
+				Bun.version
 			}\nIf you would like to support this project please consider donating to https://opencollective.com/kastel\n`,
 		);
 
 		await this.SetupDebug(this.Args.includes('debug'));
-
 
 		this.Cache.on('Connected', () => this.Logger.info('Connected to Redis'));
 		this.Cache.on('Error', (err) => {
@@ -138,23 +148,20 @@ class App {
 		this.Cache.on('MissedPing', () => this.Logger.warn('Missed Redis ping'));
 		this.Cassandra.on('Connected', () => this.Logger.info('Connected to ScyllaDB'));
 		this.Cassandra.on('Error', (err) => {
+			console.error(err);
 			this.Logger.fatal(err);
 
 			process.exit(1);
 		});
 
 		this.Logger.info('Connecting to ScyllaDB');
-		this.Logger.warn('IT IS NOT FROZEN, ScyllaDB may take a while to connect')
-		
-		await Promise.all([
-			this.SystemSocket.Connect(),
-			this.Cassandra.Connect(),
-			this.Cache.connect(),
-		]);
+		this.Logger.warn('IT IS NOT FROZEN, ScyllaDB may take a while to connect');
+
+		await Promise.all([this.SystemSocket.Connect(), this.Cassandra.Connect(), this.Cache.connect()]);
 
 		this.Logger.info('Creating ScyllaDB Tables.. This may take a while..');
-		this.Logger.warn('IT IS NOT FROZEN, ScyllaDB may take a while to create the tables')
-		
+		this.Logger.warn('IT IS NOT FROZEN, ScyllaDB may take a while to create the tables');
+
 		const TablesCreated = await this.Cassandra.CreateTables();
 
 		if (TablesCreated) {
@@ -193,10 +200,7 @@ class App {
 			);
 
 			try {
-				await Promise.all([
-					this.Support.Connect(),
-					this.NoReply.Connect(),
-				]);
+				await Promise.all([this.Support.Connect(), this.NoReply.Connect()]);
 			} catch (error) {
 				this.Logger.fatal('Failed to connect to Mail Server', error);
 
@@ -282,7 +286,7 @@ class App {
 
 				return true;
 			};
-			
+
 			// we have a hard limit of 1mb for requests, any higher and we 408 it
 			if (req.socket.bytesRead > 1e6) {
 				const Error = ErrorGen.TooLarge();
@@ -302,10 +306,23 @@ class App {
 			next();
 		});
 
-		const LoadedRoutes = await this.LoadRoutes();
+		// guilds with params should be at the bottom as ones without them take priority
+		const LoadedRoutes = (await this.LoadRoutes()).sort((a, b) => {
+			if (a.route.includes(':') && !b.route.includes(':')) {
+				return 1;
+			}
+
+			if (!a.route.includes(':') && b.route.includes(':')) {
+				return -1;
+			}
+
+			return 0;
+		});
 
 		for (const route of LoadedRoutes) {
-			this.Logger.verbose(`Loaded "${route.route.length === 0 ? "/" : route.route}" [${route.default.Methods.join(', ')}]`);
+			this.Logger.verbose(
+				`Loaded "${route.route.length === 0 ? '/' : route.route}" [${route.default.Methods.join(', ')}]`,
+			);
 		}
 
 		this.Logger.info(`Loaded ${LoadedRoutes.length} routes`);
@@ -316,14 +333,22 @@ class App {
 					Route.route,
 					...Route.default.Middleware,
 					(req: Request, res: Response) => {
-						this.Logger.verbose(`Request for ${req.path} (${req.method}) ${req?.user?.Id ? `from ${req.user.Id}` : 'from a logged out user.'}`);
+						this.Logger.verbose(
+							`Request for ${req.path} (${req.method}) ${
+								req?.user?.Id ? `from ${req.user.Id}` : 'from a logged out user.'
+							}`,
+						);
 
 						const ContentType = req.headers['content-type'] ?? '';
 
 						res.on('finish', () => {
-							this.Logger.verbose(`Request for ${req.path} (${req.method}) ${req?.user?.Id ? `from ${req.user.Id}` : 'from a logged out user.'} finished with status code ${res.statusCode}`);
-							
-							Route.default.Finish(res, res.statusCode, new Date())
+							this.Logger.verbose(
+								`Request for ${req.path} (${req.method}) ${
+									req?.user?.Id ? `from ${req.user.Id}` : 'from a logged out user.'
+								} finished with status code ${res.statusCode}`,
+							);
+
+							Route.default.Finish(res, res.statusCode, new Date());
 						});
 
 						if (
@@ -389,8 +414,8 @@ class App {
 		const Routes = await this.WalkDirectory(this.RouteDirectory);
 
 		for (const Route of Routes) {
-			if (!Route.endsWith('.js')) {
-				this.Logger.debug(`Skipping ${Route} as it is not a .js file`);
+			if (!Route.endsWith('.ts')) {
+				this.Logger.debug(`Skipping ${Route} as it is not a .ts file`);
 
 				continue;
 			}
@@ -455,7 +480,7 @@ class App {
 			`Kastel Debug Logs`,
 			'='.repeat(40),
 			`Backend Version: ${this.Constants.Relative.Version}`,
-			`Node Version: ${process.version}`,
+			`Bun Version: ${Bun.version}`,
 			'='.repeat(40),
 			`System Info:`,
 			`OS: ${System.OperatingSystem.Platform}`,
@@ -477,7 +502,8 @@ class App {
 			`Git Info:`,
 			`Branch: ${this.GitBranch}`,
 			`Commit: ${GithubInfo.CommitShort ?? GithubInfo.Commit}`,
-			`Status: ${this.Clean ? 'Clean' : 'Dirty - You will not be given support if something breaks with a dirty instance'
+			`Status: ${
+				this.Clean ? 'Clean' : 'Dirty - You will not be given support if something breaks with a dirty instance'
 			}`,
 			this.Clean ? '' : '='.repeat(40),
 			`${this.Clean ? '' : 'Changed Files:'}`,

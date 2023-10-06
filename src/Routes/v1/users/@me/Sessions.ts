@@ -9,13 +9,12 @@
  * GPL 3.0 Licensed
  */
 
-import { compareSync } from 'bcrypt';
 import type { Request, Response } from 'express';
-import User from '../../../../Middleware/User.js';
+import User from '../../../../Middleware/User.ts';
 import type App from '../../../../Utils/Classes/App';
-import Encryption from '../../../../Utils/Classes/Encryption.js';
-import ErrorGen from '../../../../Utils/Classes/ErrorGen.js';
-import Route from '../../../../Utils/Classes/Route.js';
+import Encryption from '../../../../Utils/Classes/Encryption.ts';
+import ErrorGen from '../../../../Utils/Classes/ErrorGen.ts';
+import Route from '../../../../Utils/Classes/Route.ts';
 
 interface Tokens {
 	CreatedDate: Date;
@@ -40,7 +39,7 @@ export default class Sessions extends Route {
 			User({
 				AccessType: 'LoggedIn',
 				AllowedRequesters: 'User',
-				App
+				App,
 			}),
 		];
 
@@ -102,7 +101,7 @@ export default class Sessions extends Route {
 			return;
 		}
 
-		if (!compareSync(Password, Req.user.Password)) {
+		if (!(await Bun.password.verify(Password, Req.user.Password))) {
 			const Error = ErrorGen.InvalidCredentials();
 
 			Error.AddError({
@@ -128,7 +127,7 @@ export default class Sessions extends Route {
 
 		await this.App.Cassandra.Models.Settings.update({
 			UserId: Encryption.Encrypt(Req.user.Id),
-			Tokens: FilteredSessions
+			Tokens: FilteredSessions,
 		});
 
 		Res.status(204).end();
@@ -151,11 +150,14 @@ export default class Sessions extends Route {
 	}
 
 	private async FetchSessions(UserId: string): Promise<Tokens[]> {
-		const Settings = await this.App.Cassandra.Models.Settings.get({
-			UserId: Encryption.Encrypt(UserId)
-		}, {
-			fields: ['tokens']
-		});
+		const Settings = await this.App.Cassandra.Models.Settings.get(
+			{
+				UserId: Encryption.Encrypt(UserId),
+			},
+			{
+				fields: ['tokens'],
+			},
+		);
 
 		if (!Settings?.Tokens) return [];
 

@@ -10,15 +10,15 @@
  */
 
 import type { Request, Response } from 'express';
-import Constants from '../../Constants.js';
-import User from '../../Middleware/User.js';
+import Constants from '../../Constants.ts';
+import User from '../../Middleware/User.ts';
 import type App from '../../Utils/Classes/App';
-import VerifyFields from '../../Utils/Classes/BitFields/VerifyFlags.js';
-import Encryption from '../../Utils/Classes/Encryption.js';
-import ErrorGen from '../../Utils/Classes/ErrorGen.js';
-import LinkGeneration from '../../Utils/Classes/LinkGeneration.js';
-import Route from '../../Utils/Classes/Route.js';
-import type { User as UserType, VerificationLink } from '../../Utils/Cql/Types/index.js';
+import VerifyFields from '../../Utils/Classes/BitFields/VerifyFlags.ts';
+import Encryption from '../../Utils/Classes/Encryption.ts';
+import ErrorGen from '../../Utils/Classes/ErrorGen.ts';
+import LinkGeneration from '../../Utils/Classes/LinkGeneration.ts';
+import Route from '../../Utils/Classes/Route.ts';
+import type { User as UserType, VerificationLink } from '../../Utils/Cql/Types/index.ts';
 
 interface ForgotBody {
 	Email: string;
@@ -34,7 +34,7 @@ export default class ForgotPassword extends Route {
 			User({
 				AccessType: 'LoggedOut',
 				AllowedRequesters: 'User',
-				App
+				App,
 			}),
 		];
 
@@ -88,16 +88,12 @@ export default class ForgotPassword extends Route {
 			Req.clientIp,
 		);
 
-		this.App.Logger.debug(
-			`[Forgot Password] The Forgot Password code is ${Code}`,
-		);
+		this.App.Logger.debug(`[Forgot Password] The Forgot Password code is ${Code}`);
 
 		if (this.App.NoReply) {
-			await this.App.NoReply.SendEmail(
-				FetchedUser.Email,
-				'Forgot Password',
-				`Forgot Password Code: ${Code}`,
-			).catch((error) => this.App.Logger.error(`Failed to send the email`, error));
+			await this.App.NoReply.SendEmail(FetchedUser.Email, 'Forgot Password', `Forgot Password Code: ${Code}`).catch(
+				(error) => this.App.Logger.error(`Failed to send the email`, error),
+			);
 		}
 
 		Res.status(204).end();

@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { setInterval } from 'node:timers';
 import { URL } from 'node:url';
 import * as ark from 'archiver';
-import ProcessArgs from '../ProcessArgs.js';
+import ProcessArgs from '../ProcessArgs.ts';
 
 type Logtypes = 'debug' | 'error' | 'fatal' | 'importantDebug' | 'info' | 'timer' | 'trace' | 'verbose' | 'warn';
 
@@ -297,58 +297,62 @@ class Logger {
 			return;
 		}
 
-		const Message = `[${options.date.toLocaleTimeString()}] [MASTER / ${options.toShow ? options.toShow.toUpperCase() : options.type.toUpperCase()
-			}]:`;
+		const Message = `[${options.date.toLocaleTimeString()}] [MASTER / ${
+			options.toShow ? options.toShow.toUpperCase() : options.type.toUpperCase()
+		}]:`;
 
 		const Messages = [];
 
-		for (const msg of options.message) {
-			if (typeof msg === 'string') {
-				Messages.push(`${Message} ${msg}`);
-			} else if (msg instanceof Error) {
-				if (msg.stack) {
-					for (const line of msg.stack.split('\n')) {
-						Messages.push(`${Message} ${line}`);
+		for (const item of options.message) {
+			const LastMessage: any = Messages[Messages.length - 1];
+			if (
+				typeof item === 'string' ||
+				typeof item === 'number' ||
+				typeof item === 'boolean' ||
+				item === null ||
+				item === undefined
+			) {
+				if (LastMessage && typeof LastMessage === 'string') {
+					Messages[Messages.length - 1] = `${LastMessage} ${item}`;
+				} else {
+					Messages.push(item.trim());
+				}
+			} else if (item instanceof Error) {
+				if (item.stack) {
+					for (const line of item.stack.split('\n')) {
+						Messages.push(line.trim());
 					}
 				} else {
-					Messages.push(`${Message} ${msg.message}`);
+					Messages.push(item.message.trim());
 				}
 			} else {
-				const Strongified = JSON.stringify(msg, null, 2);
-
-				for (const line of (Strongified?.split('\n') ?? [])) {
-					Messages.push(`${Message} ${line}`);
-				}
+				Messages.push(item);
 			}
 		}
 
+		const NewMessages = Messages.map((msg) => {
+			if (typeof msg === 'string') {
+				return `${Message} ${msg}`.trim();
+			} else {
+				const Strongified = JSON.stringify(msg, null, 2);
+
+				return Strongified.split('\n')
+					.map((line) => `${Message} ${line}`.trim())
+					.join('\n');
+			}
+		});
+
 		this.writingQueue.push({
 			file: options.file,
-			message: Messages,
+			message: NewMessages,
 		});
 
 		if (options.console) {
 			const color = this.hexToAnsi(this.colorTypes[options.type]);
 
 			if (color) {
-				for (const msg of options.message) {
-					if (typeof msg === 'string') {
-						console.log(`${color.rgb}${Message} ${msg}${color.end}`);
-					} else if (msg instanceof Error) {
-						if (msg.stack) {
-							for (const line of msg.stack.split('\n')) {
-								console.log(`${color.rgb}${Message} ${line}${color.end}`);
-							}
-						} else {
-							console.log(`${color.rgb}${Message} ${msg.message}${color.end}`);
-						}
-					} else {
-						const Strongified = JSON.stringify(msg, null, 2);
-
-						for (const line of Strongified.split('\n')) {
-							console.log(`${color.rgb}${Message} ${line}${color.end}`);
-						}
-					}
+				for (const msg of NewMessages) {
+					console.log(`${color.rgb}${msg}${color.end}`);
 				}
 			}
 		}

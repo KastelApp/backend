@@ -10,9 +10,9 @@
  */
 
 import type { Request, Response } from 'express';
-import User from '../../../../Middleware/User.js';
+import User from '../../../../Middleware/User.ts';
 import type App from '../../../../Utils/Classes/App';
-import Route from '../../../../Utils/Classes/Route.js';
+import Route from '../../../../Utils/Classes/Route.ts';
 
 export default class DeleteGuild extends Route {
 	public constructor(App: App) {
@@ -24,8 +24,8 @@ export default class DeleteGuild extends Route {
 			User({
 				AccessType: 'LoggedIn',
 				AllowedRequesters: 'User',
-				App
-			})
+				App,
+			}),
 		];
 
 		this.AllowedContentTypes = ['application/json'];

@@ -11,9 +11,9 @@
 
 import crypto from 'node:crypto';
 import { Snowflake as SnowflakeBuilder, Base64 } from '@kastelll/util';
-import { Encryption } from '../../Config.js';
-import Constants from '../../Constants.js';
-import App from './App.js';
+import { Encryption } from '../../Config.ts';
+import Constants from '../../Constants.ts';
+import App from './App.ts';
 
 const Snowflake = new SnowflakeBuilder(Constants.Snowflake);
 

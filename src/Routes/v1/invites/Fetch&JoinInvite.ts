@@ -10,14 +10,14 @@
  */
 
 import type { Request, Response } from 'express';
-import User from '../../../Middleware/User.js';
-import type App from '../../../Utils/Classes/App.js';
-import FlagFields from '../../../Utils/Classes/BitFields/Flags.js';
-import GuildMemberFlags from '../../../Utils/Classes/BitFields/GuildMember.js';
-import Encryption from '../../../Utils/Classes/Encryption.js';
-import ErrorGen from '../../../Utils/Classes/ErrorGen.js';
-import Route from '../../../Utils/Classes/Route.js';
-import type { GuildMember } from '../../../Utils/Cql/Types/index.js';
+import User from '../../../Middleware/User.ts';
+import type App from '../../../Utils/Classes/App.ts';
+import FlagFields from '../../../Utils/Classes/BitFields/Flags.ts';
+import GuildMemberFlags from '../../../Utils/Classes/BitFields/GuildMember.ts';
+import Encryption from '../../../Utils/Classes/Encryption.ts';
+import ErrorGen from '../../../Utils/Classes/ErrorGen.ts';
+import Route from '../../../Utils/Classes/Route.ts';
+import type { GuildMember } from '../../../Utils/Cql/Types/index.ts';
 
 interface UserObject {
 	Avatar: string | null;
@@ -34,9 +34,9 @@ interface InvitePayload {
 		Id: string;
 		Name: string;
 		Type: number;
-	},
+	};
 	Code: string;
-	Creator?: UserObject,
+	Creator?: UserObject;
 	Guild: {
 		Description: string | null;
 		Features: string[];
@@ -55,8 +55,8 @@ export default class FetchAndJoinInvite extends Route {
 			User({
 				AccessType: 'LoggedIn',
 				AllowedRequesters: 'User',
-				App
-			})
+				App,
+			}),
 		];
 
 		this.AllowedContentTypes = [];
@@ -64,15 +64,15 @@ export default class FetchAndJoinInvite extends Route {
 		this.Routes = ['/:inviteCode'];
 	}
 
-	public override async Request(Req: Request<{ inviteCode: string; }>, Res: Response) {
+	public override async Request(Req: Request<{ inviteCode: string }>, Res: Response) {
 		switch (Req.methodi) {
-			case "PUT": {
+			case 'PUT': {
 				await this.JoinInvite(Req, Res);
 
 				break;
 			}
 
-			case "GET": {
+			case 'GET': {
 				await this.FetchInviteReq(Req, Res);
 
 				break;
@@ -86,7 +86,7 @@ export default class FetchAndJoinInvite extends Route {
 		}
 	}
 
-	public async JoinInvite(Req: Request<{ inviteCode: string; }>, Res: Response) {
+	public async JoinInvite(Req: Request<{ inviteCode: string }>, Res: Response) {
 		const Invite = await this.FetchInvite(Req.params.inviteCode);
 
 		const Error = ErrorGen.InvalidInvite();
@@ -95,8 +95,8 @@ export default class FetchAndJoinInvite extends Route {
 			Error.AddError({
 				Invite: {
 					Code: 'InvalidInvite',
-					Message: 'The Invite you provided was invalid, missing or you are banned from the server.'
-				}
+					Message: 'The Invite you provided was invalid, missing or you are banned from the server.',
+				},
 			});
 
 			Res.status(404).send(Error.toJSON());
@@ -105,7 +105,7 @@ export default class FetchAndJoinInvite extends Route {
 		}
 
 		const Member = await this.FetchMember(Req.user.Id, Invite.GuildId);
-		const Guild = await this.FetchGuild(Invite.GuildId)
+		const Guild = await this.FetchGuild(Invite.GuildId);
 
 		if (Member) {
 			const MemberFlags = new GuildMemberFlags(Member.Flags);
@@ -114,8 +114,8 @@ export default class FetchAndJoinInvite extends Route {
 				Error.AddError({
 					Invite: {
 						Code: 'InvalidInvite',
-						Message: 'The Invite you provided was invalid, missing or you are banned from the server.'
-					}
+						Message: 'The Invite you provided was invalid, missing or you are banned from the server.',
+					},
 				});
 
 				Res.status(401).send(Error.toJSON());
@@ -131,21 +131,21 @@ export default class FetchAndJoinInvite extends Route {
 			Nickname: '',
 			Roles: [Encryption.Encrypt(Invite.GuildId)],
 			Timeouts: [],
-			UserId: Encryption.Encrypt(Req.user.Id)
+			UserId: Encryption.Encrypt(Req.user.Id),
 		};
 
 		await Promise.all([
 			this.App.Cassandra.Models.GuildMember.insert(NewMemberPayload),
 			this.App.Cassandra.Models.User.update({
 				UserId: Encryption.Encrypt(Req.user.Id),
-				Guilds: [...Encryption.CompleteEncryption(Req.user.Guilds), NewMemberPayload.GuildId]
-			})
+				Guilds: [...Encryption.CompleteEncryption(Req.user.Guilds), NewMemberPayload.GuildId],
+			}),
 		]);
 
 		Res.send(Guild);
 	}
 
-	public async FetchInviteReq(Req: Request<{ inviteCode: string; }>, Res: Response) {
+	public async FetchInviteReq(Req: Request<{ inviteCode: string }>, Res: Response) {
 		const Invite = await this.FetchInvite(Req.params.inviteCode);
 
 		const Error = ErrorGen.InvalidInvite();
@@ -154,8 +154,8 @@ export default class FetchAndJoinInvite extends Route {
 			Error.AddError({
 				Invite: {
 					Code: 'InvalidInvite',
-					Message: 'The Invite you provided was invalid, missing or you are banned from the server.'
-				}
+					Message: 'The Invite you provided was invalid, missing or you are banned from the server.',
+				},
 			});
 
 			Res.status(404).send(Error.toJSON());
@@ -164,7 +164,7 @@ export default class FetchAndJoinInvite extends Route {
 		}
 
 		const ReturnPayload: Partial<InvitePayload> = {
-			Code: Req.params.inviteCode
+			Code: Req.params.inviteCode,
 		};
 
 		const FetchedUser = await this.FetchUser(Invite.CreatorId);
@@ -179,29 +179,32 @@ export default class FetchAndJoinInvite extends Route {
 				Tag: FetchedUser.Tag,
 				Avatar: FetchedUser.Avatar.length === 0 ? null : FetchedUser.Avatar,
 				PublicFlags: Number(FlagUtils.PublicFlags.cleaned),
-				Flags: Number(FlagUtils.PublicPrivateFlags)
+				Flags: Number(FlagUtils.PublicPrivateFlags),
 			};
 
 			ReturnPayload.Creator = UserObject;
 		}
 
 		const Guild = await this.FetchGuild(Invite.GuildId);
-		
+
 		if (Guild) {
 			ReturnPayload.Guild = Guild;
 		}
 
-		const Channel = await this.App.Cassandra.Models.Channel.get({
-			ChannelId: Encryption.Encrypt(Invite.ChannelId)
-		}, {
-			fields: ['name', 'type']
-		});
+		const Channel = await this.App.Cassandra.Models.Channel.get(
+			{
+				ChannelId: Encryption.Encrypt(Invite.ChannelId),
+			},
+			{
+				fields: ['name', 'type'],
+			},
+		);
 
 		if (Channel) {
 			ReturnPayload.Channel = {
 				Id: Invite.ChannelId,
 				Name: Encryption.Decrypt(Channel.Name),
-				Type: Channel.Type
+				Type: Channel.Type,
 			};
 		}
 
@@ -209,11 +212,14 @@ export default class FetchAndJoinInvite extends Route {
 	}
 
 	private async FetchGuild(GuildId: string) {
-		const Guild = await this.App.Cassandra.Models.Guild.get({
-			GuildId: Encryption.Encrypt(GuildId)
-		}, {
-			fields: ['name', 'features', 'description']
-		});
+		const Guild = await this.App.Cassandra.Models.Guild.get(
+			{
+				GuildId: Encryption.Encrypt(GuildId),
+			},
+			{
+				fields: ['name', 'features', 'description'],
+			},
+		);
 
 		if (!Guild) return null;
 
@@ -223,12 +229,11 @@ export default class FetchAndJoinInvite extends Route {
 			Description: Guild.Description.length === 0 ? null : Guild.Description,
 			Features: Guild.Features ?? [],
 		});
-
 	}
 
 	private async FetchInvite(InviteCode: string) {
 		const Invite = await this.App.Cassandra.Models.Invite.get({
-			Code: Encryption.Encrypt(InviteCode)
+			Code: Encryption.Encrypt(InviteCode),
 		});
 
 		if (!Invite) return null;
@@ -237,12 +242,15 @@ export default class FetchAndJoinInvite extends Route {
 	}
 
 	private async FetchMember(UserId: string, GuildId: string) {
-		const Member = await this.App.Cassandra.Models.GuildMember.get({
-			UserId: Encryption.Encrypt(UserId),
-			GuildId: Encryption.Encrypt(GuildId),
-		}, {
-			allowFiltering: true
-		});
+		const Member = await this.App.Cassandra.Models.GuildMember.get(
+			{
+				UserId: Encryption.Encrypt(UserId),
+				GuildId: Encryption.Encrypt(GuildId),
+			},
+			{
+				allowFiltering: true,
+			},
+		);
 
 		if (!Member) return null;
 
@@ -250,11 +258,14 @@ export default class FetchAndJoinInvite extends Route {
 	}
 
 	private async FetchUser(UserId?: string) {
-		const FetchedUser = await this.App.Cassandra.Models.User.get({
-			...(UserId ? { UserId: Encryption.Encrypt(UserId) } : {}),
-		}, {
-			allowFiltering: true
-		});
+		const FetchedUser = await this.App.Cassandra.Models.User.get(
+			{
+				...(UserId ? { UserId: Encryption.Encrypt(UserId) } : {}),
+			},
+			{
+				allowFiltering: true,
+			},
+		);
 
 		if (!FetchedUser) return null;
 

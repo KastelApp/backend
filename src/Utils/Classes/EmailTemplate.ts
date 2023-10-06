@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cwd } from 'node:process';
 import { request } from 'undici';
-import { EmailTemplates, MailServer } from '../../Config.js';
+import { EmailTemplates, MailServer } from '../../Config.ts';
 
 const SupportEmail = MailServer.Users.find((user) => user.ShortCode === 'Support')?.User;
 

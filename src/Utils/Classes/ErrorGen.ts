@@ -65,8 +65,8 @@ const ErrorGen = {
 		return new HTTPErrors(4_020);
 	},
 	InvalidInvite: () => {
-		return new HTTPErrors(4_021)
-	}
+		return new HTTPErrors(4_021);
+	},
 };
 
 export default ErrorGen;

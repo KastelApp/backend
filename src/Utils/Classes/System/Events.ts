@@ -1,6 +1,6 @@
 /* eslint-disable id-length */
-import type { ExpressUser } from '../../../Types/index.js';
-import { OpCodes } from '../WsUtils.js';
+import type { ExpressUser } from '../../../Types/index.ts';
+import { OpCodes } from '../WsUtils.ts';
 import type { SystemSocket } from './SystemSocket';
 
 class Events {
@@ -55,7 +55,7 @@ class Events {
 		});
 	}
 
-	public MessageDelete(Message: { AuthorId: string; ChannelId: string; Id: string; Timestamp: number; }) {
+	public MessageDelete(Message: { AuthorId: string; ChannelId: string; Id: string; Timestamp: number }) {
 		if (this.SendEvents) {
 			this.SystemSocket.Ws?.send(
 				JSON.stringify({
@@ -112,7 +112,7 @@ class Events {
 		return StringifiedPayload;
 	}
 
-	public NewSession(data: { SessionId: string, UserId: string; }) {
+	public NewSession(data: { SessionId: string; UserId: string }) {
 		const StringifiedPayload = JSON.stringify({
 			Op: OpCodes.NewSession,
 			D: {
@@ -128,7 +128,7 @@ class Events {
 		return StringifiedPayload;
 	}
 
-	public DeletedSession(data: { SessionId: string, UserId: string; }) {
+	public DeletedSession(data: { SessionId: string; UserId: string }) {
 		const StringifiedPayload = JSON.stringify({
 			Op: OpCodes.DeleteSession,
 			D: {

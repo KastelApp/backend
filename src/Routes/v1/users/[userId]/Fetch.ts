@@ -10,13 +10,13 @@
  */
 
 import type { Request, Response } from 'express';
-import User from '../../../../Middleware/User.js';
-import type App from '../../../../Utils/Classes/App.js';
-import FlagFields from '../../../../Utils/Classes/BitFields/Flags.js';
-import Encryption from '../../../../Utils/Classes/Encryption.js';
-import ErrorGen from '../../../../Utils/Classes/ErrorGen.js';
-import Route from '../../../../Utils/Classes/Route.js';
-import type { User as UserType } from '../../../../Utils/Cql/Types/index.js';
+import User from '../../../../Middleware/User.ts';
+import type App from '../../../../Utils/Classes/App.ts';
+import FlagFields from '../../../../Utils/Classes/BitFields/Flags.ts';
+import Encryption from '../../../../Utils/Classes/Encryption.ts';
+import ErrorGen from '../../../../Utils/Classes/ErrorGen.ts';
+import Route from '../../../../Utils/Classes/Route.ts';
+import type { User as UserType } from '../../../../Utils/Cql/Types/index.ts';
 
 interface UserObject {
 	Avatar: string | null;
@@ -39,7 +39,7 @@ export default class FetchPatchUser extends Route {
 			User({
 				AccessType: 'LoggedIn',
 				AllowedRequesters: 'User',
-				App
+				App,
 			}),
 		];
 
@@ -49,7 +49,7 @@ export default class FetchPatchUser extends Route {
 	}
 
 	public override async Request(Req: Request, Res: Response) {
-		const { userId } = Req.params as { userId: string; };
+		const { userId } = Req.params as { userId: string };
 		const { include } = Req.query;
 
 		const FetchedUser = await this.FetchUser(userId);
@@ -80,16 +80,19 @@ export default class FetchPatchUser extends Route {
 			Tag: FetchedUser.Tag,
 			Avatar: FetchedUser.Avatar.length === 0 ? null : FetchedUser.Avatar,
 			PublicFlags: Number(FlagUtils.PublicFlags.cleaned),
-			Flags: Number(FlagUtils.PublicPrivateFlags)
+			Flags: Number(FlagUtils.PublicPrivateFlags),
 		};
 
 		if (SplitInclude.includes('bio') && !Req.user.Bot) {
 			// darkerink: Bots should not be allowed to fetch this (Personal info bots no need access to)
-			const Settings = await this.App.Cassandra.Models.Settings.get({
-				UserId: Encryption.Encrypt(UserObject.Id),
-			}, {
-				fields: ['bio']
-			});
+			const Settings = await this.App.Cassandra.Models.Settings.get(
+				{
+					UserId: Encryption.Encrypt(UserObject.Id),
+				},
+				{
+					fields: ['bio'],
+				},
+			);
 
 			UserObject.Bio = Settings?.Bio ? Encryption.Decrypt(Settings.Bio) : null;
 		}

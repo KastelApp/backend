@@ -9,15 +9,12 @@
  * GPL 3.0 Licensed
  */
 
-import { GuildMemberFlags as GMF } from '../../../Constants.js';
-import { FlagUtils } from './NewFlags.js';
+import { GuildMemberFlags as GMF } from '../../../Constants.ts';
+import { FlagUtils } from './NewFlags.ts';
 
 // honestly easiest way instead of rewriting old code
 class GuildMemberFlags extends FlagUtils<typeof GMF> {
-
-	public constructor(
-		bits: bigint | number | string
-	) {
+	public constructor(bits: bigint | number | string) {
 		super(bits, GMF);
 	}
 }

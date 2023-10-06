@@ -12,11 +12,11 @@
 import type { NextFunction, Request, Response } from 'express';
 import type { ExpressUser } from '../Types';
 import type { UserMiddleware } from '../Types/Routes';
-import App from '../Utils/Classes/App.js';
-import FlagFields from '../Utils/Classes/BitFields/Flags.js';
-import Encryption from '../Utils/Classes/Encryption.js';
-import ErrorGen from '../Utils/Classes/ErrorGen.js';
-import Token from '../Utils/Classes/Token.js';
+import App from '../Utils/Classes/App.ts';
+import FlagFields from '../Utils/Classes/BitFields/Flags.ts';
+import Encryption from '../Utils/Classes/Encryption.ts';
+import ErrorGen from '../Utils/Classes/ErrorGen.ts';
+import Token from '../Utils/Classes/Token.ts';
 
 /**
  * The Middleware on each and every request (well it should be on it)
@@ -27,7 +27,6 @@ import Token from '../Utils/Classes/Token.js';
 
 const User = (options: UserMiddleware) => {
 	return async (Req: Request, Res: Response, next: NextFunction) => {
-
 		let AuthHeader = Req.headers.authorization;
 		const AuthIsBot = Req.headers.authorization?.toLowerCase()?.startsWith('bot ') ?? false;
 
@@ -100,20 +99,26 @@ const User = (options: UserMiddleware) => {
 
 			const DecodedToken = Token.DecodeToken(AuthHeader);
 
-			const UsersSettings = await options.App.Cassandra.Models.Settings.get({
-				UserId: Encryption.Encrypt(DecodedToken.Snowflake),
-			}, {
-				fields: ['tokens']
-			});
+			const UsersSettings = await options.App.Cassandra.Models.Settings.get(
+				{
+					UserId: Encryption.Encrypt(DecodedToken.Snowflake),
+				},
+				{
+					fields: ['tokens'],
+				},
+			);
 
-			const UserData = await options.App.Cassandra.Models.User.get({
-				UserId: Encryption.Encrypt(DecodedToken.Snowflake),
-			}, {
-				fields: ['email', 'user_id', 'flags', 'password', 'public_flags', 'guilds']
-			});
+			const UserData = await options.App.Cassandra.Models.User.get(
+				{
+					UserId: Encryption.Encrypt(DecodedToken.Snowflake),
+				},
+				{
+					fields: ['email', 'user_id', 'flags', 'password', 'public_flags', 'guilds'],
+				},
+			);
 
 			if (!UsersSettings || !UserData) {
-				App.StaticLogger.debug("User settings wasn't found", (DecodedToken.Snowflake));
+				App.StaticLogger.debug("User settings wasn't found", DecodedToken.Snowflake);
 				App.StaticLogger.debug(UserData, UsersSettings);
 
 				UnAuthorized.AddError({
@@ -123,7 +128,12 @@ const User = (options: UserMiddleware) => {
 					},
 				});
 
-				Res.status(401).json(UnAuthorized.toJSON());
+				if (UsersSettings || UserData) {
+					// darkerink: just in case there is one but not the other (has happened in very rare cases) contacting support will be the only way to fix this (for now);
+					Res.status(500).send('Internal Server Error :(');
+				} else {
+					Res.status(401).json(UnAuthorized.toJSON());
+				}
 
 				return;
 			}
@@ -206,7 +216,10 @@ const User = (options: UserMiddleware) => {
 				return;
 			}
 
-			if (options.AllowedRequesters === 'User' && (UserFlags.PrivateFlags.has('Bot') || UserFlags.PrivateFlags.has('VerifiedBot'))) {
+			if (
+				options.AllowedRequesters === 'User' &&
+				(UserFlags.PrivateFlags.has('Bot') || UserFlags.PrivateFlags.has('VerifiedBot'))
+			) {
 				App.StaticLogger.debug('User only endpoint though user is a bot');
 
 				UnAuthorized.AddError({
@@ -221,7 +234,10 @@ const User = (options: UserMiddleware) => {
 				return;
 			}
 
-			if (options.AllowedRequesters === 'Bot' && !(UserFlags.PrivateFlags.has('Bot') || UserFlags.PrivateFlags.has('VerifiedBot'))) {
+			if (
+				options.AllowedRequesters === 'Bot' &&
+				!(UserFlags.PrivateFlags.has('Bot') || UserFlags.PrivateFlags.has('VerifiedBot'))
+			) {
 				App.StaticLogger.debug('Bot only endpoint though user is not a bot');
 
 				UnAuthorized.AddError({
@@ -274,10 +290,11 @@ const User = (options: UserMiddleware) => {
 				}
 			}
 
-			const CompleteDecrypted: { Email: string, Flags: string, Guilds: string[], Password: string, UserId: string } = Encryption.CompleteDecryption({
-				...UserData,
-				Flags: UserData.Flags.toString()
-			});
+			const CompleteDecrypted: { Email: string; Flags: string; Guilds: string[]; Password: string; UserId: string } =
+				Encryption.CompleteDecryption({
+					...UserData,
+					Flags: UserData.Flags.toString(),
+				});
 
 			Req.user = {
 				Token: AuthHeader,
@@ -286,7 +303,7 @@ const User = (options: UserMiddleware) => {
 				Email: CompleteDecrypted.Email,
 				Id: CompleteDecrypted.UserId,
 				Password: CompleteDecrypted.Password,
-				Guilds: CompleteDecrypted.Guilds ?? []
+				Guilds: CompleteDecrypted.Guilds ?? [],
 			} as ExpressUser;
 
 			next();

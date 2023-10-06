@@ -10,9 +10,9 @@
  */
 
 import type { Request, Response } from 'express';
-import User from '../../../../Middleware/User.js';
+import User from '../../../../Middleware/User.ts';
 import type App from '../../../../Utils/Classes/App';
-import Route from '../../../../Utils/Classes/Route.js';
+import Route from '../../../../Utils/Classes/Route.ts';
 
 interface CreateChannelBody {
 	Flags: number;
@@ -29,7 +29,7 @@ export default class Channels extends Route {
 			User({
 				AccessType: 'LoggedIn',
 				AllowedRequesters: 'User',
-				App
+				App,
 			}),
 		];
 
@@ -76,7 +76,7 @@ export default class Channels extends Route {
 		}
 	}
 
-	private async GetChannels(_: Request<{ channelId?: string; }>, __: Response) { }
+	private async GetChannels(_: Request<{ channelId?: string }>, __: Response) {}
 
 	private async CreateDm(Req: Request<any, any, CreateChannelBody>, _: Response) {
 		const { Flags, Recipients } = Req.body;
@@ -84,5 +84,5 @@ export default class Channels extends Route {
 		this.App.Logger.debug(`Flags: ${Flags}, Recipients: ${Recipients?.join(', ')}`);
 	}
 
-	private async DeleteDm(_: Request<{ channelId?: string; }>, __: Response) { }
+	private async DeleteDm(_: Request<{ channelId?: string }>, __: Response) {}
 }

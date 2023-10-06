@@ -1,0 +1,27 @@
+name: Check for formatting issues
+
+on:
+  pull_request:
+    branches:
+      - development
+
+jobs:
+  lint-and-format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: oven-sh/setup-bun@v1
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Format
+        run: bun format
+
+      - name: Check for formatting issues
+        run: bun lint
+        
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with: 
+          commit_message: Check for formatting issues

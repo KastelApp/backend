@@ -11,7 +11,7 @@
 
 import type { Request, Response } from 'express';
 import type App from '../Utils/Classes/App';
-import Route from '../Utils/Classes/Route.js';
+import Route from '../Utils/Classes/Route.ts';
 
 export default class Experiments extends Route {
 	public constructor(App: App) {

@@ -11,7 +11,7 @@
 
 import crypto from 'node:crypto';
 import { types } from '@kastelll/cassandra-driver';
-import { Encryption as En } from '../../Config.js';
+import { Encryption as En } from '../../Config.ts';
 
 const algorithm = En.Algorithm;
 const initVector = En.InitVector;
@@ -136,7 +136,6 @@ class Encryption {
 		}
 
 		return items;
-
 	}
 }
 

@@ -11,8 +11,8 @@
 		"strict": true,
 		"useUnknownInCatchVariables": true,
 		"noUncheckedIndexedAccess": true,
-		"module": "ESNext",
-		"moduleResolution": "node",
+		"module": "esnext",
+		"moduleResolution": "bundler",
 		"resolveJsonModule": true,
 		"declaration": true,
 		"declarationMap": true,
@@ -26,10 +26,16 @@
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 		"experimentalDecorators": true,
-		"lib": ["ESNext"],
-		"target": "ES2022",
+		"lib": ["esnext"],
+		"target": "esnext",
 		"useDefineForClassFields": true,
+		"types": ["bun-types"],
+		"skipLibCheck": true,
+		"allowJs": true,
+		"noEmit": true,
+		"allowImportingTsExtensions": true,
+		"moduleDetection": "force"
 	},
 	"include": ["src/**/*", "scripts/**/*"],
-	"exclude": ["node_modules", "dist"]
+	"exclude": [".github"]
 }
