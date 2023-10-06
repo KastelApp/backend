@@ -26,22 +26,15 @@
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 		"experimentalDecorators": true,
-		"lib": [
-			"esnext"
-		],
+		"lib": ["esnext"],
 		"target": "esnext",
 		"useDefineForClassFields": true,
-		"types": [
-			"bun-types"
-		],
+		"types": ["bun-types"],
 		"skipLibCheck": true,
-		"allowJs": true, 
+		"allowJs": true,
 		"noEmit": true,
 		"allowImportingTsExtensions": true,
-		"moduleDetection": "force",
+		"moduleDetection": "force"
 	},
-	"include": [
-		"src/**/*",
-		"scripts/**/*"
-	]
+	"include": ["src/**/*", "scripts/**/*"]
 }

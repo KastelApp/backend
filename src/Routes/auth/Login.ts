@@ -36,7 +36,7 @@ export default class Login extends Route {
 			User({
 				AccessType: 'LoggedOut',
 				AllowedRequesters: 'User',
-				App
+				App,
 			}),
 			Captcha({
 				Enabled: Constants.Settings.Captcha.Register,
@@ -94,7 +94,7 @@ export default class Login extends Route {
 			return;
 		}
 
-		if (!await Bun.password.verify(Password, FetchedUser.Password)) {
+		if (!(await Bun.password.verify(Password, FetchedUser.Password))) {
 			const Error = ErrorGen.InvalidCredentials();
 
 			Error.AddError({
@@ -147,9 +147,12 @@ export default class Login extends Route {
 
 		const NewToken = Token.GenerateToken(FetchedUser.UserId);
 
-		const Tokens = await this.App.Cassandra.Models.Settings.get({
-			UserId: Encryption.Encrypt(FetchedUser.UserId)
-		}, { fields: ['tokens'] });
+		const Tokens = await this.App.Cassandra.Models.Settings.get(
+			{
+				UserId: Encryption.Encrypt(FetchedUser.UserId),
+			},
+			{ fields: ['tokens'] },
+		);
 
 		const SessionId = Encryption.Encrypt(this.App.Snowflake.Generate());
 
@@ -171,7 +174,7 @@ export default class Login extends Route {
 
 		await this.App.Cassandra.Models.Settings.update({
 			UserId: Encryption.Encrypt(FetchedUser.UserId),
-			Tokens: NewTokens
+			Tokens: NewTokens,
 		});
 
 		this.App.SystemSocket.Events.NewSession({

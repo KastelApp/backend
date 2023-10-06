@@ -56,35 +56,41 @@ const Settings = {
 
 // Note: You should NOT change these at all unless you know what you are doing
 // The frontend depends on these
-const GuildFeatures = [{
-	Name: 'Partnered',
-	Deprecated: false, // deprecated means it will be removed in the future
-	Default: false, // If guilds are given this by default on guild creation
-	Settable: false, // if a user can set it themselves
-	NewDefault: false // If its a "new default" this means if we lets say fetch a guild we need to add this
-}, {
-	Name: 'Verified', // Ran by an official company / person
-	Deprecated: false,
-	Enabled: false,
-	Settable: false,
-	NewDefault: false
-}, {
-	Name: 'Official', // Ran by Kastel themselves (Think the Kastel Developers guild)
-	Deprecated: false,
-	Enabled: false,
-	Settable: false,
-	NewDefault: false
-}, {
-	Name: 'Maintenance', // Disallows anyone without ManageGuild to view the guild / access it
-	Deprecated: false,
-	Enabled: true,
-	Settable: true,
-}, {
-	Name: 'InternalStaffGuild', // Staff only, for internal use (This is where Community Announcements will be made and some other stuff)
-	Deprecated: false,
-	Enabled: false,
-	Settable: false,
-}] as const;
+const GuildFeatures = [
+	{
+		Name: 'Partnered',
+		Deprecated: false, // deprecated means it will be removed in the future
+		Default: false, // If guilds are given this by default on guild creation
+		Settable: false, // if a user can set it themselves
+		NewDefault: false, // If its a "new default" this means if we lets say fetch a guild we need to add this
+	},
+	{
+		Name: 'Verified', // Ran by an official company / person
+		Deprecated: false,
+		Enabled: false,
+		Settable: false,
+		NewDefault: false,
+	},
+	{
+		Name: 'Official', // Ran by Kastel themselves (Think the Kastel Developers guild)
+		Deprecated: false,
+		Enabled: false,
+		Settable: false,
+		NewDefault: false,
+	},
+	{
+		Name: 'Maintenance', // Disallows anyone without ManageGuild to view the guild / access it
+		Deprecated: false,
+		Enabled: true,
+		Settable: true,
+	},
+	{
+		Name: 'InternalStaffGuild', // Staff only, for internal use (This is where Community Announcements will be made and some other stuff)
+		Deprecated: false,
+		Enabled: false,
+		Settable: false,
+	},
+] as const;
 
 const AllowedMentions: {
 	All?: number;
@@ -139,9 +145,9 @@ const MessageFlags = {
 const InviteFlags = {
 	Normal: 1 << 0, // invite for a guild channel
 	GroupChat: 1 << 1, // invite for a gdm
-	FriendLink: 1 << 2, // This lets you "add" a friend rather then having them send you a friend request, this is an instant friend 
+	FriendLink: 1 << 2, // This lets you "add" a friend rather then having them send you a friend request, this is an instant friend
 	Vanity: 1 << 3, // This is a vanity invite (like kastelapp.com/invite/kastel) Undeleatable 1 per guild
-}
+};
 
 const PublicFlags = {
 	StaffBadge: 1n << 0n,
@@ -155,7 +161,7 @@ const PublicFlags = {
 	MinorBugHunterBadge: 1n << 8n,
 	IntermediateBugHunterBadge: 1n << 9n,
 	MajorBugHunterBadge: 1n << 10n,
-}
+};
 
 const PrivateFlags = {
 	Ghost: 1n << 0n,
@@ -183,9 +189,8 @@ const PrivateFlags = {
 	IncreasedGuildCount500: 1n << 27n,
 	IncreasedMessageLength2k: 1n << 28n,
 	IncreasedMessageLength4k: 1n << 29n,
-	IncreasedMessageLength8k: 1n << 30n
-
-}
+	IncreasedMessageLength8k: 1n << 30n,
+};
 
 const MixedPermissions = {
 	ManageMessages: 1n << 9n,
@@ -243,7 +248,7 @@ const Relative = {
 const VerificationFlags = {
 	VerifyEmail: 1 << 0,
 	ForgotPassword: 1 << 1,
-	ChangeEmail: 1 << 2
+	ChangeEmail: 1 << 2,
 };
 
 const Snowflake = {
@@ -252,14 +257,14 @@ const Snowflake = {
 	WorkerIdBytes: 12,
 	ProcessIdBytes: 1,
 	WorkerId: 5,
-	ProcessId: process.pid
+	ProcessId: process.pid,
 };
 
 const PermissionOverrideTypes = {
 	Role: 1 << 0,
 	Member: 1 << 1,
-	Everyone: 1 << 2
-}
+	Everyone: 1 << 2,
+};
 
 export default {
 	Settings,
@@ -281,7 +286,7 @@ export default {
 	PublicFlags,
 	GuildFeatures,
 	PermissionOverrideTypes,
-	InviteFlags
+	InviteFlags,
 };
 
 export {
@@ -304,5 +309,5 @@ export {
 	PublicFlags,
 	GuildFeatures,
 	PermissionOverrideTypes,
-	InviteFlags
+	InviteFlags,
 };

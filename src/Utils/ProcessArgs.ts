@@ -1,6 +1,6 @@
 import process from 'node:process';
 
-const ProcessArgs = (allowedArgs: string[]): { Invalid: string[]; Valid: string[]; } => {
+const ProcessArgs = (allowedArgs: string[]): { Invalid: string[]; Valid: string[] } => {
 	const Valid = [];
 	const Invalid = [];
 

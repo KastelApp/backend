@@ -13,9 +13,7 @@ import { Permissions as Perms, RolePermissions, ChannelPermissions, MixedPermiss
 import FlagUtilsBInt from './NewFlags.ts';
 
 class Permissions extends FlagUtilsBInt<typeof Perms> {
-	public constructor(
-		bits: bigint | number | string,
-	) {
+	public constructor(bits: bigint | number | string) {
 		super(bits, Perms);
 	}
 

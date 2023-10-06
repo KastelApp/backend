@@ -64,10 +64,10 @@ export interface ScyllaDB {
 	Keyspace: string;
 	NetworkTopologyStrategy: {
 		[DataCenter: string]: number;
-	}
+	};
 	Nodes: string[];
 	Password: string;
-	Username: string; 
+	Username: string;
 }
 
 type ShortCode = 'NoReply' | 'Support';

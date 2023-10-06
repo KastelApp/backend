@@ -40,7 +40,7 @@ export default class Register extends Route {
 			User({
 				AccessType: 'LoggedOut',
 				AllowedRequesters: 'User',
-				App
+				App,
 			}),
 			Captcha({
 				Enabled: Constants.Settings.Captcha.Register,
@@ -61,7 +61,11 @@ export default class Register extends Route {
 		const UsernameValidator =
 			/^(?=.*[a-zA-Z0-9!$%^&*()\-_~>.<?/\s\u0020-\uD7FF\uE000-\uFFFD])[a-zA-Z0-9!$%^&*()\-_~>.<?/\s\u0020-\uD7FF\uE000-\uFFFD]{2,30}$/; // eslint-disable-line unicorn/better-regex
 
-		if (!EmailValidator.test(Email ?? '') || !PasswordValidtor.test(Password ?? '') || !UsernameValidator.test(Username ?? '')) {
+		if (
+			!EmailValidator.test(Email ?? '') ||
+			!PasswordValidtor.test(Password ?? '') ||
+			!UsernameValidator.test(Username ?? '')
+		) {
 			const Error = ErrorGen.MissingAuthField();
 
 			if (!EmailValidator.test(Email ?? '')) {
@@ -136,7 +140,7 @@ export default class Register extends Route {
 			GlobalNickname: '',
 			Guilds: [],
 			Ips: [],
-			Password: await Bun.password.hash(Password, "argon2id"),
+			Password: await Bun.password.hash(Password, 'argon2id'),
 			PhoneNumber: '',
 			Tag,
 			TwoFaSecret: '',
@@ -155,20 +159,22 @@ export default class Register extends Route {
 			Privacy: 0,
 			Status: '',
 			Theme: 'dark',
-			Tokens: [{
-				CreatedDate: new Date(),
-				Flags: 0,
-				Ip: Encryption.Encrypt(Req.clientIp),
-				Token: Encryption.Encrypt(NewToken),
-				TokenId: Encryption.Encrypt(this.App.Snowflake.Generate()),
-			}],
+			Tokens: [
+				{
+					CreatedDate: new Date(),
+					Flags: 0,
+					Ip: Encryption.Encrypt(Req.clientIp),
+					Token: Encryption.Encrypt(NewToken),
+					TokenId: Encryption.Encrypt(this.App.Snowflake.Generate()),
+				},
+			],
 			UserId: UserObject.UserId,
 			Bio: '',
 		};
 
 		await Promise.all([
 			this.App.Cassandra.Models.User.insert(UserObject),
-			this.App.Cassandra.Models.Settings.insert(SettingsObject)
+			this.App.Cassandra.Models.Settings.insert(SettingsObject),
 		]);
 
 		Res.send({
@@ -191,9 +197,12 @@ export default class Register extends Route {
 	// }
 
 	private async FetchUser(Email: string): Promise<Users | null> {
-		const FetchedUser = await this.App.Cassandra.Models.User.get({
-			Email: Encryption.Encrypt(Email)
-		}, { fields: ['email'] });
+		const FetchedUser = await this.App.Cassandra.Models.User.get(
+			{
+				Email: Encryption.Encrypt(Email),
+			},
+			{ fields: ['email'] },
+		);
 
 		if (!FetchedUser) return null;
 
@@ -201,9 +210,12 @@ export default class Register extends Route {
 	}
 
 	private async FetchUsers(Username: string, Fields?: string[]): Promise<Users[] | null> {
-		const FetchedUsers = await this.App.Cassandra.Models.User.find({
-			Username: Encryption.Encrypt(Username)
-		}, { fields: Fields ?? [] });
+		const FetchedUsers = await this.App.Cassandra.Models.User.find(
+			{
+				Username: Encryption.Encrypt(Username),
+			},
+			{ fields: Fields ?? [] },
+		);
 
 		return FetchedUsers.toArray();
 	}
@@ -214,10 +226,9 @@ export default class Register extends Route {
 		if (Count) {
 			FoundCount = Count;
 		} else if (Username) {
-			const FoundUsers = await this.App.Cassandra.Execute(
-				'SELECT COUNT(1) FROM users WHERE username = ?',
-				[Encryption.Encrypt(Username)]
-			);
+			const FoundUsers = await this.App.Cassandra.Execute('SELECT COUNT(1) FROM users WHERE username = ?', [
+				Encryption.Encrypt(Username),
+			]);
 
 			const Value: number = FoundUsers?.first()?.get('count').toNumber() ?? 0;
 

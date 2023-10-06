@@ -24,8 +24,8 @@ export default class DeleteRole extends Route {
 			User({
 				AccessType: 'LoggedIn',
 				AllowedRequesters: 'User',
-				App
-			})
+				App,
+			}),
 		];
 
 		this.AllowedContentTypes = [];

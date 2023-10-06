@@ -1,4 +1,4 @@
-import type { PrivateFlags } from "./Constants";
+import type { PrivateFlags } from './Constants';
 
 // Experiment Naming System: YYYY-MM-DD-<name_here> so for example "2023-08-12-voice_channel_release"
 
@@ -14,7 +14,7 @@ interface Treatment {
 		ReleasePercentage: number;
 		RequiredFeatures: string[];
 		RequiredFlags: (keyof typeof PrivateFlags)[] | null;
-	},
+	};
 	Description: string;
 	Treatment: string;
 }
@@ -51,10 +51,12 @@ export const Experiments: Experiment[] = [
 					MaxMembers: 0,
 					RequiredFlags: null,
 					RequiredFeatures: [],
-					Overrides: [{
-						Type: 'Guild', // Types are 'Guild' or 'User'
-						Ids: ['123456789012345678'], // The IDs of the guilds or users that will override the treatment (meaning to be in this treatment without meeting the requirements)
-					}],
+					Overrides: [
+						{
+							Type: 'Guild', // Types are 'Guild' or 'User'
+							Ids: ['123456789012345678'], // The IDs of the guilds or users that will override the treatment (meaning to be in this treatment without meeting the requirements)
+						},
+					],
 					ReleasePercentage: 0.01, // 1% of guilds will be in this treatment
 					Priority: 1,
 				},
@@ -108,7 +110,4 @@ export const Experiments: Experiment[] = [
 	},
 ];
 
-export type {
-	Experiment,
-	Treatment,
-};
+export type { Experiment, Treatment };

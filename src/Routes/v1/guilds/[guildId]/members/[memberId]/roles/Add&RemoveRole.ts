@@ -24,8 +24,8 @@ export default class AddAndRemoveRole extends Route {
 			User({
 				AccessType: 'LoggedIn',
 				AllowedRequesters: 'User',
-				App
-			})
+				App,
+			}),
 		];
 
 		this.AllowedContentTypes = ['application/json'];

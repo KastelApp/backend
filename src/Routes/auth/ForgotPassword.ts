@@ -34,7 +34,7 @@ export default class ForgotPassword extends Route {
 			User({
 				AccessType: 'LoggedOut',
 				AllowedRequesters: 'User',
-				App
+				App,
 			}),
 		];
 
@@ -88,16 +88,12 @@ export default class ForgotPassword extends Route {
 			Req.clientIp,
 		);
 
-		this.App.Logger.debug(
-			`[Forgot Password] The Forgot Password code is ${Code}`,
-		);
+		this.App.Logger.debug(`[Forgot Password] The Forgot Password code is ${Code}`);
 
 		if (this.App.NoReply) {
-			await this.App.NoReply.SendEmail(
-				FetchedUser.Email,
-				'Forgot Password',
-				`Forgot Password Code: ${Code}`,
-			).catch((error) => this.App.Logger.error(`Failed to send the email`, error));
+			await this.App.NoReply.SendEmail(FetchedUser.Email, 'Forgot Password', `Forgot Password Code: ${Code}`).catch(
+				(error) => this.App.Logger.error(`Failed to send the email`, error),
+			);
 		}
 
 		Res.status(204).end();

@@ -19,7 +19,7 @@ class IpUtils {
 			Ip = Ip.split(',')[0];
 		}
 
-		return (Ip as string)?.replace('::ffff:', '') ?? '127.0.0.1'
+		return (Ip as string)?.replace('::ffff:', '') ?? '127.0.0.1';
 	}
 
 	public static IsLocalIp(ip: string): boolean {

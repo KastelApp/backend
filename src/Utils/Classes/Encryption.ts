@@ -136,7 +136,6 @@ class Encryption {
 		}
 
 		return items;
-
 	}
 }
 

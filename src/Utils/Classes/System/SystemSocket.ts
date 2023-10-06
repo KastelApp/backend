@@ -1,12 +1,12 @@
 /* eslint-disable id-length */
 import type { Buffer } from 'node:buffer';
 import zlib from 'node:zlib';
+import { WebSocket } from 'ws';
 import Config from '../../../Config.ts';
 import type { AuthedPayload, NormalPayload } from '../../../Types/Socket/MiscPayloads';
 import type App from '../App.ts';
 import { OpCodes, SystemOpCodes } from '../WsUtils.ts';
 import Events from './Events.ts';
-import { WebSocket } from 'ws';
 
 setInterval;
 
@@ -61,9 +61,7 @@ class SystemSocket {
 		return new Promise<void>((resolve) => {
 			this.Ws = new WebSocket(
 				`${Config.Ws.Url}?v=${Config.Ws.version ?? 0}&p=${encodeURIComponent(Config.Ws.Password)}&c=true&encoding=json`,
-				{
-
-				}
+				{},
 			);
 
 			// @ts-expect-error -- It does exist, though bun doing the funky with the internal ws module

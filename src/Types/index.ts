@@ -18,7 +18,7 @@ export interface ExpressUser {
 	Bot: boolean;
 	Email: string;
 	FlagsUtil: FlagFields;
-	Guilds: string[],
+	Guilds: string[];
 	Id: string;
 	Password: string;
 	Token: string;
@@ -26,21 +26,21 @@ export interface ExpressUser {
 
 export interface EditedGuildMember {
 	Flags: GuildMemberFlags;
-    GuildId: string;
-    JoinedAt: Date;
-    Nickname: string;
-    Roles: string[];
-    Timeouts: GuildMembersTimeouts[];
-    UserId: string;
+	GuildId: string;
+	JoinedAt: Date;
+	Nickname: string;
+	Roles: string[];
+	Timeouts: GuildMembersTimeouts[];
+	UserId: string;
 }
 
 export interface Guild {
 	Guild: {
-		Features: string[],
+		Features: string[];
 		Id: string;
 		Name: string;
 		OwnerId: string;
-	},
+	};
 	GuildMember: EditedGuildMember;
 }
 
@@ -49,7 +49,7 @@ export type ExpressMethodCap = 'DELETE' | 'GET' | 'HEAD' | 'OPTIONS' | 'PATCH' |
 declare global {
 	namespace Express {
 		interface Request {
-			captcha: Turnstile,
+			captcha: Turnstile;
 			clientIp: string;
 			fourohfourit(): true;
 			guild: Guild;

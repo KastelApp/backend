@@ -33,7 +33,7 @@ export default class ResetPassword extends Route {
 			User({
 				AccessType: 'LoggedOut',
 				AllowedRequesters: 'User',
-				App
+				App,
 			}),
 		];
 
@@ -128,7 +128,7 @@ export default class ResetPassword extends Route {
 		if (LinkVerification.Flags !== this.App.Constants.VerificationFlags.ForgotPassword) {
 			const Error = ErrorGen.MissingAuthField();
 
-			this.App.Logger.debug("[Reset Password] Code is not a Forgot Password code");
+			this.App.Logger.debug('[Reset Password] Code is not a Forgot Password code');
 
 			Error.AddError({
 				Code: {
@@ -161,7 +161,7 @@ export default class ResetPassword extends Route {
 
 		await this.App.Cassandra.Models.User.update({
 			UserId: Encryption.Encrypt(FetchedUser.UserId),
-			Password: await Bun.password.hash(NewPassword, "argon2id"),
+			Password: await Bun.password.hash(NewPassword, 'argon2id'),
 		});
 
 		await this.App.Cassandra.Models.Settings.update({
@@ -170,7 +170,7 @@ export default class ResetPassword extends Route {
 		});
 
 		await this.App.Cassandra.Models.VerificationLink.remove({
-			Code: Encryption.Encrypt(Code)
+			Code: Encryption.Encrypt(Code),
 		});
 
 		Res.status(204).end();

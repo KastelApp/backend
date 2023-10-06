@@ -69,13 +69,13 @@ const Redis: RedisConfigType = {
 };
 
 const ScyllaDB: ScyllaDBConfigType = {
-	Nodes: ["172.17.0.1"],
+	Nodes: ['172.17.0.1'],
 	Keyspace: 'kastel',
 	Username: 'kstl',
 	Password: '',
 	CassandraOptions: {},
 	DurableWrites: true,
-	NetworkTopologyStrategy: {}
+	NetworkTopologyStrategy: {},
 };
 
 const MailServer: MailServerConfigType = {
@@ -99,7 +99,6 @@ const MailServer: MailServerConfigType = {
 		},
 	],
 };
-
 
 const EmailTemplates: EmailTemplatesConfigType = {
 	VerifyEmail: {
@@ -135,7 +134,8 @@ const Regexs: RegexsConfigType = {
 	PlusReplace: /\+([^@]+)/g, // eslint-disable-line prefer-named-capture-group
 	PasswordValidtor: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()-=_+{};:<>,.?/~]{6,72}$/g, // eslint-disable-line unicorn/better-regex
 	EmailValidator: /^[\w%+.-]+@[\d.A-Za-z-]+\.[A-Za-z]{2,}$/g,
-	UsernameValidator: /^(?=.*[a-zA-Z0-9!$%^&*()\-_~>.<?/\s\u0020-\uD7FF\uE000-\uFFFD])[a-zA-Z0-9!$%^&*()\-_~>.<?/\s\u0020-\uD7FF\uE000-\uFFFD]{2,30}$/g, // eslint-disable-line unicorn/better-regex
+	UsernameValidator:
+		/^(?=.*[a-zA-Z0-9!$%^&*()\-_~>.<?/\s\u0020-\uD7FF\uE000-\uFFFD])[a-zA-Z0-9!$%^&*()\-_~>.<?/\s\u0020-\uD7FF\uE000-\uFFFD]{2,30}$/g, // eslint-disable-line unicorn/better-regex
 };
 
 const Config: ConfigType = {

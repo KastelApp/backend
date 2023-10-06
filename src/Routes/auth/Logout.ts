@@ -33,7 +33,7 @@ export default class Logout extends Route {
 			User({
 				AccessType: 'LoggedIn',
 				AllowedRequesters: 'User',
-				App
+				App,
 			}),
 		];
 
@@ -72,18 +72,21 @@ export default class Logout extends Route {
 
 		await this.App.Cassandra.Models.Settings.update({
 			UserId: Encryption.Encrypt(Req.user.Id),
-			Tokens: FilteredSessions
+			Tokens: FilteredSessions,
 		});
 
 		Res.status(204).end();
 	}
 
 	private async FetchSessions(UserId: string): Promise<Tokens[]> {
-		const Settings = await this.App.Cassandra.Models.Settings.get({
-			UserId: Encryption.Encrypt(UserId),
-		}, {
-			fields: ['tokens']
-		});
+		const Settings = await this.App.Cassandra.Models.Settings.get(
+			{
+				UserId: Encryption.Encrypt(UserId),
+			},
+			{
+				fields: ['tokens'],
+			},
+		);
 
 		if (!Settings) return [];
 

@@ -1,7 +1,7 @@
-import type { Channel } from "../../Cql/Types";
+import type { Channel } from '../../Cql/Types';
 
 export const FixChannelPositions = (Channel: Channel, ExistingChannels: Channel[], IgnoreParent = false): Channel[] => {
-    /* position 0 = top
+	/* position 0 = top
     So for example four channels:
         test1 = 0
         test2 = 1
@@ -36,60 +36,61 @@ export const FixChannelPositions = (Channel: Channel, ExistingChannels: Channel[
     WARNING: You may change it on a brand new experiment API version but not on old ones nor the current latest one.
     */
 
-    const SortedExistingChannels = ExistingChannels.sort((a, b) => a.Position - b.Position);
+	const SortedExistingChannels = ExistingChannels.sort((a, b) => a.Position - b.Position);
 
-    if (Channel.ParentId && !IgnoreParent) {
-        const AllChannelsRelatingToParentId = SortedExistingChannels.filter((FilteredChannel) => {
-            return FilteredChannel.ParentId === Channel.ParentId;
-        });
+	if (Channel.ParentId && !IgnoreParent) {
+		const AllChannelsRelatingToParentId = SortedExistingChannels.filter((FilteredChannel) => {
+			return FilteredChannel.ParentId === Channel.ParentId;
+		});
 
-        const Imagine = FixChannelPositions(Channel, AllChannelsRelatingToParentId, true);
+		const Imagine = FixChannelPositions(Channel, AllChannelsRelatingToParentId, true);
 
-        const FilteredExistingChannels = SortedExistingChannels.filter((FilteredChannel) => {
-            return !Imagine.some((UpdatedChannel) => UpdatedChannel.ChannelId === FilteredChannel.ChannelId);
-        });
+		const FilteredExistingChannels = SortedExistingChannels.filter((FilteredChannel) => {
+			return !Imagine.some((UpdatedChannel) => UpdatedChannel.ChannelId === FilteredChannel.ChannelId);
+		});
 
-        return [
-            ...FilteredExistingChannels,
-            ...Imagine
-        ].sort((a, b) => a.Position - b.Position);
-    }
+		return [...FilteredExistingChannels, ...Imagine].sort((a, b) => a.Position - b.Position);
+	}
 
-    const NewChannelPositionIndex = SortedExistingChannels.findIndex((IndexedChannel) => IndexedChannel.Position === Channel.Position);
+	const NewChannelPositionIndex = SortedExistingChannels.findIndex(
+		(IndexedChannel) => IndexedChannel.Position === Channel.Position,
+	);
 
-    if (NewChannelPositionIndex === -1) {
-        const LastPosition = SortedExistingChannels[SortedExistingChannels.length - 1]?.Position ?? 0;
+	if (NewChannelPositionIndex === -1) {
+		const LastPosition = SortedExistingChannels[SortedExistingChannels.length - 1]?.Position ?? 0;
 
-        return [
-            ...SortedExistingChannels,
-            {
-                ...Channel,
-                Position: LastPosition + 1,
-            }
-        ].sort((a, b) => a.Position - b.Position);
-    } else {
-        const ChannelsUnderNewChannelPosition = SortedExistingChannels.filter((FilteredChannel) => {
-            return FilteredChannel.Position >= Channel.Position && (IgnoreParent ? true : FilteredChannel.ParentId.length === 0);
-        });
+		return [
+			...SortedExistingChannels,
+			{
+				...Channel,
+				Position: LastPosition + 1,
+			},
+		].sort((a, b) => a.Position - b.Position);
+	} else {
+		const ChannelsUnderNewChannelPosition = SortedExistingChannels.filter((FilteredChannel) => {
+			return (
+				FilteredChannel.Position >= Channel.Position && (IgnoreParent ? true : FilteredChannel.ParentId.length === 0)
+			);
+		});
 
-        const UpdatedChannels = ChannelsUnderNewChannelPosition.map((MappedChannel) => {
-            return {
-                ...MappedChannel,
-                Position: MappedChannel.Position + 1,
-            };
-        });
+		const UpdatedChannels = ChannelsUnderNewChannelPosition.map((MappedChannel) => {
+			return {
+				...MappedChannel,
+				Position: MappedChannel.Position + 1,
+			};
+		});
 
-        const FilteredExistingChannels = SortedExistingChannels.filter((FilteredChannel) => {
-            return !UpdatedChannels.some((UpdatedChannel) => UpdatedChannel.ChannelId === FilteredChannel.ChannelId);
-        });
+		const FilteredExistingChannels = SortedExistingChannels.filter((FilteredChannel) => {
+			return !UpdatedChannels.some((UpdatedChannel) => UpdatedChannel.ChannelId === FilteredChannel.ChannelId);
+		});
 
-        return [
-            ...FilteredExistingChannels,
-            ...UpdatedChannels,
-            {
-                ...Channel,
-                Position: Channel.Position,
-            }
-        ].sort((a, b) => a.Position - b.Position);
-    }
+		return [
+			...FilteredExistingChannels,
+			...UpdatedChannels,
+			{
+				...Channel,
+				Position: Channel.Position,
+			},
+		].sort((a, b) => a.Position - b.Position);
+	}
 };

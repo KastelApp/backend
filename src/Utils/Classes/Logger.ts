@@ -297,14 +297,21 @@ class Logger {
 			return;
 		}
 
-		const Message = `[${options.date.toLocaleTimeString()}] [MASTER / ${options.toShow ? options.toShow.toUpperCase() : options.type.toUpperCase()
-			}]:`;
+		const Message = `[${options.date.toLocaleTimeString()}] [MASTER / ${
+			options.toShow ? options.toShow.toUpperCase() : options.type.toUpperCase()
+		}]:`;
 
 		const Messages = [];
 
 		for (const item of options.message) {
 			const LastMessage: any = Messages[Messages.length - 1];
-			if (typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean' || item === null || item === undefined) {
+			if (
+				typeof item === 'string' ||
+				typeof item === 'number' ||
+				typeof item === 'boolean' ||
+				item === null ||
+				item === undefined
+			) {
 				if (LastMessage && typeof LastMessage === 'string') {
 					Messages[Messages.length - 1] = `${LastMessage} ${item}`;
 				} else {
@@ -322,14 +329,16 @@ class Logger {
 				Messages.push(item);
 			}
 		}
-		
+
 		const NewMessages = Messages.map((msg) => {
 			if (typeof msg === 'string') {
 				return `${Message} ${msg}`.trim();
 			} else {
 				const Strongified = JSON.stringify(msg, null, 2);
 
-				return Strongified.split('\n').map((line) => `${Message} ${line}`.trim()).join('\n');
+				return Strongified.split('\n')
+					.map((line) => `${Message} ${line}`.trim())
+					.join('\n');
 			}
 		});
 

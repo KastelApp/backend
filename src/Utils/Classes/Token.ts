@@ -16,9 +16,7 @@ import { Encryption } from '../../Config.ts';
 class Token {
 	public static GenerateToken(UserId: string): string {
 		const snowflakeBase64 = this.Encode(UserId);
-		const nonce = crypto
-			.randomBytes(16)
-			.toString('base64url');
+		const nonce = crypto.randomBytes(16).toString('base64url');
 
 		const StringDated = this.Encode(String(Date.now()) + nonce);
 
@@ -49,15 +47,9 @@ class Token {
 
 		if (!snowflakeBase64 || !StringDated) throw new Error('Invalid token provided.');
 
-		const Snowflake = Buffer.from(
-			snowflakeBase64,
-			'base64url',
-		).toString('utf8');
+		const Snowflake = Buffer.from(snowflakeBase64, 'base64url').toString('utf8');
 
-		const DecodedTimestamp = Buffer.from(
-			StringDated,
-			'base64url',
-		).toString('utf8');
+		const DecodedTimestamp = Buffer.from(StringDated, 'base64url').toString('utf8');
 
 		return { Snowflake, Timestamp: Number.parseInt(DecodedTimestamp, 10) };
 	}

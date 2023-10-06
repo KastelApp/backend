@@ -38,14 +38,14 @@ export interface UserMiddleware {
 	AccessType: 'All' | 'LoggedIn' | 'LoggedOut';
 	AllowedRequesters: 'All' | 'Bot' | 'User';
 	// The flags that are not allowed to access the endpoint (Default: null)
-	App: App,
+	App: App;
 	DisallowedFlags?: (keyof typeof PrivateFlags)[];
 	// The type of user that can access the endpoint (Default: 'All')
 	Flags?: (keyof typeof PrivateFlags)[];
 }
 
 export interface GuildMiddleware {
-	App: App,
+	App: App;
 	Required: boolean;
 }
 
@@ -59,7 +59,6 @@ export interface Captcha {
 	// The body key that triggers the captcha (like the username field or password field etc)
 	ExpectedCData?: string;
 }
-
 
 export interface RatelimitConfig {
 	App: App;

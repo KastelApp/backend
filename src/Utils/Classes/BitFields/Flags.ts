@@ -9,13 +9,12 @@
  * GPL 3.0 Licensed
  */
 
-import { PrivateFlags, PublicFlags } from "../../../Constants.ts";
-import FlagUtilsBInt from "./NewFlags.ts";
+import { PrivateFlags, PublicFlags } from '../../../Constants.ts';
+import FlagUtilsBInt from './NewFlags.ts';
 
-const PublicPrivateFlags: (keyof typeof PrivateFlags)[] = ["System", "Ghost", "Spammer", "VerifiedBot", "Bot"];
+const PublicPrivateFlags: (keyof typeof PrivateFlags)[] = ['System', 'Ghost', 'Spammer', 'VerifiedBot', 'Bot'];
 
 class FlagFields {
-
 	public PrivateFlags: FlagUtilsBInt<typeof PrivateFlags>;
 
 	public PublicFlags: FlagUtilsBInt<typeof PublicFlags>;
@@ -31,7 +30,9 @@ class FlagFields {
 	}
 
 	public has(bit: bigint | number | keyof typeof PrivateFlags | keyof typeof PublicFlags) {
-		return this.PrivateFlags.has(bit as keyof typeof PrivateFlags) || this.PublicFlags.has(bit as keyof typeof PublicFlags);
+		return (
+			this.PrivateFlags.has(bit as keyof typeof PrivateFlags) || this.PublicFlags.has(bit as keyof typeof PublicFlags)
+		);
 	}
 
 	public toArray(): (keyof typeof PrivateFlags | keyof typeof PublicFlags)[] {

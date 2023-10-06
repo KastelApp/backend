@@ -15,9 +15,9 @@ import App from './Utils/Classes/App.ts';
 const Application = new App();
 
 try {
-	await Application.Init()
+	await Application.Init();
 } catch (error) {
-	Application.Logger.fatal("A fatal error occurred before the server could start.")
+	Application.Logger.fatal('A fatal error occurred before the server could start.');
 	Application.Logger.fatal(error);
 
 	process.exit(1);

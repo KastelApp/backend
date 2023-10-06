@@ -44,12 +44,12 @@ export default class FetchCreateAndDeleteInvites extends Route {
 			User({
 				AccessType: 'LoggedIn',
 				AllowedRequesters: 'User',
-				App
+				App,
 			}),
 			Guild({
 				App,
-				Required: true
-			})
+				Required: true,
+			}),
 		];
 
 		this.AllowedContentTypes = [];
@@ -59,7 +59,7 @@ export default class FetchCreateAndDeleteInvites extends Route {
 		this.MaxUses = 100;
 	}
 
-	public override async Request(Req: Request<{ inviteId?: string; }>, Res: Response) {
+	public override async Request(Req: Request<{ inviteId?: string }>, Res: Response) {
 		if (Req.params?.inviteId && Req.methodi !== 'DELETE') {
 			Req.fourohfourit();
 
@@ -67,19 +67,19 @@ export default class FetchCreateAndDeleteInvites extends Route {
 		}
 
 		switch (Req.methodi) {
-			case "DELETE": {
+			case 'DELETE': {
 				// await this.DeleteInvite(Req, Res);
 
 				break;
 			}
 
-			case "GET": {
+			case 'GET': {
 				await this.FetchInvites(Req, Res);
 
 				break;
 			}
 
-			case "POST": {
+			case 'POST': {
 				await this.CreateInvite(Req, Res);
 
 				break;
@@ -98,15 +98,15 @@ export default class FetchCreateAndDeleteInvites extends Route {
 
 		const InviteType = new FlagUtils<typeof InviteFlags>(Type ?? 0, InviteFlags);
 
-		if (typeof ChannelId !== "string" && !InviteType.has('Vanity') || InviteType.count !== 1) {
+		if ((typeof ChannelId !== 'string' && !InviteType.has('Vanity')) || InviteType.count !== 1) {
 			const Error = ErrorGen.FailedToCreateInvite();
 
-			if (typeof ChannelId !== "string" && !InviteType.has('Vanity')) {
+			if (typeof ChannelId !== 'string' && !InviteType.has('Vanity')) {
 				Error.AddError({
 					ChannelId: {
 						Code: 'InvalidChannelId',
-						Message: 'The provided channel id is missing or invalid'
-					}
+						Message: 'The provided channel id is missing or invalid',
+					},
 				});
 			}
 
@@ -114,8 +114,8 @@ export default class FetchCreateAndDeleteInvites extends Route {
 				Error.AddError({
 					Type: {
 						Code: 'InvalidType',
-						Message: 'The provided type is invalid'
-					}
+						Message: 'The provided type is invalid',
+					},
 				});
 			}
 
@@ -124,14 +124,14 @@ export default class FetchCreateAndDeleteInvites extends Route {
 			return;
 		}
 
-		if (MaxUses && typeof MaxUses !== "number" || (MaxUses < 0 || MaxUses > this.MaxUses)) {
+		if ((MaxUses && typeof MaxUses !== 'number') || MaxUses < 0 || MaxUses > this.MaxUses) {
 			const Error = ErrorGen.FailedToCreateInvite();
 
 			Error.AddError({
 				MaxUses: {
 					Code: 'InvalidMaxUses',
-					Message: 'The provided max uses is invalid'
-				}
+					Message: 'The provided max uses is invalid',
+				},
 			});
 
 			Res.status(400).json(Error.toJSON());
@@ -147,8 +147,8 @@ export default class FetchCreateAndDeleteInvites extends Route {
 			Error.AddError({
 				ChannelId: {
 					Code: 'InvalidChannelId',
-					Message: 'The provided channel id is missing or invalid'
-				}
+					Message: 'The provided channel id is missing or invalid',
+				},
 			});
 
 			Res.status(400).json(Error.toJSON());
@@ -164,30 +164,44 @@ export default class FetchCreateAndDeleteInvites extends Route {
 
 		const MemberFlags = new GuildMemberFlags(Member.Flags);
 
-		const PermissionCheck = new PermissionHandler(Req.user.Id, MemberFlags.cleaned, FoundRoles.map((role) => {
-			return {
-				Id: role.RoleId,
-				Permissions: role.Permissions.toString(),
-				Position: role.Position
-			};
-		}), [
-			{
-				Id: ChannelId ?? 'unknown',
-				Overrides: Channel.map((override) => ({
-					...override,
-					Type: override.Type === PermissionOverrideTypes.Everyone ? 'Role' : override.Type === PermissionOverrideTypes.Role ? 'Role' : 'Member'
-				}))
-			}
-		]);
+		const PermissionCheck = new PermissionHandler(
+			Req.user.Id,
+			MemberFlags.cleaned,
+			FoundRoles.map((role) => {
+				return {
+					Id: role.RoleId,
+					Permissions: role.Permissions.toString(),
+					Position: role.Position,
+				};
+			}),
+			[
+				{
+					Id: ChannelId ?? 'unknown',
+					Overrides: Channel.map((override) => ({
+						...override,
+						Type:
+							override.Type === PermissionOverrideTypes.Everyone
+								? 'Role'
+								: override.Type === PermissionOverrideTypes.Role
+								? 'Role'
+								: 'Member',
+					})),
+				},
+			],
+		);
 
-		if (ChannelId ? InviteType.has('Vanity') && !PermissionCheck.HasAnyRole('ManageGuild') : !PermissionCheck.HasChannelPermission(ChannelId, 'CreateInvites')) {
+		if (
+			ChannelId
+				? InviteType.has('Vanity') && !PermissionCheck.HasAnyRole('ManageGuild')
+				: !PermissionCheck.HasChannelPermission(ChannelId, 'CreateInvites')
+		) {
 			const MissingPermissions = ErrorGen.MissingPermissions();
 
 			MissingPermissions.AddError({
 				Permissions: {
 					Code: 'MissingPermissions',
-					Message: 'You are missing the permissions to do this action.'
-				}
+					Message: 'You are missing the permissions to do this action.',
+				},
 			});
 
 			Res.status(403).json(MissingPermissions.toJSON());
@@ -208,14 +222,16 @@ export default class FetchCreateAndDeleteInvites extends Route {
 
 		await this.App.Cassandra.Models.Invite.insert(InvitePayload);
 
-		Res.status(201).json(Encryption.CompleteDecryption({
-			Code: InvitePayload.Code,
-			CreatorId: InvitePayload.CreatorId,
-			ExpiresAt: InvitePayload.Expires,
-			MaxUses: InvitePayload.MaxUses,
-			Uses: 0,
-			Deleteable: InvitePayload.Deleteable
-		}));
+		Res.status(201).json(
+			Encryption.CompleteDecryption({
+				Code: InvitePayload.Code,
+				CreatorId: InvitePayload.CreatorId,
+				ExpiresAt: InvitePayload.Expires,
+				MaxUses: InvitePayload.MaxUses,
+				Uses: 0,
+				Deleteable: InvitePayload.Deleteable,
+			}),
+		);
 	}
 
 	// public async DeleteInvite(Req: Request<{ inviteId?: string; }>, Res: Response): Promise<void> { }
@@ -229,13 +245,17 @@ export default class FetchCreateAndDeleteInvites extends Route {
 
 		const MemberFlags = new GuildMemberFlags(Member.Flags);
 
-		const PermissionCheck = new PermissionHandler(Req.user.Id, MemberFlags.cleaned, FoundRoles.map((role) => {
-			return {
-				Id: role.RoleId,
-				Permissions: role.Permissions.toString(),
-				Position: role.Position
-			};
-		}));
+		const PermissionCheck = new PermissionHandler(
+			Req.user.Id,
+			MemberFlags.cleaned,
+			FoundRoles.map((role) => {
+				return {
+					Id: role.RoleId,
+					Permissions: role.Permissions.toString(),
+					Position: role.Position,
+				};
+			}),
+		);
 
 		if (!PermissionCheck.HasAnyRole('ManageInvites')) {
 			const MissingPermissions = ErrorGen.MissingPermissions();
@@ -243,8 +263,8 @@ export default class FetchCreateAndDeleteInvites extends Route {
 			MissingPermissions.AddError({
 				Permissions: {
 					Code: 'MissingPermissions',
-					Message: 'You are missing the permissions to do this action.'
-				}
+					Message: 'You are missing the permissions to do this action.',
+				},
 			});
 
 			Res.status(403).json(MissingPermissions.toJSON());
@@ -253,7 +273,7 @@ export default class FetchCreateAndDeleteInvites extends Route {
 		}
 
 		const Invites = await this.App.Cassandra.Models.Invite.find({
-			GuildId: Encryption.Encrypt(Req.guild.Guild.Id)
+			GuildId: Encryption.Encrypt(Req.guild.Guild.Id),
 		});
 
 		const FixedInvites = [];
@@ -265,7 +285,7 @@ export default class FetchCreateAndDeleteInvites extends Route {
 				ExpiresAt: InvitePayload.Expires,
 				MaxUses: InvitePayload.MaxUses,
 				Uses: InvitePayload.Uses,
-				Deleteable: InvitePayload.Deleteable
+				Deleteable: InvitePayload.Deleteable,
 			});
 		}
 
@@ -273,11 +293,14 @@ export default class FetchCreateAndDeleteInvites extends Route {
 	}
 
 	private async ChannelExists(ChannelId: string) {
-		const Channel = await this.App.Cassandra.Models.Channel.get({
-			ChannelId: Encryption.Encrypt(ChannelId),
-		}, {
-			fields: ['channel_id', 'permissions_overides']
-		});
+		const Channel = await this.App.Cassandra.Models.Channel.get(
+			{
+				ChannelId: Encryption.Encrypt(ChannelId),
+			},
+			{
+				fields: ['channel_id', 'permissions_overides'],
+			},
+		);
 
 		if (!Channel) return null;
 
@@ -289,11 +312,14 @@ export default class FetchCreateAndDeleteInvites extends Route {
 		}[] = [];
 
 		for (const override of Channel.PermissionsOverrides ?? []) {
-			const FetchedOverride = await this.App.Cassandra.Models.PermissionOverride.get({
-				PermissionId: override
-			}, {
-				fields: ['id', 'type', 'allow_', 'deny']
-			});
+			const FetchedOverride = await this.App.Cassandra.Models.PermissionOverride.get(
+				{
+					PermissionId: override,
+				},
+				{
+					fields: ['id', 'type', 'allow_', 'deny'],
+				},
+			);
 
 			if (!FetchedOverride) continue;
 
@@ -301,7 +327,7 @@ export default class FetchCreateAndDeleteInvites extends Route {
 				Id: FetchedOverride.Id,
 				Type: FetchedOverride.Type,
 				Allow: FetchedOverride.Allow.toString(),
-				Deny: FetchedOverride.Deny.toString()
+				Deny: FetchedOverride.Deny.toString(),
 			});
 		}
 
@@ -309,12 +335,15 @@ export default class FetchCreateAndDeleteInvites extends Route {
 	}
 
 	private async FetchMember(UserId: string, GuildId: string) {
-		const Member = await this.App.Cassandra.Models.GuildMember.get({
-			UserId: Encryption.Encrypt(UserId),
-			GuildId: Encryption.Encrypt(GuildId),
-		}, {
-			allowFiltering: true
-		});
+		const Member = await this.App.Cassandra.Models.GuildMember.get(
+			{
+				UserId: Encryption.Encrypt(UserId),
+				GuildId: Encryption.Encrypt(GuildId),
+			},
+			{
+				allowFiltering: true,
+			},
+		);
 
 		if (!Member) return null;
 
@@ -325,12 +354,14 @@ export default class FetchCreateAndDeleteInvites extends Route {
 		const RolePromises = [];
 
 		for (const RoleId of Roles) {
-			RolePromises.push(this.App.Cassandra.Models.Role.get({
-				RoleId: Encryption.Encrypt(RoleId)
-			}));
+			RolePromises.push(
+				this.App.Cassandra.Models.Role.get({
+					RoleId: Encryption.Encrypt(RoleId),
+				}),
+			);
 		}
 
-		const FetchedRoles = (await Promise.all(RolePromises));
+		const FetchedRoles = await Promise.all(RolePromises);
 
 		const NonNullRoles: Roles[] = [];
 

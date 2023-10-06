@@ -87,7 +87,7 @@ export default class FetchPatchUser extends Route {
 			User({
 				AccessType: 'LoggedIn',
 				AllowedRequesters: 'User',
-				App
+				App,
 			}),
 		];
 
@@ -224,7 +224,7 @@ export default class FetchPatchUser extends Route {
 			.filter(([key]) => {
 				return this.Editable.includes(key as keyof EditableUser);
 			})
-			.reduce<{ [key: string]: number | string | null; }>((prev, [key, value]) => {
+			.reduce<{ [key: string]: number | string | null }>((prev, [key, value]) => {
 				if (!['string', 'number'].includes(typeof value)) prev[key as string] = null;
 
 				prev[key as string] = value as number | string;
@@ -280,7 +280,7 @@ export default class FetchPatchUser extends Route {
 			if (ContinuePast.includes(item)) continue;
 
 			if (item === 'NewPassword') {
-				FetchedUser.Password = await Bun.password.hash(FilteredItems[item] as string, "argon2id");
+				FetchedUser.Password = await Bun.password.hash(FilteredItems[item] as string, 'argon2id');
 
 				continue;
 			}
@@ -297,14 +297,12 @@ export default class FetchPatchUser extends Route {
 				const Flags = FilteredItems[item] as number;
 
 				this.App.Logger.warn(
-					`[Updating User] User ${Req.user.Id} Has updated their flags, Their old flags are "${FetchedUser.Flags
+					`[Updating User] User ${Req.user.Id} Has updated their flags, Their old flags are "${
+						FetchedUser.Flags
 					}", They are ${item === 'RFlags' ? 'Removing Flags' : 'Adding Flags'} "${Flags}"`,
 				);
 
-				const FilteredFlagsParsed = new FlagFields(
-					0n,
-					Flags
-				);
+				const FilteredFlagsParsed = new FlagFields(0n, Flags);
 
 				if (item === 'RFlags') ParsedFlags.PublicFlags.remove(FilteredFlagsParsed.PublicFlags.cleaned);
 				if (item === 'AFlags') ParsedFlags.PublicFlags.add(FilteredFlagsParsed.PublicFlags.cleaned);
@@ -385,7 +383,6 @@ export default class FetchPatchUser extends Route {
 			Flags: FetchedUser.Flags,
 		});
 
-
 		const UserObject: UserObject = {
 			Id: FetchedUser.UserId,
 			Email: FetchedUser.Email,
@@ -447,11 +444,14 @@ export default class FetchPatchUser extends Route {
 		};
 
 		if (SplitInclude.includes('bio')) {
-			const Settings = await this.App.Cassandra.Models.Settings.get({
-				UserId: Encryption.Encrypt(UserObject.Id),
-			}, {
-				fields: ['bio']
-			});
+			const Settings = await this.App.Cassandra.Models.Settings.get(
+				{
+					UserId: Encryption.Encrypt(UserObject.Id),
+				},
+				{
+					fields: ['bio'],
+				},
+			);
 
 			UserObject.Bio = Settings?.Bio ? Encryption.Decrypt(Settings.Bio) : null;
 		}
@@ -480,10 +480,9 @@ export default class FetchPatchUser extends Route {
 		if (Count) {
 			FoundCount = Count;
 		} else if (Username) {
-			const FoundUsers = await this.App.Cassandra.Execute(
-				'SELECT COUNT(1) FROM users WHERE username = ?',
-				[Encryption.Encrypt(Username)]
-			);
+			const FoundUsers = await this.App.Cassandra.Execute('SELECT COUNT(1) FROM users WHERE username = ?', [
+				Encryption.Encrypt(Username),
+			]);
 
 			const Value: number = FoundUsers?.first()?.get('count').toNumber() ?? 0;
 
@@ -494,11 +493,14 @@ export default class FetchPatchUser extends Route {
 	}
 
 	private async UserExists(Username: string, Tag: string): Promise<boolean> {
-		const Users = await this.App.Cassandra.Models.User.find({
-			Username: Encryption.Encrypt(Username),
-		}, {
-			fields: ['tag']
-		});
+		const Users = await this.App.Cassandra.Models.User.find(
+			{
+				Username: Encryption.Encrypt(Username),
+			},
+			{
+				fields: ['tag'],
+			},
+		);
 
 		const FoundUsers = Users.toArray();
 
