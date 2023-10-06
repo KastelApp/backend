@@ -8,8 +8,6 @@ import type App from '../App.ts';
 import { OpCodes, SystemOpCodes } from '../WsUtils.ts';
 import Events from './Events.ts';
 
-setInterval;
-
 class SystemSocket {
 	public Ws: WebSocket | null;
 
