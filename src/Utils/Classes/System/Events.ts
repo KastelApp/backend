@@ -1,6 +1,7 @@
 /* eslint-disable id-length */
 import type { types } from '@kastelll/cassandra-driver';
 import type { ExpressUser } from '../../../Types/index.ts';
+import type { PermissionOverride } from '../../Cql/Types/index.ts';
 import { OpCodes } from '../WsUtils.ts';
 import type { SystemSocket } from './SystemSocket';
 
@@ -217,6 +218,58 @@ class Events {
 	}) {
 		const StringifiedPayload = JSON.stringify({
 			Op: OpCodes.GuildNew,
+			D: Data,
+		});
+				
+		if (this.SendEvents) {
+			this.SystemSocket.Ws?.send(StringifiedPayload);
+		}
+
+		return StringifiedPayload;
+	}
+	
+	public ChannelNew(Data: {
+		AllowedMentions: number;
+		ChannelId: string;
+		Children: string[];
+		Description: string;
+		GuildId: string;
+		Name: string;
+		Nsfw: boolean;
+		ParentId: string;
+		PermissionsOverrides: PermissionOverride[];
+		Position: number;
+		Slowmode: number;
+		Type: number;
+	}) {
+		const StringifiedPayload = JSON.stringify({
+			Op: OpCodes.ChannelNew,
+			D: Data,
+		});
+				
+		if (this.SendEvents) {
+			this.SystemSocket.Ws?.send(StringifiedPayload);
+		}
+
+		return StringifiedPayload;
+	}
+	
+	public ChannelUpdate(Data: {
+		AllowedMentions: number;
+		ChannelId: string;
+		Children: string[];
+		Description: string;
+		GuildId: string;
+		Name: string;
+		Nsfw: boolean;
+		ParentId: string;
+		PermissionsOverrides: PermissionOverride[];
+		Position: number;
+		Slowmode: number;
+		Type: number;
+	}) {
+		const StringifiedPayload = JSON.stringify({
+			Op: OpCodes.ChannelUpdate,
 			D: Data,
 		});
 				
