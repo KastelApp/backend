@@ -1,4 +1,5 @@
 /* eslint-disable id-length */
+import type { types } from '@kastelll/cassandra-driver';
 import type { ExpressUser } from '../../../Types/index.ts';
 import { OpCodes } from '../WsUtils.ts';
 import type { SystemSocket } from './SystemSocket';
@@ -55,7 +56,7 @@ class Events {
 		});
 	}
 
-	public MessageDelete(Message: { AuthorId: string; ChannelId: string; Id: string; Timestamp: number }) {
+	public MessageDelete(Message: { AuthorId: string; ChannelId: string; Id: string; Timestamp: number; }) {
 		if (this.SendEvents) {
 			this.SystemSocket.Ws?.send(
 				JSON.stringify({
@@ -112,7 +113,7 @@ class Events {
 		return StringifiedPayload;
 	}
 
-	public NewSession(data: { SessionId: string; UserId: string }) {
+	public NewSession(data: { SessionId: string; UserId: string; }) {
 		const StringifiedPayload = JSON.stringify({
 			Op: OpCodes.NewSession,
 			D: {
@@ -128,7 +129,7 @@ class Events {
 		return StringifiedPayload;
 	}
 
-	public DeletedSession(data: { SessionId: string; UserId: string }) {
+	public DeletedSession(data: { SessionId: string; UserId: string; }) {
 		const StringifiedPayload = JSON.stringify({
 			Op: OpCodes.DeleteSession,
 			D: {
@@ -160,7 +161,7 @@ class Events {
 	}) {
 		const StringifiedPayload = JSON.stringify({
 			Op: OpCodes.SelfUpdate,
-			d: User,
+			D: User,
 		});
 
 		if (this.SendEvents) {
@@ -191,9 +192,34 @@ class Events {
 
 		const StringifiedPayload = JSON.stringify({
 			Op: OpCodes.RelationshipUpdate,
-			d: Data,
+			D: Data,
 		});
 
+		if (this.SendEvents) {
+			this.SystemSocket.Ws?.send(StringifiedPayload);
+		}
+
+		return StringifiedPayload;
+	}
+
+	public NewGuild(Data: {
+		Channels: Record<string, string[] | boolean | number | string | null>[];
+		CoOwners: never[];
+		Description: string | null;
+		Features: string[];
+		Flags: number;
+		Icon: string | null;
+		Id: string;
+		MaxMembers: number;
+		Name: string;
+		OwnerId: string;
+		Roles: Record<string, types.Long | boolean | number | string>[];
+	}) {
+		const StringifiedPayload = JSON.stringify({
+			Op: OpCodes.GuildNew,
+			D: Data,
+		});
+				
 		if (this.SendEvents) {
 			this.SystemSocket.Ws?.send(StringifiedPayload);
 		}

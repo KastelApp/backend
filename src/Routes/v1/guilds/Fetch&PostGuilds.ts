@@ -452,6 +452,8 @@ export default class Guilds extends Route {
 				return NewChannel;
 			}),
 		};
+		
+		this.App.SystemSocket.Events.NewGuild(UndefinesRemoved);
 
 		Res.status(201).send(Encryption.CompleteDecryption(UndefinesRemoved));
 	}
