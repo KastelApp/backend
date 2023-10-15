@@ -381,6 +381,7 @@ export default class Channels extends Route {
 
 		for (const channel of ChangedChannels) {
 			if (channel.ChannelId === Encryption.Encrypt(ChannelId)) continue; // sometimes this happens just ignore it
+
 			if (ParentId && channel.ChannelId === Encryption.Encrypt(ParentId)) {
 				channel.Children.push(Encryption.Encrypt(ChannelId));
 			}
