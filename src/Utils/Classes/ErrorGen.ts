@@ -133,6 +133,12 @@ const ErrorGen = {
 	InvalidInvite: () => {
 		return new HTTPErrors(4_021);
 	},
+	/**
+	 * Used when the resource is unavailable (503 error)
+	 */
+	ServiceUnavailable: () => {
+		return new HTTPErrors(5_000);
+	}
 };
 
 export default ErrorGen;

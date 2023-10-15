@@ -44,6 +44,7 @@
 		"prettier": "^3.0.2"
 	},
 	"scripts": {
+		"start": "bun run src/index.ts",
 		"lint": "prettier --check . && cross-env TIMING=1 eslint src --ext .js,.ts --format=pretty",
 		"format": "prettier --write . && cross-env TIMING=1 eslint src --ext .js,.ts --fix --format=pretty"
 	},

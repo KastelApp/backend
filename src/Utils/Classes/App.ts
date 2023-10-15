@@ -19,6 +19,7 @@ import Emails from './Emails.ts';
 import ErrorGen from './ErrorGen.ts';
 import { IpUtils } from './IpUtils.ts';
 import CustomLogger from './Logger.ts';
+import Repl from './Repl.ts';
 import type { ContentTypes, ExpressMethod } from './Route.ts';
 import RouteBuilder from './Route.ts';
 import SystemSocket from './System/SystemSocket.ts';
@@ -93,6 +94,8 @@ class App {
 		'!': 'Ignored',
 		' ': 'None',
 	};
+	
+	public Repl: Repl;
 
 	public Args: typeof SupportedArgs = ProcessArgs(SupportedArgs as unknown as string[])
 		.Valid as unknown as typeof SupportedArgs;
@@ -126,6 +129,18 @@ class App {
 		this.Sentry = Sentry;
 
 		this.Logger = new CustomLogger();
+		
+		this.Repl = new Repl("> ", [
+			{
+				name: 'disable',
+				description: 'Disable something (Route, User, etc)',
+				args: [],
+				flags: [],
+				cb(args, flags) {
+					
+				},
+			}
+		]);
 	}
 
 	public async Init(): Promise<void> {
@@ -350,6 +365,21 @@ class App {
 
 							Route.default.Finish(res, res.statusCode, new Date());
 						});
+						
+						if (Route.default.KillSwitched) {
+							const Error = ErrorGen.ServiceUnavailable();
+
+							Error.AddError({
+								ServiceUnavailable: {
+									Code: 'ServiceUnavailable',
+									Message: 'This endpoint is currently disabled',
+								},
+							});
+
+							res.status(503).json(Error.toJSON());
+
+							return;
+						}
 
 						if (
 							Route.default.AllowedContentTypes.length > 0 &&
