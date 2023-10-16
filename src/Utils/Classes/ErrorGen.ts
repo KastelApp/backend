@@ -74,9 +74,9 @@ const ErrorGen = {
 		return new HTTPErrors(4_011);
 	},
 	/**
-	 * You are missing something that is required (think missing a field in a request)
+	 * You are missing something that is required (think missing a field in a request) or its invalid
 	 */
-	MissingField: () => {
+	InvalidField: () => {
 		return new HTTPErrors(4_012);
 	},
 	/**
@@ -138,7 +138,7 @@ const ErrorGen = {
 	 */
 	ServiceUnavailable: () => {
 		return new HTTPErrors(5_000);
-	}
+	},
 };
 
 export default ErrorGen;

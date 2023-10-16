@@ -279,16 +279,16 @@ export default class Guilds extends Route {
 		const { Description, Name } = Req.body;
 
 		if (!Name) {
-			const MissingField = ErrorGen.MissingField();
+			const InvalidField = ErrorGen.InvalidField();
 
-			MissingField.AddError({
+			InvalidField.AddError({
 				Name: {
 					Code: 'MissingName',
 					Message: 'You must provide a name for your guild',
 				},
 			});
 
-			Res.status(400).send(MissingField);
+			Res.status(400).send(InvalidField);
 
 			return;
 		}
@@ -452,7 +452,7 @@ export default class Guilds extends Route {
 				return NewChannel;
 			}),
 		};
-		
+
 		this.App.SystemSocket.Events.NewGuild(UndefinesRemoved);
 
 		Res.status(201).send(Encryption.CompleteDecryption(UndefinesRemoved));
