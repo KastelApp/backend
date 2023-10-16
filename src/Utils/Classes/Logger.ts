@@ -177,7 +177,7 @@ class Logger {
 		this.supersecretdebug('Logger initialized');
 	}
 
-	private hexToAnsi(hex: string): {
+	public static hexToAnsi(hex: string): {
 		end: string;
 		rgb: string;
 	} {
@@ -348,7 +348,7 @@ class Logger {
 		});
 
 		if (options.console) {
-			const color = this.hexToAnsi(this.colorTypes[options.type]);
+			const color = Logger.hexToAnsi(this.colorTypes[options.type]);
 
 			if (color) {
 				for (const msg of NewMessages) {
@@ -495,7 +495,7 @@ class Logger {
 
 	public hex(hex: string) {
 		return (...message: string[]) => {
-			const color = this.hexToAnsi(hex);
+			const color = Logger.hexToAnsi(hex);
 
 			if (color) {
 				for (const msg of message) {
@@ -503,6 +503,16 @@ class Logger {
 				}
 			}
 		};
+	}
+
+	public static colorize(hex: string, str: string) {
+		const color = this.hexToAnsi(hex);
+
+		if (color) {
+			return `${color.rgb}${str}${color.end}`;
+		} else {
+			return str;
+		}
 	}
 }
 
