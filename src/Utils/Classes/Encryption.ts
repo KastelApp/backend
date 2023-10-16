@@ -32,7 +32,7 @@ class Encryption {
 		}
 	}
 
-	public static Decrypt(data: string, raw = false): any {
+	public static Decrypt<T = any>(data: string, raw = false): T {
 		try {
 			const decipher = crypto.createDecipheriv(algorithm, securityKey, initVector);
 			const decrypted = decipher.update(data, 'hex', 'utf8') + decipher.final('utf8');
