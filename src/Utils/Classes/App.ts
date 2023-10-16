@@ -7,7 +7,7 @@ import { Snowflake, Turnstile, CacheManager } from '@kastelll/util';
 import * as Sentry from '@sentry/node';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import express from 'express';
 import { type SimpleGit, simpleGit } from 'simple-git';
 import { Config } from '../../Config.ts';
@@ -94,7 +94,7 @@ class App {
 		'!': 'Ignored',
 		' ': 'None',
 	};
-	
+
 	public Repl: Repl;
 
 	public Args: typeof SupportedArgs = ProcessArgs(SupportedArgs as unknown as string[])
@@ -129,17 +129,56 @@ class App {
 		this.Sentry = Sentry;
 
 		this.Logger = new CustomLogger();
-		
-		this.Repl = new Repl("> ", [
+
+		this.Repl = new Repl(CustomLogger.colorize('#E6AF2E', '> '), [
 			{
 				name: 'disable',
 				description: 'Disable something (Route, User, etc)',
 				args: [],
+				flags: [
+					{
+						name: 'route',
+						description: 'The route to disable',
+						shortName: 'r',
+						value: 'string',
+						maxLength: 1e3,
+						minLength: 1,
+						optional: true,
+					},
+					{
+						name: 'user',
+						description: 'The user to disable',
+						shortName: 'u',
+						value: 'string',
+						maxLength: 1e3,
+						minLength: 1,
+						optional: true,
+					},
+				],
+				cb: () => {},
+			},
+			{
+				name: 'version',
+				description: 'Get the version of the backend',
+				args: [],
 				flags: [],
-				cb(args, flags) {
-					
+				cb: () => {
+					console.log(
+						`You're running version ${
+							Relative.Version ? `v${Relative.Version}` : 'Unknown version'
+						} of Kastel's Backend. Bun version ${Bun.version}`,
+					);
 				},
-			}
+			},
+			{
+				name: 'close',
+				description: 'Close the REPL (Note: you will need to restart the backend to open it again)',
+				args: [],
+				flags: [],
+				cb: () => {
+					this.Repl.endRepl();
+				},
+			},
 		]);
 	}
 
@@ -153,6 +192,8 @@ class App {
 		);
 
 		await this.SetupDebug(this.Args.includes('debug'));
+
+		this.Repl.startRepl();
 
 		this.Cache.on('Connected', () => this.Logger.info('Connected to Redis'));
 		this.Cache.on('Error', (err) => {
@@ -282,6 +323,22 @@ class App {
 				.use(Sentry.Handlers.errorHandler());
 		}
 
+		// eslint-disable-next-line promise/prefer-await-to-callbacks -- (Its not)
+		this.ExpressApp.use((error: Error, _: Request, res: Response, __: NextFunction) => {
+			// @ts-expect-error -- express being weird
+			if (error instanceof SyntaxError && error.status === 400 && 'body' in error) {
+				this.Logger.error(`Someone sent invalid JSON`, error);
+
+				res.status(500).json({
+					Message: `Invalid JSON (${error.message})`,
+				});
+			} else {
+				res.status(500).json({
+					Message: `Internal Server Error :(`,
+				});
+			}
+		});
+
 		this.ExpressApp.use((req, res, next) => {
 			req.clientIp = IpUtils.GetIp(req);
 			req.methodi = req.method as ExpressMethodCap;
@@ -365,7 +422,7 @@ class App {
 
 							Route.default.Finish(res, res.statusCode, new Date());
 						});
-						
+
 						if (Route.default.KillSwitched) {
 							const Error = ErrorGen.ServiceUnavailable();
 
