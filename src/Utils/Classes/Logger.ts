@@ -49,8 +49,6 @@ class Logger {
 
 	private readonly console: boolean;
 
-	// private readonly nextingInterval: NodeJS.Timeout;
-
 	private readonly timers: Map<
 		string,
 		{
@@ -125,26 +123,6 @@ class Logger {
 			importantDebug: '#5d6af0',
 			...options.Colors,
 		};
-
-		// process.on('SIGINT', async () => {
-		//     if (this.writingQueue.length > 0) {
-		//         for (const queue of this.writingQueue) {
-		//             this.next();
-
-		//             const index = this.writingQueue.indexOf(queue);
-
-		//             console.log(index, this.writingQueue.length - 1)
-
-		//             if (index === this.writingQueue.length - 1) {
-		//                 setTimeout(() => {
-		//                     process.exit(0);
-		//                 }, 250);
-		//             }
-		//         }
-		//     } else {
-		//         process.exit(0);
-		//     }
-		// });
 	}
 
 	private async init(): Promise<void> {
