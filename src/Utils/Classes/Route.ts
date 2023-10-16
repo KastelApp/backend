@@ -82,7 +82,7 @@ class Route {
 	public AllowedContentTypes: ContentTypes[];
 
 	public Routes: string[];
-	
+
 	public KillSwitched: boolean; // KillSwitched routes will be populated in the routes, though when someone tries to use it, we'll return a 503 error (default is false)
 
 	public constructor(App: App) {
@@ -95,7 +95,7 @@ class Route {
 		this.AllowedContentTypes = [];
 
 		this.Routes = [];
-		
+
 		this.KillSwitched = false;
 	}
 

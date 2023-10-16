@@ -57,7 +57,7 @@ class Events {
 		});
 	}
 
-	public MessageDelete(Message: { AuthorId: string; ChannelId: string; Id: string; Timestamp: number; }) {
+	public MessageDelete(Message: { AuthorId: string; ChannelId: string; Id: string; Timestamp: number }) {
 		if (this.SendEvents) {
 			this.SystemSocket.Ws?.send(
 				JSON.stringify({
@@ -114,7 +114,7 @@ class Events {
 		return StringifiedPayload;
 	}
 
-	public NewSession(data: { SessionId: string; UserId: string; }) {
+	public NewSession(data: { SessionId: string; UserId: string }) {
 		const StringifiedPayload = JSON.stringify({
 			Op: OpCodes.NewSession,
 			D: {
@@ -130,7 +130,7 @@ class Events {
 		return StringifiedPayload;
 	}
 
-	public DeletedSession(data: { SessionId: string; UserId: string; }) {
+	public DeletedSession(data: { SessionId: string; UserId: string }) {
 		const StringifiedPayload = JSON.stringify({
 			Op: OpCodes.DeleteSession,
 			D: {
@@ -220,14 +220,14 @@ class Events {
 			Op: OpCodes.GuildNew,
 			D: Data,
 		});
-				
+
 		if (this.SendEvents) {
 			this.SystemSocket.Ws?.send(StringifiedPayload);
 		}
 
 		return StringifiedPayload;
 	}
-	
+
 	public ChannelNew(Data: {
 		AllowedMentions: number;
 		ChannelId: string;
@@ -246,14 +246,14 @@ class Events {
 			Op: OpCodes.ChannelNew,
 			D: Data,
 		});
-				
+
 		if (this.SendEvents) {
 			this.SystemSocket.Ws?.send(StringifiedPayload);
 		}
 
 		return StringifiedPayload;
 	}
-	
+
 	public ChannelUpdate(Data: {
 		AllowedMentions: number;
 		ChannelId: string;
@@ -272,7 +272,7 @@ class Events {
 			Op: OpCodes.ChannelUpdate,
 			D: Data,
 		});
-				
+
 		if (this.SendEvents) {
 			this.SystemSocket.Ws?.send(StringifiedPayload);
 		}

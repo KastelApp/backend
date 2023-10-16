@@ -85,7 +85,7 @@ export default class Channels extends Route {
 		};
 	}
 
-	public override async Request(Req: Request<{ guildId: string; }>, Res: Response) {
+	public override async Request(Req: Request<{ guildId: string }>, Res: Response) {
 		switch (Req.methodi) {
 			case 'GET': {
 				await this.FetchChannels(Req, Res);
@@ -113,7 +113,7 @@ export default class Channels extends Route {
 		}
 	}
 
-	public async FetchChannels(Req: Request<{ guildId: string; }>, Res: Response) {
+	public async FetchChannels(Req: Request<{ guildId: string }>, Res: Response) {
 		const FixedChannels = [];
 
 		const Channels = await this.App.Cassandra.Models.Channel.find({
@@ -157,7 +157,7 @@ export default class Channels extends Route {
 		Res.send(Encryption.CompleteDecryption(FixedChannels));
 	}
 
-	public async PostChannels(Req: Request<{ guildId: string; }, any, CreateChannelBody>, Res: Response) {
+	public async PostChannels(Req: Request<{ guildId: string }, any, CreateChannelBody>, Res: Response) {
 		const { Name, Children, Description, Nsfw, ParentId, PermissionsOverrides, Position, Slowmode, Type } = Req.body;
 
 		const Member = await this.FetchMember(Req.user.Id, Req.params.guildId);
@@ -310,7 +310,7 @@ export default class Channels extends Route {
 		if (PermissionErrors.length > 0) {
 			FailedToCreateChannel.AddError({
 				PermissionsOverrides: PermissionErrors.reduce(
-					(prev: { [key: string]: { Code: string; Message: string; }; }, value) => {
+					(prev: { [key: string]: { Code: string; Message: string } }, value) => {
 						prev[value.index] = value.Error;
 						return prev;
 					},
@@ -329,12 +329,14 @@ export default class Channels extends Route {
 				},
 			});
 		}
-		
-		const FoundParent = ParentId ? await this.App.Cassandra.Models.Channel.get({
-			ChannelId: Encryption.Encrypt(ParentId)
-		}) : null;
-		
-		if (ParentId && !FoundParent || (FoundParent && FoundParent.Type !== ChannelTypes.GuildCategory)) {
+
+		const FoundParent = ParentId
+			? await this.App.Cassandra.Models.Channel.get({
+					ChannelId: Encryption.Encrypt(ParentId),
+			  })
+			: null;
+
+		if ((ParentId && !FoundParent) || (FoundParent && FoundParent.Type !== ChannelTypes.GuildCategory)) {
 			FailedToCreateChannel.AddError({
 				Parent: {
 					Code: 'InvalidParent',
@@ -348,7 +350,7 @@ export default class Channels extends Route {
 
 			return;
 		}
-		
+
 		const ChannelId = this.App.Snowflake.Generate();
 
 		const BuiltChannel = {
@@ -388,38 +390,48 @@ export default class Channels extends Route {
 
 			Promises.push(this.App.Cassandra.Models.Channel.update(channel));
 
-			const PermissionOverride = channel.PermissionsOverrides?.map(async (override) => this.App.Cassandra.Models.PermissionOverride.get({
-				PermissionId: override,
-			})) ?? [];
+			const PermissionOverride =
+				channel.PermissionsOverrides?.map(async (override) =>
+					this.App.Cassandra.Models.PermissionOverride.get({
+						PermissionId: override,
+					}),
+				) ?? [];
 
 			const Filtered = (await Promise.all(PermissionOverride)).filter(Boolean) as PermissionOverride[];
-			
+
 			this.App.SystemSocket.Events.ChannelUpdate({
 				...channel,
 				GuildId: Encryption.Encrypt(Req.params.guildId),
 				ChannelId: channel.ChannelId,
-				PermissionsOverrides: Filtered
+				PermissionsOverrides: Filtered,
 			});
 		}
-		
-		if (ParentId && FoundParent && !ChangedChannels.some((channel) => channel.ChannelId === Encryption.Encrypt(ParentId))) {
+
+		if (
+			ParentId &&
+			FoundParent &&
+			!ChangedChannels.some((channel) => channel.ChannelId === Encryption.Encrypt(ParentId))
+		) {
 			const UpdatedChannel = FoundParent;
-			
+
 			UpdatedChannel!.Children.push(Encryption.Encrypt(ChannelId));
-			
+
 			Promises.push(this.App.Cassandra.Models.Channel.update(UpdatedChannel!));
-			
-			const PermissionOverride = UpdatedChannel!.PermissionsOverrides?.map(async (override) => this.App.Cassandra.Models.PermissionOverride.get({
-				PermissionId: override,
-			})) ?? [];
-			
+
+			const PermissionOverride =
+				UpdatedChannel!.PermissionsOverrides?.map(async (override) =>
+					this.App.Cassandra.Models.PermissionOverride.get({
+						PermissionId: override,
+					}),
+				) ?? [];
+
 			const Filtered = (await Promise.all(PermissionOverride)).filter(Boolean) as PermissionOverride[];
-			
+
 			this.App.SystemSocket.Events.ChannelUpdate({
 				...UpdatedChannel,
 				GuildId: Encryption.Encrypt(Req.params.guildId),
 				ChannelId: UpdatedChannel.ChannelId,
-				PermissionsOverrides: Filtered
+				PermissionsOverrides: Filtered,
 			});
 		}
 
