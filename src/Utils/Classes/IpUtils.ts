@@ -13,7 +13,7 @@ import type { Request } from 'express';
 
 class IpUtils {
 	public static GetIp(req: Request): string {
-		let Ip: string[] | string | undefined = req.headers['cf-connecting-ip'] ?? req.headers['x-forwarded-for'] ?? req.ip;
+		let Ip: string[] | string | undefined = req.headers['cf-connecting-ip'] ?? req.headers['x-forwarded-for'] ?? req.socket.remoteAddress;
 
 		if (typeof Ip === 'string') {
 			Ip = Ip.split(',')[0];
