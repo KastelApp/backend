@@ -11,6 +11,7 @@ import {
 import { join } from 'node:path';
 import { setInterval } from 'node:timers';
 import { URL } from 'node:url';
+import * as Sentry from '@sentry/node';
 import * as ark from 'archiver';
 import ProcessArgs from '../ProcessArgs.ts';
 
@@ -275,9 +276,8 @@ class Logger {
 			return;
 		}
 
-		const Message = `[${options.date.toLocaleTimeString()}] [MASTER / ${
-			options.toShow ? options.toShow.toUpperCase() : options.type.toUpperCase()
-		}]:`;
+		const Message = `[${options.date.toLocaleTimeString()}] [MASTER / ${options.toShow ? options.toShow.toUpperCase() : options.type.toUpperCase()
+			}]:`;
 
 		const Messages = [];
 
@@ -361,6 +361,8 @@ class Logger {
 	}
 
 	public error(...message: any[]) {
+		Sentry.captureException(message.join('\n'));
+
 		this.addLog({
 			type: 'error',
 			date: new Date(),
@@ -402,6 +404,8 @@ class Logger {
 	}
 
 	public fatal(...message: any[]) {
+		Sentry.captureException(message.join('\n'));
+
 		this.addLog({
 			type: 'fatal',
 			date: new Date(),
