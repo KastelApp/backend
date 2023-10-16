@@ -164,14 +164,6 @@ class Repl {
 
 				this.historyIndex = 0; // we set it to 0 because we just added a new item to the history
 
-				if (!command) {
-					console.log(
-						`Unknown command ${command}${
-							command ? `, did you mean one of these? "${this.getSimilarCommands(command ?? '').join('", "')}"` : '.'
-						}`,
-					);
-				}
-
 				const cmd = this.cmds.find((cmd) => cmd.name === command);
 
 				if (!cmd) {
