@@ -3,381 +3,455 @@
 /* eslint-disable promise/prefer-await-to-callbacks */
 /* eslint-disable n/prefer-global/process */
 
+import Logger from './Logger.ts';
+
 interface Command {
-    // like waffles syrup butter
-    args: {
-        description: string;
-        name: string;
-        optional?: boolean;
-    }[];
-    cb(args: string[], flags: Record<string, boolean | string>): void;
-    description: string;
-    // these are --flag <value> (or --flag for a boolean)
-    flags: {
-        description: string;
-        maxLength?: number;
-        minLength?: number;
-        name: string;
-        optional?: boolean;
-        shortName: string;
-        value: 'boolean' | 'string';
-    }[];
-    name: string;
+	// like waffles syrup butter
+	args: {
+		description: string;
+		name: string;
+		optional?: boolean;
+	}[];
+	cb(args: string[], flags: Record<string, boolean | string>, repl: Repl): void;
+	description: string;
+	// these are --flag <value> (or --flag for a boolean)
+	flags: {
+		description: string;
+		maxLength?: number;
+		minLength?: number;
+		name: string;
+		optional?: boolean;
+		shortName: string;
+		value: 'boolean' | 'string';
+	}[];
+	name: string;
+}
+
+const BuiltInHelp: Command = {
+	name: 'help',
+	description: 'Shows info about the repl & commands',
+	args: [
+		{
+			name: 'command',
+			description: 'Get more specific info about a command',
+			optional: true,
+		},
+	],
+	flags: [],
+	cb(args, _, repl) {
+		if (args.length === 0) {
+			for (const cmd of repl.cmds) {
+				console.log(`${Logger.colorize('#f3432c', 'Command:')} ${cmd.name} - ${cmd.description}`);
+
+				for (const arg of cmd.args) {
+					console.log(
+						`${Logger.colorize('#f39d2c', 'Argument:')} ${arg.optional ? `[${arg.name}]` : `<${arg.name}>`} - ${
+							arg.description
+						}`,
+					);
+				}
+
+				for (const flag of cmd.flags) {
+					console.log(
+						`${Logger.colorize('#f3c12c', 'Flag:')} ${flag.optional ? `[${flag.name}]` : `<${flag.name}>`} - ${
+							flag.description
+						}`,
+					);
+				}
+
+				console.log(`\n`);
+			}
+		} else {
+			const cmd = repl.cmds.find((cmd) => cmd.name === args[0]);
+
+			if (cmd) {
+				console.log(`${Logger.colorize('#f3432c', 'Command:')} ${cmd.name} - ${cmd.description}`);
+
+				for (const arg of cmd.args) {
+					console.log(
+						`${Logger.colorize('#f39d2c', 'Argument:')} ${arg.optional ? `[${arg.name}]` : `<${arg.name}>`} - ${
+							arg.description
+						}`,
+					);
+				}
+
+				for (const flag of cmd.flags) {
+					console.log(
+						`${Logger.colorize('#f3c12c', 'Flag:')} ${flag.optional ? `[${flag.name}]` : `<${flag.name}>`} - ${
+							flag.description
+						}`,
+					);
+				}
+
+				console.log(`\n`);
+			} else {
+				console.log(`Unknown command ${args[0]}`);
+			}
+		}
+
+		console.log(`<item> - required\n[item] - optional`);
+	},
 };
 
 class Repl {
-    public start: string; // the start of the repl
+	public start: string; // the start of the repl
 
-    public currentString: string; // the current string
+	public currentString: string; // the current string
 
-    public originalConsoleLog: typeof console.log;
+	public originalConsoleLog: typeof console.log;
 
-    public cmds: Command[];
+	public cmds: Command[];
 
-    public history: string[];
+	public history: string[];
 
-    public historyIndex: number;
+	public historyIndex: number;
 
-    public oldString: string;
+	public oldString: string;
 
-    public constructor(start: string, cmds: Command[]) {
-        this.start = start;
+	public constructor(start: string, cmds: Command[]) {
+		this.start = start;
 
-        process.stdin.setRawMode(true);
-        process.stdin.setEncoding('utf8');
+		process.stdin.setRawMode(true);
+		process.stdin.setEncoding('utf8');
 
-        this.currentString = "";
-
-        this.originalConsoleLog = console.log;
+		this.currentString = '';
 
-        this.cmds = cmds;
-
-        this.history = [];
-
-        this.historyIndex = 0; // where we are at, if its 0 it means the current string = currentString
-
-        this.oldString = '';
-    }
-
-    public startRepl() {
-        process.stdin.on('data', (key: string) => {
-            if (key === '\u0003') {
-                process.exit();
-            }
-
-            const booleans = {
-                enter: key === '\u000D',
-                backspace: key === '\u007F',
-                tab: key === '\t',
-                upKey: key === '\u001B\u005B\u0041',
-                downKey: key === '\u001B\u005B\u0042',
-            };
+		this.originalConsoleLog = console.log;
 
-            if (!booleans.enter && !booleans.backspace && !booleans.tab && !booleans.upKey && !booleans.downKey) {
-                this.currentString += key;
-            } else if (booleans.backspace) {
-                if (this.currentString.length === 0) {
-                    process.stdout.write('\u0007');
-                } else {
-                    this.currentString = this.currentString.slice(0, -1);
-                }
-            } else if (booleans.tab) {
-                const newStr = this.onTab() ?? this.currentString;
+		this.cmds = [BuiltInHelp, ...cmds];
 
-                this.currentString = newStr;
-            } else if (booleans.enter) {
-                const command = this.getCmdName();
+		this.history = [];
 
-                console.log(`${this.start}${this.currentString}`);
+		this.historyIndex = 0; // where we are at, if its 0 it means the current string = currentString
 
-                this.history.unshift(this.currentString);
+		this.oldString = '';
+	}
 
-                if (!command) {
-                    console.log(`Unknown command ${command}${command ? `, did you mean one of these? "${this.getSimilarCommands(command ?? "").join('", "')}"` : "."}`);
-                }
+	public startRepl() {
+		process.stdin.on('data', (key: string) => {
+			if (key === '\u0003') {
+				process.exit();
+			}
 
-                const cmd = this.cmds.find((cmd) => cmd.name === command);
+			const booleans = {
+				enter: key === '\u000D',
+				backspace: key === '\u007F',
+				tab: key === '\t',
+				upKey: key === '\u001B\u005B\u0041',
+				downKey: key === '\u001B\u005B\u0042',
+			};
 
-                if (!cmd) {
-                    console.log(`Unknown command ${command}${command ? `, did you mean one of these? "${this.getSimilarCommands(command ?? "").join('", "')}"` : "."}`);
-                }
+			if (!booleans.enter && !booleans.backspace && !booleans.tab && !booleans.upKey && !booleans.downKey) {
+				this.currentString += key;
+			} else if (booleans.backspace) {
+				if (this.currentString.length === 0) {
+					process.stdout.write('\u0007');
+				} else {
+					this.currentString = this.currentString.slice(0, -1);
+				}
+			} else if (booleans.tab) {
+				const newStr = this.onTab() ?? this.currentString;
 
-                if (cmd) {
-                    const args = this.getArgs();
-                    const flags = this.getFlags();
+				this.currentString = newStr;
 
-                    const missingArgs = cmd.args.filter((arg) => !arg.optional && !args.includes(arg.name));
-                    const missingFlags = cmd.flags.filter((flag) => !flag.optional && !Object.keys(flags).includes(flag.name));
-                    const invalidFlags = cmd.flags.filter((flag) => {
-                        const flagValue = flags[flag.name];
+				this.historyIndex = 0; // set it to 0 as this is now something new
+			} else if (booleans.enter) {
+				const command = this.getCmdName();
 
-                        if (flagValue === undefined) {
-                            return false;
-                        }
+				console.log(`${this.start}${this.currentString}`);
 
-                        if (flag.value === 'boolean' && typeof flagValue !== 'boolean' || flag.value === 'string' && typeof flagValue !== 'string') {
-                            return true;
-                        }
+				this.history.unshift(this.currentString);
 
-                        return Boolean(typeof flagValue === 'string' && ((flag.minLength && flagValue.length < flag.minLength) || (flag.maxLength && flagValue.length > flag.maxLength)));
-                    })
-                    
-                    if (missingArgs.length > 0) {
-                        console.log(`Missing arguments: ${missingArgs.map((arg) => arg.name).join(', ')}`);
-                    }
-                    
-                    if (missingFlags.length > 0) {
-                        console.log(`Missing flags: ${missingFlags.map((flag) => flag.name).join(', ')}`);
-                    }
-                    
-                    if (invalidFlags.length > 0) {
-                        console.log(`Invalid flags: ${invalidFlags.map((flag) => flag.name).join(', ')}`);
-                    }
-                    
-                    if (missingArgs.length === 0 && missingFlags.length === 0) {
-                        cmd.cb(args, flags);
-                    }
-                }
+				this.historyIndex = 0; // we set it to 0 because we just added a new item to the history
 
-                this.currentString = '';
-            } else if (booleans.upKey) {
-                if (this.historyIndex === 0) {
-                    this.oldString = this.currentString;
-                }
+				if (!command) {
+					console.log(
+						`Unknown command ${command}${
+							command ? `, did you mean one of these? "${this.getSimilarCommands(command ?? '').join('", "')}"` : '.'
+						}`,
+					);
+				}
 
-                if (this.historyIndex < this.history.length) {
-                    this.historyIndex++;
-                }
+				const cmd = this.cmds.find((cmd) => cmd.name === command);
 
-                this.currentString = this.history[this.historyIndex - 1] ?? this.oldString;
-            } else if (booleans.downKey) {
-                if (this.historyIndex > 0) {
-                    this.historyIndex--;
-                }
+				if (!cmd) {
+					console.log(
+						`Unknown command ${command}${
+							command ? `, did you mean one of these? "${this.getSimilarCommands(command ?? '').join('", "')}"` : '.'
+						}`,
+					);
+				}
 
-                if (this.historyIndex >= 0) {
-                    this.currentString = this.oldString;
-                } else {
-                    this.currentString = this.history[this.historyIndex - 1] ?? this.oldString;
-                }
-            }
+				if (cmd) {
+					const args = this.getArgs();
+					const flags = this.getFlags();
 
-            process.stdout.clearLine(0);
-            process.stdout.cursorTo(0);
-            process.stdout.write(this.start + this.currentString);
+					const missingArgs = cmd.args.filter((arg) => !arg.optional && !args.includes(arg.name));
+					const missingFlags = cmd.flags.filter((flag) => !flag.optional && !Object.keys(flags).includes(flag.name));
+					const invalidFlags = cmd.flags.filter((flag) => {
+						const flagValue = flags[flag.name];
 
-        });
+						if (flagValue === undefined) {
+							return false;
+						}
 
-        process.stdout.write(this.start);
+						if (
+							(flag.value === 'boolean' && typeof flagValue !== 'boolean') ||
+							(flag.value === 'string' && typeof flagValue !== 'string')
+						) {
+							return true;
+						}
 
-        const originalConsole = console.log;
+						return Boolean(
+							typeof flagValue === 'string' &&
+								((flag.minLength && flagValue.length < flag.minLength) ||
+									(flag.maxLength && flagValue.length > flag.maxLength)),
+						);
+					});
 
-        const overriteLogs = (message?: any, ...optionalParams: any[]) => {
-            process.stdout.clearLine(0);
-            process.stdout.cursorTo(0);
+					if (missingArgs.length > 0) {
+						console.log(`Missing arguments: ${missingArgs.map((arg) => arg.name).join(', ')}`);
+					}
 
-            originalConsole(message, ...optionalParams);
+					if (missingFlags.length > 0) {
+						console.log(`Missing flags: ${missingFlags.map((flag) => flag.name).join(', ')}`);
+					}
 
-            process.stdout.write(this.start + this.currentString);
-        };
+					if (invalidFlags.length > 0) {
+						console.log(`Invalid flags: ${invalidFlags.map((flag) => flag.name).join(', ')}`);
+					}
 
-        console.log = overriteLogs;
-        console.warn = overriteLogs;
-        console.error = overriteLogs;
-        console.info = overriteLogs;
+					if (missingArgs.length === 0 && missingFlags.length === 0) {
+						cmd.cb(args, flags, this);
+					}
+				}
 
-    }
+				this.currentString = '';
+			} else if (booleans.upKey) {
+				if (this.historyIndex === 0) {
+					this.oldString = this.currentString;
+				}
 
-    public onTab() {
-        const isTypingCommand = this.currentString.split(" ").length === 1;
+				if (this.historyIndex < this.history.length) {
+					this.historyIndex++;
+				}
 
-        if (isTypingCommand) {
-            const cmds = this.cmds.map((cmd) => cmd.name);
-            const filteredCmds = cmds.filter((cmd) => cmd.startsWith(this.currentString));
+				this.currentString = this.history[this.historyIndex - 1] ?? this.oldString;
+			} else if (booleans.downKey) {
+				if (this.historyIndex > 0) {
+					this.historyIndex--;
+				}
 
-            if (filteredCmds.length === 0) {
-                return this.currentString;
-            }
+				this.currentString = this.history[this.historyIndex - 1] ?? this.oldString;
+			}
 
-            if (filteredCmds.length === 1) {
-                return filteredCmds[0];
-            }
+			process.stdout.clearLine(0);
+			process.stdout.cursorTo(0);
+			process.stdout.write(this.start + this.currentString);
+		});
 
-            const mostMatching = filteredCmds.sort((a, b) => {
-                const aMatches = a.split("").filter((char, index) => char === this.currentString[index]).length;
-                const bMatches = b.split("").filter((char, index) => char === this.currentString[index]).length;
+		process.stdout.write(this.start);
 
-                return bMatches - aMatches;
-            });
+		const originalConsole = console.log;
 
-            return mostMatching[0] ?? this.currentString;
-        } else {
-            const command = this.getCmdName();
+		const overriteLogs = (message?: any, ...optionalParams: any[]) => {
+			process.stdout.clearLine(0);
+			process.stdout.cursorTo(0);
 
-            if (!command) {
-                process.stdout.write('\u0007');
+			originalConsole(message, ...optionalParams);
 
-                return this.currentString;
-            }
+			process.stdout.write(this.start + this.currentString);
+		};
 
-            const cmd = this.cmds.find((cmd) => cmd.name === command);
+		console.log = overriteLogs;
+		console.warn = overriteLogs;
+		console.error = overriteLogs;
+		console.info = overriteLogs;
+	}
 
-            if (!cmd) {
-                process.stdout.write('\u0007');
+	public onTab() {
+		const isTypingCommand = this.currentString.split(' ').length === 1;
 
-                return this.currentString;
-            }
+		if (isTypingCommand) {
+			const cmds = this.cmds.map((cmd) => cmd.name);
+			const filteredCmds = cmds.filter((cmd) => cmd.startsWith(this.currentString));
 
-            const args = this.getArgs(true);
+			if (filteredCmds.length === 0) {
+				return this.currentString;
+			}
 
-            const lastArg = args[args.length - 1];
+			if (filteredCmds.length === 1) {
+				return filteredCmds[0];
+			}
 
-            if (!lastArg) {
-                process.stdout.write('\u0007');
+			const mostMatching = filteredCmds.sort((a, b) => {
+				const aMatches = a.split('').filter((char, index) => char === this.currentString[index]).length;
+				const bMatches = b.split('').filter((char, index) => char === this.currentString[index]).length;
 
-                return this.currentString;
-            }
+				return bMatches - aMatches;
+			});
 
-            const matchingArg = cmd.args.find((arg) => arg.name.startsWith(lastArg));
+			return mostMatching[0] ?? this.currentString;
+		} else {
+			const command = this.getCmdName();
 
-            if (!matchingArg) {
-                process.stdout.write('\u0007');
+			if (!command) {
+				process.stdout.write('\u0007');
 
-                return this.currentString;
-            }
+				return this.currentString;
+			}
 
-            const mostMatching = cmd.args.sort((a, b) => {
-                const aMatches = a.name.split("").filter((char, index) => char === lastArg[index]).length;
-                const bMatches = b.name.split("").filter((char, index) => char === lastArg[index]).length;
+			const cmd = this.cmds.find((cmd) => cmd.name === command);
 
-                return bMatches - aMatches;
-            });
+			if (!cmd) {
+				process.stdout.write('\u0007');
 
-            return this.currentString.slice(0, -lastArg.length) + mostMatching[0]?.name;
-        }
-    }
+				return this.currentString;
+			}
 
-    public getCurrentCommand() {
-        const args = this.getArgs();
-        const command = this.getCmdName();
-        const flags = this.getFlags();
+			const flags = this.getFlags(true);
 
-        return {
-            command,
-            args,
-            flags,
-        };
-    }
+			const flagNames = Object.keys(flags);
 
-    private getCmdName() {
-        const args = this.currentString.split(" ");
+			if (flagNames.length === 0) {
+				return this.currentString;
+			}
 
-        return args.shift();
-    }
+			const filteredFlags = cmd.flags.filter((flag) => flag.name.startsWith(flagNames[flagNames.length - 1] ?? ''));
 
-    private getFlags() {
-        const flags: Record<string, boolean | string> = {};
-        const currentCmdName = this.getCmdName();
-        const cmd = this.cmds.find((cmd) => cmd.name === currentCmdName);
+			if (filteredFlags.length === 0) {
+				return this.currentString;
+			}
 
-        if (!cmd) {
-            return flags;
-        }
+			if (filteredFlags.length === 1) {
+				const flag = filteredFlags[0];
 
-        const regex = /--?(\w+)(?:\s+([\s\w]+))?/g;
+				return `${this.currentString.slice(0, -(flagNames[flagNames?.length - 1]?.length ?? 0))}${flag?.name}`;
+			}
 
-        let match;
-        while ((match = regex.exec(this.currentString)) !== null) {
-            const flagName = match[1] ?? 'UNKNOWN';
-            const flagValue = match[2]?.trim() ?? true;
-            flags[flagName] = flagValue;
-        }
+			const mostMatching = filteredFlags.sort((a, b) => {
+				const aMatches = a.name
+					.split('')
+					.filter((char, index) => char === flagNames[flagNames.length - 1]?.[index]).length;
+				const bMatches = b.name
+					.split('')
+					.filter((char, index) => char === flagNames[flagNames.length - 1]?.[index]).length;
 
-        const newFlags: Record<string, boolean | string> = {};
+				return bMatches - aMatches;
+			});
 
-        for (const flagName in flags) {
-            // protects against prototype pollution
-            if (['hasOwnProperty', 'propertyIsEnumerable'].includes(flagName)) {
-                continue;
-            }
+			const flag = mostMatching[0];
 
-            const flag = cmd.flags.find((flag) => flag.name === flagName || flag.shortName === flagName);
+			return `${this.currentString.slice(0, -(flagNames[flagNames?.length - 1]?.length ?? 0))}${flag?.name}`;
+		}
+	}
 
-            if (flag) {
-                if (flag.value === 'string' && typeof flags[flagName] !== 'string') {
-                    newFlags[flag.name] = '';
-                } else if (flag.value === 'boolean' && typeof flags[flagName] !== 'boolean') {
-                    newFlags[flag.name] = true;
-                } else {
-                    newFlags[flag.name] = flags[flagName] ?? true;
-                }
-            }
-        }
+	public getCurrentCommand() {
+		const args = this.getArgs();
+		const command = this.getCmdName();
+		const flags = this.getFlags();
 
-        return newFlags;
-    }
+		return {
+			command,
+			args,
+			flags,
+		};
+	}
 
-    private getArgs(raw: boolean = false) {
-        const args = this.currentString.split(" ");
-        const cmd = this.cmds.find((cmd) => cmd.name === args[0]);
+	private getCmdName() {
+		const args = this.currentString.split(' ');
 
-        if (!cmd) {
-            return [];
-        }
+		return args.shift();
+	}
 
-        args.shift();
+	private getFlags(raw: boolean = false) {
+		const flags: Record<string, boolean | string> = {};
+		const currentCmdName = this.getCmdName();
+		const cmd = this.cmds.find((cmd) => cmd.name === currentCmdName);
 
-        if (raw) {
-            return args;
-        }
+		if (!cmd) {
+			return flags;
+		}
 
-        const newArgs: string[] = [];
+		const regex = /--?(\w+)(?:\s+([\s\w]+))?/g;
 
-        for (const arg of args) {
-            const newArg = arg.trim();
+		let match;
+		while ((match = regex.exec(this.currentString)) !== null) {
+			const flagName = match[1] ?? 'UNKNOWN';
+			const flagValue = match[2]?.trim() ?? true;
+			flags[flagName] = flagValue;
+		}
 
-            if (!cmd.args.some((arg) => arg.name === newArg)) {
-                continue;
-            }
+		if (raw) {
+			return flags;
+		}
 
-            newArgs.push(newArg);
-        }
+		const newFlags: Record<string, boolean | string> = {};
 
-        return newArgs;
-    }
-    
-    private getSimilarCommands(command: string) {
-        const cmds = this.cmds.map((cmd) => cmd.name);
-        const filteredCmds = cmds.filter((cmd) => cmd.startsWith(command));
+		for (const flagName in flags) {
+			// protects against prototype pollution
+			if (['hasOwnProperty', 'propertyIsEnumerable'].includes(flagName)) {
+				continue;
+			}
 
-        if (filteredCmds.length === 0) {
-            return [];
-        }
+			const flag = cmd.flags.find((flag) => flag.name === flagName || flag.shortName === flagName);
 
-        if (filteredCmds.length === 1) {
-            return filteredCmds;
-        }
+			if (flag) {
+				if (flag.value === 'string' && typeof flags[flagName] !== 'string') {
+					newFlags[flag.name] = '';
+				} else if (flag.value === 'boolean' && typeof flags[flagName] !== 'boolean') {
+					newFlags[flag.name] = true;
+				} else {
+					newFlags[flag.name] = flags[flagName] ?? true;
+				}
+			}
+		}
 
-        return filteredCmds.sort((a, b) => {
-            const aMatches = a.split("").filter((char, index) => char === command[index]).length;
-            const bMatches = b.split("").filter((char, index) => char === command[index]).length;
+		return newFlags;
+	}
 
-            return bMatches - aMatches;
-        });
-    }
-    
-    public endRepl() {
-        process.stdin.removeAllListeners('data');
-        process.stdin.setRawMode(false);
-        process.stdin.setEncoding('utf8');
+	private getArgs() {
+		const args = this.currentString.split(' ');
+		const cmd = this.cmds.find((cmd) => cmd.name === args[0]);
 
-        console.log = this.originalConsoleLog;
-    }
+		if (!cmd) {
+			return [];
+		}
+
+		args.shift();
+
+		return args.filter((arg) => !arg.startsWith('--') && !arg.startsWith('-'));
+	}
+
+	private getSimilarCommands(command: string) {
+		const cmds = this.cmds.map((cmd) => cmd.name);
+		const filteredCmds = cmds.filter((cmd) => cmd.startsWith(command));
+
+		if (filteredCmds.length === 0) {
+			return [];
+		}
+
+		if (filteredCmds.length === 1) {
+			return filteredCmds;
+		}
+
+		return filteredCmds.sort((a, b) => {
+			const aMatches = a.split('').filter((char, index) => char === command[index]).length;
+			const bMatches = b.split('').filter((char, index) => char === command[index]).length;
+
+			return bMatches - aMatches;
+		});
+	}
+
+	public endRepl() {
+		process.stdin.removeAllListeners('data');
+		process.stdin.setRawMode(false);
+		process.stdin.setEncoding('utf8');
+
+		console.log = this.originalConsoleLog;
+	}
 }
 
 export default Repl;
 
-export {
-    Repl,
-    type Command,
-}
+export { Repl, type Command };
