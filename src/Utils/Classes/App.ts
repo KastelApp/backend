@@ -179,6 +179,15 @@ class App {
 					this.Repl.endRepl();
 				},
 			},
+			{
+				name: 'clear',
+				description: 'Clear the console',
+				args: [],
+				flags: [],
+				cb: () => {
+					console.clear();
+				},
+			}
 		]);
 	}
 
