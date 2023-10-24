@@ -79,6 +79,36 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 	public async FetchBan(Req: Request<{ guildId: string }>, Res: Response) {
 		const FixedBans = [];
 
+		const Member = await this.FetchMember(Req.user.Id, Req.params.guildId);
+		if (!Member) return;
+
+		const FoundRoles = await this.FetchRoles(Member.Roles);
+		const MemberFlags = new FlagUtils<typeof GuildMemberFlags>(Member.Flags, GuildMemberFlags);
+		const PermissionCheck = new PermissionHandler(
+			Req.user.Id,
+			MemberFlags.cleaned,
+			FoundRoles.map((role) => {
+				return {
+					Id: role.RoleId,
+					Permissions: role.Permissions.toString(),
+					Position: role.Position
+				};
+			}),
+		);
+
+		if (!PermissionCheck.HasAnyRole('ManageBans')) {
+			const MissingPermissions = ErrorGen.MissingPermissions();
+
+			MissingPermissions.AddError({
+				Permissions: {
+					Code: 'MissingPermissions',
+					Message: 'You are missing the permissions to do this action.'
+				},
+			});
+
+			return Res.status(403).json(MissingPermissions.toJSON());
+		};
+
 		const Bans = await this.App.Cassandra.Models.Ban.find({
 			GuildId: Encryption.Encrypt(Req.params.guildId),
 		});
@@ -93,7 +123,7 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 			});
 		};
 
-		Res.send(Encryption.CompleteDecryption(FixedBans));
+		return Res.send(Encryption.CompleteDecryption(FixedBans));
 	}
 
 	public async CreateBan(Req: Request<{ guildId: string }, any, BanBody>, Res: Response) {
@@ -151,6 +181,36 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 	}
 
 	public async RemoveBan(Req: Request<{ guildId: string, userId: string }>, Res: Response) {
+		const Member = await this.FetchMember(Req.user.Id, Req.params.guildId);
+		if (!Member) return;
+
+		const FoundRoles = await this.FetchRoles(Member.Roles);
+		const MemberFlags = new FlagUtils<typeof GuildMemberFlags>(Member.Flags, GuildMemberFlags);
+		const PermissionCheck = new PermissionHandler(
+			Req.user.Id,
+			MemberFlags.cleaned,
+			FoundRoles.map((role) => {
+				return {
+					Id: role.RoleId,
+					Permissions: role.Permissions.toString(),
+					Position: role.Position
+				};
+			}),
+		);
+
+		if (!PermissionCheck.HasAnyRole('ManageBans')) {
+			const MissingPermissions = ErrorGen.MissingPermissions();
+
+			MissingPermissions.AddError({
+				Permissions: {
+					Code: 'MissingPermissions',
+					Message: 'You are missing the permissions to do this action.'
+				},
+			});
+
+			return Res.status(403).json(MissingPermissions.toJSON());
+		};
+
 		const Ban = await this.App.Cassandra.Models.Ban.remove({
 			GuildId: Encryption.Encrypt(Req.params.guildId),
 			UserId: Encryption.Encrypt(Req.params.userId),
