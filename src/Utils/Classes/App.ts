@@ -348,11 +348,11 @@ class App {
 			}
 		});
 
-		this.ExpressApp.use((req, res, next) => {
+		this.ExpressApp.use(async (req, res, next) => {
 			req.clientIp = IpUtils.GetIp(req);
 			req.methodi = req.method as ExpressMethodCap;
 			req.captcha = new Turnstile(this.Config.Server.CaptchaEnabled, this.Config.Server.TurnstileSecret ?? 'secret');
-
+			
 			req.fourohfourit = () => {
 				const Error = ErrorGen.NotFound();
 
@@ -367,6 +367,12 @@ class App {
 
 				return true;
 			};
+			
+			if (Config.Server.CloudflareAccessOnly && !(await IpUtils.isCloudflareIp(req.socket.remoteAddress))) {
+				req.fourohfourit();
+				
+				return;
+			}
 
 			// we have a hard limit of 1mb for requests, any higher and we 408 it
 			if (req.socket.bytesRead > 1e6) {

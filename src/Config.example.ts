@@ -30,6 +30,7 @@ const Server: ServerConfigType = {
 		ClearInterval: 1_000 * 60 * 60 * 6, // six hours
 		ClearOnStart: false,
 	},
+	CloudflareAccessOnly: false, // If you are behind cloudflare and have a cloudflare worker forwarding the requests to the server then set this to true
 	StrictRouting: true,
 	CaptchaEnabled: true,
 	TurnstileSecret: '',

@@ -19,6 +19,7 @@ export interface Server {
 	};
 	// cloudflare turnstile secret (for captchas)
 	CaptchaEnabled: boolean;
+	CloudflareAccessOnly: boolean;
 	Domain: string;
 	LocalIps?: string[];
 	Port?: number | string;
