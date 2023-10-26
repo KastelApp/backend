@@ -9,20 +9,17 @@
  * GPL 3.0 Licensed
  */
 
+import type { Request, Response } from 'express';
+import { GuildMemberFlags } from '../../../../../Constants.ts';
+import Guild from '../../../../../Middleware/Guild.ts';
+import User from '../../../../../Middleware/User.ts';
 import type App from '../../../../../Utils/Classes/App.ts';
-import type {
-	Ban as BanBody,
-	Role as Roles
-} from '../../../../../Utils/Cql/Types/index.ts';
+import { FlagUtils } from '../../../../../Utils/Classes/BitFields/NewFlags.ts';
 import Encryption from '../../../../../Utils/Classes/Encryption.ts';
 import ErrorGen from '../../../../../Utils/Classes/ErrorGen.ts';
-import { FlagUtils } from '../../../../../Utils/Classes/BitFields/NewFlags.ts';
-import Guild from '../../../../../Middleware/Guild.ts';
-import { GuildMemberFlags } from '../../../../../Constants.ts';
-import PermissionHandler from '../../../../../Utils/Versioning/v1/PermissionCheck.ts';
-import type { Request, Response } from 'express';
 import Route from '../../../../../Utils/Classes/Route.ts';
-import User from '../../../../../Middleware/User.ts';
+import type { Ban as BanBody, Role as Roles } from '../../../../../Utils/Cql/Types/index.ts';
+import PermissionHandler from '../../../../../Utils/Versioning/v1/PermissionCheck.ts';
 
 export default class FetchAndCreateAndRemoveBan extends Route {
 	public constructor(App: App) {
@@ -38,7 +35,7 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 			}),
 			Guild({
 				App,
-				Required: true
+				Required: true,
 			}),
 		];
 
@@ -47,7 +44,7 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 		this.Routes = ['/'];
 	}
 
-	public override async Request(Req: Request<{ guildId: string, userId: string }>, Res: Response) {
+	public override async Request(Req: Request<{ guildId: string; userId: string }>, Res: Response) {
 		switch (Req.methodi) {
 			case 'GET': {
 				await this.FetchBan(Req, Res);
@@ -96,7 +93,7 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 				return {
 					Id: role.RoleId,
 					Permissions: role.Permissions.toString(),
-					Position: role.Position
+					Position: role.Position,
 				};
 			}),
 		);
@@ -107,12 +104,12 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 			MissingPermissions.AddError({
 				Permissions: {
 					Code: 'MissingPermissions',
-					Message: 'You are missing the permissions to do this action.'
+					Message: 'You are missing the permissions to do this action.',
 				},
 			});
 
 			return Res.status(403).json(MissingPermissions.toJSON());
-		};
+		}
 
 		const Bans = await this.App.Cassandra.Models.Ban.find({
 			GuildId: Encryption.Encrypt(Req.params.guildId),
@@ -124,9 +121,9 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 				BannerId: Ban.BannerId,
 				Reason: Ban.Reason,
 				UnbanDate: Ban.UnbanDate,
-				UserId: Ban.UserId
+				UserId: Ban.UserId,
 			});
-		};
+		}
 
 		return Res.send(Encryption.CompleteDecryption(FixedBans));
 	}
@@ -146,7 +143,7 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 				return {
 					Id: role.RoleId,
 					Permissions: role.Permissions.toString(),
-					Position: role.Position
+					Position: role.Position,
 				};
 			}),
 		);
@@ -157,35 +154,35 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 			MissingPermissions.AddError({
 				Permissions: {
 					Code: 'MissingPermissions',
-					Message: 'You are missing the permissions to do this action.'
+					Message: 'You are missing the permissions to do this action.',
 				},
 			});
 
 			return Res.status(403).json(MissingPermissions.toJSON());
-		};
+		}
 
 		const BanObject: BanBody = {
 			BannedDate: new Date(),
 			BannerId: Req.user.Id,
 			GuildId: Req.params.guildId,
-			Reason: Reason,
-			UnbanDate: UnbanDate,
-			UserId: UserId
+			Reason,
+			UnbanDate,
+			UserId,
 		};
 
 		await Promise.all([
 			this.App.Cassandra.Models.Ban.insert(BanObject),
 			this.App.Cassandra.Models.GuildMember.update({
-				Flags: this.App.Constants.GuildMemberFlags.Banned
-			})
+				Flags: this.App.Constants.GuildMemberFlags.Banned,
+			}),
 		]);
 
 		return Res.status(201).json({
-			...Encryption.CompleteDecryption(BanObject)
+			...Encryption.CompleteDecryption(BanObject),
 		});
 	}
 
-	public async RemoveBan(Req: Request<{ guildId: string, userId: string }>, Res: Response) {
+	public async RemoveBan(Req: Request<{ guildId: string; userId: string }>, Res: Response) {
 		const Member = await this.FetchMember(Req.user.Id, Req.params.guildId);
 		if (!Member) return;
 
@@ -198,7 +195,7 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 				return {
 					Id: role.RoleId,
 					Permissions: role.Permissions.toString(),
-					Position: role.Position
+					Position: role.Position,
 				};
 			}),
 		);
@@ -209,12 +206,12 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 			MissingPermissions.AddError({
 				Permissions: {
 					Code: 'MissingPermissions',
-					Message: 'You are missing the permissions to do this action.'
+					Message: 'You are missing the permissions to do this action.',
 				},
 			});
 
 			return Res.status(403).json(MissingPermissions.toJSON());
-		};
+		}
 
 		const Ban = await this.App.Cassandra.Models.Ban.remove({
 			GuildId: Encryption.Encrypt(Req.params.guildId),
@@ -227,12 +224,12 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 			Error.AddError({
 				Permissions: {
 					Code: 'NotFound',
-					Message: 'The user is not banned from this guild.'
+					Message: 'The user is not banned from this guild.',
 				},
 			});
 
 			return Res.status(403).json(Error.toJSON());
-		};
+		}
 
 		return Res.sendStatus(200);
 	}
