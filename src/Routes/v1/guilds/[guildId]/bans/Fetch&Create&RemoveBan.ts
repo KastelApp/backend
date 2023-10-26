@@ -17,6 +17,7 @@ import type {
 import Encryption from '../../../../../Utils/Classes/Encryption.ts';
 import ErrorGen from '../../../../../Utils/Classes/ErrorGen.ts';
 import { FlagUtils } from '../../../../../Utils/Classes/BitFields/NewFlags.ts';
+import Guild from '../../../../../Middleware/Guild.ts';
 import { GuildMemberFlags } from '../../../../../Constants.ts';
 import PermissionHandler from '../../../../../Utils/Versioning/v1/PermissionCheck.ts';
 import type { Request, Response } from 'express';
@@ -34,6 +35,10 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 				AccessType: 'LoggedIn',
 				AllowedRequesters: 'User',
 				App,
+			}),
+			Guild({
+				App,
+				Required: true
 			}),
 		];
 
