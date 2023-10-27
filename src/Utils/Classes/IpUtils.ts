@@ -13,9 +13,11 @@ import type { Request } from 'express';
 import { Server } from '../../Config.ts';
 
 class IpUtils {
-	public static GetIp(req: Request): string {
-		let Ip: string[] | string | undefined = req.headers['cf-true-ip'] ?? req.headers['cf-connecting-ip'] ?? req.headers['x-forwarded-for'] ?? req.socket.remoteAddress;
+	public static GetIp(req: Request, NoRealIp: boolean = false): string {
+		const normalIps = req.headers['cf-connecting-ip'] ?? req.headers['x-forwarded-for'] ?? req.socket.remoteAddress;
 
+		let Ip = NoRealIp ? normalIps : req.headers['cf-true-ip'] ?? normalIps;
+		
 		if (typeof Ip === 'string') {
 			Ip = Ip.split(',')[0];
 		}

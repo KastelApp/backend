@@ -368,7 +368,7 @@ class App {
 				return true;
 			};
 			
-			if (Config.Server.CloudflareAccessOnly && !(await IpUtils.isCloudflareIp(req.socket.remoteAddress))) {
+			if (Config.Server.CloudflareAccessOnly && !(await IpUtils.isCloudflareIp(IpUtils.GetIp(req, true)))) {
 				req.fourohfourit();
 				
 				return;
