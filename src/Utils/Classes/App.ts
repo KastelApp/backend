@@ -368,7 +368,7 @@ class App {
 				return true;
 			};
 			
-			if (Config.Server.CloudflareAccessOnly && !(await IpUtils.isCloudflareIp(req.ip))) {
+			if (Config.Server.CloudflareAccessOnly && !(await IpUtils.isCloudflareIp(req.headers['x-forwarded-for'] as string))) {
 				req.fourohfourit();
 				
 				return;
