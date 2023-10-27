@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "dependencies": {
     "@kastelll/cassandra-driver": "^4.6.18",
-    "@kastelll/util": "^0.2.3",
+    "@kastelll/util": "^0.2.4",
     "@sentry/bun": "^7.74.0",
     "@sentry/node": "^7.74.0",
     "archiver": "^5.3.2",
