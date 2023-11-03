@@ -70,19 +70,17 @@ export default class UserSettings extends Route {
 	}
 
 	public async PatchSettings(Req: Request<{ userId: string }, any, Settings>, Res: Response){
-		const { Bio, Language, Mentions, Presence, Privacy, Status, Theme, Tokens } = Req.body;
+		const { Bio, Language, Presence, Privacy, Status, Theme } = Req.body;
 
-		const SettingsObject: Settings = {
+		const SettingsObject = {
 			Bio: Encryption.Encrypt(Bio),
 			Language: Encryption.Encrypt(Language),
 			MaxFileUploadSize: this.App.Constants.Settings.Max.MaxFileSize,
 			MaxGuilds: this.App.Constants.Settings.Max.GuildCount,
-			Mentions: Mentions,
 			Presence: Presence ?? this.App.Constants.Presence.Online,
 			Privacy: Privacy,
 			Status: Encryption.Encrypt(Status),
 			Theme: Encryption.Encrypt(Theme),
-			Tokens: Tokens,
 			UserId: Encryption.Encrypt(Req.user.Id)
 		}
 
@@ -91,12 +89,10 @@ export default class UserSettings extends Route {
 			Language: Encryption.Encrypt(Language),
 			MaxFileUploadSize: this.App.Constants.Settings.Max.MaxFileSize,
 			MaxGuilds: this.App.Constants.Settings.Max.GuildCount,
-			Mentions: Mentions,
 			Presence: Presence ?? this.App.Constants.Presence.Online,
 			Privacy: Privacy,
 			Status: Encryption.Encrypt(Status),
 			Theme: Encryption.Encrypt(Theme),
-			Tokens: Tokens,
 			UserId: Encryption.Encrypt(Req.user.Id)
 		})])
 
