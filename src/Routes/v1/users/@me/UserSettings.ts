@@ -59,19 +59,19 @@ export default class UserSettings extends Route {
 		}
 	}
 
-	public async FetchSettings(Req: Request<{ userId: string }>, Res: Response){
+	public async FetchSettings(Req: Request<{ userId: string }>, Res: Response) {
 		const UserSettings = await this.FetchUserSettings(Req.user.Id);
 
-		if(!UserSettings) return null;
-		
+		if (!UserSettings) return null;
+
 		const SettingsObject = {
 			Bio: UserSettings.Bio,
 			Language: UserSettings.Language,
 			Presence: UserSettings.Presence,
 			Privacy: UserSettings.Privacy,
 			Status: UserSettings.Status,
-			Theme: UserSettings.Theme
-		}
+			Theme: UserSettings.Theme,
+		};
 
 		return Res.send(Encryption.CompleteDecryption(SettingsObject));
 	}
@@ -81,13 +81,13 @@ export default class UserSettings extends Route {
 
 		const SettingsObject: Partial<Settings> = {
 			Bio: Encryption.Encrypt(Bio),
-			Language: Language,
+			Language,
 			MaxFileUploadSize: this.App.Constants.Settings.Max.MaxFileSize,
 			MaxGuilds: this.App.Constants.Settings.Max.GuildCount,
 			Presence: Presence ?? this.App.Constants.Presence.Online,
-			Privacy: Privacy,
+			Privacy,
 			Status: Encryption.Encrypt(Status),
-			Theme: Theme,
+			Theme,
 			UserId: Encryption.Encrypt(Req.user.Id),
 		};
 
@@ -98,12 +98,12 @@ export default class UserSettings extends Route {
 		});
 	}
 
-	private async FetchUserSettings(UserId: string){
+	private async FetchUserSettings(UserId: string) {
 		const User = await this.App.Cassandra.Models.Settings.get({
-			UserId: Encryption.Encrypt(UserId)
+			UserId: Encryption.Encrypt(UserId),
 		});
 
-		if(!User) return null;
+		if (!User) return null;
 
 		return Encryption.CompleteDecryption(User);
 	}
