@@ -9,12 +9,12 @@
  * GPL 3.0 Licensed
  */
 
+import type { Request, Response } from 'express';
+import User from '../../../../Middleware/User.ts';
 import type App from '../../../../Utils/Classes/App.ts';
 import { Encryption } from '../../../../Utils/Classes/Encryption.ts';
-import type { Request, Response } from 'express';
 import Route from '../../../../Utils/Classes/Route.ts';
-import Settings from '../../../../Utils/Cql/Types/Settings.ts';
-import User from '../../../../Middleware/User.ts';
+import type Settings from '../../../../Utils/Cql/Types/Settings.ts';
 
 export default class UserSettings extends Route {
 	public constructor(App: App) {
@@ -36,14 +36,14 @@ export default class UserSettings extends Route {
 	}
 
 	public override async Request(Req: Request<{ userId: string }>, Res: Response) {
-		switch(Req.methodi){
+		switch (Req.methodi) {
 			case 'GET': {
 				await this.FetchSettings(Req, Res);
 				break;
 			}
 
 			case 'PATCH': {
-				if(Req.path.endsWith('/fetch')){
+				if (Req.path.endsWith('/fetch')) {
 					Req.fourohfourit();
 					break;
 				}
@@ -76,7 +76,7 @@ export default class UserSettings extends Route {
 		return Res.send(Encryption.CompleteDecryption(SettingsObject));
 	}
 
-	public async PatchSettings(Req: Request<{ userId: string }, any, Settings>, Res: Response){
+	public async PatchSettings(Req: Request<{ userId: string }, any, Settings>, Res: Response) {
 		const { Bio, Language, Presence, Privacy, Status, Theme } = Req.body;
 
 		const SettingsObject: Partial<Settings> = {
@@ -94,7 +94,7 @@ export default class UserSettings extends Route {
 		await this.App.Cassandra.Models.Settings.update(SettingsObject);
 
 		return Res.status(201).json({
-			...Encryption.CompleteDecryption(SettingsObject)
+			...Encryption.CompleteDecryption(SettingsObject),
 		});
 	}
 
