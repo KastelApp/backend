@@ -1,36 +1,36 @@
 /* eslint-disable id-length */
-import { readdir } from 'node:fs/promises';
-import { join } from 'node:path';
-import process from 'node:process';
-import { URL } from 'node:url';
-import { Snowflake, Turnstile, CacheManager } from '@kastelll/util';
-import * as Sentry from '@sentry/node';
-import bodyParser from 'body-parser';
-import cors from 'cors';
-import type { NextFunction, Request, Response } from 'express';
-import express from 'express';
-import { type SimpleGit, simpleGit } from 'simple-git';
-import { Config } from '../../Config.ts';
-import Constants, { Relative } from '../../Constants.ts';
-import type { ExpressMethodCap } from '../../Types/index.ts';
-import ProcessArgs from '../ProcessArgs.ts';
-import Connection from './Connection.ts';
-import Emails from './Emails.ts';
-import ErrorGen from './ErrorGen.ts';
-import { IpUtils } from './IpUtils.ts';
-import CustomLogger from './Logger.ts';
-import Repl from './Repl.ts';
-import type { ContentTypes, ExpressMethod } from './Route.ts';
-import RouteBuilder from './Route.ts';
-import SystemSocket from './System/SystemSocket.ts';
-import SystemInfo from './SystemInfo.ts';
+import { readdir } from "node:fs/promises";
+import { join } from "node:path";
+import process from "node:process";
+import { URL } from "node:url";
+import { Snowflake, Turnstile, CacheManager } from "@kastelll/util";
+import * as Sentry from "@sentry/node";
+import bodyParser from "body-parser";
+import cors from "cors";
+import type { NextFunction, Request, Response } from "express";
+import express from "express";
+import { type SimpleGit, simpleGit } from "simple-git";
+import { Config } from "../../Config.ts";
+import Constants, { Relative } from "../../Constants.ts";
+import type { ExpressMethodCap } from "../../Types/index.ts";
+import ProcessArgs from "../ProcessArgs.ts";
+import Connection from "./Connection.ts";
+import Emails from "./Emails.ts";
+import ErrorGen from "./ErrorGen.ts";
+import { IpUtils } from "./IpUtils.ts";
+import CustomLogger from "./Logger.ts";
+import Repl from "./Repl.ts";
+import type { ContentTypes, ExpressMethod } from "./Route.ts";
+import RouteBuilder from "./Route.ts";
+import SystemSocket from "./System/SystemSocket.ts";
+import SystemInfo from "./SystemInfo.ts";
 
-type GitType = 'Added' | 'Copied' | 'Deleted' | 'Ignored' | 'Modified' | 'None' | 'Renamed' | 'Unmerged' | 'Untracked';
+type GitType = "Added" | "Copied" | "Deleted" | "Ignored" | "Modified" | "None" | "Renamed" | "Unmerged" | "Untracked";
 
-const SupportedArgs = ['debug', 'skip-online-check', 'behind-proxy', 'no-ip-checking'] as const;
+const SupportedArgs = ["debug", "skip-online-check", "behind-proxy", "no-ip-checking"] as const;
 
 class App {
-	private RouteDirectory: string = join(new URL('.', import.meta.url).pathname, '../../Routes');
+	private RouteDirectory: string = join(new URL(".", import.meta.url).pathname, "../../Routes");
 
 	public ExpressApp: express.Application;
 
@@ -79,20 +79,20 @@ class App {
 		type: GitType;
 	}[] = [];
 
-	public GitBranch: string = 'Unknown';
+	public GitBranch: string = "Unknown";
 
-	public GitCommit: string = 'Unknown';
+	public GitCommit: string = "Unknown";
 
 	private TypeIndex = {
-		A: 'Added',
-		D: 'Deleted',
-		M: 'Modified',
-		R: 'Renamed',
-		C: 'Copied',
-		U: 'Unmerged',
-		'?': 'Untracked',
-		'!': 'Ignored',
-		' ': 'None',
+		A: "Added",
+		D: "Deleted",
+		M: "Modified",
+		R: "Renamed",
+		C: "Copied",
+		U: "Unmerged",
+		"?": "Untracked",
+		"!": "Ignored",
+		" ": "None",
 	};
 
 	public Repl: Repl;
@@ -120,7 +120,7 @@ class App {
 			Config.ScyllaDB.CassandraOptions,
 		);
 
-		this.Turnstile = new Turnstile(Config.Server.CaptchaEnabled, Config.Server.TurnstileSecret ?? 'secret');
+		this.Turnstile = new Turnstile(Config.Server.CaptchaEnabled, Config.Server.TurnstileSecret ?? "secret");
 
 		this.IpUtils = new IpUtils();
 
@@ -130,26 +130,26 @@ class App {
 
 		this.Logger = new CustomLogger();
 
-		this.Repl = new Repl(CustomLogger.colorize('#E6AF2E', '> '), [
+		this.Repl = new Repl(CustomLogger.colorize("#E6AF2E", "> "), [
 			{
-				name: 'disable',
-				description: 'Disable something (Route, User, etc)',
+				name: "disable",
+				description: "Disable something (Route, User, etc)",
 				args: [],
 				flags: [
 					{
-						name: 'route',
-						description: 'The route to disable',
-						shortName: 'r',
-						value: 'string',
+						name: "route",
+						description: "The route to disable",
+						shortName: "r",
+						value: "string",
 						maxLength: 1e3,
 						minLength: 1,
 						optional: true,
 					},
 					{
-						name: 'user',
-						description: 'The user to disable',
-						shortName: 'u',
-						value: 'string',
+						name: "user",
+						description: "The user to disable",
+						shortName: "u",
+						value: "string",
 						maxLength: 1e3,
 						minLength: 1,
 						optional: true,
@@ -158,21 +158,21 @@ class App {
 				cb: () => {},
 			},
 			{
-				name: 'version',
-				description: 'Get the version of the backend',
+				name: "version",
+				description: "Get the version of the backend",
 				args: [],
 				flags: [],
 				cb: () => {
 					console.log(
 						`You're running version ${
-							Relative.Version ? `v${Relative.Version}` : 'Unknown version'
+							Relative.Version ? `v${Relative.Version}` : "Unknown version"
 						} of Kastel's Backend. Bun version ${Bun.version}`,
 					);
 				},
 			},
 			{
-				name: 'close',
-				description: 'Close the REPL (Note: you will need to restart the backend to open it again)',
+				name: "close",
+				description: "Close the REPL (Note: you will need to restart the backend to open it again)",
 				args: [],
 				flags: [],
 				cb: () => {
@@ -180,68 +180,68 @@ class App {
 				},
 			},
 			{
-				name: 'clear',
-				description: 'Clear the console',
+				name: "clear",
+				description: "Clear the console",
 				args: [],
 				flags: [],
 				cb: () => {
 					console.clear();
 				},
-			}
+			},
 		]);
 	}
 
 	public async Init(): Promise<void> {
-		this.Logger.hex('#ca8911')(
+		this.Logger.hex("#ca8911")(
 			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${
-				Relative.Version ? `v${Relative.Version}` : 'Unknown version'
+				Relative.Version ? `v${Relative.Version}` : "Unknown version"
 			} of Kastel's Backend. Bun version ${
 				Bun.version
 			}\nIf you would like to support this project please consider donating to https://opencollective.com/kastel\n`,
 		);
 
-		await this.SetupDebug(this.Args.includes('debug'));
+		await this.SetupDebug(this.Args.includes("debug"));
 
 		this.Repl.startRepl();
 
-		this.Cache.on('Connected', () => this.Logger.info('Connected to Redis'));
-		this.Cache.on('Error', (err) => {
+		this.Cache.on("Connected", () => this.Logger.info("Connected to Redis"));
+		this.Cache.on("Error", (err) => {
 			this.Logger.fatal(err);
 
 			process.exit(1);
 		});
-		this.Cache.on('MissedPing', () => this.Logger.warn('Missed Redis ping'));
-		this.Cassandra.on('Connected', () => this.Logger.info('Connected to ScyllaDB'));
-		this.Cassandra.on('Error', (err) => {
+		this.Cache.on("MissedPing", () => this.Logger.warn("Missed Redis ping"));
+		this.Cassandra.on("Connected", () => this.Logger.info("Connected to ScyllaDB"));
+		this.Cassandra.on("Error", (err) => {
 			console.error(err);
 			this.Logger.fatal(err);
 
 			process.exit(1);
 		});
 
-		this.Logger.info('Connecting to ScyllaDB');
-		this.Logger.warn('IT IS NOT FROZEN, ScyllaDB may take a while to connect');
+		this.Logger.info("Connecting to ScyllaDB");
+		this.Logger.warn("IT IS NOT FROZEN, ScyllaDB may take a while to connect");
 
 		await Promise.all([this.SystemSocket.Connect(), this.Cassandra.Connect(), this.Cache.connect()]);
 
-		this.Logger.info('Creating ScyllaDB Tables.. This may take a while..');
-		this.Logger.warn('IT IS NOT FROZEN, ScyllaDB may take a while to create the tables');
+		this.Logger.info("Creating ScyllaDB Tables.. This may take a while..");
+		this.Logger.warn("IT IS NOT FROZEN, ScyllaDB may take a while to create the tables");
 
 		const TablesCreated = await this.Cassandra.CreateTables();
 
 		if (TablesCreated) {
-			this.Logger.info('Created ScyllaDB tables');
+			this.Logger.info("Created ScyllaDB tables");
 		} else {
-			this.Logger.warn('whar');
+			this.Logger.warn("whar");
 		}
 
 		if (Config.MailServer.Enabled) {
-			const Support = Config.MailServer.Users.find((user) => user.ShortCode === 'Support');
-			const NoReply = Config.MailServer.Users.find((user) => user.ShortCode === 'NoReply');
+			const Support = Config.MailServer.Users.find((user) => user.ShortCode === "Support");
+			const NoReply = Config.MailServer.Users.find((user) => user.ShortCode === "NoReply");
 
 			if (!Support || !NoReply) {
-				this.Logger.fatal('Missing Support or NoReply user in config');
-				this.Logger.fatal('Disable MailServer in config to ignore this error');
+				this.Logger.fatal("Missing Support or NoReply user in config");
+				this.Logger.fatal("Disable MailServer in config to ignore this error");
 
 				process.exit(0);
 			}
@@ -267,14 +267,14 @@ class App {
 			try {
 				await Promise.all([this.Support.Connect(), this.NoReply.Connect()]);
 			} catch (error) {
-				this.Logger.fatal('Failed to connect to Mail Server', error);
+				this.Logger.fatal("Failed to connect to Mail Server", error);
 
 				process.exit(1);
 			}
 
-			this.Logger.info('Mail Server connected!');
+			this.Logger.info("Mail Server connected!");
 		} else {
-			this.Logger.info('Mail Server disabled!');
+			this.Logger.info("Mail Server disabled!");
 		}
 
 		if (Config.Server.Sentry.Enabled) {
@@ -285,7 +285,7 @@ class App {
 				integrations: (integrations) => {
 					return [
 						...integrations.map((integration) => {
-							if (integration.name === 'OnUncaughtException') {
+							if (integration.name === "OnUncaughtException") {
 								return new Sentry.Integrations.OnUncaughtException({
 									exitEvenIfOtherHandlersAreRegistered: false,
 								});
@@ -301,14 +301,14 @@ class App {
 		}
 
 		process
-			.on('uncaughtException', (err) => {
+			.on("uncaughtException", (err) => {
 				if (Config.Server.Sentry.Enabled) {
 					Sentry.captureException(err);
 				}
 
-				this.Logger.error('Uncaught Exception, \n', err?.stack ? err.stack : err);
+				this.Logger.error("Uncaught Exception, \n", err?.stack ? err.stack : err);
 			})
-			.on('unhandledRejection', (reason: any) => {
+			.on("unhandledRejection", (reason: any) => {
 				if (Config.Server.Sentry.Enabled) {
 					Sentry.captureException(reason);
 				}
@@ -320,7 +320,7 @@ class App {
 			.use(bodyParser.json())
 			.use(bodyParser.urlencoded({ extended: true }))
 			.use(bodyParser.raw())
-			.disable('x-powered-by');
+			.disable("x-powered-by");
 
 		if (Config.Server.Sentry.Enabled) {
 			this.ExpressApp.use(
@@ -335,15 +335,15 @@ class App {
 		// eslint-disable-next-line promise/prefer-await-to-callbacks -- (Its not)
 		this.ExpressApp.use((error: Error, _: Request, res: Response, __: NextFunction) => {
 			// @ts-expect-error -- express being weird
-			if (error instanceof SyntaxError && error.status === 400 && 'body' in error) {
-				this.Logger.error(`Someone sent invalid JSON`, error);
+			if (error instanceof SyntaxError && error.status === 400 && "body" in error) {
+				this.Logger.error("Someone sent invalid JSON", error);
 
 				res.status(500).json({
 					Message: `Invalid JSON (${error.message})`,
 				});
 			} else {
 				res.status(500).json({
-					Message: `Internal Server Error :(`,
+					Message: "Internal Server Error :(",
 				});
 			}
 		});
@@ -351,14 +351,14 @@ class App {
 		this.ExpressApp.use(async (req, res, next) => {
 			req.clientIp = IpUtils.GetIp(req);
 			req.methodi = req.method as ExpressMethodCap;
-			req.captcha = new Turnstile(this.Config.Server.CaptchaEnabled, this.Config.Server.TurnstileSecret ?? 'secret');
-			
+			req.captcha = new Turnstile(this.Config.Server.CaptchaEnabled, this.Config.Server.TurnstileSecret ?? "secret");
+
 			req.fourohfourit = () => {
 				const Error = ErrorGen.NotFound();
 
 				Error.AddError({
 					NotFound: {
-						Code: 'NotFound',
+						Code: "NotFound",
 						Message: `Could not find route for ${req.method} ${req.path}`,
 					},
 				});
@@ -367,10 +367,13 @@ class App {
 
 				return true;
 			};
-			
-			if (Config.Server.CloudflareAccessOnly && !(await IpUtils.isCloudflareIp(req.headers['x-forwarded-for'] as string))) {
+
+			if (
+				Config.Server.CloudflareAccessOnly &&
+				!(await IpUtils.isCloudflareIp(req.headers["x-forwarded-for"] as string))
+			) {
 				req.fourohfourit();
-				
+
 				return;
 			}
 
@@ -380,8 +383,8 @@ class App {
 
 				Error.AddError({
 					TooLarge: {
-						Code: 'TooLarge',
-						Message: 'Request body too large',
+						Code: "TooLarge",
+						Message: "Request body too large",
 					},
 				});
 
@@ -395,11 +398,11 @@ class App {
 
 		// guilds with params should be at the bottom as ones without them take priority
 		const LoadedRoutes = (await this.LoadRoutes()).sort((a, b) => {
-			if (a.route.includes(':') && !b.route.includes(':')) {
+			if (a.route.includes(":") && !b.route.includes(":")) {
 				return 1;
 			}
 
-			if (!a.route.includes(':') && b.route.includes(':')) {
+			if (!a.route.includes(":") && b.route.includes(":")) {
 				return -1;
 			}
 
@@ -408,7 +411,7 @@ class App {
 
 		for (const route of LoadedRoutes) {
 			this.Logger.verbose(
-				`Loaded "${route.route.length === 0 ? '/' : route.route}" [${route.default.Methods.join(', ')}]`,
+				`Loaded "${route.route.length === 0 ? "/" : route.route}" [${route.default.Methods.join(", ")}]`,
 			);
 		}
 
@@ -422,16 +425,16 @@ class App {
 					(req: Request, res: Response) => {
 						this.Logger.verbose(
 							`Request for ${req.path} (${req.method}) ${
-								req?.user?.Id ? `from ${req.user.Id}` : 'from a logged out user.'
+								req?.user?.Id ? `from ${req.user.Id}` : "from a logged out user."
 							}`,
 						);
 
-						const ContentType = req.headers['content-type'] ?? '';
+						const ContentType = req.headers["content-type"] ?? "";
 
-						res.on('finish', () => {
+						res.on("finish", () => {
 							this.Logger.verbose(
 								`Request for ${req.path} (${req.method}) ${
-									req?.user?.Id ? `from ${req.user.Id}` : 'from a logged out user.'
+									req?.user?.Id ? `from ${req.user.Id}` : "from a logged out user."
 								} finished with status code ${res.statusCode}`,
 							);
 
@@ -443,8 +446,8 @@ class App {
 
 							Error.AddError({
 								ServiceUnavailable: {
-									Code: 'ServiceUnavailable',
-									Message: 'This endpoint is currently disabled',
+									Code: "ServiceUnavailable",
+									Message: "This endpoint is currently disabled",
 								},
 							});
 
@@ -461,9 +464,9 @@ class App {
 
 							Error.AddError({
 								ContentType: {
-									Code: 'InvalidContentType',
+									Code: "InvalidContentType",
 									Message: `Invalid Content-Type header, Expected (${Route.default.AllowedContentTypes.join(
-										', ',
+										", ",
 									)}), Got (${ContentType})`,
 								},
 							});
@@ -486,7 +489,7 @@ class App {
 							this.Logger.error(error);
 
 							if (!res.headersSent) {
-								res.status(500).send('Internal Server Error :(');
+								res.status(500).send("Internal Server Error :(");
 							}
 						});
 					},
@@ -494,12 +497,12 @@ class App {
 			}
 		}
 
-		this.ExpressApp.all('*', (req, res) => {
+		this.ExpressApp.all("*", (req, res) => {
 			const Error = ErrorGen.NotFound();
 
 			Error.AddError({
 				NotFound: {
-					Code: 'NotFound',
+					Code: "NotFound",
 					Message: `Could not find route for ${req.method} ${req.path}`,
 				},
 			});
@@ -512,11 +515,11 @@ class App {
 		});
 	}
 
-	private async LoadRoutes(): Promise<(typeof this)['Routes']> {
+	private async LoadRoutes(): Promise<(typeof this)["Routes"]> {
 		const Routes = await this.WalkDirectory(this.RouteDirectory);
 
 		for (const Route of Routes) {
-			if (!Route.endsWith('.ts')) {
+			if (!Route.endsWith(".ts")) {
 				this.Logger.debug(`Skipping ${Route} as it is not a .ts file`);
 
 				continue;
@@ -540,14 +543,14 @@ class App {
 
 			for (const SubRoute of RouteInstance.Routes) {
 				const fixedRoute = (
-					(Route.split(this.RouteDirectory)[1]?.replaceAll(/\\/g, '/').split('/').slice(0, -1).join('/') ?? '') +
+					(Route.split(this.RouteDirectory)[1]?.replaceAll(/\\/g, "/").split("/").slice(0, -1).join("/") ?? "") +
 					(SubRoute as string)
-				).replace(/\/$/, '');
+				).replace(/\/$/, "");
 
 				this.Routes.push({
 					default: RouteInstance,
 					directory: Route,
-					route: fixedRoute.replaceAll(/\[([^\]]+)]/g, ':$1'), // eslint-disable-line prefer-named-capture-group
+					route: fixedRoute.replaceAll(/\[([^\]]+)]/g, ":$1"), // eslint-disable-line prefer-named-capture-group
 				});
 			}
 		}
@@ -578,44 +581,44 @@ class App {
 		const GithubInfo = await this.GithubInfo();
 
 		const Strings = [
-			'='.repeat(40),
-			`Kastel Debug Logs`,
-			'='.repeat(40),
+			"=".repeat(40),
+			"Kastel Debug Logs",
+			"=".repeat(40),
 			`Backend Version: ${this.Constants.Relative.Version}`,
 			`Bun Version: ${Bun.version}`,
-			'='.repeat(40),
-			`System Info:`,
+			"=".repeat(40),
+			"System Info:",
 			`OS: ${System.OperatingSystem.Platform}`,
 			`Arch: ${System.OperatingSystem.Arch}`,
 			`Os Release: ${System.OperatingSystem.Release}`,
-			`Internet Status: ${System.InternetAccess ? 'Online' : 'Offline - Some features may not work'}`,
-			'='.repeat(40),
-			'Hardware Info:',
+			`Internet Status: ${System.InternetAccess ? "Online" : "Offline - Some features may not work"}`,
+			"=".repeat(40),
+			"Hardware Info:",
 			`CPU: ${System.Cpu.Type}`,
 			`CPU Cores: ${System.Cpu.Cores}`,
 			`Total Memory: ${System.Ram.Total}`,
 			`Free Memory: ${System.Ram.Available}`,
 			`Used Memory: ${System.Ram.Usage}`,
-			'='.repeat(40),
-			`Process Info:`,
+			"=".repeat(40),
+			"Process Info:",
 			`PID: ${process.pid}`,
 			`Uptime: ${System.Process.Uptime}`,
-			'='.repeat(40),
-			`Git Info:`,
+			"=".repeat(40),
+			"Git Info:",
 			`Branch: ${this.GitBranch}`,
 			`Commit: ${GithubInfo.CommitShort ?? GithubInfo.Commit}`,
 			`Status: ${
-				this.Clean ? 'Clean' : 'Dirty - You will not be given support if something breaks with a dirty instance'
+				this.Clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
 			}`,
-			this.Clean ? '' : '='.repeat(40),
-			`${this.Clean ? '' : 'Changed Files:'}`,
+			this.Clean ? "" : "=".repeat(40),
+			`${this.Clean ? "" : "Changed Files:"}`,
 		];
 
 		for (const File of this.GitFiles) {
 			Strings.push(`${File.type}: ${File.filePath}`);
 		}
 
-		Strings.push('='.repeat(40));
+		Strings.push("=".repeat(40));
 
 		if (Log) {
 			for (const String of Strings) {
@@ -635,7 +638,7 @@ class App {
 		const Status = await this.Git.status();
 
 		if (!Commit.latest?.hash) {
-			this.Logger.fatal('Could not get Commit Info, are you sure you pulled the repo correctly?');
+			this.Logger.fatal("Could not get Commit Info, are you sure you pulled the repo correctly?");
 
 			process.exit(1);
 		}

@@ -9,15 +9,15 @@
  * GPL 3.0 Licensed
  */
 
-import type { Request, Response } from 'express';
-import User from '../../../../Middleware/User.ts';
-import type App from '../../../../Utils/Classes/App';
-import FlagFields from '../../../../Utils/Classes/BitFields/Flags.ts';
-import Encryption from '../../../../Utils/Classes/Encryption.ts';
-import ErrorGen from '../../../../Utils/Classes/ErrorGen.ts';
-import Route from '../../../../Utils/Classes/Route.ts';
-import type { User as UserType } from '../../../../Utils/Cql/Types/index.ts';
-import { TagValidator } from '../../../../Utils/TagGenerator.ts';
+import type { Request, Response } from "express";
+import User from "../../../../Middleware/User.ts";
+import type App from "../../../../Utils/Classes/App";
+import FlagFields from "../../../../Utils/Classes/BitFields/Flags.ts";
+import Encryption from "../../../../Utils/Classes/Encryption.ts";
+import ErrorGen from "../../../../Utils/Classes/ErrorGen.ts";
+import Route from "../../../../Utils/Classes/Route.ts";
+import type { User as UserType } from "../../../../Utils/Cql/Types/index.ts";
+import { TagValidator } from "../../../../Utils/TagGenerator.ts";
 
 interface EditableUser {
 	AFlags: number;
@@ -38,7 +38,7 @@ interface EditableUser {
 	Username: string;
 }
 
-type SchemaUser = Omit<EditableUser, 'AFlags' | 'Bio' | 'NewPassword' | 'RFlags'>;
+type SchemaUser = Omit<EditableUser, "AFlags" | "Bio" | "NewPassword" | "RFlags">;
 
 interface UserObject {
 	Avatar: string | null;
@@ -81,48 +81,48 @@ export default class FetchPatchUser extends Route {
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ['GET', 'PATCH'];
+		this.Methods = ["GET", "PATCH"];
 
 		this.Middleware = [
 			User({
-				AccessType: 'LoggedIn',
-				AllowedRequesters: 'User',
+				AccessType: "LoggedIn",
+				AllowedRequesters: "User",
 				App,
 			}),
 		];
 
-		this.AllowedContentTypes = ['application/json'];
+		this.AllowedContentTypes = ["application/json"];
 
-		this.Routes = ['/'];
+		this.Routes = ["/"];
 
-		this.PasswordRequired = ['Email', 'PhoneNumber', 'NewPassword', 'AFlags', 'RFlags']; // These are also the fields that require a 2fa code (soon™️)
+		this.PasswordRequired = ["Email", "PhoneNumber", "NewPassword", "AFlags", "RFlags"]; // These are also the fields that require a 2fa code (soon™️)
 
-		this.BotCantEdit = ['Email', 'NewPassword', 'Password', 'PhoneNumber', 'AFlags', 'RFlags'];
+		this.BotCantEdit = ["Email", "NewPassword", "Password", "PhoneNumber", "AFlags", "RFlags"];
 
 		this.Editable = [
-			'Avatar',
-			'Email',
-			'GlobalNickname',
-			'Password',
-			'PhoneNumber',
-			'Tag',
-			'Username',
-			'NewPassword',
-			'AFlags',
-			'RFlags',
-			'Bio',
+			"Avatar",
+			"Email",
+			"GlobalNickname",
+			"Password",
+			"PhoneNumber",
+			"Tag",
+			"Username",
+			"NewPassword",
+			"AFlags",
+			"RFlags",
+			"Bio",
 		];
 	}
 
 	public override async Request(Req: Request, Res: Response) {
 		switch (Req.method.toLowerCase()) {
-			case 'patch': {
+			case "patch": {
 				await this.PatchSelf(Req, Res);
 
 				break;
 			}
 
-			case 'get': {
+			case "get": {
 				await this.FetchSelf(Req, Res);
 
 				break;
@@ -131,7 +131,7 @@ export default class FetchPatchUser extends Route {
 			default: {
 				this.App.Logger.warn(`Weird Bypass in Method (${Req.method})`);
 
-				Res.status(500).send('Internal Server Error :(');
+				Res.status(500).send("Internal Server Error :(");
 
 				break;
 			}
@@ -152,7 +152,7 @@ export default class FetchPatchUser extends Route {
 			/^(?=.*[a-zA-Z0-9!$%^&*()\-_~>.<?/\s\u0020-\uD7FF\uE000-\uFFFD])[a-zA-Z0-9!$%^&*()\-_~>.<?/\s\u0020-\uD7FF\uE000-\uFFFD]{2,30}$/; // eslint-disable-line unicorn/better-regex
 
 		if (BotNotAllowed && Req.user.Bot) {
-			this.App.Logger.debug('User is a bot and tried to update a value thats not allowed (Email, Password etc etc)');
+			this.App.Logger.debug("User is a bot and tried to update a value thats not allowed (Email, Password etc etc)");
 
 			const Mapped = RequestKeys.map((key) => {
 				return {
@@ -166,7 +166,7 @@ export default class FetchPatchUser extends Route {
 
 				Error.AddError({
 					[item.Key]: {
-						Code: 'NotAllowed',
+						Code: "NotAllowed",
 						Message: `You are not allowed to edit "${item.Key}" Due to you being a bot`,
 					},
 				});
@@ -178,12 +178,12 @@ export default class FetchPatchUser extends Route {
 		}
 
 		if (PasswordRequiredKey && !Password) {
-			this.App.Logger.debug('User tried to update an item that requires a password and they provided no password :(');
+			this.App.Logger.debug("User tried to update an item that requires a password and they provided no password :(");
 
 			Error.AddError({
 				Password: {
-					Code: 'InvalidPassword',
-					Message: 'The Password provided is Invalid, or Missing',
+					Code: "InvalidPassword",
+					Message: "The Password provided is Invalid, or Missing",
 				},
 			});
 
@@ -198,20 +198,20 @@ export default class FetchPatchUser extends Route {
 		if (!FetchedUser) {
 			this.App.Logger.debug(`Couldn't fetch the user..? Id: ${Req.user.Id}, Email: ${Req.user.Email}`);
 
-			Res.status(500).send('Internal Server Error :(');
+			Res.status(500).send("Internal Server Error :(");
 
 			return;
 		}
 
-		if (PasswordRequiredKey && !(await Bun.password.verify(Password ?? '', FetchedUser.Password))) {
+		if (PasswordRequiredKey && !(await Bun.password.verify(Password ?? "", FetchedUser.Password))) {
 			this.App.Logger.debug(
-				'User tried to update an item that requires a password and they provided an invalid password :(',
+				"User tried to update an item that requires a password and they provided an invalid password :(",
 			);
 
 			Error.AddError({
 				Password: {
-					Code: 'InvalidPassword',
-					Message: 'The Password provided is Invalid, or Missing',
+					Code: "InvalidPassword",
+					Message: "The Password provided is Invalid, or Missing",
 				},
 			});
 
@@ -225,7 +225,7 @@ export default class FetchPatchUser extends Route {
 				return this.Editable.includes(key as keyof EditableUser);
 			})
 			.reduce<{ [key: string]: number | string | null }>((prev, [key, value]) => {
-				if (!['string', 'number'].includes(typeof value)) prev[key as string] = null;
+				if (!["string", "number"].includes(typeof value)) prev[key as string] = null;
 
 				prev[key as string] = value as number | string;
 
@@ -235,8 +235,8 @@ export default class FetchPatchUser extends Route {
 		if (Object.keys(FilteredItems).length === 0) {
 			Error.AddError({
 				Keys: {
-					Code: 'NoKeys',
-					Message: 'There are no keys',
+					Code: "NoKeys",
+					Message: "There are no keys",
 				},
 			});
 		}
@@ -244,8 +244,8 @@ export default class FetchPatchUser extends Route {
 		if (FilteredItems.Username && !UsernameValidator.test(FilteredItems.Username)) {
 			Error.AddError({
 				Username: {
-					Code: 'InvalidUsername',
-					Message: 'The Username provided is Invalid',
+					Code: "InvalidUsername",
+					Message: "The Username provided is Invalid",
 				},
 			});
 		}
@@ -253,8 +253,8 @@ export default class FetchPatchUser extends Route {
 		if (FilteredItems.NewPassword && !PasswordValidtor.test(FilteredItems.NewPassword)) {
 			Error.AddError({
 				Password: {
-					Code: 'InvalidPassword',
-					Message: 'The Password provided is Invalid',
+					Code: "InvalidPassword",
+					Message: "The Password provided is Invalid",
 				},
 			});
 		}
@@ -262,8 +262,8 @@ export default class FetchPatchUser extends Route {
 		if (FilteredItems.Email && !EmailValidator.test(FilteredItems.Email)) {
 			Error.AddError({
 				Email: {
-					Code: 'InvalidEmail',
-					Message: 'The Email provided is Invalid or already in use',
+					Code: "InvalidEmail",
+					Message: "The Email provided is Invalid or already in use",
 				},
 			});
 		}
@@ -274,46 +274,46 @@ export default class FetchPatchUser extends Route {
 			return;
 		}
 
-		const ContinuePast = ['Password', 'Bio'];
+		const ContinuePast = ["Password", "Bio"];
 		// eslint-disable-next-line guard-for-in -- darkerink: We filtered it already.. it should be good
 		for (const item in FilteredItems) {
 			if (ContinuePast.includes(item)) continue;
 
-			if (item === 'NewPassword') {
-				FetchedUser.Password = await Bun.password.hash(FilteredItems[item] as string, 'argon2id');
+			if (item === "NewPassword") {
+				FetchedUser.Password = await Bun.password.hash(FilteredItems[item] as string, "argon2id");
 
 				continue;
 			}
 
-			if (item === 'Tag') {
-				FetchedUser.Tag = TagValidator(FetchedUser.Tag, FilteredItems.Tag ?? '');
+			if (item === "Tag") {
+				FetchedUser.Tag = TagValidator(FetchedUser.Tag, FilteredItems.Tag ?? "");
 
 				continue;
 			}
 
 			// darkerink: Is there a better way to do this? yes, we could instead allow updating all flags but I would rather just support
 			// removing and adding flags here and there (RFlags = Remove Flags, AFlags = Add Flags)
-			if ((item === 'RFlags' || item === 'AFlags') && ParsedFlags.has('Staff')) {
+			if ((item === "RFlags" || item === "AFlags") && ParsedFlags.has("Staff")) {
 				const Flags = FilteredItems[item] as number;
 
 				this.App.Logger.warn(
 					`[Updating User] User ${Req.user.Id} Has updated their flags, Their old flags are "${
 						FetchedUser.Flags
-					}", They are ${item === 'RFlags' ? 'Removing Flags' : 'Adding Flags'} "${Flags}"`,
+					}", They are ${item === "RFlags" ? "Removing Flags" : "Adding Flags"} "${Flags}"`,
 				);
 
 				const FilteredFlagsParsed = new FlagFields(0n, Flags);
 
-				if (item === 'RFlags') ParsedFlags.PublicFlags.remove(FilteredFlagsParsed.PublicFlags.cleaned);
-				if (item === 'AFlags') ParsedFlags.PublicFlags.add(FilteredFlagsParsed.PublicFlags.cleaned);
+				if (item === "RFlags") ParsedFlags.PublicFlags.remove(FilteredFlagsParsed.PublicFlags.cleaned);
+				if (item === "AFlags") ParsedFlags.PublicFlags.add(FilteredFlagsParsed.PublicFlags.cleaned);
 
 				FetchedUser.PublicFlags = String(ParsedFlags.PublicFlags.cleaned);
 
 				continue;
 			}
 
-			if (item === 'Email') {
-				FetchedUser.Email = (FilteredItems.Email as string).replaceAll(PlusReplace, '');
+			if (item === "Email") {
+				FetchedUser.Email = (FilteredItems.Email as string).replaceAll(PlusReplace, "");
 			}
 
 			if (FetchedUser?.[item as keyof SchemaUser] === undefined) {
@@ -326,11 +326,11 @@ export default class FetchPatchUser extends Route {
 		}
 
 		if (FilteredItems.Email) {
-			this.App.Logger.debug('Before', ParsedFlags.toArray());
+			this.App.Logger.debug("Before", ParsedFlags.toArray());
 
-			ParsedFlags.PrivateFlags.remove('EmailVerified');
+			ParsedFlags.PrivateFlags.remove("EmailVerified");
 
-			this.App.Logger.debug('After', ParsedFlags.toArray());
+			this.App.Logger.debug("After", ParsedFlags.toArray());
 
 			FetchedUser.Flags = String(ParsedFlags.PrivateFlags.cleaned);
 
@@ -339,8 +339,8 @@ export default class FetchPatchUser extends Route {
 			if (FoundUser) {
 				Error.AddError({
 					Email: {
-						Code: 'InvalidEmail',
-						Message: 'The Email provided is Invalid already in use',
+						Code: "InvalidEmail",
+						Message: "The Email provided is Invalid already in use",
 					},
 				});
 			}
@@ -352,8 +352,8 @@ export default class FetchPatchUser extends Route {
 			if (MaxUsers) {
 				Error.AddError({
 					Username: {
-						Code: 'MaxUsernames',
-						Message: 'The Username provided is Invalid',
+						Code: "MaxUsernames",
+						Message: "The Username provided is Invalid",
 					},
 				});
 			} else {
@@ -362,8 +362,8 @@ export default class FetchPatchUser extends Route {
 				if (FoundUser) {
 					Error.AddError({
 						Username: {
-							Code: 'InvalidUsername',
-							Message: 'The Username is Invalid (Already taken :( )',
+							Code: "InvalidUsername",
+							Message: "The Username is Invalid (Already taken :( )",
 						},
 					});
 				}
@@ -386,7 +386,7 @@ export default class FetchPatchUser extends Route {
 		const UserObject: UserObject = {
 			Id: FetchedUser.UserId,
 			Email: FetchedUser.Email,
-			EmailVerified: ParsedFlags.PrivateFlags.has('EmailVerified'),
+			EmailVerified: ParsedFlags.PrivateFlags.has("EmailVerified"),
 			Username: FetchedUser.Username,
 			GlobalNickname: FetchedUser.GlobalNickname.length === 0 ? null : FetchedUser.GlobalNickname,
 			Tag: FetchedUser.Tag,
@@ -394,8 +394,8 @@ export default class FetchPatchUser extends Route {
 			PublicFlags: Number(ParsedFlags.PublicFlags.cleaned),
 			Flags: Number(ParsedFlags.PublicPrivateFlags),
 			PhoneNumber: null,
-			TwoFaEnabled: ParsedFlags.PrivateFlags.has('TwoFaEnabled'),
-			TwoFaVerified: ParsedFlags.PrivateFlags.has('TwoFaVerified'),
+			TwoFaEnabled: ParsedFlags.PrivateFlags.has("TwoFaEnabled"),
+			TwoFaVerified: ParsedFlags.PrivateFlags.has("TwoFaVerified"),
 		};
 
 		if (FilteredItems.Bio) {
@@ -420,18 +420,18 @@ export default class FetchPatchUser extends Route {
 		if (!FetchedUser) {
 			this.App.Logger.debug(`Couldn't fetch the user..? Id: ${Req.user.Id}, Email: ${Req.user.Email}`);
 
-			Res.status(500).send('Internal Server Error :(');
+			Res.status(500).send("Internal Server Error :(");
 
 			return;
 		}
 
 		const Flags = new FlagFields(FetchedUser.Flags, FetchedUser.PublicFlags);
-		const SplitInclude = String(include).split(',');
+		const SplitInclude = String(include).split(",");
 
 		const UserObject: UserObject = {
 			Id: FetchedUser.UserId,
 			Email: FetchedUser.Email,
-			EmailVerified: Flags.PrivateFlags.has('EmailVerified'),
+			EmailVerified: Flags.PrivateFlags.has("EmailVerified"),
 			Username: FetchedUser.Username,
 			GlobalNickname: FetchedUser.GlobalNickname.length === 0 ? null : FetchedUser.GlobalNickname,
 			Tag: FetchedUser.Tag,
@@ -439,17 +439,17 @@ export default class FetchPatchUser extends Route {
 			PublicFlags: Number(Flags.PublicFlags.cleaned),
 			Flags: Number(Flags.PublicPrivateFlags),
 			PhoneNumber: null,
-			TwoFaEnabled: Flags.PrivateFlags.has('TwoFaEnabled'),
-			TwoFaVerified: Flags.PrivateFlags.has('TwoFaVerified'),
+			TwoFaEnabled: Flags.PrivateFlags.has("TwoFaEnabled"),
+			TwoFaVerified: Flags.PrivateFlags.has("TwoFaVerified"),
 		};
 
-		if (SplitInclude.includes('bio')) {
+		if (SplitInclude.includes("bio")) {
 			const Settings = await this.App.Cassandra.Models.Settings.get(
 				{
 					UserId: Encryption.Encrypt(UserObject.Id),
 				},
 				{
-					fields: ['bio'],
+					fields: ["bio"],
 				},
 			);
 
@@ -469,8 +469,8 @@ export default class FetchPatchUser extends Route {
 
 		return Encryption.CompleteDecryption({
 			...FetchedUser,
-			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
-			PublicFlags: FetchedUser?.PublicFlags ? String(FetchedUser.PublicFlags) : '0',
+			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : "0",
+			PublicFlags: FetchedUser?.PublicFlags ? String(FetchedUser.PublicFlags) : "0",
 		});
 	}
 
@@ -480,11 +480,11 @@ export default class FetchPatchUser extends Route {
 		if (Count) {
 			FoundCount = Count;
 		} else if (Username) {
-			const FoundUsers = await this.App.Cassandra.Execute('SELECT COUNT(1) FROM users WHERE username = ?', [
+			const FoundUsers = await this.App.Cassandra.Execute("SELECT COUNT(1) FROM users WHERE username = ?", [
 				Encryption.Encrypt(Username),
 			]);
 
-			const Value: number = FoundUsers?.first()?.get('count').toNumber() ?? 0;
+			const Value: number = FoundUsers?.first()?.get("count").toNumber() ?? 0;
 
 			FoundCount = Value;
 		}
@@ -498,7 +498,7 @@ export default class FetchPatchUser extends Route {
 				Username: Encryption.Encrypt(Username),
 			},
 			{
-				fields: ['tag'],
+				fields: ["tag"],
 			},
 		);
 

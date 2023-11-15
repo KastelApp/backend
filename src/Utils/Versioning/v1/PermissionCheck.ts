@@ -1,8 +1,8 @@
 import {
 	Permissions as PermissionConstants,
 	GuildMemberFlags as GuildMemberFlagsConstant,
-} from '../../../Constants.ts';
-import { FlagUtils } from '../../Classes/BitFields/NewFlags.ts';
+} from "../../../Constants.ts";
+import { FlagUtils } from "../../Classes/BitFields/NewFlags.ts";
 
 class PermissionHandler {
 	public GuildMemberFlags: FlagUtils<typeof GuildMemberFlagsConstant>;
@@ -20,7 +20,7 @@ class PermissionHandler {
 			Deny: bigint;
 			// Role / Member Id
 			Id: string;
-			Type: 'Member' | 'Role';
+			Type: "Member" | "Role";
 		}[];
 	}[];
 
@@ -36,7 +36,7 @@ class PermissionHandler {
 				Allow: bigint | number | string;
 				Deny: bigint | number | string;
 				Id: string;
-				Type: 'Member' | 'Role';
+				Type: "Member" | "Role";
 			}[];
 		}[],
 	) {
@@ -69,11 +69,11 @@ class PermissionHandler {
 	}
 
 	public HasAnyRole(Permission: bigint | number | keyof typeof PermissionConstants, dupe?: boolean) {
-		const FoundPermission = typeof Permission === 'string' ? PermissionConstants[Permission] : BigInt(Permission);
+		const FoundPermission = typeof Permission === "string" ? PermissionConstants[Permission] : BigInt(Permission);
 
-		if (this.GuildMemberFlags.has('Owner') || this.GuildMemberFlags.has('CoOwner')) return true;
+		if (this.GuildMemberFlags.has("Owner") || this.GuildMemberFlags.has("CoOwner")) return true;
 
-		if (!dupe && this.HasAnyRole('Administrator', true)) return true;
+		if (!dupe && this.HasAnyRole("Administrator", true)) return true;
 
 		return this.MemberRoles.some((Role) => {
 			return (Role.Permissions & FoundPermission) === FoundPermission;
@@ -81,8 +81,8 @@ class PermissionHandler {
 	}
 
 	public CanManageRole(Role: { Permissions: bigint | number | keyof typeof PermissionConstants; Position: number }) {
-		if (!this.HasAnyRole('ManageRoles')) return false;
-		if (this.GuildMemberFlags.has('Owner') || this.GuildMemberFlags.has('CoOwner')) return true;
+		if (!this.HasAnyRole("ManageRoles")) return false;
+		if (this.GuildMemberFlags.has("Owner") || this.GuildMemberFlags.has("CoOwner")) return true;
 
 		const HighestRole = this.MemberRoles.sort((a, b) => b.Position - a.Position)[0];
 
@@ -94,10 +94,10 @@ class PermissionHandler {
 
 		if (!channel) return false;
 
-		if (this.HasAnyRole('Administrator')) return true;
+		if (this.HasAnyRole("Administrator")) return true;
 
 		const userOverride = channel.Overrides.find(
-			(override) => override.Type === 'Member' && override.Id === this.GuildMemberId,
+			(override) => override.Type === "Member" && override.Id === this.GuildMemberId,
 		);
 		if (userOverride) {
 			if ((BigInt(userOverride.Allow) & PermissionConstants[permission]) === PermissionConstants[permission])
@@ -107,7 +107,7 @@ class PermissionHandler {
 		}
 
 		for (const role of this.MemberRoles) {
-			const roleOverride = channel.Overrides.find((override) => override.Type === 'Role' && override.Id === role.Id);
+			const roleOverride = channel.Overrides.find((override) => override.Type === "Role" && override.Id === role.Id);
 
 			if (roleOverride) {
 				if ((BigInt(roleOverride.Allow) & PermissionConstants[permission]) === PermissionConstants[permission])

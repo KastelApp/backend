@@ -9,20 +9,20 @@
  * GPL 3.0 Licensed
  */
 
-import type { Request, Response } from 'express';
-import { InviteFlags, PermissionOverrideTypes } from '../../../../../Constants.ts';
-import Guild from '../../../../../Middleware/Guild.ts';
-import User from '../../../../../Middleware/User.ts';
-import type App from '../../../../../Utils/Classes/App.ts';
-import GuildMemberFlags from '../../../../../Utils/Classes/BitFields/GuildMember.ts';
-import { FlagUtils } from '../../../../../Utils/Classes/BitFields/NewFlags.ts';
-import Encryption from '../../../../../Utils/Classes/Encryption.ts';
-import ErrorGen from '../../../../../Utils/Classes/ErrorGen.ts';
-import Route from '../../../../../Utils/Classes/Route.ts';
-import type Roles from '../../../../../Utils/Cql/Types/Role.ts';
-import type { Invite } from '../../../../../Utils/Cql/Types/index.ts';
-import InviteGenerator from '../../../../../Utils/InviteGenerator.ts';
-import PermissionHandler from '../../../../../Utils/Versioning/v1/PermissionCheck.ts';
+import type { Request, Response } from "express";
+import { InviteFlags, PermissionOverrideTypes } from "../../../../../Constants.ts";
+import Guild from "../../../../../Middleware/Guild.ts";
+import User from "../../../../../Middleware/User.ts";
+import type App from "../../../../../Utils/Classes/App.ts";
+import GuildMemberFlags from "../../../../../Utils/Classes/BitFields/GuildMember.ts";
+import { FlagUtils } from "../../../../../Utils/Classes/BitFields/NewFlags.ts";
+import Encryption from "../../../../../Utils/Classes/Encryption.ts";
+import ErrorGen from "../../../../../Utils/Classes/ErrorGen.ts";
+import Route from "../../../../../Utils/Classes/Route.ts";
+import type Roles from "../../../../../Utils/Cql/Types/Role.ts";
+import type { Invite } from "../../../../../Utils/Cql/Types/index.ts";
+import InviteGenerator from "../../../../../Utils/InviteGenerator.ts";
+import PermissionHandler from "../../../../../Utils/Versioning/v1/PermissionCheck.ts";
 
 interface InviteBody {
 	ChannelId: string;
@@ -38,12 +38,12 @@ export default class FetchCreateAndDeleteInvites extends Route {
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ['GET', 'DELETE', 'POST'];
+		this.Methods = ["GET", "DELETE", "POST"];
 
 		this.Middleware = [
 			User({
-				AccessType: 'LoggedIn',
-				AllowedRequesters: 'User',
+				AccessType: "LoggedIn",
+				AllowedRequesters: "User",
 				App,
 			}),
 			Guild({
@@ -54,32 +54,32 @@ export default class FetchCreateAndDeleteInvites extends Route {
 
 		this.AllowedContentTypes = [];
 
-		this.Routes = ['/', '/:inviteId'];
+		this.Routes = ["/", "/:inviteId"];
 
 		this.MaxUses = 100;
 	}
 
 	public override async Request(Req: Request<{ inviteId?: string }>, Res: Response) {
-		if (Req.params?.inviteId && Req.methodi !== 'DELETE') {
+		if (Req.params?.inviteId && Req.methodi !== "DELETE") {
 			Req.fourohfourit();
 
 			return;
 		}
 
 		switch (Req.methodi) {
-			case 'DELETE': {
+			case "DELETE": {
 				// await this.DeleteInvite(Req, Res);
 
 				break;
 			}
 
-			case 'GET': {
+			case "GET": {
 				await this.FetchInvites(Req, Res);
 
 				break;
 			}
 
-			case 'POST': {
+			case "POST": {
 				await this.CreateInvite(Req, Res);
 
 				break;
@@ -98,14 +98,14 @@ export default class FetchCreateAndDeleteInvites extends Route {
 
 		const InviteType = new FlagUtils<typeof InviteFlags>(Type ?? 0, InviteFlags);
 
-		if ((typeof ChannelId !== 'string' && !InviteType.has('Vanity')) || InviteType.count !== 1) {
+		if ((typeof ChannelId !== "string" && !InviteType.has("Vanity")) || InviteType.count !== 1) {
 			const Error = ErrorGen.FailedToCreateInvite();
 
-			if (typeof ChannelId !== 'string' && !InviteType.has('Vanity')) {
+			if (typeof ChannelId !== "string" && !InviteType.has("Vanity")) {
 				Error.AddError({
 					ChannelId: {
-						Code: 'InvalidChannelId',
-						Message: 'The provided channel id is missing or invalid',
+						Code: "InvalidChannelId",
+						Message: "The provided channel id is missing or invalid",
 					},
 				});
 			}
@@ -113,8 +113,8 @@ export default class FetchCreateAndDeleteInvites extends Route {
 			if (InviteType.count !== 1) {
 				Error.AddError({
 					Type: {
-						Code: 'InvalidType',
-						Message: 'The provided type is invalid',
+						Code: "InvalidType",
+						Message: "The provided type is invalid",
 					},
 				});
 			}
@@ -124,13 +124,13 @@ export default class FetchCreateAndDeleteInvites extends Route {
 			return;
 		}
 
-		if ((MaxUses && typeof MaxUses !== 'number') || MaxUses < 0 || MaxUses > this.MaxUses) {
+		if ((MaxUses && typeof MaxUses !== "number") || MaxUses < 0 || MaxUses > this.MaxUses) {
 			const Error = ErrorGen.FailedToCreateInvite();
 
 			Error.AddError({
 				MaxUses: {
-					Code: 'InvalidMaxUses',
-					Message: 'The provided max uses is invalid',
+					Code: "InvalidMaxUses",
+					Message: "The provided max uses is invalid",
 				},
 			});
 
@@ -139,15 +139,15 @@ export default class FetchCreateAndDeleteInvites extends Route {
 			return;
 		}
 
-		const Channel = InviteType.has('Vanity') ? [] : await this.ChannelExists(ChannelId);
+		const Channel = InviteType.has("Vanity") ? [] : await this.ChannelExists(ChannelId);
 
 		if (!Channel) {
 			const Error = ErrorGen.FailedToCreateInvite();
 
 			Error.AddError({
 				ChannelId: {
-					Code: 'InvalidChannelId',
-					Message: 'The provided channel id is missing or invalid',
+					Code: "InvalidChannelId",
+					Message: "The provided channel id is missing or invalid",
 				},
 			});
 
@@ -176,15 +176,15 @@ export default class FetchCreateAndDeleteInvites extends Route {
 			}),
 			[
 				{
-					Id: ChannelId ?? 'unknown',
+					Id: ChannelId ?? "unknown",
 					Overrides: Channel.map((override) => ({
 						...override,
 						Type:
 							override.Type === PermissionOverrideTypes.Everyone
-								? 'Role'
+								? "Role"
 								: override.Type === PermissionOverrideTypes.Role
-								? 'Role'
-								: 'Member',
+								? "Role"
+								: "Member",
 					})),
 				},
 			],
@@ -192,15 +192,15 @@ export default class FetchCreateAndDeleteInvites extends Route {
 
 		if (
 			ChannelId
-				? InviteType.has('Vanity') && !PermissionCheck.HasAnyRole('ManageGuild')
-				: !PermissionCheck.HasChannelPermission(ChannelId, 'CreateInvites')
+				? InviteType.has("Vanity") && !PermissionCheck.HasAnyRole("ManageGuild")
+				: !PermissionCheck.HasChannelPermission(ChannelId, "CreateInvites")
 		) {
 			const MissingPermissions = ErrorGen.MissingPermissions();
 
 			MissingPermissions.AddError({
 				Permissions: {
-					Code: 'MissingPermissions',
-					Message: 'You are missing the permissions to do this action.',
+					Code: "MissingPermissions",
+					Message: "You are missing the permissions to do this action.",
 				},
 			});
 
@@ -257,13 +257,13 @@ export default class FetchCreateAndDeleteInvites extends Route {
 			}),
 		);
 
-		if (!PermissionCheck.HasAnyRole('ManageInvites')) {
+		if (!PermissionCheck.HasAnyRole("ManageInvites")) {
 			const MissingPermissions = ErrorGen.MissingPermissions();
 
 			MissingPermissions.AddError({
 				Permissions: {
-					Code: 'MissingPermissions',
-					Message: 'You are missing the permissions to do this action.',
+					Code: "MissingPermissions",
+					Message: "You are missing the permissions to do this action.",
 				},
 			});
 
@@ -298,7 +298,7 @@ export default class FetchCreateAndDeleteInvites extends Route {
 				ChannelId: Encryption.Encrypt(ChannelId),
 			},
 			{
-				fields: ['channel_id', 'permissions_overides'],
+				fields: ["channel_id", "permissions_overides"],
 			},
 		);
 
@@ -317,7 +317,7 @@ export default class FetchCreateAndDeleteInvites extends Route {
 					PermissionId: override,
 				},
 				{
-					fields: ['id', 'type', 'allow_', 'deny'],
+					fields: ["id", "type", "allow_", "deny"],
 				},
 			);
 

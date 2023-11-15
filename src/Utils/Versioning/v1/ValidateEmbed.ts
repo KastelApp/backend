@@ -1,5 +1,5 @@
-import type { MainObject } from '../../Cql/Types/Message';
-import { T } from '../../TypeCheck.ts';
+import type { MainObject } from "../../Cql/Types/Message";
+import { T } from "../../TypeCheck.ts";
 
 export const ValidateEmbed = (
 	Embed: MainObject,
@@ -22,149 +22,149 @@ export const ValidateEmbed = (
 		Error: [],
 		Valid: true,
 	};
-	if (!T(Embed, 'object')) {
+	if (!T(Embed, "object")) {
 		Finished.Error.push({
-			Field: 'Embed',
-			Message: 'Embed is not an object',
-			Code: 'InvalidEmbed',
+			Field: "Embed",
+			Message: "Embed is not an object",
+			Code: "InvalidEmbed",
 		});
 	}
 
-	if (Embed.Title && !T(Embed.Title, 'string')) {
+	if (Embed.Title && !T(Embed.Title, "string")) {
 		Finished.Error.push({
-			Field: 'Title',
-			Message: 'Title is not a string',
-			Code: 'InvalidTitle',
+			Field: "Title",
+			Message: "Title is not a string",
+			Code: "InvalidTitle",
 		});
 	}
 
-	if (Embed.Description && !T(Embed.Description, 'string')) {
+	if (Embed.Description && !T(Embed.Description, "string")) {
 		Finished.Error.push({
-			Field: 'Description',
-			Message: 'Description is not a string',
-			Code: 'InvalidDescription',
+			Field: "Description",
+			Message: "Description is not a string",
+			Code: "InvalidDescription",
 		});
 	}
 
-	if (Embed.Color && !T(Embed.Color, 'number')) {
+	if (Embed.Color && !T(Embed.Color, "number")) {
 		Finished.Error.push({
-			Field: 'Color',
-			Message: 'Color is not a number',
-			Code: 'InvalidColor',
+			Field: "Color",
+			Message: "Color is not a number",
+			Code: "InvalidColor",
 		});
 	}
 
-	if (Embed.Url && !T(Embed.Url, 'string')) {
+	if (Embed.Url && !T(Embed.Url, "string")) {
 		Finished.Error.push({
-			Field: 'Url',
-			Message: 'Url is not a string',
-			Code: 'InvalidUrl',
+			Field: "Url",
+			Message: "Url is not a string",
+			Code: "InvalidUrl",
 		});
 	}
 
-	if (Embed.Author && !T(Embed.Author, 'object')) {
+	if (Embed.Author && !T(Embed.Author, "object")) {
 		Finished.Error.push({
-			Field: 'Author',
-			Message: 'Author is not an object',
-			Code: 'InvalidAuthor',
+			Field: "Author",
+			Message: "Author is not an object",
+			Code: "InvalidAuthor",
 		});
 	}
 
-	if (Embed.Author?.Name && !T(Embed.Author.Name, 'string')) {
+	if (Embed.Author?.Name && !T(Embed.Author.Name, "string")) {
 		Finished.Error.push({
-			Field: 'Author.Name',
-			Message: 'Author.Name is not a string',
-			Code: 'InvalidAuthorName',
+			Field: "Author.Name",
+			Message: "Author.Name is not a string",
+			Code: "InvalidAuthorName",
 		});
 	}
 
-	if (Embed.Author?.IconUrl && !T(Embed.Author.IconUrl, 'string')) {
+	if (Embed.Author?.IconUrl && !T(Embed.Author.IconUrl, "string")) {
 		Finished.Error.push({
-			Field: 'Author.IconUrl',
-			Message: 'Author.IconUrl is not a string',
-			Code: 'InvalidAuthorIconUrl',
+			Field: "Author.IconUrl",
+			Message: "Author.IconUrl is not a string",
+			Code: "InvalidAuthorIconUrl",
 		});
 	}
 
-	if (Embed.ThumbnailUrl && !T(Embed.ThumbnailUrl, 'string')) {
+	if (Embed.ThumbnailUrl && !T(Embed.ThumbnailUrl, "string")) {
 		Finished.Error.push({
-			Field: 'ThumbnailUrl',
-			Message: 'ThumbnailUrl is not a string',
-			Code: 'InvalidThumbnailUrl',
+			Field: "ThumbnailUrl",
+			Message: "ThumbnailUrl is not a string",
+			Code: "InvalidThumbnailUrl",
 		});
 	}
 
-	if (Embed.ImageUrl && !T(Embed.ImageUrl, 'string')) {
+	if (Embed.ImageUrl && !T(Embed.ImageUrl, "string")) {
 		Finished.Error.push({
-			Field: 'ImageUrl',
-			Message: 'ImageUrl is not a string',
-			Code: 'InvalidImageUrl',
+			Field: "ImageUrl",
+			Message: "ImageUrl is not a string",
+			Code: "InvalidImageUrl",
 		});
 	}
 
-	if (Embed.Footer && !T(Embed.Footer, 'object')) {
+	if (Embed.Footer && !T(Embed.Footer, "object")) {
 		Finished.Error.push({
-			Field: 'Footer',
-			Message: 'Footer is not an object',
-			Code: 'InvalidFooter',
+			Field: "Footer",
+			Message: "Footer is not an object",
+			Code: "InvalidFooter",
 		});
 	}
 
-	if (Embed.Footer?.Text && !T(Embed.Footer.Text, 'string')) {
+	if (Embed.Footer?.Text && !T(Embed.Footer.Text, "string")) {
 		Finished.Error.push({
-			Field: 'Footer.Text',
-			Message: 'Footer.Text is not a string',
-			Code: 'InvalidFooterText',
+			Field: "Footer.Text",
+			Message: "Footer.Text is not a string",
+			Code: "InvalidFooterText",
 		});
 	}
 
-	if (Embed.Footer?.Timestamp && !T(Embed.Footer.Timestamp, 'date')) {
+	if (Embed.Footer?.Timestamp && !T(Embed.Footer.Timestamp, "date")) {
 		Finished.Error.push({
-			Field: 'Footer.Timestamp',
-			Message: 'Footer.Timestamp is not an object',
-			Code: 'InvalidFooterTimestamp',
+			Field: "Footer.Timestamp",
+			Message: "Footer.Timestamp is not an object",
+			Code: "InvalidFooterTimestamp",
 		});
 	}
 
-	if (Embed.Fields && !T(Embed.Fields, 'array')) {
+	if (Embed.Fields && !T(Embed.Fields, "array")) {
 		Finished.Error.push({
-			Field: 'Fields',
-			Message: 'Fields is not an array',
-			Code: 'InvalidFields',
+			Field: "Fields",
+			Message: "Fields is not an array",
+			Code: "InvalidFields",
 		});
 	}
 
 	if (Embed.Fields) {
 		for (const Field of Embed.Fields) {
-			if (!T(Field, 'object')) {
+			if (!T(Field, "object")) {
 				Finished.Error.push({
-					Field: 'Fields',
-					Message: 'Fields is not an array of objects',
-					Code: 'InvalidFields',
+					Field: "Fields",
+					Message: "Fields is not an array of objects",
+					Code: "InvalidFields",
 				});
 			}
 
-			if (Field.Title && !T(Field.Title, 'string')) {
+			if (Field.Title && !T(Field.Title, "string")) {
 				Finished.Error.push({
-					Field: 'Field.Title',
-					Message: 'Field.Title is not a string',
-					Code: 'InvalidFieldTitle',
+					Field: "Field.Title",
+					Message: "Field.Title is not a string",
+					Code: "InvalidFieldTitle",
 				});
 			}
 
-			if (Field.Description && !T(Field.Description, 'string')) {
+			if (Field.Description && !T(Field.Description, "string")) {
 				Finished.Error.push({
-					Field: 'Field.Description',
-					Message: 'Field.Description is not a string',
-					Code: 'InvalidFieldDescription',
+					Field: "Field.Description",
+					Message: "Field.Description is not a string",
+					Code: "InvalidFieldDescription",
 				});
 			}
 
 			if (!Field.Title && !Field.Description) {
 				Finished.Error.push({
-					Field: 'Field',
-					Message: 'Field is missing a Title or Description',
-					Code: 'InvalidField',
+					Field: "Field",
+					Message: "Field is missing a Title or Description",
+					Code: "InvalidField",
 				});
 			}
 		}
@@ -181,9 +181,9 @@ export const ValidateEmbed = (
 		!Embed.Fields
 	) {
 		Finished.Error.push({
-			Field: 'Embed',
-			Message: 'Embed is missing a Title, Description, Author, ThumbnailUrl, ImageUrl, Footer, or Fields',
-			Code: 'InvalidEmbed',
+			Field: "Embed",
+			Message: "Embed is missing a Title, Description, Author, ThumbnailUrl, ImageUrl, Footer, or Fields",
+			Code: "InvalidEmbed",
 		});
 	}
 

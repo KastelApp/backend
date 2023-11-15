@@ -9,23 +9,23 @@
  * GPL 3.0 Licensed
  */
 
-import type { Request, Response } from 'express';
-import { GuildMemberFlags } from '../../../../../Constants.ts';
-import Channel from '../../../../../Middleware/Channel.ts';
-import User from '../../../../../Middleware/User.ts';
-import type App from '../../../../../Utils/Classes/App';
-import { FlagUtils } from '../../../../../Utils/Classes/BitFields/NewFlags.ts';
-import Encryption from '../../../../../Utils/Classes/Encryption.ts';
-import ErrorGen from '../../../../../Utils/Classes/ErrorGen.ts';
-import Route from '../../../../../Utils/Classes/Route.ts';
-import type { MainObject } from '../../../../../Utils/Cql/Types/Message.ts';
+import type { Request, Response } from "express";
+import { GuildMemberFlags } from "../../../../../Constants.ts";
+import Channel from "../../../../../Middleware/Channel.ts";
+import User from "../../../../../Middleware/User.ts";
+import type App from "../../../../../Utils/Classes/App";
+import { FlagUtils } from "../../../../../Utils/Classes/BitFields/NewFlags.ts";
+import Encryption from "../../../../../Utils/Classes/Encryption.ts";
+import ErrorGen from "../../../../../Utils/Classes/ErrorGen.ts";
+import Route from "../../../../../Utils/Classes/Route.ts";
+import type { MainObject } from "../../../../../Utils/Cql/Types/Message.ts";
 // import Messages from '../../../../../Utils/Cql/Types/Message.ts';
-import type PermissionsOverrides from '../../../../../Utils/Cql/Types/PermissionsOverides.ts';
-import type Roles from '../../../../../Utils/Cql/Types/Role.ts';
-import { T } from '../../../../../Utils/TypeCheck.ts';
-import { FetchMentions } from '../../../../../Utils/Versioning/v1/FetchMentions.ts';
-import PermissionHandler from '../../../../../Utils/Versioning/v1/PermissionCheck.ts';
-import { ValidateEmbed } from '../../../../../Utils/Versioning/v1/ValidateEmbed.ts';
+import type PermissionsOverrides from "../../../../../Utils/Cql/Types/PermissionsOverides.ts";
+import type Roles from "../../../../../Utils/Cql/Types/Role.ts";
+import { T } from "../../../../../Utils/TypeCheck.ts";
+import { FetchMentions } from "../../../../../Utils/Versioning/v1/FetchMentions.ts";
+import PermissionHandler from "../../../../../Utils/Versioning/v1/PermissionCheck.ts";
+import { ValidateEmbed } from "../../../../../Utils/Versioning/v1/ValidateEmbed.ts";
 
 interface Message {
 	AllowedMentions: number;
@@ -41,12 +41,12 @@ export default class FetchAndCreateMessages extends Route {
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ['GET', 'POST'];
+		this.Methods = ["GET", "POST"];
 
 		this.Middleware = [
 			User({
-				AccessType: 'LoggedIn',
-				AllowedRequesters: 'User',
+				AccessType: "LoggedIn",
+				AllowedRequesters: "User",
 				App,
 			}),
 			Channel({
@@ -55,20 +55,20 @@ export default class FetchAndCreateMessages extends Route {
 			}),
 		];
 
-		this.AllowedContentTypes = ['application/json'];
+		this.AllowedContentTypes = ["application/json"];
 
-		this.Routes = ['/'];
+		this.Routes = ["/"];
 	}
 
-	public override async Request(Req: Request<{ channelId: string; }>, Res: Response): Promise<void> {
+	public override async Request(Req: Request<{ channelId: string }>, Res: Response): Promise<void> {
 		switch (Req.methodi) {
-			case 'GET': {
+			case "GET": {
 				await this.FetchMessagesGet(Req, Res);
 
 				break;
 			}
 
-			case 'POST': {
+			case "POST": {
 				await this.CreateMessagePost(Req, Res);
 
 				break;
@@ -84,7 +84,7 @@ export default class FetchAndCreateMessages extends Route {
 
 	private async FetchMessagesGet(Req: Request, Res: Response): Promise<void> {}
 
-	private async CreateMessagePost(Req: Request<{ channelId: string; }, any, Message>, Res: Response): Promise<void> {
+	private async CreateMessagePost(Req: Request<{ channelId: string }, any, Message>, Res: Response): Promise<void> {
 		const {
 			AllowedMentions,
 			// Attachments,
@@ -96,18 +96,18 @@ export default class FetchAndCreateMessages extends Route {
 		} = Req.body;
 
 		const InvalidRequest = ErrorGen.InvalidField();
-		
-		const Member = await this.FetchMember(Req.user.Id, await this.FetchGuildId(Req.params.channelId) ?? '');
+
+		const Member = await this.FetchMember(Req.user.Id, (await this.FetchGuildId(Req.params.channelId)) ?? "");
 
 		if (!Member) return; // will never happen
 
 		const FoundRoles = await this.FetchRoles(Member.Roles);
 		const FoundChannel = await this.FetchChannel(Req.params.channelId);
-		
+
 		if (!FoundChannel) return; // will never happen
-		
-		const FetchedPermissions = await this.FetchPermissionOverides(FoundChannel.PermissionsOverrides ?? [])
-		
+
+		const FetchedPermissions = await this.FetchPermissionOverides(FoundChannel.PermissionsOverrides ?? []);
+
 		const MemberFlags = new FlagUtils<typeof GuildMemberFlags>(Member.Flags, GuildMemberFlags);
 		const PermissionCheck = new PermissionHandler(
 			Req.user.Id,
@@ -127,63 +127,63 @@ export default class FetchAndCreateMessages extends Route {
 							Allow: Permission.Allow.toString(),
 							Deny: Permission.Deny.toString(),
 							Id: Permission.Id,
-							Type: Permission.Type === this.App.Constants.PermissionOverrideTypes.Role ? 'Role' : 'Member',
+							Type: Permission.Type === this.App.Constants.PermissionOverrideTypes.Role ? "Role" : "Member",
 						};
-					})
-				}
-			]
+					}),
+				},
+			],
 		);
 
-		if (!PermissionCheck.HasChannelPermission(Req.params.channelId, 'SendMessages')) {
+		if (!PermissionCheck.HasChannelPermission(Req.params.channelId, "SendMessages")) {
 			InvalidRequest.AddError({
 				Permissions: {
-					Code: 'MissingPermissions',
-					Message: 'You are missing the SendMessages permission',
+					Code: "MissingPermissions",
+					Message: "You are missing the SendMessages permission",
 				},
 			});
 		}
 
-		if (AllowedMentions && !T(AllowedMentions, 'number')) {
+		if (AllowedMentions && !T(AllowedMentions, "number")) {
 			InvalidRequest.AddError({
 				AllowedMentions: {
-					Code: 'InvalidAllowedMentions',
-					Message: 'AllowedMentions is not a number',
+					Code: "InvalidAllowedMentions",
+					Message: "AllowedMentions is not a number",
 				},
 			});
 		}
 
-		if ((!T(Content, 'string') && !Embeds) || Embeds?.length === 0) {
+		if ((!T(Content, "string") && !Embeds) || Embeds?.length === 0) {
 			InvalidRequest.AddError({
 				Content: {
-					Code: 'InvalidMessage',
-					Message: 'You cannot send an empty message',
+					Code: "InvalidMessage",
+					Message: "You cannot send an empty message",
 				},
 			});
 		}
 
-		if (Flags && !T(Flags, 'number')) {
+		if (Flags && !T(Flags, "number")) {
 			InvalidRequest.AddError({
 				Flags: {
-					Code: 'InvalidFlags',
-					Message: 'Flags is not a number',
+					Code: "InvalidFlags",
+					Message: "Flags is not a number",
 				},
 			});
 		}
 
-		if (Nonce && (!T(Nonce, 'string') || !this.App.Snowflake.Validate(Nonce))) {
+		if (Nonce && (!T(Nonce, "string") || !this.App.Snowflake.Validate(Nonce))) {
 			InvalidRequest.AddError({
 				Nonce: {
-					Code: 'InvalidNonce',
-					Message: 'Nonce is not a valid snowflake',
+					Code: "InvalidNonce",
+					Message: "Nonce is not a valid snowflake",
 				},
 			});
 		}
 
-		if (ReplyingTo && (!T(ReplyingTo, 'string') || !this.App.Snowflake.Validate(ReplyingTo))) {
+		if (ReplyingTo && (!T(ReplyingTo, "string") || !this.App.Snowflake.Validate(ReplyingTo))) {
 			InvalidRequest.AddError({
 				ReplyingTo: {
-					Code: 'InvalidReplyingTo',
-					Message: 'ReplyingTo is not a valid snowflake',
+					Code: "InvalidReplyingTo",
+					Message: "ReplyingTo is not a valid snowflake",
 				},
 			});
 		}
@@ -231,15 +231,15 @@ export default class FetchAndCreateMessages extends Route {
 					};
 
 					for (const EmbedError of ValidatedEmbed.Error) {
-						if (EmbedError.Field.includes('.')) {
-							const [Field, SubField] = EmbedError.Field.split('.');
+						if (EmbedError.Field.includes(".")) {
+							const [Field, SubField] = EmbedError.Field.split(".");
 
 							if (!Field || !SubField) continue;
 
 							if (!Error.Errors[Field]) {
 								Error.Errors[Field] = {
-									Code: '',
-									Message: '',
+									Code: "",
+									Message: "",
 								};
 							}
 
@@ -277,8 +277,8 @@ export default class FetchAndCreateMessages extends Route {
 		if (Flags !== this.App.Constants.MessageFlags.Normal) {
 			InvalidRequest.AddError({
 				Flags: {
-					Code: 'InvalidFlags',
-					Message: 'Flags is not a valid flag',
+					Code: "InvalidFlags",
+					Message: "Flags is not a valid flag",
 				},
 			});
 		}
@@ -288,45 +288,47 @@ export default class FetchAndCreateMessages extends Route {
 
 			return;
 		}
-		
+
 		if (Nonce) {
-			const FetchedMessage = await this.App.Cassandra.Models.Message.get({
-				Nonce: Encryption.Encrypt(Nonce),
-			}, {
-				allowFiltering: true,
-			});
-			
+			const FetchedMessage = await this.App.Cassandra.Models.Message.get(
+				{
+					Nonce: Encryption.Encrypt(Nonce),
+				},
+				{
+					allowFiltering: true,
+				},
+			);
+
 			if (FetchedMessage) {
 				console.log(FetchedMessage); // We'll send the message data again
-				
+
 				return;
 			}
 		}
-		
-		
+
 		const MessageId = this.App.Snowflake.Generate();
-		const { Channels, Roles, Users } = FetchMentions(Content ?? '');
-				
+		const { Channels, Roles, Users } = FetchMentions(Content ?? "");
+
 		const BuiltMessage = {
 			AllowedMentions: AllowedMentions ?? 0,
 			Attachments: [],
 			AuthorId: Encryption.Encrypt(Req.user.Id),
 			ChannelId: Encryption.Encrypt(Req.params.channelId),
-			Content: Content ? Encryption.Encrypt(Content) : '',
+			Content: Content ? Encryption.Encrypt(Content) : "",
 			Embeds: Embeds ? Encryption.CompleteEncryption(Embeds) : [],
 			Flags: Flags ?? this.App.Constants.MessageFlags.Normal,
 			MentionChannels: Channels.map((Channel) => Encryption.Encrypt(Channel)),
 			MentionRoles: Roles.map((Role) => Encryption.Encrypt(Role)),
 			Mentions: Users.map((User) => Encryption.Encrypt(User)),
 			MessageId: Encryption.Encrypt(MessageId),
-			Nonce: Nonce ? Encryption.Encrypt(Nonce) : '',
-			ReplyingTo: ReplyingTo ? Encryption.Encrypt(ReplyingTo) : '',
-			UpdatedDate: null
+			Nonce: Nonce ? Encryption.Encrypt(Nonce) : "",
+			ReplyingTo: ReplyingTo ? Encryption.Encrypt(ReplyingTo) : "",
+			UpdatedDate: null,
 		};
-		
+
 		console.log(BuiltMessage);
 	}
-	
+
 	private async FetchMember(UserId: string, GuildId: string) {
 		const Member = await this.App.Cassandra.Models.GuildMember.get(
 			{
@@ -364,19 +366,17 @@ export default class FetchAndCreateMessages extends Route {
 
 		return NonNullRoles.map((Role) => Encryption.CompleteDecryption(Role));
 	}
-	
+
 	private async FetchChannel(ChannelId: string) {
-		const Channel = await this.App.Cassandra.Models.Channel.get(
-			{
-				ChannelId: Encryption.Encrypt(ChannelId),
-			}
-		);
+		const Channel = await this.App.Cassandra.Models.Channel.get({
+			ChannelId: Encryption.Encrypt(ChannelId),
+		});
 
 		if (!Channel) return null;
 
 		return Encryption.CompleteDecryption(Channel);
 	}
-	
+
 	private async FetchPermissionOverides(PermissionOverrides: string[]) {
 		const PermissionOveridePromises = [];
 
@@ -398,15 +398,15 @@ export default class FetchAndCreateMessages extends Route {
 
 		return NonNullPermissionOverides.map((PermissionOveride) => Encryption.CompleteDecryption(PermissionOveride));
 	}
-	
+
 	private async FetchGuildId(ChannelId: string) {
 		const Channel = await this.App.Cassandra.Models.Channel.get(
 			{
 				ChannelId: Encryption.Encrypt(ChannelId),
 			},
 			{
-				fields: ['guild_id']
-			}
+				fields: ["guild_id"],
+			},
 		);
 
 		if (!Channel) return null;

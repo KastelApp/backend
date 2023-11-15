@@ -9,16 +9,17 @@
  * GPL 3.0 Licensed
  */
 
-import type { Request, Response } from 'express';
-import Constants from '../../Constants.ts';
-import User from '../../Middleware/User.ts';
-import type App from '../../Utils/Classes/App';
-import VerifyFields from '../../Utils/Classes/BitFields/VerifyFlags.ts';
-import Encryption from '../../Utils/Classes/Encryption.ts';
-import ErrorGen from '../../Utils/Classes/ErrorGen.ts';
-import LinkGeneration from '../../Utils/Classes/LinkGeneration.ts';
-import Route from '../../Utils/Classes/Route.ts';
-import type { User as UserType, VerificationLink } from '../../Utils/Cql/Types/index.ts';
+import type { Request, Response } from "express";
+import Constants from "../../Constants.ts";
+import User from "../../Middleware/User.ts";
+import type App from "../../Utils/Classes/App";
+import VerifyFields from "../../Utils/Classes/BitFields/VerifyFlags.ts";
+import Encryption from "../../Utils/Classes/Encryption.ts";
+import ErrorGen from "../../Utils/Classes/ErrorGen.ts";
+import LinkGeneration from "../../Utils/Classes/LinkGeneration.ts";
+import Route from "../../Utils/Classes/Route.ts";
+import type { User as UserType, VerificationLink } from "../../Utils/Cql/Types/index.ts";
+import { T } from "../../Utils/TypeCheck.ts";
 
 interface ForgotBody {
 	Email: string;
@@ -28,33 +29,33 @@ export default class ForgotPassword extends Route {
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ['POST'];
+		this.Methods = ["POST"];
 
 		this.Middleware = [
 			User({
-				AccessType: 'LoggedOut',
-				AllowedRequesters: 'User',
+				AccessType: "LoggedOut",
+				AllowedRequesters: "User",
 				App,
 			}),
 		];
 
-		this.AllowedContentTypes = ['application/json'];
+		this.AllowedContentTypes = ["application/json"];
 
-		this.Routes = ['/forgot'];
+		this.Routes = ["/forgot"];
 	}
 
 	public override async Request(Req: Request<any, any, ForgotBody>, Res: Response) {
 		const { Email } = Req.body;
 
-		if (typeof Email !== 'string') {
+		if (!T(Email, "string")) {
 			const Error = ErrorGen.MissingAuthField();
 
 			this.App.Logger.debug("[Forgot Password] Email wasn't provided :(");
 
 			Error.AddError({
 				Email: {
-					Code: 'InvalidEmail',
-					Message: 'The Email provided is Invalid, Missing or already in use',
+					Code: "InvalidEmail",
+					Message: "The Email provided is Invalid, Missing or already in use",
 				},
 			});
 
@@ -72,8 +73,8 @@ export default class ForgotPassword extends Route {
 
 			Error.AddError({
 				Email: {
-					Code: 'InvalidEmail',
-					Message: 'The Email provided is Invalid, Missing or already in use',
+					Code: "InvalidEmail",
+					Message: "The Email provided is Invalid, Missing or already in use",
 				},
 			});
 
@@ -91,8 +92,8 @@ export default class ForgotPassword extends Route {
 		this.App.Logger.debug(`[Forgot Password] The Forgot Password code is ${Code}`);
 
 		if (this.App.NoReply) {
-			await this.App.NoReply.SendEmail(FetchedUser.Email, 'Forgot Password', `Forgot Password Code: ${Code}`).catch(
-				(error) => this.App.Logger.error(`Failed to send the email`, error),
+			await this.App.NoReply.SendEmail(FetchedUser.Email, "Forgot Password", `Forgot Password Code: ${Code}`).catch(
+				(error) => this.App.Logger.error("Failed to send the email", error),
 			);
 		}
 
@@ -109,7 +110,7 @@ export default class ForgotPassword extends Route {
 
 		return Encryption.CompleteDecryption({
 			...FetchedUser,
-			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
+			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : "0",
 		});
 	}
 

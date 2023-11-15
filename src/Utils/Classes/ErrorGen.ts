@@ -1,4 +1,4 @@
-import { HTTPErrors } from '@kastelll/util';
+import { HTTPErrors } from "@kastelll/util";
 
 const ErrorGen = {
 	/*
@@ -137,7 +137,7 @@ const ErrorGen = {
 	 * The channel provided was invalid
 	 */
 	UnknownChannel: () => {
-		return new HTTPErrors(4_022);		
+		return new HTTPErrors(4_022);
 	},
 	/*
 	 * Used when the resource is unavailable (503 error)

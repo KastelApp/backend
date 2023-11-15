@@ -8,6 +8,9 @@
 		"@typescript-eslint/consistent-type-definitions": ["error", "interface"],
 		"require-atomic-updates": "off",
 		"unicorn/no-unsafe-regex": "off",
-		"no-restricted-globals": "off" // off due to bun
+		"no-restricted-globals": "off", // off due to bun
+		"tsdoc/syntax": "off",
+		"quotes": ["error", "double", { "avoidEscape": true }],
+		"id-length": "off"
 	}
 }

@@ -3,7 +3,7 @@
 /* eslint-disable promise/prefer-await-to-callbacks */
 /* eslint-disable n/prefer-global/process */
 
-import Logger from './Logger.ts';
+import Logger from "./Logger.ts";
 
 interface Command {
 	// like waffles syrup butter
@@ -22,18 +22,18 @@ interface Command {
 		name: string;
 		optional?: boolean;
 		shortName: string;
-		value: 'boolean' | 'string';
+		value: "boolean" | "string";
 	}[];
 	name: string;
 }
 
 const BuiltInHelp: Command = {
-	name: 'help',
-	description: 'Shows info about the repl & commands',
+	name: "help",
+	description: "Shows info about the repl & commands",
 	args: [
 		{
-			name: 'command',
-			description: 'Get more specific info about a command',
+			name: "command",
+			description: "Get more specific info about a command",
 			optional: true,
 		},
 	],
@@ -41,11 +41,11 @@ const BuiltInHelp: Command = {
 	cb(args, _, repl) {
 		if (args.length === 0) {
 			for (const cmd of repl.cmds) {
-				console.log(`${Logger.colorize('#f3432c', 'Command:')} ${cmd.name} - ${cmd.description}`);
+				console.log(`${Logger.colorize("#f3432c", "Command:")} ${cmd.name} - ${cmd.description}`);
 
 				for (const arg of cmd.args) {
 					console.log(
-						`${Logger.colorize('#f39d2c', 'Argument:')} ${arg.optional ? `[${arg.name}]` : `<${arg.name}>`} - ${
+						`${Logger.colorize("#f39d2c", "Argument:")} ${arg.optional ? `[${arg.name}]` : `<${arg.name}>`} - ${
 							arg.description
 						}`,
 					);
@@ -53,23 +53,23 @@ const BuiltInHelp: Command = {
 
 				for (const flag of cmd.flags) {
 					console.log(
-						`${Logger.colorize('#f3c12c', 'Flag:')} ${flag.optional ? `[${flag.name}]` : `<${flag.name}>`} - ${
+						`${Logger.colorize("#f3c12c", "Flag:")} ${flag.optional ? `[${flag.name}]` : `<${flag.name}>`} - ${
 							flag.description
 						}`,
 					);
 				}
 
-				console.log(`\n`);
+				console.log("\n");
 			}
 		} else {
 			const cmd = repl.cmds.find((cmd) => cmd.name === args[0]);
 
 			if (cmd) {
-				console.log(`${Logger.colorize('#f3432c', 'Command:')} ${cmd.name} - ${cmd.description}`);
+				console.log(`${Logger.colorize("#f3432c", "Command:")} ${cmd.name} - ${cmd.description}`);
 
 				for (const arg of cmd.args) {
 					console.log(
-						`${Logger.colorize('#f39d2c', 'Argument:')} ${arg.optional ? `[${arg.name}]` : `<${arg.name}>`} - ${
+						`${Logger.colorize("#f39d2c", "Argument:")} ${arg.optional ? `[${arg.name}]` : `<${arg.name}>`} - ${
 							arg.description
 						}`,
 					);
@@ -77,19 +77,19 @@ const BuiltInHelp: Command = {
 
 				for (const flag of cmd.flags) {
 					console.log(
-						`${Logger.colorize('#f3c12c', 'Flag:')} ${flag.optional ? `[${flag.name}]` : `<${flag.name}>`} - ${
+						`${Logger.colorize("#f3c12c", "Flag:")} ${flag.optional ? `[${flag.name}]` : `<${flag.name}>`} - ${
 							flag.description
 						}`,
 					);
 				}
 
-				console.log(`\n`);
+				console.log("\n");
 			} else {
 				console.log(`Unknown command ${args[0]}`);
 			}
 		}
 
-		console.log(`<item> - required\n[item] - optional`);
+		console.log("<item> - required\n[item] - optional");
 	},
 };
 
@@ -112,9 +112,9 @@ class Repl {
 		this.start = start;
 
 		process.stdin.setRawMode(true);
-		process.stdin.setEncoding('utf8');
+		process.stdin.setEncoding("utf8");
 
-		this.currentString = '';
+		this.currentString = "";
 
 		this.originalConsoleLog = console.log;
 
@@ -124,28 +124,28 @@ class Repl {
 
 		this.historyIndex = 0; // where we are at, if its 0 it means the current string = currentString
 
-		this.oldString = '';
+		this.oldString = "";
 	}
 
 	public startRepl() {
-		process.stdin.on('data', (key: string) => {
-			if (key === '\u0003') {
+		process.stdin.on("data", (key: string) => {
+			if (key === "\u0003") {
 				process.exit();
 			}
 
 			const booleans = {
-				enter: key === '\u000D',
-				backspace: key === '\u007F',
-				tab: key === '\t',
-				upKey: key === '\u001B\u005B\u0041',
-				downKey: key === '\u001B\u005B\u0042',
+				enter: key === "\u000D",
+				backspace: key === "\u007F",
+				tab: key === "\t",
+				upKey: key === "\u001B\u005B\u0041",
+				downKey: key === "\u001B\u005B\u0042",
 			};
 
 			if (!booleans.enter && !booleans.backspace && !booleans.tab && !booleans.upKey && !booleans.downKey) {
 				this.currentString += key;
 			} else if (booleans.backspace) {
 				if (this.currentString.length === 0) {
-					process.stdout.write('\u0007');
+					process.stdout.write("\u0007");
 				} else {
 					this.currentString = this.currentString.slice(0, -1);
 				}
@@ -169,7 +169,7 @@ class Repl {
 				if (!cmd) {
 					console.log(
 						`Unknown command ${command}${
-							command ? `, did you mean one of these? "${this.getSimilarCommands(command ?? '').join('", "')}"` : '.'
+							command ? `, did you mean one of these? "${this.getSimilarCommands(command ?? "").join('", "')}"` : "."
 						}`,
 					);
 				}
@@ -188,29 +188,29 @@ class Repl {
 						}
 
 						if (
-							(flag.value === 'boolean' && typeof flagValue !== 'boolean') ||
-							(flag.value === 'string' && typeof flagValue !== 'string')
+							(flag.value === "boolean" && typeof flagValue !== "boolean") ||
+							(flag.value === "string" && typeof flagValue !== "string")
 						) {
 							return true;
 						}
 
 						return Boolean(
-							typeof flagValue === 'string' &&
+							typeof flagValue === "string" &&
 								((flag.minLength && flagValue.length < flag.minLength) ||
 									(flag.maxLength && flagValue.length > flag.maxLength)),
 						);
 					});
 
 					if (missingArgs.length > 0) {
-						console.log(`Missing arguments: ${missingArgs.map((arg) => arg.name).join(', ')}`);
+						console.log(`Missing arguments: ${missingArgs.map((arg) => arg.name).join(", ")}`);
 					}
 
 					if (missingFlags.length > 0) {
-						console.log(`Missing flags: ${missingFlags.map((flag) => flag.name).join(', ')}`);
+						console.log(`Missing flags: ${missingFlags.map((flag) => flag.name).join(", ")}`);
 					}
 
 					if (invalidFlags.length > 0) {
-						console.log(`Invalid flags: ${invalidFlags.map((flag) => flag.name).join(', ')}`);
+						console.log(`Invalid flags: ${invalidFlags.map((flag) => flag.name).join(", ")}`);
 					}
 
 					if (missingArgs.length === 0 && missingFlags.length === 0) {
@@ -218,7 +218,7 @@ class Repl {
 					}
 				}
 
-				this.currentString = '';
+				this.currentString = "";
 			} else if (booleans.upKey) {
 				if (this.historyIndex === 0) {
 					this.oldString = this.currentString;
@@ -262,7 +262,7 @@ class Repl {
 	}
 
 	public onTab() {
-		const isTypingCommand = this.currentString.split(' ').length === 1;
+		const isTypingCommand = this.currentString.split(" ").length === 1;
 
 		if (isTypingCommand) {
 			const cmds = this.cmds.map((cmd) => cmd.name);
@@ -277,8 +277,8 @@ class Repl {
 			}
 
 			const mostMatching = filteredCmds.sort((a, b) => {
-				const aMatches = a.split('').filter((char, index) => char === this.currentString[index]).length;
-				const bMatches = b.split('').filter((char, index) => char === this.currentString[index]).length;
+				const aMatches = a.split("").filter((char, index) => char === this.currentString[index]).length;
+				const bMatches = b.split("").filter((char, index) => char === this.currentString[index]).length;
 
 				return bMatches - aMatches;
 			});
@@ -288,7 +288,7 @@ class Repl {
 			const command = this.getCmdName();
 
 			if (!command) {
-				process.stdout.write('\u0007');
+				process.stdout.write("\u0007");
 
 				return this.currentString;
 			}
@@ -296,7 +296,7 @@ class Repl {
 			const cmd = this.cmds.find((cmd) => cmd.name === command);
 
 			if (!cmd) {
-				process.stdout.write('\u0007');
+				process.stdout.write("\u0007");
 
 				return this.currentString;
 			}
@@ -309,7 +309,7 @@ class Repl {
 				return this.currentString;
 			}
 
-			const filteredFlags = cmd.flags.filter((flag) => flag.name.startsWith(flagNames[flagNames.length - 1] ?? ''));
+			const filteredFlags = cmd.flags.filter((flag) => flag.name.startsWith(flagNames[flagNames.length - 1] ?? ""));
 
 			if (filteredFlags.length === 0) {
 				return this.currentString;
@@ -323,10 +323,10 @@ class Repl {
 
 			const mostMatching = filteredFlags.sort((a, b) => {
 				const aMatches = a.name
-					.split('')
+					.split("")
 					.filter((char, index) => char === flagNames[flagNames.length - 1]?.[index]).length;
 				const bMatches = b.name
-					.split('')
+					.split("")
 					.filter((char, index) => char === flagNames[flagNames.length - 1]?.[index]).length;
 
 				return bMatches - aMatches;
@@ -351,7 +351,7 @@ class Repl {
 	}
 
 	private getCmdName() {
-		const args = this.currentString.split(' ');
+		const args = this.currentString.split(" ");
 
 		return args.shift();
 	}
@@ -369,7 +369,7 @@ class Repl {
 
 		let match;
 		while ((match = regex.exec(this.currentString)) !== null) {
-			const flagName = match[1] ?? 'UNKNOWN';
+			const flagName = match[1] ?? "UNKNOWN";
 			const flagValue = match[2]?.trim() ?? true;
 			flags[flagName] = flagValue;
 		}
@@ -382,16 +382,16 @@ class Repl {
 
 		for (const flagName in flags) {
 			// protects against prototype pollution
-			if (['hasOwnProperty', 'propertyIsEnumerable'].includes(flagName)) {
+			if (["hasOwnProperty", "propertyIsEnumerable"].includes(flagName)) {
 				continue;
 			}
 
 			const flag = cmd.flags.find((flag) => flag.name === flagName || flag.shortName === flagName);
 
 			if (flag) {
-				if (flag.value === 'string' && typeof flags[flagName] !== 'string') {
-					newFlags[flag.name] = '';
-				} else if (flag.value === 'boolean' && typeof flags[flagName] !== 'boolean') {
+				if (flag.value === "string" && typeof flags[flagName] !== "string") {
+					newFlags[flag.name] = "";
+				} else if (flag.value === "boolean" && typeof flags[flagName] !== "boolean") {
 					newFlags[flag.name] = true;
 				} else {
 					newFlags[flag.name] = flags[flagName] ?? true;
@@ -403,7 +403,7 @@ class Repl {
 	}
 
 	private getArgs() {
-		const args = this.currentString.split(' ');
+		const args = this.currentString.split(" ");
 		const cmd = this.cmds.find((cmd) => cmd.name === args[0]);
 
 		if (!cmd) {
@@ -412,7 +412,7 @@ class Repl {
 
 		args.shift();
 
-		return args.filter((arg) => !arg.startsWith('--') && !arg.startsWith('-'));
+		return args.filter((arg) => !arg.startsWith("--") && !arg.startsWith("-"));
 	}
 
 	private getSimilarCommands(command: string) {
@@ -428,17 +428,17 @@ class Repl {
 		}
 
 		return filteredCmds.sort((a, b) => {
-			const aMatches = a.split('').filter((char, index) => char === command[index]).length;
-			const bMatches = b.split('').filter((char, index) => char === command[index]).length;
+			const aMatches = a.split("").filter((char, index) => char === command[index]).length;
+			const bMatches = b.split("").filter((char, index) => char === command[index]).length;
 
 			return bMatches - aMatches;
 		});
 	}
 
 	public endRepl() {
-		process.stdin.removeAllListeners('data');
+		process.stdin.removeAllListeners("data");
 		process.stdin.setRawMode(false);
-		process.stdin.setEncoding('utf8');
+		process.stdin.setEncoding("utf8");
 
 		console.log = this.originalConsoleLog;
 	}

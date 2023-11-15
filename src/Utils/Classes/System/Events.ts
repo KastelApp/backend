@@ -1,9 +1,9 @@
 /* eslint-disable id-length */
-import type { types } from '@kastelll/cassandra-driver';
-import type { ExpressUser } from '../../../Types/index.ts';
-import type { PermissionOverride } from '../../Cql/Types/index.ts';
-import { OpCodes } from '../WsUtils.ts';
-import type { SystemSocket } from './SystemSocket';
+import type { types } from "@kastelll/cassandra-driver";
+import type { ExpressUser } from "../../../Types/index.ts";
+import type { PermissionOverride } from "../../Cql/Types/index.ts";
+import { OpCodes } from "../WsUtils.ts";
+import type { SystemSocket } from "./SystemSocket";
 
 class Events {
 	public SendEvents: boolean;
@@ -173,7 +173,7 @@ class Events {
 	}
 
 	public RelationshipUpdate(Data: {
-		Causer: Omit<ExpressUser, 'FlagsUtil' | 'Token'>;
+		Causer: Omit<ExpressUser, "FlagsUtil" | "Token">;
 		To: {
 			Flags: number;
 			User: {
