@@ -217,7 +217,7 @@ export default class FetchAndJoinInvite extends Route {
 				GuildId: Encryption.Encrypt(GuildId),
 			},
 			{
-				fields: ["name", "features", "description"],
+				fields: ["name", "features", "description", "icon", "owner_id"],
 			},
 		);
 
@@ -228,6 +228,8 @@ export default class FetchAndJoinInvite extends Route {
 			Name: Guild.Name,
 			Description: Guild.Description.length === 0 ? null : Guild.Description,
 			Features: Guild.Features ?? [],
+			OwnerId: Guild.OwnerId,
+			Icon: Guild.Icon.length === 0 ? null : Guild.Icon,
 		});
 	}
 
