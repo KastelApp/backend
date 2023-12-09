@@ -144,7 +144,7 @@ export default class FetchAndJoinInvite extends Route {
 		
 		this.App.SystemSocket.Events.GuildJoin({
 			GuildId: Encryption.Decrypt(Invite.GuildId),
-			UserId: Encryption.Decrypt(Req.user.Id)
+			UserId: Req.user.Id
 		})
 		
 		Res.send(Guild);
