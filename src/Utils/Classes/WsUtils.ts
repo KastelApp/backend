@@ -32,6 +32,7 @@ const OpCodes = {
 	DeleteSession: 30,
 	SelfUpdate: 31,
 	RelationshipUpdate: 32,
+	GuildJoin: 34 // private
 };
 
 const SystemOpCodes = {

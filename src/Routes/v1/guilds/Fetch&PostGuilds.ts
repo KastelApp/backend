@@ -109,7 +109,7 @@ export default class Guilds extends Route {
 	}
 
 	private async FetchGuilds(
-		Req: Request<any, any, any, { after?: string; before?: string; include?: string; limit?: string }>,
+		Req: Request<any, any, any, { after?: string; before?: string; include?: string; limit?: string; }>,
 		Res: Response,
 	): Promise<void> {
 		const { include, after, before, limit } = Req.query;

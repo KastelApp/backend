@@ -279,6 +279,22 @@ class Events {
 
 		return StringifiedPayload;
 	}
+	
+	public GuildJoin(Data: {
+		GuildId: string;
+		UserId: string;
+	}) {
+		const StringifiedPayload = JSON.stringify({
+			Op: OpCodes.GuildJoin,
+			D: Data,
+		});
+
+		if (this.SendEvents) {
+			this.SystemSocket.Ws?.send(StringifiedPayload);
+		}
+
+		return StringifiedPayload;
+	}
 }
 
 export default Events;
