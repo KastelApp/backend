@@ -9,7 +9,7 @@
  * GPL 3.0 Licensed
  */
 
-import type { PrivateFlags } from "../Constants.ts";
+import type { Permissions, PrivateFlags } from "../Constants.ts";
 import type App from "../Utils/Classes/App.ts";
 
 export type Methods =
@@ -46,7 +46,12 @@ export interface UserMiddleware {
 
 export interface GuildMiddleware {
 	App: App;
+	PermissionsRequired?:  (keyof typeof Permissions | "Owner")[]
 	Required: boolean;
+}
+
+export interface TwofaMiddleware {
+	App: App;
 }
 
 export interface Captcha {
