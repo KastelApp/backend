@@ -9,28 +9,28 @@
  * GPL 3.0 Licensed
  */
 
-import type { Request, Response } from 'express';
-import { GuildMemberFlags } from '../../../../../Constants.ts';
-import Guild from '../../../../../Middleware/Guild.ts';
-import User from '../../../../../Middleware/User.ts';
-import type App from '../../../../../Utils/Classes/App.ts';
-import { FlagUtils } from '../../../../../Utils/Classes/BitFields/NewFlags.ts';
-import Encryption from '../../../../../Utils/Classes/Encryption.ts';
-import ErrorGen from '../../../../../Utils/Classes/ErrorGen.ts';
-import Route from '../../../../../Utils/Classes/Route.ts';
-import type { Ban as BanBody, Role as Roles } from '../../../../../Utils/Cql/Types/index.ts';
-import PermissionHandler from '../../../../../Utils/Versioning/v1/PermissionCheck.ts';
+import type { Request, Response } from "express";
+import { GuildMemberFlags } from "../../../../../Constants.ts";
+import Guild from "../../../../../Middleware/Guild.ts";
+import User from "../../../../../Middleware/User.ts";
+import type App from "../../../../../Utils/Classes/App.ts";
+import { FlagUtils } from "../../../../../Utils/Classes/BitFields/NewFlags.ts";
+import Encryption from "../../../../../Utils/Classes/Encryption.ts";
+import ErrorGen from "../../../../../Utils/Classes/ErrorGen.ts";
+import Route from "../../../../../Utils/Classes/Route.ts";
+import type { Ban as BanBody, Role as Roles } from "../../../../../Utils/Cql/Types/index.ts";
+import PermissionHandler from "../../../../../Utils/Versioning/v1/PermissionCheck.ts";
 
 export default class FetchAndCreateAndRemoveBan extends Route {
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ['DELETE', 'GET', 'POST'];
+		this.Methods = ["DELETE", "GET", "POST"];
 
 		this.Middleware = [
 			User({
-				AccessType: 'LoggedIn',
-				AllowedRequesters: 'User',
+				AccessType: "LoggedIn",
+				AllowedRequesters: "User",
 				App,
 			}),
 			Guild({
@@ -39,20 +39,20 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 			}),
 		];
 
-		this.AllowedContentTypes = ['application/json'];
+		this.AllowedContentTypes = ["application/json"];
 
-		this.Routes = ['/'];
+		this.Routes = ["/"];
 	}
 
 	public override async Request(Req: Request<{ guildId: string; userId: string }>, Res: Response) {
 		switch (Req.methodi) {
-			case 'GET': {
+			case "GET": {
 				await this.FetchBan(Req, Res);
 				break;
 			}
 
-			case 'POST': {
-				if (Req.path.endsWith('/fetch')) {
+			case "POST": {
+				if (Req.path.endsWith("/fetch")) {
 					Req.fourohfourit();
 					break;
 				}
@@ -61,8 +61,8 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 				break;
 			}
 
-			case 'DELETE': {
-				if (Req.path.endsWith('/fetch')) {
+			case "DELETE": {
+				if (Req.path.endsWith("/fetch")) {
 					Req.fourohfourit();
 					break;
 				}
@@ -98,13 +98,13 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 			}),
 		);
 
-		if (!PermissionCheck.HasAnyRole('ManageBans')) {
+		if (!PermissionCheck.HasAnyRole("ManageBans")) {
 			const MissingPermissions = ErrorGen.MissingPermissions();
 
 			MissingPermissions.AddError({
 				Permissions: {
-					Code: 'MissingPermissions',
-					Message: 'You are missing the permissions to do this action.',
+					Code: "MissingPermissions",
+					Message: "You are missing the permissions to do this action.",
 				},
 			});
 
@@ -148,13 +148,13 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 			}),
 		);
 
-		if (!PermissionCheck.HasAnyRole('BanMembers')) {
+		if (!PermissionCheck.HasAnyRole("BanMembers")) {
 			const MissingPermissions = ErrorGen.MissingPermissions();
 
 			MissingPermissions.AddError({
 				Permissions: {
-					Code: 'MissingPermissions',
-					Message: 'You are missing the permissions to do this action.',
+					Code: "MissingPermissions",
+					Message: "You are missing the permissions to do this action.",
 				},
 			});
 
@@ -200,13 +200,13 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 			}),
 		);
 
-		if (!PermissionCheck.HasAnyRole('ManageBans')) {
+		if (!PermissionCheck.HasAnyRole("ManageBans")) {
 			const MissingPermissions = ErrorGen.MissingPermissions();
 
 			MissingPermissions.AddError({
 				Permissions: {
-					Code: 'MissingPermissions',
-					Message: 'You are missing the permissions to do this action.',
+					Code: "MissingPermissions",
+					Message: "You are missing the permissions to do this action.",
 				},
 			});
 
@@ -223,8 +223,8 @@ export default class FetchAndCreateAndRemoveBan extends Route {
 
 			Error.AddError({
 				Permissions: {
-					Code: 'NotFound',
-					Message: 'The user is not banned from this guild.',
+					Code: "NotFound",
+					Message: "The user is not banned from this guild.",
 				},
 			});
 

@@ -47,7 +47,7 @@ export default class DeleteGuild extends Route {
 	}
 
 	public override async Request(Req: Request<{ guildId: string }>, Res: Response) {		
-		const Guild = await this.FetchGuild(Req.params.guildId);
+		const Guild = await this.FetchGuild(Encryption.Encrypt(Req.params.guildId));
 		
 		if (!Guild) {
 			Res.status(500).send("Internal Server Error :(");
