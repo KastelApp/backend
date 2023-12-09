@@ -9,11 +9,11 @@
  * GPL 3.0 Licensed
  */
 
-import type { Request, Response } from 'express';
-import User from '../../Middleware/User.ts';
-import type App from '../../Utils/Classes/App';
-import Encryption from '../../Utils/Classes/Encryption.ts';
-import Route from '../../Utils/Classes/Route.ts';
+import type { Request, Response } from "express";
+import User from "../../Middleware/User.ts";
+import type App from "../../Utils/Classes/App";
+import Encryption from "../../Utils/Classes/Encryption.ts";
+import Route from "../../Utils/Classes/Route.ts";
 
 interface Tokens {
 	CreatedDate: Date;
@@ -27,19 +27,19 @@ export default class Logout extends Route {
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ['DELETE'];
+		this.Methods = ["DELETE"];
 
 		this.Middleware = [
 			User({
-				AccessType: 'LoggedIn',
-				AllowedRequesters: 'User',
+				AccessType: "LoggedIn",
+				AllowedRequesters: "User",
 				App,
 			}),
 		];
 
 		this.AllowedContentTypes = [];
 
-		this.Routes = ['/logout'];
+		this.Routes = ["/logout"];
 	}
 
 	public override async Request(Req: Request, Res: Response) {
@@ -48,7 +48,7 @@ export default class Logout extends Route {
 		if (Tokens.length === 0) {
 			this.App.Logger.debug(`Weird, No sessions found for the user? ID: ${Req.user.Id}`);
 
-			Res.status(500).send('Internal Server Error :(');
+			Res.status(500).send("Internal Server Error :(");
 
 			return;
 		}
@@ -58,7 +58,7 @@ export default class Logout extends Route {
 		if (!FoundSession) {
 			this.App.Logger.debug(`Weird, No session found for the user? ID: ${Req.user.Id}`);
 
-			Res.status(500).send('Internal Server Error :(');
+			Res.status(500).send("Internal Server Error :(");
 
 			return;
 		}
@@ -84,7 +84,7 @@ export default class Logout extends Route {
 				UserId: Encryption.Encrypt(UserId),
 			},
 			{
-				fields: ['tokens'],
+				fields: ["tokens"],
 			},
 		);
 

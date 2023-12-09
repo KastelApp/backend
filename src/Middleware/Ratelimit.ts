@@ -9,7 +9,7 @@
  * GPL 3.0 Licensed
  */
 
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from "express";
 
 // Notes, This is a User Based **AND** IP Based Rate limiter.
 // Changing your IP and using the same account will not let you bypass rate limits

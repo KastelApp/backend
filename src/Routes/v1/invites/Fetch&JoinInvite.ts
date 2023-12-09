@@ -9,15 +9,15 @@
  * GPL 3.0 Licensed
  */
 
-import type { Request, Response } from 'express';
-import User from '../../../Middleware/User.ts';
-import type App from '../../../Utils/Classes/App.ts';
-import FlagFields from '../../../Utils/Classes/BitFields/Flags.ts';
-import GuildMemberFlags from '../../../Utils/Classes/BitFields/GuildMember.ts';
-import Encryption from '../../../Utils/Classes/Encryption.ts';
-import ErrorGen from '../../../Utils/Classes/ErrorGen.ts';
-import Route from '../../../Utils/Classes/Route.ts';
-import type { GuildMember } from '../../../Utils/Cql/Types/index.ts';
+import type { Request, Response } from "express";
+import User from "../../../Middleware/User.ts";
+import type App from "../../../Utils/Classes/App.ts";
+import FlagFields from "../../../Utils/Classes/BitFields/Flags.ts";
+import GuildMemberFlags from "../../../Utils/Classes/BitFields/GuildMember.ts";
+import Encryption from "../../../Utils/Classes/Encryption.ts";
+import ErrorGen from "../../../Utils/Classes/ErrorGen.ts";
+import Route from "../../../Utils/Classes/Route.ts";
+import type { GuildMember } from "../../../Utils/Cql/Types/index.ts";
 
 interface UserObject {
 	Avatar: string | null;
@@ -49,30 +49,30 @@ export default class FetchAndJoinInvite extends Route {
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ['GET', 'PUT'];
+		this.Methods = ["GET", "PUT"];
 
 		this.Middleware = [
 			User({
-				AccessType: 'LoggedIn',
-				AllowedRequesters: 'User',
+				AccessType: "LoggedIn",
+				AllowedRequesters: "User",
 				App,
 			}),
 		];
 
 		this.AllowedContentTypes = [];
 
-		this.Routes = ['/:inviteCode'];
+		this.Routes = ["/:inviteCode"];
 	}
 
 	public override async Request(Req: Request<{ inviteCode: string }>, Res: Response) {
 		switch (Req.methodi) {
-			case 'PUT': {
+			case "PUT": {
 				await this.JoinInvite(Req, Res);
 
 				break;
 			}
 
-			case 'GET': {
+			case "GET": {
 				await this.FetchInviteReq(Req, Res);
 
 				break;
@@ -94,8 +94,8 @@ export default class FetchAndJoinInvite extends Route {
 		if (!Invite) {
 			Error.AddError({
 				Invite: {
-					Code: 'InvalidInvite',
-					Message: 'The Invite you provided was invalid, missing or you are banned from the server.',
+					Code: "InvalidInvite",
+					Message: "The Invite you provided was invalid, missing or you are banned from the server.",
 				},
 			});
 
@@ -110,11 +110,11 @@ export default class FetchAndJoinInvite extends Route {
 		if (Member) {
 			const MemberFlags = new GuildMemberFlags(Member.Flags);
 
-			if (MemberFlags.hasOneArray(['In', 'Banned'])) {
+			if (MemberFlags.hasOneArray(["In", "Banned"])) {
 				Error.AddError({
 					Invite: {
-						Code: 'InvalidInvite',
-						Message: 'The Invite you provided was invalid, missing or you are banned from the server.',
+						Code: "InvalidInvite",
+						Message: "The Invite you provided was invalid, missing or you are banned from the server.",
 					},
 				});
 
@@ -128,7 +128,7 @@ export default class FetchAndJoinInvite extends Route {
 			Flags: this.App.Constants.GuildMemberFlags.In,
 			GuildId: Encryption.Encrypt(Invite.GuildId),
 			JoinedAt: new Date(),
-			Nickname: '',
+			Nickname: "",
 			Roles: [Encryption.Encrypt(Invite.GuildId)],
 			Timeouts: [],
 			UserId: Encryption.Encrypt(Req.user.Id),
@@ -153,8 +153,8 @@ export default class FetchAndJoinInvite extends Route {
 		if (!Invite) {
 			Error.AddError({
 				Invite: {
-					Code: 'InvalidInvite',
-					Message: 'The Invite you provided was invalid, missing or you are banned from the server.',
+					Code: "InvalidInvite",
+					Message: "The Invite you provided was invalid, missing or you are banned from the server.",
 				},
 			});
 
@@ -196,7 +196,7 @@ export default class FetchAndJoinInvite extends Route {
 				ChannelId: Encryption.Encrypt(Invite.ChannelId),
 			},
 			{
-				fields: ['name', 'type'],
+				fields: ["name", "type"],
 			},
 		);
 
@@ -217,7 +217,7 @@ export default class FetchAndJoinInvite extends Route {
 				GuildId: Encryption.Encrypt(GuildId),
 			},
 			{
-				fields: ['name', 'features', 'description'],
+				fields: ["name", "features", "description"],
 			},
 		);
 
@@ -271,7 +271,7 @@ export default class FetchAndJoinInvite extends Route {
 
 		return Encryption.CompleteDecryption({
 			...FetchedUser,
-			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
+			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : "0",
 		});
 	}
 }

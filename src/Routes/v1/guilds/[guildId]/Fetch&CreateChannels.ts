@@ -9,27 +9,27 @@
  * GPL 3.0 Licensed
  */
 
-import { types } from '@kastelll/cassandra-driver';
-import type { Request, Response } from 'express';
+import { types } from "@kastelll/cassandra-driver";
+import type { Request, Response } from "express";
 import {
 	ChannelPermissions,
 	ChannelTypes,
 	GuildMemberFlags,
 	MixedPermissions,
 	PermissionOverrideTypes,
-} from '../../../../Constants.ts';
-import Guild from '../../../../Middleware/Guild.ts';
-import User from '../../../../Middleware/User.ts';
-import type App from '../../../../Utils/Classes/App';
-import FlagUtilsBInt, { FlagUtils } from '../../../../Utils/Classes/BitFields/NewFlags.ts';
-import Encryption from '../../../../Utils/Classes/Encryption.ts';
-import ErrorGen from '../../../../Utils/Classes/ErrorGen.ts';
-import Route from '../../../../Utils/Classes/Route.ts';
-import type Roles from '../../../../Utils/Cql/Types/Role.ts';
-import type { PermissionOverride } from '../../../../Utils/Cql/Types/index.ts';
-import { FixChannelPositions } from '../../../../Utils/Versioning/v1/FixChannelPositions.ts';
-import { GetEditedChannels } from '../../../../Utils/Versioning/v1/GetEditedChannels.ts';
-import PermissionHandler from '../../../../Utils/Versioning/v1/PermissionCheck.ts';
+} from "../../../../Constants.ts";
+import Guild from "../../../../Middleware/Guild.ts";
+import User from "../../../../Middleware/User.ts";
+import type App from "../../../../Utils/Classes/App";
+import FlagUtilsBInt, { FlagUtils } from "../../../../Utils/Classes/BitFields/NewFlags.ts";
+import Encryption from "../../../../Utils/Classes/Encryption.ts";
+import ErrorGen from "../../../../Utils/Classes/ErrorGen.ts";
+import Route from "../../../../Utils/Classes/Route.ts";
+import type Roles from "../../../../Utils/Cql/Types/Role.ts";
+import type { PermissionOverride } from "../../../../Utils/Cql/Types/index.ts";
+import { FixChannelPositions } from "../../../../Utils/Versioning/v1/FixChannelPositions.ts";
+import { GetEditedChannels } from "../../../../Utils/Versioning/v1/GetEditedChannels.ts";
+import PermissionHandler from "../../../../Utils/Versioning/v1/PermissionCheck.ts";
 
 interface CreateChannelBody {
 	Children?: string[];
@@ -60,12 +60,12 @@ export default class Channels extends Route {
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ['GET', 'POST'];
+		this.Methods = ["GET", "POST"];
 
 		this.Middleware = [
 			User({
-				AccessType: 'LoggedIn',
-				AllowedRequesters: 'User',
+				AccessType: "LoggedIn",
+				AllowedRequesters: "User",
 				App,
 			}),
 			Guild({
@@ -74,9 +74,9 @@ export default class Channels extends Route {
 			}),
 		];
 
-		this.AllowedContentTypes = ['application/json'];
+		this.AllowedContentTypes = ["application/json"];
 
-		this.Routes = ['/channels'];
+		this.Routes = ["/channels"];
 
 		this.Settings = {
 			MaxChannelNameLength: 124,
@@ -87,14 +87,14 @@ export default class Channels extends Route {
 
 	public override async Request(Req: Request<{ guildId: string }>, Res: Response) {
 		switch (Req.methodi) {
-			case 'GET': {
+			case "GET": {
 				await this.FetchChannels(Req, Res);
 
 				break;
 			}
 
-			case 'POST': {
-				if (Req.path.endsWith('/fetch')) {
+			case "POST": {
+				if (Req.path.endsWith("/fetch")) {
 					Req.fourohfourit();
 
 					break;
@@ -181,13 +181,13 @@ export default class Channels extends Route {
 		const ChannelFlags = new FlagUtils<typeof ChannelTypes>(Type ?? 0, ChannelTypes);
 		const FailedToCreateChannel = ErrorGen.FailedToCreateChannel();
 
-		if (!PermissionCheck.HasAnyRole('ManageChannels')) {
+		if (!PermissionCheck.HasAnyRole("ManageChannels")) {
 			const MissingPermissions = ErrorGen.MissingPermissions();
 
 			MissingPermissions.AddError({
 				Permissions: {
-					Code: 'MissingPermissions',
-					Message: 'You are missing the permissions to do this action.',
+					Code: "MissingPermissions",
+					Message: "You are missing the permissions to do this action.",
 				},
 			});
 
@@ -196,20 +196,20 @@ export default class Channels extends Route {
 			return;
 		}
 
-		if (ChannelFlags.count === 0 || ChannelFlags.count > 1 || (ChannelFlags.has('GuildCategory') && ParentId)) {
+		if (ChannelFlags.count === 0 || ChannelFlags.count > 1 || (ChannelFlags.has("GuildCategory") && ParentId)) {
 			FailedToCreateChannel.AddError({
 				Type: {
-					Code: 'InvalidType',
-					Message: 'The channel type is invalid.',
+					Code: "InvalidType",
+					Message: "The channel type is invalid.",
 				},
 			});
 		}
 
-		if (typeof Name !== 'string' || Name?.length > this.Settings.MaxChannelNameLength || Name?.length < 1) {
+		if (typeof Name !== "string" || Name?.length > this.Settings.MaxChannelNameLength || Name?.length < 1) {
 			FailedToCreateChannel.AddError({
 				Name: {
-					Code: 'InvalidName',
-					Message: 'The channel name is invalid.',
+					Code: "InvalidName",
+					Message: "The channel name is invalid.",
 				},
 			});
 		}
@@ -218,30 +218,30 @@ export default class Channels extends Route {
 			Description &&
 			(Description?.length > this.Settings.MaxChannelDescriptionLength ||
 				Description?.length < 1 ||
-				typeof Description !== 'string')
+				typeof Description !== "string")
 		) {
 			FailedToCreateChannel.AddError({
 				Description: {
-					Code: 'InvalidDescription',
-					Message: 'The channel description is invalid.',
+					Code: "InvalidDescription",
+					Message: "The channel description is invalid.",
 				},
 			});
 		}
 
-		if (Position && typeof Position !== 'number') {
+		if (Position && typeof Position !== "number") {
 			FailedToCreateChannel.AddError({
 				Position: {
-					Code: 'InvalidPosition',
-					Message: 'The channel position is invalid.',
+					Code: "InvalidPosition",
+					Message: "The channel position is invalid.",
 				},
 			});
 		}
 
-		if (Slowmode && (Slowmode > this.Settings.MaxChannelSlowmode || Slowmode < 0 || typeof Slowmode !== 'number')) {
+		if (Slowmode && (Slowmode > this.Settings.MaxChannelSlowmode || Slowmode < 0 || typeof Slowmode !== "number")) {
 			FailedToCreateChannel.AddError({
 				Slowmode: {
-					Code: 'InvalidSlowmode',
-					Message: 'The channel slowmode is invalid.',
+					Code: "InvalidSlowmode",
+					Message: "The channel slowmode is invalid.",
 				},
 			});
 		}
@@ -273,8 +273,8 @@ export default class Channels extends Route {
 				PermissionErrors.push({
 					index: Object.keys(PermissionsOverrides ?? {}).indexOf(key),
 					Error: {
-						Code: 'InvalidType',
-						Message: 'The permission override type is invalid.',
+						Code: "InvalidType",
+						Message: "The permission override type is invalid.",
 					},
 				});
 
@@ -283,13 +283,13 @@ export default class Channels extends Route {
 
 			if (
 				value.Slowmode &&
-				(value.Slowmode > this.Settings.MaxChannelSlowmode || value.Slowmode < 0 || typeof value.Slowmode !== 'number')
+				(value.Slowmode > this.Settings.MaxChannelSlowmode || value.Slowmode < 0 || typeof value.Slowmode !== "number")
 			) {
 				PermissionErrors.push({
 					index: Object.keys(PermissionsOverrides ?? {}).indexOf(key),
 					Error: {
-						Code: 'InvalidSlowmode',
-						Message: 'The permission override slowmode is invalid.',
+						Code: "InvalidSlowmode",
+						Message: "The permission override slowmode is invalid.",
 					},
 				});
 
@@ -324,8 +324,23 @@ export default class Channels extends Route {
 		if (Channels.length >= this.App.Constants.Settings.Max.ChannelCount) {
 			FailedToCreateChannel.AddError({
 				Guild: {
-					Code: 'MaxChannels',
-					Message: 'The guild has reached the max amount of channels.',
+					Code: "MaxChannels",
+					Message: "The guild has reached the max amount of channels.",
+				},
+			});
+		}
+
+		const FoundParent = ParentId
+			? await this.App.Cassandra.Models.Channel.get({
+					ChannelId: Encryption.Encrypt(ParentId),
+			  })
+			: null;
+
+		if ((ParentId && !FoundParent) || (FoundParent && FoundParent.Type !== ChannelTypes.GuildCategory)) {
+			FailedToCreateChannel.AddError({
+				Parent: {
+					Code: "InvalidParent",
+					Message: "The parent channel is invalid.",
 				},
 			});
 		}
@@ -341,10 +356,10 @@ export default class Channels extends Route {
 		const BuiltChannel = {
 			Name: Encryption.Encrypt(String(Name)),
 			Children: Children ? Children.map((child) => Encryption.Encrypt(child)) : [],
-			Description: Description ? Encryption.Encrypt(String(Description)) : '',
+			Description: Description ? Encryption.Encrypt(String(Description)) : "",
 			Nsfw: Boolean(Nsfw),
-			ParentId: ParentId ? (Children ? '' : Encryption.Encrypt(ParentId)) : '',
-			PermissionsOverrides: CorrectPermissionOverrides,
+			ParentId: ParentId ? (Children ? "" : Encryption.Encrypt(ParentId)) : "",
+			PermissionsOverrides: CorrectPermissionOverrides ?? [],
 			Position: Position ?? 0,
 			Slowmode: Slowmode ?? 0,
 			Type: ChannelFlags.cleaned,
@@ -367,15 +382,66 @@ export default class Channels extends Route {
 		const Promises = [this.App.Cassandra.Models.Channel.insert(InsertChannel)];
 
 		for (const channel of ChangedChannels) {
-			this.App.Logger.debug(
-				'Temporary debug log, The channel was updated, DO NOT FORGET TO ADD THIS TO THE WEBSOCKET MR',
-				channel,
-			);
+			if (channel.ChannelId === Encryption.Encrypt(ChannelId)) continue; // sometimes this happens just ignore it
+
+			if (ParentId && channel.ChannelId === Encryption.Encrypt(ParentId)) {
+				channel.Children.push(Encryption.Encrypt(ChannelId));
+			}
 
 			Promises.push(this.App.Cassandra.Models.Channel.update(channel));
+
+			const PermissionOverride =
+				channel.PermissionsOverrides?.map(async (override) =>
+					this.App.Cassandra.Models.PermissionOverride.get({
+						PermissionId: override,
+					}),
+				) ?? [];
+
+			const Filtered = (await Promise.all(PermissionOverride)).filter(Boolean) as PermissionOverride[];
+
+			this.App.SystemSocket.Events.ChannelUpdate({
+				...channel,
+				GuildId: Encryption.Encrypt(Req.params.guildId),
+				ChannelId: channel.ChannelId,
+				PermissionsOverrides: Filtered,
+			});
+		}
+
+		if (
+			ParentId &&
+			FoundParent &&
+			!ChangedChannels.some((channel) => channel.ChannelId === Encryption.Encrypt(ParentId))
+		) {
+			const UpdatedChannel = FoundParent;
+
+			UpdatedChannel!.Children.push(Encryption.Encrypt(ChannelId));
+
+			Promises.push(this.App.Cassandra.Models.Channel.update(UpdatedChannel!));
+
+			const PermissionOverride =
+				UpdatedChannel!.PermissionsOverrides?.map(async (override) =>
+					this.App.Cassandra.Models.PermissionOverride.get({
+						PermissionId: override,
+					}),
+				) ?? [];
+
+			const Filtered = (await Promise.all(PermissionOverride)).filter(Boolean) as PermissionOverride[];
+
+			this.App.SystemSocket.Events.ChannelUpdate({
+				...UpdatedChannel,
+				GuildId: Encryption.Encrypt(Req.params.guildId),
+				ChannelId: UpdatedChannel.ChannelId,
+				PermissionsOverrides: Filtered,
+			});
 		}
 
 		await Promise.all(Promises);
+
+		this.App.SystemSocket.Events.ChannelNew({
+			...BuiltChannel,
+			GuildId: Encryption.Encrypt(Req.params.guildId),
+			ChannelId: Encryption.Encrypt(ChannelId),
+		});
 
 		Res.status(201).json({
 			Id: ChannelId,

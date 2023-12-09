@@ -9,23 +9,25 @@
  * GPL 3.0 Licensed
  */
 
-import type { NextFunction, Request, Response } from 'express';
-import type { GuildMiddleware } from '../Types/Routes';
-import GuildMemberFlags from '../Utils/Classes/BitFields/GuildMember.ts';
-import Encryption from '../Utils/Classes/Encryption.ts';
-import ErrorGen from '../Utils/Classes/ErrorGen.ts';
+import type { NextFunction, Request, Response } from "express";
+import type { GuildMiddleware } from "../Types/Routes";
+import GuildMemberFlags from "../Utils/Classes/BitFields/GuildMember.ts";
+import Encryption from "../Utils/Classes/Encryption.ts";
+import ErrorGen from "../Utils/Classes/ErrorGen.ts";
+import type Roles from "../Utils/Cql/Types/Role.ts";
+import PermissionHandler from "../Utils/Versioning/v1/PermissionCheck.ts";
 
 const Guild = (options: GuildMiddleware) => {
 	return async (Req: Request<{ guildId?: string }>, Res: Response, next: NextFunction) => {
 		const Error = ErrorGen.UnknownGuild();
 
 		if ((options.Required && !Req.params.guildId) || !Req.user?.Id) {
-			options.App.Logger.debug('Guild is required but not provided');
+			options.App.Logger.debug("Guild is required but not provided");
 
 			Error.AddError({
 				GuildId: {
-					Code: 'UnknownGuild',
-					Message: 'The guild is Invalid, Does not exist or you are not in it.',
+					Code: "UnknownGuild",
+					Message: "The guild is Invalid, Does not exist or you are not in it.",
 				},
 			});
 
@@ -39,17 +41,17 @@ const Guild = (options: GuildMiddleware) => {
 				UserId: Encryption.Encrypt(Req.user.Id),
 			},
 			{
-				fields: ['guilds'],
+				fields: ["guilds"],
 			},
 		);
 
 		if (!UserGuilds?.Guilds) {
-			options.App.Logger.debug('User has no guilds');
+			options.App.Logger.debug("User has no guilds");
 
 			Error.AddError({
 				GuildId: {
-					Code: 'UnknownGuild',
-					Message: 'The guild is Invalid, Does not exist or you are not in it.',
+					Code: "UnknownGuild",
+					Message: "The guild is Invalid, Does not exist or you are not in it.",
 				},
 			});
 
@@ -58,13 +60,13 @@ const Guild = (options: GuildMiddleware) => {
 			return;
 		}
 
-		if (!UserGuilds.Guilds.includes(Encryption.Encrypt(Req.params.guildId ?? ''))) {
-			options.App.Logger.debug('User is not in the guild');
+		if (!UserGuilds.Guilds.includes(Encryption.Encrypt(Req.params.guildId ?? ""))) {
+			options.App.Logger.debug("User is not in the guild");
 
 			Error.AddError({
 				GuildId: {
-					Code: 'UnknownGuild',
-					Message: 'The guild is Invalid, Does not exist or you are not in it.',
+					Code: "UnknownGuild",
+					Message: "The guild is Invalid, Does not exist or you are not in it.",
 				},
 			});
 
@@ -76,7 +78,7 @@ const Guild = (options: GuildMiddleware) => {
 		const GuildMember = await options.App.Cassandra.Models.GuildMember.get(
 			{
 				UserId: Encryption.Encrypt(Req.user.Id),
-				GuildId: Encryption.Encrypt(Req.params.guildId ?? ''),
+				GuildId: Encryption.Encrypt(Req.params.guildId ?? ""),
 			},
 			{
 				allowFiltering: true,
@@ -85,20 +87,20 @@ const Guild = (options: GuildMiddleware) => {
 
 		const Guild = await options.App.Cassandra.Models.Guild.get(
 			{
-				GuildId: Encryption.Encrypt(Req.params.guildId ?? ''),
+				GuildId: Encryption.Encrypt(Req.params.guildId ?? ""),
 			},
 			{
-				fields: ['name', 'features', 'owner_id'],
+				fields: ["name", "features", "owner_id"],
 			},
 		);
 
 		if (!GuildMember || !Guild) {
-			options.App.Logger.debug('Guild or GuildMember not found', GuildMember, Guild);
+			options.App.Logger.debug("Guild or GuildMember not found", GuildMember, Guild);
 
 			Error.AddError({
 				GuildId: {
-					Code: 'UnknownGuild',
-					Message: 'The guild is Invalid, Does not exist or you are not in it.',
+					Code: "UnknownGuild",
+					Message: "The guild is Invalid, Does not exist or you are not in it.",
 				},
 			});
 
@@ -109,13 +111,13 @@ const Guild = (options: GuildMiddleware) => {
 
 		const MemberFlags = new GuildMemberFlags(GuildMember.Flags);
 
-		if (!MemberFlags.has('In')) {
-			options.App.Logger.debug(`User is not in the guild, instead ${MemberFlags.toArray().join(', ')}`);
+		if (!MemberFlags.has("In")) {
+			options.App.Logger.debug(`User is not in the guild, instead ${MemberFlags.toArray().join(", ")}`);
 
 			Error.AddError({
 				GuildId: {
-					Code: 'UnknownGuild',
-					Message: 'The guild is Invalid, Does not exist or you are not in it.',
+					Code: "UnknownGuild",
+					Message: "The guild is Invalid, Does not exist or you are not in it.",
 				},
 			});
 
@@ -123,11 +125,54 @@ const Guild = (options: GuildMiddleware) => {
 
 			return;
 		}
+		
+		if (options.PermissionsRequired && options.PermissionsRequired.length > 0) {
+			const RolePromises = [];
+
+			for (const RoleId of GuildMember.Roles) {
+				RolePromises.push(
+					options.App.Cassandra.Models.Role.get({
+						RoleId: Encryption.Encrypt(RoleId),
+					}),
+				);
+			}
+	
+			const FetchedRoles = (await Promise.all(RolePromises)).filter(Boolean) as Roles[];
+	
+			const roles = FetchedRoles.map((Role) => Encryption.CompleteDecryption(Role));
+			
+			const PermissionCheck = new PermissionHandler(
+				Req.user.Id,
+				MemberFlags.cleaned,
+				roles.map((role) => {
+					return {
+						Id: role.RoleId,
+						Permissions: role.Permissions.toString(),
+						Position: role.Position,
+					};
+				})
+			);
+			
+			if (!options.PermissionsRequired.some((Permission) => Permission === "Owner" ? PermissionCheck.GuildMemberFlags.has("Owner") : PermissionCheck.HasAnyRole(Permission))) {
+				const MissingPermissions = ErrorGen.MissingPermissions();
+	
+				MissingPermissions.AddError({
+					Permissions: {
+						Code: "MissingPermissions",
+						Message: "You are missing the permissions to do this action.",
+					},
+				});
+	
+				Res.status(403).json(MissingPermissions.toJSON());
+	
+				return;
+			}
+		}
 
 		Req.guild = {
 			Guild: {
 				Features: Guild.Features ?? [],
-				Id: Req.params.guildId ?? '',
+				Id: Req.params.guildId ?? "",
 				Name: Encryption.Decrypt(Guild.Name),
 				OwnerId: Encryption.Decrypt(Guild.OwnerId),
 			},

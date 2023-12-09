@@ -9,14 +9,14 @@
  * GPL 3.0 Licensed
  */
 
-import type { NextFunction, Request, Response } from 'express';
-import type { ExpressUser } from '../Types';
-import type { UserMiddleware } from '../Types/Routes';
-import App from '../Utils/Classes/App.ts';
-import FlagFields from '../Utils/Classes/BitFields/Flags.ts';
-import Encryption from '../Utils/Classes/Encryption.ts';
-import ErrorGen from '../Utils/Classes/ErrorGen.ts';
-import Token from '../Utils/Classes/Token.ts';
+import type { NextFunction, Request, Response } from "express";
+import type { ExpressUser } from "../Types";
+import type { UserMiddleware } from "../Types/Routes";
+import App from "../Utils/Classes/App.ts";
+import FlagFields from "../Utils/Classes/BitFields/Flags.ts";
+import Encryption from "../Utils/Classes/Encryption.ts";
+import ErrorGen from "../Utils/Classes/ErrorGen.ts";
+import Token from "../Utils/Classes/Token.ts";
 
 /**
  * The Middleware on each and every request (well it should be on it)
@@ -28,17 +28,17 @@ import Token from '../Utils/Classes/Token.ts';
 const User = (options: UserMiddleware) => {
 	return async (Req: Request, Res: Response, next: NextFunction) => {
 		let AuthHeader = Req.headers.authorization;
-		const AuthIsBot = Req.headers.authorization?.toLowerCase()?.startsWith('bot ') ?? false;
+		const AuthIsBot = Req.headers.authorization?.toLowerCase()?.startsWith("bot ") ?? false;
 
 		const UnAuthorized = ErrorGen.UnAuthorized();
 
-		if ((AuthIsBot && options.AllowedRequesters === 'User') || (!AuthIsBot && options.AllowedRequesters === 'Bot')) {
-			App.StaticLogger.debug(`Unexpected User Type ${AuthIsBot ? 'Is Bot' : "Isn't Bot"}`);
+		if ((AuthIsBot && options.AllowedRequesters === "User") || (!AuthIsBot && options.AllowedRequesters === "Bot")) {
+			App.StaticLogger.debug(`Unexpected User Type ${AuthIsBot ? "Is Bot" : "Isn't Bot"}`);
 
 			UnAuthorized.AddError({
 				User: {
-					Code: 'InvalidUserType',
-					Message: 'You are not allowed to access this endpoint.',
+					Code: "InvalidUserType",
+					Message: "You are not allowed to access this endpoint.",
 				},
 			});
 
@@ -47,15 +47,15 @@ const User = (options: UserMiddleware) => {
 			return;
 		}
 
-		AuthHeader = AuthHeader?.split(' ').length === 2 ? AuthHeader.split(' ')[1] : AuthHeader;
+		AuthHeader = AuthHeader?.split(" ").length === 2 ? AuthHeader.split(" ")[1] : AuthHeader;
 
-		if (options.AccessType === 'LoggedIn' && !AuthHeader) {
+		if (options.AccessType === "LoggedIn" && !AuthHeader) {
 			App.StaticLogger.debug("User isn't logged in though it is expected");
 
 			UnAuthorized.AddError({
 				User: {
-					Code: 'NotLoggedIn',
-					Message: 'You need to be logged in to access this endpoint',
+					Code: "NotLoggedIn",
+					Message: "You need to be logged in to access this endpoint",
 				},
 			});
 
@@ -64,13 +64,13 @@ const User = (options: UserMiddleware) => {
 			return;
 		}
 
-		if (options.AccessType === 'LoggedOut' && AuthHeader) {
-			App.StaticLogger.debug('User is logged in though its not expected');
+		if (options.AccessType === "LoggedOut" && AuthHeader) {
+			App.StaticLogger.debug("User is logged in though its not expected");
 
 			UnAuthorized.AddError({
 				User: {
-					Code: 'LoggedIn',
-					Message: 'You are not allowed to access this endpoint.',
+					Code: "LoggedIn",
+					Message: "You are not allowed to access this endpoint.",
 				},
 			});
 
@@ -79,7 +79,7 @@ const User = (options: UserMiddleware) => {
 			return;
 		}
 
-		if (options.AccessType === 'LoggedIn' && AuthHeader) {
+		if (options.AccessType === "LoggedIn" && AuthHeader) {
 			const VaildatedToken = Token.ValidateToken(AuthHeader);
 
 			if (!VaildatedToken) {
@@ -87,8 +87,8 @@ const User = (options: UserMiddleware) => {
 
 				UnAuthorized.AddError({
 					User: {
-						Code: 'InvalidToken',
-						Message: 'Unauthorized',
+						Code: "InvalidToken",
+						Message: "Unauthorized",
 					},
 				});
 
@@ -104,7 +104,7 @@ const User = (options: UserMiddleware) => {
 					UserId: Encryption.Encrypt(DecodedToken.Snowflake),
 				},
 				{
-					fields: ['tokens'],
+					fields: ["tokens"],
 				},
 			);
 
@@ -113,7 +113,7 @@ const User = (options: UserMiddleware) => {
 					UserId: Encryption.Encrypt(DecodedToken.Snowflake),
 				},
 				{
-					fields: ['email', 'user_id', 'flags', 'password', 'public_flags', 'guilds'],
+					fields: ["email", "user_id", "flags", "password", "public_flags", "guilds"],
 				},
 			);
 
@@ -123,14 +123,14 @@ const User = (options: UserMiddleware) => {
 
 				UnAuthorized.AddError({
 					User: {
-						Code: 'InvalidToken',
-						Message: 'Unauthorized',
+						Code: "InvalidToken",
+						Message: "Unauthorized",
 					},
 				});
 
 				if (UsersSettings || UserData) {
 					// darkerink: just in case there is one but not the other (has happened in very rare cases) contacting support will be the only way to fix this (for now);
-					Res.status(500).send('Internal Server Error :(');
+					Res.status(500).send("Internal Server Error :(");
 				} else {
 					Res.status(401).json(UnAuthorized.toJSON());
 				}
@@ -139,12 +139,12 @@ const User = (options: UserMiddleware) => {
 			}
 
 			if (!UsersSettings?.Tokens?.some((Token) => Token.Token === Encryption.Encrypt(AuthHeader as string))) {
-				App.StaticLogger.debug('Token not found in the user settings');
+				App.StaticLogger.debug("Token not found in the user settings");
 
 				UnAuthorized.AddError({
 					User: {
-						Code: 'InvalidToken',
-						Message: 'Unauthorized',
+						Code: "InvalidToken",
+						Message: "Unauthorized",
 					},
 				});
 
@@ -156,18 +156,18 @@ const User = (options: UserMiddleware) => {
 			const UserFlags = new FlagFields(UserData.Flags, UserData.PublicFlags);
 
 			if (
-				UserFlags.PrivateFlags.has('AccountDeleted') ||
-				UserFlags.PrivateFlags.has('WaitingOnDisableDataUpdate') ||
-				UserFlags.PrivateFlags.has('WaitingOnAccountDeletion')
+				UserFlags.PrivateFlags.has("AccountDeleted") ||
+				UserFlags.PrivateFlags.has("WaitingOnDisableDataUpdate") ||
+				UserFlags.PrivateFlags.has("WaitingOnAccountDeletion")
 			) {
 				const Error = ErrorGen.AccountNotAvailable();
 
-				App.StaticLogger.debug('Account Is Deleted or about to be deleted');
+				App.StaticLogger.debug("Account Is Deleted or about to be deleted");
 
 				Error.AddError({
 					Email: {
-						Code: 'AccountDeleted',
-						Message: 'The Account has been deleted',
+						Code: "AccountDeleted",
+						Message: "The Account has been deleted",
 					},
 				});
 
@@ -176,15 +176,15 @@ const User = (options: UserMiddleware) => {
 				return;
 			}
 
-			if (UserFlags.PrivateFlags.has('Terminated') || UserFlags.PrivateFlags.has('Disabled')) {
+			if (UserFlags.PrivateFlags.has("Terminated") || UserFlags.PrivateFlags.has("Disabled")) {
 				const Error = ErrorGen.AccountNotAvailable();
 
-				App.StaticLogger.debug('Account Is Disabled or Terminated');
+				App.StaticLogger.debug("Account Is Disabled or Terminated");
 
 				Error.AddError({
 					Email: {
-						Code: 'AccountDisabled',
-						Message: 'The Account has been disabled',
+						Code: "AccountDisabled",
+						Message: "The Account has been disabled",
 					},
 				});
 
@@ -194,20 +194,20 @@ const User = (options: UserMiddleware) => {
 			}
 
 			if (
-				(AuthIsBot && (!UserFlags.PrivateFlags.has('Bot') || !UserFlags.PrivateFlags.has('VerifiedBot'))) ||
-				(!AuthIsBot && (UserFlags.PrivateFlags.has('Bot') || UserFlags.PrivateFlags.has('VerifiedBot')))
+				(AuthIsBot && (!UserFlags.PrivateFlags.has("Bot") || !UserFlags.PrivateFlags.has("VerifiedBot"))) ||
+				(!AuthIsBot && (UserFlags.PrivateFlags.has("Bot") || UserFlags.PrivateFlags.has("VerifiedBot")))
 			) {
 				App.StaticLogger.debug(
-					'The user has a (or is missing) a flag its not meant to (bot) and is using an invalid header tbh idk how to log this well',
+					"The user has a (or is missing) a flag its not meant to (bot) and is using an invalid header tbh idk how to log this well",
 					AuthIsBot,
-					(!AuthIsBot && UserFlags.PrivateFlags.has('Bot')) || UserFlags.PrivateFlags.has('VerifiedBot'),
-					(AuthIsBot && !UserFlags.PrivateFlags.has('Bot')) || !UserFlags.PrivateFlags.has('VerifiedBot'),
+					(!AuthIsBot && UserFlags.PrivateFlags.has("Bot")) || UserFlags.PrivateFlags.has("VerifiedBot"),
+					(AuthIsBot && !UserFlags.PrivateFlags.has("Bot")) || !UserFlags.PrivateFlags.has("VerifiedBot"),
 				);
 
 				UnAuthorized.AddError({
 					User: {
-						Code: 'InvalidUserType',
-						Message: 'You are not allowed to access this endpoint.',
+						Code: "InvalidUserType",
+						Message: "You are not allowed to access this endpoint.",
 					},
 				});
 
@@ -217,15 +217,15 @@ const User = (options: UserMiddleware) => {
 			}
 
 			if (
-				options.AllowedRequesters === 'User' &&
-				(UserFlags.PrivateFlags.has('Bot') || UserFlags.PrivateFlags.has('VerifiedBot'))
+				options.AllowedRequesters === "User" &&
+				(UserFlags.PrivateFlags.has("Bot") || UserFlags.PrivateFlags.has("VerifiedBot"))
 			) {
-				App.StaticLogger.debug('User only endpoint though user is a bot');
+				App.StaticLogger.debug("User only endpoint though user is a bot");
 
 				UnAuthorized.AddError({
 					User: {
-						Code: 'InvalidToken',
-						Message: 'Unauthorized',
+						Code: "InvalidToken",
+						Message: "Unauthorized",
 					},
 				});
 
@@ -235,15 +235,15 @@ const User = (options: UserMiddleware) => {
 			}
 
 			if (
-				options.AllowedRequesters === 'Bot' &&
-				!(UserFlags.PrivateFlags.has('Bot') || UserFlags.PrivateFlags.has('VerifiedBot'))
+				options.AllowedRequesters === "Bot" &&
+				!(UserFlags.PrivateFlags.has("Bot") || UserFlags.PrivateFlags.has("VerifiedBot"))
 			) {
-				App.StaticLogger.debug('Bot only endpoint though user is not a bot');
+				App.StaticLogger.debug("Bot only endpoint though user is not a bot");
 
 				UnAuthorized.AddError({
 					User: {
-						Code: 'InvalidToken',
-						Message: 'Unauthorized',
+						Code: "InvalidToken",
+						Message: "Unauthorized",
 					},
 				});
 
@@ -259,8 +259,8 @@ const User = (options: UserMiddleware) => {
 
 						UnAuthorized.AddError({
 							User: {
-								Code: 'InvalidToken',
-								Message: 'Unauthorized',
+								Code: "InvalidToken",
+								Message: "Unauthorized",
 							},
 						});
 
@@ -278,8 +278,8 @@ const User = (options: UserMiddleware) => {
 
 						UnAuthorized.AddError({
 							User: {
-								Code: 'InvalidToken',
-								Message: 'Unauthorized',
+								Code: "InvalidToken",
+								Message: "Unauthorized",
 							},
 						});
 
@@ -298,7 +298,7 @@ const User = (options: UserMiddleware) => {
 
 			Req.user = {
 				Token: AuthHeader,
-				Bot: UserFlags.PrivateFlags.has('Bot') || UserFlags.PrivateFlags.has('VerifiedBot'),
+				Bot: UserFlags.PrivateFlags.has("Bot") || UserFlags.PrivateFlags.has("VerifiedBot"),
 				FlagsUtil: UserFlags,
 				Email: CompleteDecrypted.Email,
 				Id: CompleteDecrypted.UserId,

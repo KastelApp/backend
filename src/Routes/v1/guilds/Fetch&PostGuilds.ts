@@ -9,21 +9,21 @@
  * GPL 3.0 Licensed
  */
 
-import { types } from '@kastelll/cassandra-driver';
-import type { Request, Response } from 'express';
-import User from '../../../Middleware/User.ts';
-import type { ExpressUser } from '../../../Types/index.ts';
-import type App from '../../../Utils/Classes/App';
-import Encryption from '../../../Utils/Classes/Encryption.ts';
-import ErrorGen from '../../../Utils/Classes/ErrorGen.ts';
-import Route from '../../../Utils/Classes/Route.ts';
+import { types } from "@kastelll/cassandra-driver";
+import type { Request, Response } from "express";
+import User from "../../../Middleware/User.ts";
+import type { ExpressUser } from "../../../Types/index.ts";
+import type App from "../../../Utils/Classes/App";
+import Encryption from "../../../Utils/Classes/Encryption.ts";
+import ErrorGen from "../../../Utils/Classes/ErrorGen.ts";
+import Route from "../../../Utils/Classes/Route.ts";
 import type {
 	Guild,
 	User as UserRawType,
 	Role as Roles,
 	Channel as Channels,
 	GuildMember,
-} from '../../../Utils/Cql/Types/index.ts';
+} from "../../../Utils/Cql/Types/index.ts";
 
 interface NewGuildBody {
 	Description: string;
@@ -32,7 +32,7 @@ interface NewGuildBody {
 	Name: string;
 }
 
-type Includeable = 'cowners' | 'owner' | 'roles';
+type Includeable = "cowners" | "owner" | "roles";
 
 interface UserType {
 	Avatar: string | null;
@@ -59,37 +59,37 @@ interface ReturnedGuild {
 
 // to do: add guilds to gateway events & fetch co-owners
 export default class Guilds extends Route {
-	public Includeable: Includeable[] = ['cowners', 'owner', 'roles'];
+	public Includeable: Includeable[] = ["cowners", "owner", "roles"];
 
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ['GET', 'POST'];
+		this.Methods = ["GET", "POST"];
 
 		this.Middleware = [
 			User({
-				AccessType: 'LoggedIn',
-				AllowedRequesters: 'User',
+				AccessType: "LoggedIn",
+				AllowedRequesters: "User",
 				App,
-				DisallowedFlags: ['GuildBan'],
+				DisallowedFlags: ["GuildBan"],
 			}),
 		];
 
-		this.AllowedContentTypes = ['application/json'];
+		this.AllowedContentTypes = ["application/json"];
 
-		this.Routes = ['/fetch', '/'];
+		this.Routes = ["/fetch", "/"];
 	}
 
 	public override async Request(Req: Request, Res: Response) {
 		switch (Req.methodi) {
-			case 'GET': {
+			case "GET": {
 				await this.FetchGuilds(Req, Res);
 
 				break;
 			}
 
-			case 'POST': {
-				if (Req.path.endsWith('/fetch')) {
+			case "POST": {
+				if (Req.path.endsWith("/fetch")) {
 					Req.fourohfourit();
 
 					break;
@@ -113,10 +113,10 @@ export default class Guilds extends Route {
 		Res: Response,
 	): Promise<void> {
 		const { include, after, before, limit } = Req.query;
-		const Include = (String(include)?.split(',') ?? []).filter((include) =>
+		const Include = (String(include)?.split(",") ?? []).filter((include) =>
 			this.Includeable.includes(include as any),
 		) as Includeable[];
-		const ParsedLimit = Number.parseInt(limit ?? '100', 10);
+		const ParsedLimit = Number.parseInt(limit ?? "100", 10);
 		const Limit = Number.isNaN(ParsedLimit) ? 50 : ParsedLimit > 100 ? 50 : ParsedLimit < 1 ? 1 : ParsedLimit;
 
 		const InvalidSnowflake = ErrorGen.InvalidSnowflake();
@@ -125,8 +125,8 @@ export default class Guilds extends Route {
 			if (after && !this.App.Snowflake.Validate(after)) {
 				InvalidSnowflake.AddError({
 					After: {
-						Code: 'InvalidSnowflake',
-						Message: 'The after snowflake is invalid',
+						Code: "InvalidSnowflake",
+						Message: "The after snowflake is invalid",
 					},
 				});
 			}
@@ -134,8 +134,8 @@ export default class Guilds extends Route {
 			if (before && !this.App.Snowflake.Validate(before)) {
 				InvalidSnowflake.AddError({
 					Before: {
-						Code: 'InvalidSnowflake',
-						Message: 'The before snowflake is invalid',
+						Code: "InvalidSnowflake",
+						Message: "The before snowflake is invalid",
 					},
 				});
 			}
@@ -143,12 +143,12 @@ export default class Guilds extends Route {
 			if (before && after) {
 				InvalidSnowflake.AddError({
 					Before: {
-						Code: 'InvalidSnowflake',
-						Message: 'You cannot use both before and after',
+						Code: "InvalidSnowflake",
+						Message: "You cannot use both before and after",
 					},
 					After: {
-						Code: 'InvalidSnowflake',
-						Message: 'You cannot use both before and after',
+						Code: "InvalidSnowflake",
+						Message: "You cannot use both before and after",
 					},
 				});
 			}
@@ -174,8 +174,8 @@ export default class Guilds extends Route {
 			if (AfterIndex === -1) {
 				InvalidSnowflake.AddError({
 					After: {
-						Code: 'InvalidSnowflake',
-						Message: 'There is no guild with that snowflake',
+						Code: "InvalidSnowflake",
+						Message: "There is no guild with that snowflake",
 					},
 				});
 
@@ -193,8 +193,8 @@ export default class Guilds extends Route {
 			if (BeforeIndex === -1) {
 				InvalidSnowflake.AddError({
 					Before: {
-						Code: 'InvalidSnowflake',
-						Message: 'There is no guild with that snowflake',
+						Code: "InvalidSnowflake",
+						Message: "There is no guild with that snowflake",
 					},
 				});
 
@@ -229,7 +229,7 @@ export default class Guilds extends Route {
 
 			delete FixedGuild.GuildId;
 
-			if (Include.includes('roles')) {
+			if (Include.includes("roles")) {
 				const Roles = await this.App.Cassandra.Models.Role.find({
 					GuildId: Encryption.Encrypt(GuildId),
 				});
@@ -249,7 +249,7 @@ export default class Guilds extends Route {
 				}
 			}
 
-			if (Include.includes('owner')) {
+			if (Include.includes("owner")) {
 				delete FixedGuild.OwnerId;
 
 				const Owner = await this.FetchUser(Encryption.Decrypt(Guild.OwnerId));
@@ -279,16 +279,16 @@ export default class Guilds extends Route {
 		const { Description, Name } = Req.body;
 
 		if (!Name) {
-			const MissingField = ErrorGen.MissingField();
+			const InvalidField = ErrorGen.InvalidField();
 
-			MissingField.AddError({
+			InvalidField.AddError({
 				Name: {
-					Code: 'MissingName',
-					Message: 'You must provide a name for your guild',
+					Code: "MissingName",
+					Message: "You must provide a name for your guild",
 				},
 			});
 
-			Res.status(400).send(MissingField);
+			Res.status(400).send(InvalidField);
 
 			return;
 		}
@@ -302,8 +302,8 @@ export default class Guilds extends Route {
 
 			LimitReached.AddError({
 				Guilds: {
-					Code: 'MaxGuildsReached',
-					Message: 'You have reached the maximum amount of guilds you can create.',
+					Code: "MaxGuildsReached",
+					Message: "You have reached the maximum amount of guilds you can create.",
 				},
 			});
 
@@ -318,11 +318,11 @@ export default class Guilds extends Route {
 			AllowedMentions: this.App.Constants.AllowedMentions.All as number,
 			ChannelId: Encryption.Encrypt(this.App.Snowflake.Generate()),
 			Children: [],
-			Description: '',
+			Description: "",
 			GuildId: Encryption.Encrypt(GuildId),
-			Name: Encryption.Encrypt('General Category'),
+			Name: Encryption.Encrypt("General Category"),
 			Nsfw: false,
-			ParentId: '',
+			ParentId: "",
 			PermissionsOverrides: [],
 			Type: this.App.Constants.ChannelTypes.GuildCategory,
 			Position: 0,
@@ -334,9 +334,9 @@ export default class Guilds extends Route {
 			Type: this.App.Constants.ChannelTypes.GuildText,
 			AllowedMentions: this.App.Constants.AllowedMentions.All as number,
 			Children: [],
-			Description: '',
+			Description: "",
 			GuildId: Encryption.Encrypt(GuildId),
-			Name: Encryption.Encrypt('general'),
+			Name: Encryption.Encrypt("general"),
 			Nsfw: false,
 			ParentId: CategoryObject.ChannelId,
 			PermissionsOverrides: [],
@@ -347,27 +347,27 @@ export default class Guilds extends Route {
 		CategoryObject.Children.push(ChannelObject.ChannelId);
 
 		const RoleObject: Roles = {
-			Name: Encryption.Encrypt('everyone'),
+			Name: Encryption.Encrypt("everyone"),
 			AllowedMentions: this.App.Constants.AllowedMentions.All as number,
 			AllowedNsfw: false,
 			Color: 0,
 			Deleteable: false,
 			GuildId: Encryption.Encrypt(GuildId),
 			Hoisted: false,
-			Permissions: types.Long.fromString('0'),
+			Permissions: types.Long.fromString("0"),
 			Position: 0,
 			RoleId: Encryption.Encrypt(GuildId),
 		};
 
 		const GuildObject: Guild = {
 			CoOwners: [],
-			Description: Description ? Encryption.Encrypt(Description) : '',
+			Description: Description ? Encryption.Encrypt(Description) : "",
 			Features: [],
 			Flags: 0,
 			GuildId: Encryption.Encrypt(GuildId),
-			Icon: '',
+			Icon: "",
 			MaxMembers: this.App.Constants.Settings.Max.MemberCount,
-			Name: Name ? Encryption.Encrypt(Name) : Encryption.Encrypt('New Guild'),
+			Name: Name ? Encryption.Encrypt(Name) : Encryption.Encrypt("New Guild"),
 			OwnerId: Encryption.Encrypt(Req.user.Id),
 		};
 
@@ -375,7 +375,7 @@ export default class Guilds extends Route {
 			Flags: this.App.Constants.GuildMemberFlags.Owner | this.App.Constants.GuildMemberFlags.In,
 			GuildId: Encryption.Encrypt(GuildId),
 			JoinedAt: new Date(),
-			Nickname: '',
+			Nickname: "",
 			Roles: [RoleObject.RoleId],
 			Timeouts: [],
 			UserId: Encryption.Encrypt(Req.user.Id),
@@ -453,6 +453,8 @@ export default class Guilds extends Route {
 			}),
 		};
 
+		this.App.SystemSocket.Events.NewGuild(UndefinesRemoved);
+
 		Res.status(201).send(Encryption.CompleteDecryption(UndefinesRemoved));
 	}
 
@@ -462,7 +464,7 @@ export default class Guilds extends Route {
 				UserId: Encryption.Encrypt(UserId),
 			},
 			{
-				fields: ['guilds'],
+				fields: ["guilds"],
 			},
 		);
 
@@ -477,7 +479,7 @@ export default class Guilds extends Route {
 				...(UserId ? { UserId: Encryption.Encrypt(UserId) } : {}),
 			},
 			{
-				fields: ['avatar', 'flags', 'global_nickname', 'user_id', 'tag', 'username', 'public_flags'],
+				fields: ["avatar", "flags", "global_nickname", "user_id", "tag", "username", "public_flags"],
 			},
 		);
 
@@ -485,14 +487,14 @@ export default class Guilds extends Route {
 
 		return Encryption.CompleteDecryption({
 			...FetchedUser,
-			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
+			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : "0",
 		});
 	}
 
 	private CheckGuildCount(User: ExpressUser, Count: number): boolean {
-		if (User.FlagsUtil.PrivateFlags.has('IncreasedGuildCount500')) return Count >= 500;
-		if (User.FlagsUtil.PrivateFlags.has('IncreasedGuildCount200')) return Count >= 200;
-		if (User.FlagsUtil.PrivateFlags.has('IncreasedGuildCount100')) return Count >= 100;
+		if (User.FlagsUtil.PrivateFlags.has("IncreasedGuildCount500")) return Count >= 500;
+		if (User.FlagsUtil.PrivateFlags.has("IncreasedGuildCount200")) return Count >= 200;
+		if (User.FlagsUtil.PrivateFlags.has("IncreasedGuildCount100")) return Count >= 100;
 
 		return Count >= this.App.Constants.Settings.Max.GuildCount;
 	}

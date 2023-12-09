@@ -1,4 +1,4 @@
-import type { Channel } from '../../Cql/Types';
+import type { Channel } from "../../Cql/Types";
 
 export const FixChannelPositions = (Channel: Channel, ExistingChannels: Channel[], IgnoreParent = false): Channel[] => {
 	/* position 0 = top

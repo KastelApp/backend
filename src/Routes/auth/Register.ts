@@ -9,19 +9,19 @@
  * GPL 3.0 Licensed
  */
 
-import type { Request, Response } from 'express';
-import Constants from '../../Constants.ts';
-import Captcha from '../../Middleware/Captcha.ts';
-import User from '../../Middleware/User.ts';
-import type App from '../../Utils/Classes/App';
-import Encryption from '../../Utils/Classes/Encryption.ts';
-import ErrorGen from '../../Utils/Classes/ErrorGen.ts';
-import Route from '../../Utils/Classes/Route.ts';
-import Token from '../../Utils/Classes/Token.ts';
-import type Settings from '../../Utils/Cql/Types/Settings.ts';
-import type Users from '../../Utils/Cql/Types/User.ts';
-import type { User as UserType } from '../../Utils/Cql/Types/index.ts';
-import TagGenerator from '../../Utils/TagGenerator.ts';
+import type { Request, Response } from "express";
+import Constants from "../../Constants.ts";
+import Captcha from "../../Middleware/Captcha.ts";
+import User from "../../Middleware/User.ts";
+import type App from "../../Utils/Classes/App";
+import Encryption from "../../Utils/Classes/Encryption.ts";
+import ErrorGen from "../../Utils/Classes/ErrorGen.ts";
+import Route from "../../Utils/Classes/Route.ts";
+import Token from "../../Utils/Classes/Token.ts";
+import type Settings from "../../Utils/Cql/Types/Settings.ts";
+import type Users from "../../Utils/Cql/Types/User.ts";
+import type { User as UserType } from "../../Utils/Cql/Types/index.ts";
+import TagGenerator from "../../Utils/TagGenerator.ts";
 
 interface RegisterBody {
 	Email: string;
@@ -34,12 +34,12 @@ export default class Register extends Route {
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ['POST'];
+		this.Methods = ["POST"];
 
 		this.Middleware = [
 			User({
-				AccessType: 'LoggedOut',
-				AllowedRequesters: 'User',
+				AccessType: "LoggedOut",
+				AllowedRequesters: "User",
 				App,
 			}),
 			Captcha({
@@ -47,9 +47,9 @@ export default class Register extends Route {
 			}),
 		];
 
-		this.AllowedContentTypes = ['application/json'];
+		this.AllowedContentTypes = ["application/json"];
 
-		this.Routes = ['/register'];
+		this.Routes = ["/register"];
 	}
 
 	public override async Request(Req: Request<any, any, RegisterBody>, Res: Response) {
@@ -62,35 +62,35 @@ export default class Register extends Route {
 			/^(?=.*[a-zA-Z0-9!$%^&*()\-_~>.<?/\s\u0020-\uD7FF\uE000-\uFFFD])[a-zA-Z0-9!$%^&*()\-_~>.<?/\s\u0020-\uD7FF\uE000-\uFFFD]{2,30}$/; // eslint-disable-line unicorn/better-regex
 
 		if (
-			!EmailValidator.test(Email ?? '') ||
-			!PasswordValidtor.test(Password ?? '') ||
-			!UsernameValidator.test(Username ?? '')
+			!EmailValidator.test(Email ?? "") ||
+			!PasswordValidtor.test(Password ?? "") ||
+			!UsernameValidator.test(Username ?? "")
 		) {
 			const Error = ErrorGen.MissingAuthField();
 
-			if (!EmailValidator.test(Email ?? '')) {
+			if (!EmailValidator.test(Email ?? "")) {
 				Error.AddError({
 					Email: {
-						Code: 'InvalidEmail',
-						Message: 'The Email provided is Invalid, Missing or already in use',
+						Code: "InvalidEmail",
+						Message: "The Email provided is Invalid, Missing or already in use",
 					},
 				});
 			}
 
-			if (!PasswordValidtor.test(Password ?? '')) {
+			if (!PasswordValidtor.test(Password ?? "")) {
 				Error.AddError({
 					Password: {
-						Code: 'InvalidPassword',
-						Message: 'The Password provided is Invalid, or Missing',
+						Code: "InvalidPassword",
+						Message: "The Password provided is Invalid, or Missing",
 					},
 				});
 			}
 
-			if (!UsernameValidator.test(Username ?? '')) {
+			if (!UsernameValidator.test(Username ?? "")) {
 				Error.AddError({
 					Username: {
-						Code: 'InvalidUsername',
-						Message: 'The Username provided is Invalid, or Missing',
+						Code: "InvalidUsername",
+						Message: "The Username provided is Invalid, or Missing",
 					},
 				});
 			}
@@ -100,8 +100,8 @@ export default class Register extends Route {
 			return;
 		}
 
-		const FetchedUsers = await this.FetchUsers(Username, ['username', 'tag']);
-		const CleanedEmail = Email.replaceAll(PlusReplace, '');
+		const FetchedUsers = await this.FetchUsers(Username, ["username", "tag"]);
+		const CleanedEmail = Email.replaceAll(PlusReplace, "");
 		const UserExists = await this.FetchUser(CleanedEmail);
 		const MaxUsernamesReached = await this.MaxUsernamesReached(undefined, FetchedUsers?.length ?? 0);
 		const Failed = ErrorGen.FailedToRegister();
@@ -109,8 +109,8 @@ export default class Register extends Route {
 		if (UserExists) {
 			Failed.AddError({
 				Email: {
-					Code: 'InvalidEmail',
-					Message: 'The Email provided is Invalid, Missing or already in use',
+					Code: "InvalidEmail",
+					Message: "The Email provided is Invalid, Missing or already in use",
 				},
 			});
 		}
@@ -118,8 +118,8 @@ export default class Register extends Route {
 		if (MaxUsernamesReached) {
 			Failed.AddError({
 				Username: {
-					Code: 'MaxUsernames',
-					Message: 'The Username provided is Invalid, or Missing',
+					Code: "MaxUsernames",
+					Message: "The Username provided is Invalid, or Missing",
 				},
 			});
 		}
@@ -133,17 +133,17 @@ export default class Register extends Route {
 		const Tag = await this.GenerateTag(undefined, FetchedUsers ?? []);
 
 		const UserObject: UserType = {
-			Avatar: '',
+			Avatar: "",
 			Email: Encryption.Encrypt(CleanedEmail),
-			PublicFlags: '0',
-			Flags: '0',
-			GlobalNickname: '',
+			PublicFlags: "0",
+			Flags: "0",
+			GlobalNickname: "",
 			Guilds: [],
 			Ips: [],
-			Password: await Bun.password.hash(Password, 'argon2id'),
-			PhoneNumber: '',
+			Password: await Bun.password.hash(Password, "argon2id"),
+			PhoneNumber: "",
 			Tag,
-			TwoFaSecret: '',
+			TwoFaSecret: "",
 			UserId: Encryption.Encrypt(this.App.Snowflake.Generate()),
 			Username: Encryption.Encrypt(Username),
 		};
@@ -151,14 +151,14 @@ export default class Register extends Route {
 		const NewToken = Token.GenerateToken(Encryption.Decrypt(UserObject.UserId));
 
 		const SettingsObject: Settings = {
-			Language: 'en-US',
+			Language: "en-US",
 			MaxFileUploadSize: Constants.Settings.Max.MaxFileSize,
 			MaxGuilds: Constants.Settings.Max.GuildCount,
 			Mentions: [],
 			Presence: Constants.Presence.Online,
 			Privacy: 0,
-			Status: '',
-			Theme: 'dark',
+			Status: "",
+			Theme: "dark",
 			Tokens: [
 				{
 					CreatedDate: new Date(),
@@ -169,7 +169,7 @@ export default class Register extends Route {
 				},
 			],
 			UserId: UserObject.UserId,
-			Bio: '',
+			Bio: "",
 		};
 
 		await Promise.all([
@@ -201,7 +201,7 @@ export default class Register extends Route {
 			{
 				Email: Encryption.Encrypt(Email),
 			},
-			{ fields: ['email'] },
+			{ fields: ["email"] },
 		);
 
 		if (!FetchedUser) return null;
@@ -226,11 +226,11 @@ export default class Register extends Route {
 		if (Count) {
 			FoundCount = Count;
 		} else if (Username) {
-			const FoundUsers = await this.App.Cassandra.Execute('SELECT COUNT(1) FROM users WHERE username = ?', [
+			const FoundUsers = await this.App.Cassandra.Execute("SELECT COUNT(1) FROM users WHERE username = ?", [
 				Encryption.Encrypt(Username),
 			]);
 
-			const Value: number = FoundUsers?.first()?.get('count').toNumber() ?? 0;
+			const Value: number = FoundUsers?.first()?.get("count").toNumber() ?? 0;
 
 			FoundCount = Value;
 		}
@@ -239,7 +239,7 @@ export default class Register extends Route {
 	}
 
 	private async GenerateTag(Username?: string, Users?: Users[]): Promise<string> {
-		const FoundUsers = Username ? await this.FetchUsers(Username, ['tag']) : Users ? Users : null;
+		const FoundUsers = Username ? await this.FetchUsers(Username, ["tag"]) : Users ? Users : null;
 
 		if (FoundUsers) {
 			const Tags = FoundUsers.map((User) => User.Tag);

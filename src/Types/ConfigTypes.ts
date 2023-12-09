@@ -9,8 +9,8 @@
  * GPL 3.0 Licensed
  */
 
-import type { ClientOptions } from '@kastelll/cassandra-driver';
-import type * as Sentry from '@sentry/node';
+import type { ClientOptions } from "@kastelll/cassandra-driver";
+import type * as Sentry from "@sentry/node";
 
 export interface Server {
 	Cache: {
@@ -19,6 +19,7 @@ export interface Server {
 	};
 	// cloudflare turnstile secret (for captchas)
 	CaptchaEnabled: boolean;
+	CloudflareAccessOnly: boolean;
 	Domain: string;
 	LocalIps?: string[];
 	Port?: number | string;
@@ -27,7 +28,7 @@ export interface Server {
 	Sentry: {
 		Dsn: string;
 		Enabled: boolean;
-		OtherOptions: Exclude<Sentry.NodeOptions, 'dsn' | 'tracesSampleRate'>;
+		OtherOptions: Exclude<Sentry.NodeOptions, "dsn" | "tracesSampleRate">;
 		RequestOptions: Sentry.Handlers.RequestHandlerOptions;
 		TracesSampleRate: number;
 	};
@@ -59,7 +60,7 @@ export interface Redis {
 }
 
 export interface ScyllaDB {
-	CassandraOptions: Omit<ClientOptions, 'credentials' | 'keyspace'>;
+	CassandraOptions: Omit<ClientOptions, "credentials" | "keyspace">;
 	DurableWrites: boolean;
 	Keyspace: string;
 	NetworkTopologyStrategy: {
@@ -70,7 +71,7 @@ export interface ScyllaDB {
 	Username: string;
 }
 
-type ShortCode = 'NoReply' | 'Support';
+type ShortCode = "NoReply" | "Support";
 
 interface User {
 	Host: string;

@@ -1,7 +1,9 @@
 /* eslint-disable id-length */
-import type { ExpressUser } from '../../../Types/index.ts';
-import { OpCodes } from '../WsUtils.ts';
-import type { SystemSocket } from './SystemSocket';
+import type { types } from "@kastelll/cassandra-driver";
+import type { ExpressUser } from "../../../Types/index.ts";
+import type { PermissionOverride } from "../../Cql/Types/index.ts";
+import { OpCodes } from "../WsUtils.ts";
+import type { SystemSocket } from "./SystemSocket";
 
 class Events {
 	public SendEvents: boolean;
@@ -160,7 +162,7 @@ class Events {
 	}) {
 		const StringifiedPayload = JSON.stringify({
 			Op: OpCodes.SelfUpdate,
-			d: User,
+			D: User,
 		});
 
 		if (this.SendEvents) {
@@ -171,7 +173,7 @@ class Events {
 	}
 
 	public RelationshipUpdate(Data: {
-		Causer: Omit<ExpressUser, 'FlagsUtil' | 'Token'>;
+		Causer: Omit<ExpressUser, "FlagsUtil" | "Token">;
 		To: {
 			Flags: number;
 			User: {
@@ -191,7 +193,84 @@ class Events {
 
 		const StringifiedPayload = JSON.stringify({
 			Op: OpCodes.RelationshipUpdate,
-			d: Data,
+			D: Data,
+		});
+
+		if (this.SendEvents) {
+			this.SystemSocket.Ws?.send(StringifiedPayload);
+		}
+
+		return StringifiedPayload;
+	}
+
+	public NewGuild(Data: {
+		Channels: Record<string, string[] | boolean | number | string | null>[];
+		CoOwners: never[];
+		Description: string | null;
+		Features: string[];
+		Flags: number;
+		Icon: string | null;
+		Id: string;
+		MaxMembers: number;
+		Name: string;
+		OwnerId: string;
+		Roles: Record<string, types.Long | boolean | number | string>[];
+	}) {
+		const StringifiedPayload = JSON.stringify({
+			Op: OpCodes.GuildNew,
+			D: Data,
+		});
+
+		if (this.SendEvents) {
+			this.SystemSocket.Ws?.send(StringifiedPayload);
+		}
+
+		return StringifiedPayload;
+	}
+
+	public ChannelNew(Data: {
+		AllowedMentions: number;
+		ChannelId: string;
+		Children: string[];
+		Description: string;
+		GuildId: string;
+		Name: string;
+		Nsfw: boolean;
+		ParentId: string;
+		PermissionsOverrides: PermissionOverride[];
+		Position: number;
+		Slowmode: number;
+		Type: number;
+	}) {
+		const StringifiedPayload = JSON.stringify({
+			Op: OpCodes.ChannelNew,
+			D: Data,
+		});
+
+		if (this.SendEvents) {
+			this.SystemSocket.Ws?.send(StringifiedPayload);
+		}
+
+		return StringifiedPayload;
+	}
+
+	public ChannelUpdate(Data: {
+		AllowedMentions: number;
+		ChannelId: string;
+		Children: string[];
+		Description: string;
+		GuildId: string;
+		Name: string;
+		Nsfw: boolean;
+		ParentId: string;
+		PermissionsOverrides: PermissionOverride[];
+		Position: number;
+		Slowmode: number;
+		Type: number;
+	}) {
+		const StringifiedPayload = JSON.stringify({
+			Op: OpCodes.ChannelUpdate,
+			D: Data,
 		});
 
 		if (this.SendEvents) {

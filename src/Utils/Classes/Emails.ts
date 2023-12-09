@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
 class Emails {
 	public host: string;
@@ -31,14 +31,14 @@ class Emails {
 
 		this.secure = secure;
 
-		Object.defineProperty(this, 'email', {
+		Object.defineProperty(this, "email", {
 			value: email,
 			writable: false,
 			enumerable: false,
 			configurable: false,
 		});
 
-		Object.defineProperty(this, 'password', {
+		Object.defineProperty(this, "password", {
 			value: password,
 			writable: false,
 			enumerable: false,
@@ -47,14 +47,14 @@ class Emails {
 
 		this.totalEmailsSent = 0; // why not
 
-		Object.defineProperty(this, 'transporter', {
+		Object.defineProperty(this, "transporter", {
 			value: undefined,
 			writable: true,
 			enumerable: false,
 			configurable: false,
 		});
 
-		Object.defineProperty(this, 'auth', {
+		Object.defineProperty(this, "auth", {
 			value: auth,
 			writable: false,
 			enumerable: false,
@@ -64,15 +64,15 @@ class Emails {
 
 	public async SendEmail(to: string, subject: string, text?: string, html?: string): Promise<boolean> {
 		if (!this.transporter) {
-			throw new Error('Transporter not created');
+			throw new Error("Transporter not created");
 		}
 
 		if (!to || !subject) {
-			throw new Error('Invalid arguments');
+			throw new Error("Invalid arguments");
 		}
 
 		if (!text && !html) {
-			throw new Error('Invalid arguments');
+			throw new Error("Invalid arguments");
 		}
 
 		const Sent = await this.transporter.sendMail({

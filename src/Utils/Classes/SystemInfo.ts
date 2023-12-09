@@ -1,12 +1,12 @@
-import https from 'node:https';
-import os from 'node:os';
-import process from 'node:process';
-import { clearTimeout, setTimeout } from 'node:timers';
+import https from "node:https";
+import os from "node:os";
+import process from "node:process";
+import { clearTimeout, setTimeout } from "node:timers";
 
-type Platform = 'AIX' | 'Android' | 'FreeBSD' | 'Linux' | 'macOS' | 'OpenBSD' | 'SunOS' | 'Unknown' | 'Windows';
-type OperatingSystemRaw = 'aix' | 'android' | 'darwin' | 'freebsd' | 'linux' | 'openbsd' | 'sunos' | 'win32';
-type CPUArchitectureRaw = 'arm' | 'arm64' | 'ia32' | 'mips' | 'mipsel' | 'ppc' | 'ppc64' | 's390' | 's390x' | 'x64';
-type CpuArchitecture = 'Arm' | 'Arm64' | 'IA32' | 'Mips' | 'Mipsel' | 'PPC' | 'PPC64' | 'S390' | 'S390X' | 'X64';
+type Platform = "AIX" | "Android" | "FreeBSD" | "Linux" | "macOS" | "OpenBSD" | "SunOS" | "Unknown" | "Windows";
+type OperatingSystemRaw = "aix" | "android" | "darwin" | "freebsd" | "linux" | "openbsd" | "sunos" | "win32";
+type CPUArchitectureRaw = "arm" | "arm64" | "ia32" | "mips" | "mipsel" | "ppc" | "ppc64" | "s390" | "s390x" | "x64";
+type CpuArchitecture = "Arm" | "Arm64" | "IA32" | "Mips" | "Mipsel" | "PPC" | "PPC64" | "S390" | "S390X" | "X64";
 interface SystemInfoOutput {
 	Cpu: {
 		Cores: number;
@@ -49,36 +49,36 @@ interface SystemInfoOutput {
 
 class SystemInfo {
 	private PlatformTypes = {
-		aix: 'AIX',
-		android: 'Android',
-		darwin: 'macOS',
-		freebsd: 'FreeBSD',
-		linux: 'Linux',
-		openbsd: 'OpenBSD',
-		sunos: 'SunOS',
-		win32: 'Windows',
-		Unknwon: 'Unknown',
+		aix: "AIX",
+		android: "Android",
+		darwin: "macOS",
+		freebsd: "FreeBSD",
+		linux: "Linux",
+		openbsd: "OpenBSD",
+		sunos: "SunOS",
+		win32: "Windows",
+		Unknwon: "Unknown",
 	};
 
 	private CPUArchitectureTypes = {
-		arm: 'Arm',
-		arm64: 'Arm64',
-		ia32: 'IA32',
-		mips: 'Mips',
-		mipsel: 'Mipsel',
-		ppc: 'PPC',
-		ppc64: 'PPC64',
-		s390: 'S390',
-		s390x: 'S390X',
-		x64: 'X64',
-		Unknown: 'Unknown',
+		arm: "Arm",
+		arm64: "Arm64",
+		ia32: "IA32",
+		mips: "Mips",
+		mipsel: "Mipsel",
+		ppc: "PPC",
+		ppc64: "PPC64",
+		s390: "S390",
+		s390x: "S390X",
+		x64: "X64",
+		Unknown: "Unknown",
 	};
 
 	public CpuInfo() {
 		const OsCpus = os.cpus();
 		const SingleCpu = OsCpus[0];
 
-		if (!SingleCpu) throw new Error('Whar? Unable to get CPU info');
+		if (!SingleCpu) throw new Error("Whar? Unable to get CPU info");
 
 		const Total = Object.values(SingleCpu.times).reduce((acc, tv) => acc + tv, 0);
 
@@ -112,9 +112,9 @@ class SystemInfo {
 	}
 
 	public FormatBytes(bytes: number) {
-		const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+		const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
 
-		if (bytes <= 0) return '0 Byte';
+		if (bytes <= 0) return "0 Byte";
 
 		const byteCount = Math.floor(Math.log(bytes) / Math.log(1_024));
 
@@ -137,7 +137,7 @@ class SystemInfo {
 		if (secs > 0) parts.push(`${secs}s`);
 		if (msRemainder > 0) parts.push(`${msRemainder}ms`);
 
-		return parts.join(' ');
+		return parts.join(" ");
 	}
 
 	public async InternetAccess(): Promise<boolean> {
@@ -147,11 +147,11 @@ class SystemInfo {
 			}, 5_000);
 
 			https
-				.get('https://1.1.1.1', (res) => {
+				.get("https://1.1.1.1", (res) => {
 					resolve(res.statusCode === 200);
 					clearTimeout(ResolveTimeout);
 				})
-				.on('error', () => {
+				.on("error", () => {
 					resolve(false);
 					clearTimeout(ResolveTimeout);
 				});
@@ -175,7 +175,7 @@ class SystemInfo {
 		return {
 			Cpu: {
 				Cores: CpuInfo.CoreCount,
-				Type: CpuInfo.CpuType.replaceAll(/\s+/g, ' ').trim(),
+				Type: CpuInfo.CpuType.replaceAll(/\s+/g, " ").trim(),
 				Usage: CpuInfo.Usage,
 			},
 			Ram: {
@@ -186,10 +186,10 @@ class SystemInfo {
 			Process: ProcessInfo,
 			OperatingSystem: {
 				Platform: (this.PlatformTypes[OperatingSystemInfo.Platform as keyof typeof this.PlatformTypes] ??
-					'Unknown') as Platform,
+					"Unknown") as Platform,
 				Release: OperatingSystemInfo.Release,
 				Arch: (this.CPUArchitectureTypes[OperatingSystemInfo.Arch as keyof typeof this.CPUArchitectureTypes] ??
-					'Unknown') as CpuArchitecture,
+					"Unknown") as CpuArchitecture,
 			},
 			InternetAccess,
 			_Raw: {

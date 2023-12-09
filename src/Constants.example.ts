@@ -11,7 +11,7 @@
  * GPL 3.0 Licensed
  */
 
-import process from 'node:process';
+import process from "node:process";
 
 const Settings = {
 	Max: {
@@ -44,9 +44,9 @@ const Settings = {
 		// can be strings or regex (in arrays)
 		Username: [
 			// Blocking System so people can't use it (besides the system account itself)
-			'system',
-			'System',
-			'SYSTEM',
+			"system",
+			"System",
+			"SYSTEM",
 		],
 		Guilds: [],
 		Channels: [],
@@ -58,34 +58,34 @@ const Settings = {
 // The frontend depends on these
 const GuildFeatures = [
 	{
-		Name: 'Partnered',
+		Name: "Partnered",
 		Deprecated: false, // deprecated means it will be removed in the future
 		Default: false, // If guilds are given this by default on guild creation
 		Settable: false, // if a user can set it themselves
 		NewDefault: false, // If its a "new default" this means if we lets say fetch a guild we need to add this
 	},
 	{
-		Name: 'Verified', // Ran by an official company / person
+		Name: "Verified", // Ran by an official company / person
 		Deprecated: false,
 		Enabled: false,
 		Settable: false,
 		NewDefault: false,
 	},
 	{
-		Name: 'Official', // Ran by Kastel themselves (Think the Kastel Developers guild)
+		Name: "Official", // Ran by Kastel themselves (Think the Kastel Developers guild)
 		Deprecated: false,
 		Enabled: false,
 		Settable: false,
 		NewDefault: false,
 	},
 	{
-		Name: 'Maintenance', // Disallows anyone without ManageGuild to view the guild / access it
+		Name: "Maintenance", // Disallows anyone without ManageGuild to view the guild / access it
 		Deprecated: false,
 		Enabled: true,
 		Settable: true,
 	},
 	{
-		Name: 'InternalStaffGuild', // Staff only, for internal use (This is where Community Announcements will be made and some other stuff)
+		Name: "InternalStaffGuild", // Staff only, for internal use (This is where Community Announcements will be made and some other stuff)
 		Deprecated: false,
 		Enabled: false,
 		Settable: false,
@@ -242,7 +242,7 @@ const RelationshipFlags = {
 const AuditLogActions = {};
 
 const Relative = {
-	Version: '0.0.1',
+	Version: "0.0.1",
 };
 
 const VerificationFlags = {

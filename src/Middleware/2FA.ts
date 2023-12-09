@@ -9,31 +9,16 @@
  * GPL 3.0 Licensed
  */
 
-import type { Request, Response } from "express";
-import User from "../../../../../../Middleware/User.ts";
-import type App from "../../../../../../Utils/Classes/App.ts";
-import Route from "../../../../../../Utils/Classes/Route.ts";
+import type { NextFunction, Request, Response } from "express";
+import type { TwofaMiddleware } from "../Types/Routes.ts";
 
-export default class FetchAndPatchMember extends Route {
-	public constructor(App: App) {
-		super(App);
 
-		this.Methods = ["GET", "PATCH"];
+const TwoFa = (options: TwofaMiddleware) => {
+	return async (_: Request, __: Response, next: NextFunction) => {
+		next();
+	};
+};
 
-		this.Middleware = [
-			User({
-				AccessType: "LoggedIn",
-				AllowedRequesters: "User",
-				App,
-			}),
-		];
+export default TwoFa;
 
-		this.AllowedContentTypes = ["application/json"];
-
-		this.Routes = ["/"];
-	}
-
-	public override Request(_: Request, Res: Response): void {
-		Res.send("ok");
-	}
-}
+export { TwoFa };

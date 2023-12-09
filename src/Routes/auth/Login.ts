@@ -9,17 +9,18 @@
  * GPL 3.0 Licensed
  */
 
-import type { Request, Response } from 'express';
-import Constants from '../../Constants.ts';
-import Captcha from '../../Middleware/Captcha.ts';
-import User from '../../Middleware/User.ts';
-import type App from '../../Utils/Classes/App';
-import FlagFields from '../../Utils/Classes/BitFields/Flags.ts';
-import Encryption from '../../Utils/Classes/Encryption.ts';
-import ErrorGen from '../../Utils/Classes/ErrorGen.ts';
-import Route from '../../Utils/Classes/Route.ts';
-import Token from '../../Utils/Classes/Token.ts';
-import type { User as UserType } from '../../Utils/Cql/Types/index.ts';
+import type { Request, Response } from "express";
+import Constants from "../../Constants.ts";
+import Captcha from "../../Middleware/Captcha.ts";
+import User from "../../Middleware/User.ts";
+import type App from "../../Utils/Classes/App";
+import FlagFields from "../../Utils/Classes/BitFields/Flags.ts";
+import Encryption from "../../Utils/Classes/Encryption.ts";
+import ErrorGen from "../../Utils/Classes/ErrorGen.ts";
+import Route from "../../Utils/Classes/Route.ts";
+import Token from "../../Utils/Classes/Token.ts";
+import type { User as UserType } from "../../Utils/Cql/Types/index.ts";
+import T from "../../Utils/TypeCheck.ts";
 
 interface LoginBody {
 	Email: string;
@@ -30,12 +31,12 @@ export default class Login extends Route {
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ['POST'];
+		this.Methods = ["POST"];
 
 		this.Middleware = [
 			User({
-				AccessType: 'LoggedOut',
-				AllowedRequesters: 'User',
+				AccessType: "LoggedOut",
+				AllowedRequesters: "User",
 				App,
 			}),
 			Captcha({
@@ -43,34 +44,23 @@ export default class Login extends Route {
 			}),
 		];
 
-		this.AllowedContentTypes = ['application/json'];
+		this.AllowedContentTypes = ["application/json"];
 
-		this.Routes = ['/login'];
+		this.Routes = ["/login"];
 	}
 
 	public override async Request(Req: Request<any, any, LoginBody>, Res: Response) {
 		const { Email, Password } = Req.body;
 
-		if (typeof Email !== 'string' || typeof Password !== 'string') {
+		if (!T(Email, "string") || !T(Password, "string")) {
 			const Error = ErrorGen.MissingAuthField();
 
-			if (typeof Email !== 'string') {
-				Error.AddError({
-					Email: {
-						Code: 'InvalidEmail',
-						Message: 'The Email provided is Invalid, Missing or already in use',
-					},
-				});
-			}
-
-			if (typeof Password !== 'string') {
-				Error.AddError({
-					Password: {
-						Code: 'InvalidPassword',
-						Message: 'The Password provided is Invalid, or Missing',
-					},
-				});
-			}
+			Error.AddError({
+				Login: {
+					Code: "BadLogin",
+					Message: "The Email or Password provided is Invalid or Missing",
+				},
+			});
 
 			Res.status(400).send(Error.toJSON());
 
@@ -83,9 +73,9 @@ export default class Login extends Route {
 			const Error = ErrorGen.MissingAuthField();
 
 			Error.AddError({
-				Email: {
-					Code: 'InvalidEmail',
-					Message: 'The Email provided is Invalid, Missing or already in use',
+				Login: {
+					Code: "BadLogin",
+					Message: "The Email or Password provided is Invalid or Missing",
 				},
 			});
 
@@ -98,9 +88,9 @@ export default class Login extends Route {
 			const Error = ErrorGen.InvalidCredentials();
 
 			Error.AddError({
-				Password: {
-					Code: 'InvalidPassword',
-					Message: 'The Password provided is Invalid, or Missing',
+				Login: {
+					Code: "BadLogin",
+					Message: "The Email or Password provided is Invalid or Missing",
 				},
 			});
 
@@ -112,16 +102,16 @@ export default class Login extends Route {
 		const UserFlags = new FlagFields(FetchedUser.Flags, FetchedUser.PublicFlags);
 
 		if (
-			UserFlags.PrivateFlags.has('AccountDeleted') ||
-			UserFlags.PrivateFlags.has('WaitingOnDisableDataUpdate') ||
-			UserFlags.PrivateFlags.has('WaitingOnAccountDeletion')
+			UserFlags.PrivateFlags.has("AccountDeleted") ||
+			UserFlags.PrivateFlags.has("WaitingOnDisableDataUpdate") ||
+			UserFlags.PrivateFlags.has("WaitingOnAccountDeletion")
 		) {
 			const Error = ErrorGen.AccountNotAvailable();
 
 			Error.AddError({
 				Email: {
-					Code: 'AccountDeleted',
-					Message: 'The Account has been deleted',
+					Code: "AccountDeleted",
+					Message: "The Account has been deleted",
 				},
 			});
 
@@ -130,13 +120,13 @@ export default class Login extends Route {
 			return;
 		}
 
-		if (UserFlags.PrivateFlags.has('Terminated') || UserFlags.PrivateFlags.has('Disabled')) {
+		if (UserFlags.PrivateFlags.has("Terminated") || UserFlags.PrivateFlags.has("Disabled")) {
 			const Error = ErrorGen.AccountNotAvailable();
 
 			Error.AddError({
 				Email: {
-					Code: 'AccountDisabled',
-					Message: 'The Account has been disabled',
+					Code: "AccountDisabled",
+					Message: "The Account has been disabled",
 				},
 			});
 
@@ -151,13 +141,13 @@ export default class Login extends Route {
 			{
 				UserId: Encryption.Encrypt(FetchedUser.UserId),
 			},
-			{ fields: ['tokens'] },
+			{ fields: ["tokens"] },
 		);
 
 		const SessionId = Encryption.Encrypt(this.App.Snowflake.Generate());
 
 		if (!Tokens) {
-			Res.status(500).send('Internal Server Error :(');
+			Res.status(500).send("Internal Server Error :(");
 
 			return;
 		}
@@ -197,7 +187,7 @@ export default class Login extends Route {
 
 		return Encryption.CompleteDecryption({
 			...FetchedUser,
-			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
+			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : "0",
 		});
 	}
 }

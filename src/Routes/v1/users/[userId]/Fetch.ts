@@ -9,14 +9,14 @@
  * GPL 3.0 Licensed
  */
 
-import type { Request, Response } from 'express';
-import User from '../../../../Middleware/User.ts';
-import type App from '../../../../Utils/Classes/App.ts';
-import FlagFields from '../../../../Utils/Classes/BitFields/Flags.ts';
-import Encryption from '../../../../Utils/Classes/Encryption.ts';
-import ErrorGen from '../../../../Utils/Classes/ErrorGen.ts';
-import Route from '../../../../Utils/Classes/Route.ts';
-import type { User as UserType } from '../../../../Utils/Cql/Types/index.ts';
+import type { Request, Response } from "express";
+import User from "../../../../Middleware/User.ts";
+import type App from "../../../../Utils/Classes/App.ts";
+import FlagFields from "../../../../Utils/Classes/BitFields/Flags.ts";
+import Encryption from "../../../../Utils/Classes/Encryption.ts";
+import ErrorGen from "../../../../Utils/Classes/ErrorGen.ts";
+import Route from "../../../../Utils/Classes/Route.ts";
+import type { User as UserType } from "../../../../Utils/Cql/Types/index.ts";
 
 interface UserObject {
 	Avatar: string | null;
@@ -33,19 +33,19 @@ export default class FetchPatchUser extends Route {
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ['GET'];
+		this.Methods = ["GET"];
 
 		this.Middleware = [
 			User({
-				AccessType: 'LoggedIn',
-				AllowedRequesters: 'User',
+				AccessType: "LoggedIn",
+				AllowedRequesters: "User",
 				App,
 			}),
 		];
 
-		this.AllowedContentTypes = ['application/json'];
+		this.AllowedContentTypes = ["application/json"];
 
-		this.Routes = ['/'];
+		this.Routes = ["/"];
 	}
 
 	public override async Request(Req: Request, Res: Response) {
@@ -59,8 +59,8 @@ export default class FetchPatchUser extends Route {
 
 			Error.AddError({
 				User: {
-					Code: 'InvalidUser',
-					Message: 'The user you tried to fetch is Invalid.',
+					Code: "InvalidUser",
+					Message: "The user you tried to fetch is Invalid.",
 				},
 			});
 
@@ -69,7 +69,7 @@ export default class FetchPatchUser extends Route {
 			return;
 		}
 
-		const SplitInclude = String(include).split(',');
+		const SplitInclude = String(include).split(",");
 
 		const FlagUtils = new FlagFields(FetchedUser.Flags, FetchedUser.PublicFlags);
 
@@ -83,14 +83,14 @@ export default class FetchPatchUser extends Route {
 			Flags: Number(FlagUtils.PublicPrivateFlags),
 		};
 
-		if (SplitInclude.includes('bio') && !Req.user.Bot) {
+		if (SplitInclude.includes("bio") && !Req.user.Bot) {
 			// darkerink: Bots should not be allowed to fetch this (Personal info bots no need access to)
 			const Settings = await this.App.Cassandra.Models.Settings.get(
 				{
 					UserId: Encryption.Encrypt(UserObject.Id),
 				},
 				{
-					fields: ['bio'],
+					fields: ["bio"],
 				},
 			);
 
@@ -110,7 +110,7 @@ export default class FetchPatchUser extends Route {
 
 		return Encryption.CompleteDecryption({
 			...FetchedUser,
-			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
+			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : "0",
 		});
 	}
 }

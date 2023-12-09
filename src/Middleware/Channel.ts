@@ -9,31 +9,33 @@
  * GPL 3.0 Licensed
  */
 
-import type { Request, Response } from "express";
-import User from "../../../../../../Middleware/User.ts";
-import type App from "../../../../../../Utils/Classes/App.ts";
-import Route from "../../../../../../Utils/Classes/Route.ts";
+import type { NextFunction, Request, Response } from "express";
+import type { GuildMiddleware } from "../Types/Routes";
+import ErrorGen from "../Utils/Classes/ErrorGen.ts";
 
-export default class FetchAndPatchMember extends Route {
-	public constructor(App: App) {
-		super(App);
+const Channel = (options: GuildMiddleware) => {
+	return async (Req: Request<{ channelId?: string }>, Res: Response, next: NextFunction) => {
+		const Error = ErrorGen.UnknownChannel();
 
-		this.Methods = ["GET", "PATCH"];
+		if ((options.Required && !Req.params.channelId) || !Req.user?.Id) {
+			options.App.Logger.debug("Channel is required but not provided");
 
-		this.Middleware = [
-			User({
-				AccessType: "LoggedIn",
-				AllowedRequesters: "User",
-				App,
-			}),
-		];
+			Error.AddError({
+				ChannelId: {
+					Code: "UnknownChannel",
+					Message: "The channel is Invalid, Does not exist or you do not have permissions to view it.",
+				},
+			});
 
-		this.AllowedContentTypes = ["application/json"];
+			Res.status(404).json(Error.toJSON());
 
-		this.Routes = ["/"];
-	}
+			return;
+		}
 
-	public override Request(_: Request, Res: Response): void {
-		Res.send("ok");
-	}
-}
+		next();
+	};
+};
+
+export default Channel;
+
+export { Channel };

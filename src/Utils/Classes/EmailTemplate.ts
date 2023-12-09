@@ -1,10 +1,10 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { cwd } from 'node:process';
-import { request } from 'undici';
-import { EmailTemplates, MailServer } from '../../Config.ts';
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { cwd } from "node:process";
+import { request } from "undici";
+import { EmailTemplates, MailServer } from "../../Config.ts";
 
-const SupportEmail = MailServer.Users.find((user) => user.ShortCode === 'Support')?.User;
+const SupportEmail = MailServer.Users.find((user) => user.ShortCode === "Support")?.User;
 
 class EMailTemplate {
 	public static async EmailVerification(Username: string, VerificationLink: string): Promise<string> {
@@ -20,7 +20,7 @@ class EMailTemplate {
 	): Promise<string> {
 		const UrlRegex = /^https?:\/\/(?:www\.)?[\w#%+.:=@~-]{1,256}\.[\d()A-Za-z]{1,6}\b[\w#%&()+./:=?@~-]*$/g;
 
-		if (!EmailTemplate.Template) throw new Error('No Template was provided');
+		if (!EmailTemplate.Template) throw new Error("No Template was provided");
 
 		if (UrlRegex.test(EmailTemplate.Template)) {
 			const { body } = await request(EmailTemplate.Template);
@@ -28,7 +28,7 @@ class EMailTemplate {
 			return body.text();
 		}
 
-		return readFileSync(join(cwd(), EmailTemplate.Template), 'utf8');
+		return readFileSync(join(cwd(), EmailTemplate.Template), "utf8");
 	}
 }
 

@@ -9,9 +9,9 @@
  * GPL 3.0 Licensed
  */
 
-import crypto from 'node:crypto';
-import { types } from '@kastelll/cassandra-driver';
-import { Encryption as En } from '../../Config.ts';
+import crypto from "node:crypto";
+import { types } from "@kastelll/cassandra-driver";
+import { Encryption as En } from "../../Config.ts";
 
 const algorithm = En.Algorithm;
 const initVector = En.InitVector;
@@ -26,16 +26,16 @@ class Encryption {
 				data,
 			};
 
-			return cipher.update(Encryption.fixData(dd), 'utf8', 'hex') + cipher.final('hex');
+			return cipher.update(Encryption.fixData(dd), "utf8", "hex") + cipher.final("hex");
 		} catch {
 			throw new Error(`Failed to encrypt data ${data}`);
 		}
 	}
 
-	public static Decrypt(data: string, raw = false): any {
+	public static Decrypt<T = any>(data: string, raw = false): T {
 		try {
 			const decipher = crypto.createDecipheriv(algorithm, securityKey, initVector);
-			const decrypted = decipher.update(data, 'hex', 'utf8') + decipher.final('utf8');
+			const decrypted = decipher.update(data, "hex", "utf8") + decipher.final("utf8");
 			const cleaned = Encryption.cleanData(decrypted);
 
 			if (raw) return cleaned;
@@ -59,13 +59,13 @@ class Encryption {
 	private static fixData(data: any): string {
 		let fixedData = data;
 
-		if (typeof fixedData === 'object') fixedData = JSON.stringify(data);
+		if (typeof fixedData === "object") fixedData = JSON.stringify(data);
 
-		if (typeof fixedData === 'undefined') fixedData = '';
+		if (typeof fixedData === "undefined") fixedData = "";
 
-		if (typeof fixedData !== 'string') fixedData = String(data);
+		if (typeof fixedData !== "string") fixedData = String(data);
 
-		if (typeof fixedData !== 'string') throw new Error(`Failed to stringify data ${typeof fixedData}, ${fixedData}`);
+		if (typeof fixedData !== "string") throw new Error(`Failed to stringify data ${typeof fixedData}, ${fixedData}`);
 
 		return fixedData;
 	}
@@ -79,13 +79,13 @@ class Encryption {
 	}
 
 	public static CompleteDecryption<T = any>(items: T, raw = false): T {
-		if (typeof items === 'string') {
+		if (typeof items === "string") {
 			if (Encryption.isEncrypted(items)) return Encryption.Decrypt(items, raw);
 
 			return items;
 		}
 
-		if (typeof items !== 'object' || items === null) return items;
+		if (typeof items !== "object" || items === null) return items;
 
 		if (!Array.isArray(items)) {
 			const newObject: any = {};
@@ -93,7 +93,7 @@ class Encryption {
 			for (const [key, value] of Object.entries(items)) {
 				if (value instanceof Date || value === null || value instanceof types.Long) {
 					newObject[key] = value;
-				} else if (typeof value === 'object') {
+				} else if (typeof value === "object") {
 					newObject[key] = this.CompleteDecryption(value);
 				} else {
 					newObject[key] = Encryption.isEncrypted(value) ? Encryption.Decrypt(value, raw) : value;
@@ -109,13 +109,13 @@ class Encryption {
 	}
 
 	public static CompleteEncryption<T = any>(items: T): T {
-		if (typeof items === 'string') {
+		if (typeof items === "string") {
 			if (Encryption.isEncrypted(items)) return items;
 
 			return Encryption.Encrypt(items) as T;
 		}
 
-		if (typeof items !== 'object' || items === null) return items;
+		if (typeof items !== "object" || items === null) return items;
 
 		if (!Array.isArray(items)) {
 			const newObject: any = {};
@@ -123,7 +123,7 @@ class Encryption {
 			for (const [key, value] of Object.entries(items)) {
 				if (value instanceof Date || value === null || value instanceof types.Long) {
 					newObject[key] = value;
-				} else if (typeof value === 'object') {
+				} else if (typeof value === "object") {
 					newObject[key] = this.CompleteEncryption(value);
 				} else {
 					newObject[key] = Encryption.isEncrypted(value) ? value : Encryption.Encrypt(value);
