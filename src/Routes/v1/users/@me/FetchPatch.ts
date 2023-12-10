@@ -446,7 +446,7 @@ export default class FetchPatchUser extends Route {
 		if (SplitInclude.includes("bio")) {
 			const Settings = await this.App.Cassandra.Models.Settings.get(
 				{
-					UserId: Encryption.Encrypt(UserObject.Id),
+					UserId: Encryption.Encrypt(UserObject.Id as string),
 				},
 				{
 					fields: ["bio"],

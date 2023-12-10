@@ -54,7 +54,7 @@ export default class FetchCreateAndDeleteInvites extends Route {
 
 		this.AllowedContentTypes = [];
 
-		this.Routes = ["/", "/:inviteId"];
+		this.Routes = ["/", "/:inviteId", "/@me"];
 
 		this.MaxUses = 100;
 	}
@@ -74,8 +74,13 @@ export default class FetchCreateAndDeleteInvites extends Route {
 			}
 
 			case "GET": {
-				await this.FetchInvites(Req, Res);
 
+				if (Req.path === "/@me") {
+					await this.FetchAtMeInvites(Req, Res);
+				} else {
+					await this.FetchInvites(Req, Res);
+				}
+				
 				break;
 			}
 
@@ -289,6 +294,29 @@ export default class FetchCreateAndDeleteInvites extends Route {
 			});
 		}
 
+		Res.send(Encryption.CompleteDecryption(FixedInvites));
+	}
+	
+	public async FetchAtMeInvites(Req: Request, Res: Response): Promise<void> {
+		const Invites = await this.App.Cassandra.Models.Invite.find({
+			GuildId: Encryption.Encrypt(Req.guild.Guild.Id),
+		});
+
+		const FixedInvites = [];
+
+		for (const InvitePayload of Invites.toArray()) {
+			if (InvitePayload.CreatorId !== Encryption.Encrypt(Req.user.Id)) continue;
+
+			FixedInvites.push({
+				Code: InvitePayload.Code,
+				CreatorId: InvitePayload.CreatorId,
+				ExpiresAt: InvitePayload.Expires,
+				MaxUses: InvitePayload.MaxUses,
+				Uses: InvitePayload.Uses,
+				Deleteable: InvitePayload.Deleteable,
+			});
+		}
+		
 		Res.send(Encryption.CompleteDecryption(FixedInvites));
 	}
 
