@@ -54,7 +54,7 @@ export default class FetchCreateAndDeleteInvites extends Route {
 
 		this.AllowedContentTypes = [];
 
-		this.Routes = ["/", "/:inviteId"];
+		this.Routes = ["/", "/@me", "/:inviteId"];
 
 		this.MaxUses = 100;
 	}
@@ -75,8 +75,6 @@ export default class FetchCreateAndDeleteInvites extends Route {
 
 			case "GET": {
 
-				console.log(Req.path)
-				
 				if (Req.path.includes("/@me")) {
 					await this.FetchAtMeInvites(Req, Res);
 				} else {
