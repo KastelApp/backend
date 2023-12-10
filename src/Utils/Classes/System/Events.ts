@@ -16,30 +16,34 @@ class Events {
 	}
 
 	public MessageCreate(Message: {
-		AllowedMentions: number;
-		Attachments: string[];
-		Author: {
-			Avatar: string;
-			Bot: boolean;
-			Flags: string;
+		ChannelId: string;
+		Msg: {
+			AllowedMentions: number;
+			Attachments: string[];
+			Author: {
+				Avatar: string;
+				Bot: boolean;
+				Flags: string;
+				Id: string;
+				JoinedAt: Date;
+				PublicFlags: string;
+				Roles: string[];
+				Tag: string;
+				Username: string;
+			};
+			Content: string;
+			Embeds: MainObject[];
+			Flags: number;
 			Id: string;
-			JoinedAt: Date;
-			PublicFlags: string;
-			Roles: string[];
-			Tag: string;
-			Username: string;
-		};
-		Content: string;
-		Embeds: MainObject[];
-		Flags: number;
-		Id: string;
-		Mentions: {
-			Channels: string[];
-			Roles: string[];
-			Users: string[];
-		};
-		Nonce: string;
-		ReplyingTo: string;
+			Mentions: {
+				Channels: string[];
+				Roles: string[];
+				Users: string[];
+			};
+			Nonce: string;
+			ReplyingTo: string;
+
+		}
 	}) {
 		if (this.SendEvents) {
 			this.SystemSocket.Ws?.send(

@@ -549,7 +549,6 @@ export default class FetchAndCreateMessages extends Route {
 
 		await this.App.Cassandra.Models.Message.insert(BuiltMessage as Messages);
 		
-		
 		const DataToSend = {
 			AllowedMentions: BuiltMessage.AllowedMentions as number,
 			Attachments: BuiltMessage.Attachments as string[],
@@ -577,7 +576,10 @@ export default class FetchAndCreateMessages extends Route {
 			ReplyingTo: ReplyingTo ?? null
 		}
 		
-		this.App.SystemSocket.Events.MessageCreate(DataToSend);
+		this.App.SystemSocket.Events.MessageCreate({
+			Msg: DataToSend,
+			ChannelId: Req.params.channelId,
+		});
 		
 		Res.status(201).send(this.FixObject(Encryption.CompleteDecryption(DataToSend)));
 	}
