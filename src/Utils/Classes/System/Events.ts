@@ -49,18 +49,14 @@ class Events {
 			this.SystemSocket.Ws?.send(
 				JSON.stringify({
 					Op: OpCodes.MessageCreate,
-					D: {
-						Message,
-					},
+					D: Message,
 				}),
 			);
 		}
 
 		return JSON.stringify({
 			Op: OpCodes.MessageCreate,
-			D: {
-				Message,
-			},
+			D: Message,
 		});
 	}
 
