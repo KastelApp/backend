@@ -303,7 +303,7 @@ const User = (options: UserMiddleware) => {
 				Email: CompleteDecrypted.Email,
 				Id: CompleteDecrypted.UserId,
 				Password: CompleteDecrypted.Password,
-				Guilds: CompleteDecrypted.Guilds ?? [],
+				Guilds: CompleteDecrypted.Guilds ?? []
 			} as ExpressUser;
 
 			next();

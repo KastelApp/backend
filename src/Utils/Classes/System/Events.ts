@@ -1,6 +1,7 @@
 /* eslint-disable id-length */
 import type { types } from "@kastelll/cassandra-driver";
 import type { ExpressUser } from "../../../Types/index.ts";
+import { type MainObject } from "../../Cql/Types/Message.ts";
 import type { PermissionOverride } from "../../Cql/Types/index.ts";
 import { OpCodes } from "../WsUtils.ts";
 import type { SystemSocket } from "./SystemSocket";
@@ -16,27 +17,29 @@ class Events {
 
 	public MessageCreate(Message: {
 		AllowedMentions: number;
+		Attachments: string[];
 		Author: {
+			Avatar: string;
+			Bot: boolean;
+			Flags: string;
 			Id: string;
-			JoinedAt: number;
-			Nickname: string | null;
+			JoinedAt: Date;
+			PublicFlags: string;
 			Roles: string[];
-			User: {
-				AvatarHash: string | null;
-				Flags: number;
-				Id: string;
-				PublicFlags: number;
-				Tag: string;
-				Username: string;
-			};
+			Tag: string;
+			Username: string;
 		};
-		ChannelId: string;
 		Content: string;
-		CreatedAt: number;
+		Embeds: MainObject[];
 		Flags: number;
 		Id: string;
-		Nonce: null;
-		UpdatedAt: number;
+		Mentions: {
+			Channels: string[];
+			Roles: string[];
+			Users: string[];
+		};
+		Nonce: string;
+		ReplyingTo: string;
 	}) {
 		if (this.SendEvents) {
 			this.SystemSocket.Ws?.send(
@@ -57,7 +60,7 @@ class Events {
 		});
 	}
 
-	public MessageDelete(Message: { AuthorId: string; ChannelId: string; Id: string; Timestamp: number }) {
+	public MessageDelete(Message: { AuthorId: string; ChannelId: string; Id: string; Timestamp: number; }) {
 		if (this.SendEvents) {
 			this.SystemSocket.Ws?.send(
 				JSON.stringify({
@@ -114,7 +117,7 @@ class Events {
 		return StringifiedPayload;
 	}
 
-	public NewSession(data: { SessionId: string; UserId: string }) {
+	public NewSession(data: { SessionId: string; UserId: string; }) {
 		const StringifiedPayload = JSON.stringify({
 			Op: OpCodes.NewSession,
 			D: {
@@ -130,7 +133,7 @@ class Events {
 		return StringifiedPayload;
 	}
 
-	public DeletedSession(data: { SessionId: string; UserId: string }) {
+	public DeletedSession(data: { SessionId: string; UserId: string; }) {
 		const StringifiedPayload = JSON.stringify({
 			Op: OpCodes.DeleteSession,
 			D: {
@@ -279,7 +282,7 @@ class Events {
 
 		return StringifiedPayload;
 	}
-	
+
 	public GuildJoin(Data: {
 		GuildId: string;
 		UserId: string;
