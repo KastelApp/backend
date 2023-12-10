@@ -68,7 +68,7 @@ export default class FetchCreateAndDeleteInvites extends Route {
 
 		switch (Req.methodi) {
 			case "DELETE": {
-				// await this.DeleteInvite(Req, Res);
+				await this.DeleteInvite(Req, Res);
 
 				break;
 			}
@@ -220,6 +220,7 @@ export default class FetchCreateAndDeleteInvites extends Route {
 			CreatorId: Encryption.Encrypt(Req.user.Id),
 			Deleteable: true,
 			Expires: ExpiresAt ? new Date(ExpiresAt) : new Date(Date.now() + 604_800_000),
+			CreatedAt: new Date(),
 			GuildId: Encryption.Encrypt(Req.guild.Guild.Id),
 			MaxUses: MaxUses ?? 0,
 			Uses: 0,
@@ -232,6 +233,7 @@ export default class FetchCreateAndDeleteInvites extends Route {
 				Code: InvitePayload.Code,
 				CreatorId: InvitePayload.CreatorId,
 				ExpiresAt: InvitePayload.Expires,
+				CreatedAt: InvitePayload.CreatedAt,
 				MaxUses: InvitePayload.MaxUses,
 				Uses: 0,
 				Deleteable: InvitePayload.Deleteable,
@@ -239,7 +241,49 @@ export default class FetchCreateAndDeleteInvites extends Route {
 		);
 	}
 
-	// public async DeleteInvite(Req: Request<{ inviteId?: string; }>, Res: Response): Promise<void> { }
+	public async DeleteInvite(Req: Request<{ inviteId?: string; }>, Res: Response): Promise<void> {
+		const Member = await this.FetchMember(Req.user.Id, Req.guild.Guild.Id);
+
+		if (!Member) return; // will never happen
+
+		const FoundRoles = await this.FetchRoles(Member.Roles);
+
+		const MemberFlags = new GuildMemberFlags(Member.Flags);
+
+		const PermissionCheck = new PermissionHandler(
+			Req.user.Id,
+			MemberFlags.cleaned,
+			FoundRoles.map((role) => {
+				return {
+					Id: role.RoleId,
+					Permissions: role.Permissions.toString(),
+					Position: role.Position,
+				};
+			}),
+		);
+
+		if (!PermissionCheck.HasAnyRole("ManageInvites")) {
+			const MissingPermissions = ErrorGen.MissingPermissions();
+
+			MissingPermissions.AddError({
+				Permissions: {
+					Code: "MissingPermissions",
+					Message: "You are missing the permissions to do this action.",
+				},
+			});
+
+			Res.status(403).json(MissingPermissions.toJSON());
+
+			return;
+		}
+
+		await this.App.Cassandra.Models.Invite.remove({
+			GuildId: Encryption.Encrypt(Req.guild.Guild.Id),
+			Code: Encryption.Encrypt(Req.params.inviteId as string),
+		});
+		
+		Res.status(204).send();
+	}
 
 	public async FetchInvites(Req: Request, Res: Response): Promise<void> {
 		const Member = await this.FetchMember(Req.user.Id, Req.guild.Guild.Id);
@@ -284,10 +328,21 @@ export default class FetchCreateAndDeleteInvites extends Route {
 		const FixedInvites = [];
 
 		for (const InvitePayload of Invites.toArray()) {
+			
+			if (InvitePayload.Expires < new Date()) {
+				await this.App.Cassandra.Models.Invite.remove({
+					GuildId: InvitePayload.GuildId,
+					Code: InvitePayload.Code
+				});
+				
+				continue;
+			}
+			
 			FixedInvites.push({
 				Code: InvitePayload.Code,
 				CreatorId: InvitePayload.CreatorId,
 				ExpiresAt: InvitePayload.Expires,
+				CreatedAt: InvitePayload.CreatedAt,
 				MaxUses: InvitePayload.MaxUses,
 				Uses: InvitePayload.Uses,
 				Deleteable: InvitePayload.Deleteable,
@@ -305,12 +360,22 @@ export default class FetchCreateAndDeleteInvites extends Route {
 		const FixedInvites = [];
 
 		for (const InvitePayload of Invites.toArray()) {
+			if (InvitePayload.Expires < new Date()) {
+				await this.App.Cassandra.Models.Invite.remove({
+					GuildId: InvitePayload.GuildId,
+					Code: InvitePayload.Code
+				});
+				
+				continue;
+			}
+			
 			if (InvitePayload.CreatorId !== Encryption.Encrypt(Req.user.Id)) continue;
 
 			FixedInvites.push({
 				Code: InvitePayload.Code,
 				CreatorId: InvitePayload.CreatorId,
 				ExpiresAt: InvitePayload.Expires,
+				CreatedAt: InvitePayload.CreatedAt,
 				MaxUses: InvitePayload.MaxUses,
 				Uses: InvitePayload.Uses,
 				Deleteable: InvitePayload.Deleteable,
