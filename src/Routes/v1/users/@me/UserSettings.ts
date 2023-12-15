@@ -91,8 +91,8 @@ export default class UserSettings extends Route {
 			Presence: UserSettings.Presence,
 			Privacy: UserSettings.Privacy,
 			Status: UserSettings.Status,
-			Theme: UserSettings.Theme
-		}
+			Theme: UserSettings.Theme,
+		};
 
 		return Res.send(Encryption.CompleteDecryption(SettingsObject));
 	}
@@ -158,7 +158,7 @@ export default class UserSettings extends Route {
 
 	private async FetchUserSettings(UserId: string): Promise<Settings | null> {
 		const User = await this.App.Cassandra.Models.Settings.get({
-			UserId: Encryption.Encrypt(UserId)
+			UserId: Encryption.Encrypt(UserId),
 		});
 
 		if (!User) return null;
