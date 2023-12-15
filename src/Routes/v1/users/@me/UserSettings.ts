@@ -18,7 +18,6 @@ import Route from '../../../../Utils/Classes/Route.ts';
 import type Settings from '../../../../Utils/Cql/Types/Settings.ts';
 
 interface EditableSettings {
-	Bio: string;
 	Language: string;
 	Presence: number;
 	Privacy: number;
@@ -47,7 +46,6 @@ export default class UserSettings extends Route {
 		this.Routes = ['/settings'];
 
 		this.Editable = [
-			'Bio',
 			'Language',
 			'Presence',
 			'Privacy',
