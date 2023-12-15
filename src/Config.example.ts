@@ -26,6 +26,8 @@ const Server: ServerConfigType = {
 	Domain: "kastelapp.com",
 	Secure: true, // https or http
 	WorkerId: 1,
+	BucketInterval: 1_000 * 60 * 60 * 24 * 14, // 14 days
+	BucketRnd: 3_595_537_112,
 	Cache: {
 		ClearInterval: 1_000 * 60 * 60 * 6, // six hours
 		ClearOnStart: false,

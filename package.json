@@ -26,7 +26,7 @@
     "@types/deep-equal": "^1.0.1",
     "@types/express": "^4.17.17",
     "@types/nodemailer": "^6.4.9",
-    "bun-types": "^1.0.5-canary.20231006T140143",
+    "bun-types": "^1.0.18",
     "eslint": "^8.47.0",
     "eslint-config-neon": "^0.1.47",
     "eslint-formatter-pretty": "^5.0.0",

@@ -99,7 +99,7 @@ class App {
 
 	public Args: typeof SupportedArgs = ProcessArgs(SupportedArgs as unknown as string[])
 		.Valid as unknown as typeof SupportedArgs;
-
+		
 	public constructor() {
 		this.ExpressApp = express();
 
@@ -662,6 +662,47 @@ class App {
 			CommitShort: Commit.latest.hash.slice(0, 7),
 			Clean: Status.files.length === 0,
 		};
+	}
+	
+	public GetBucket(Snowflake?: string): string {
+		let BucketNumber;
+		
+		if (Snowflake) {
+			BucketNumber = BigInt(this.Snowflake.TimeStamp(Snowflake)) - this.Snowflake.Epoch;
+		} else {
+			BucketNumber = BigInt(Date.now()) - this.Snowflake.Epoch;
+		}
+		
+		let Bucket = BucketNumber / BigInt(this.Config.Server.BucketInterval);
+		
+		Bucket += BigInt(this.Config.Server.BucketRnd);
+		
+		return Bucket.toString(16);
+	}
+	
+	public GetBuckets(StartId: string, EndId?: string) {
+		const startBucket = this.GetBucket(StartId);
+		const endBucket = this.GetBucket(EndId);
+		
+		let startBucketNumber = Number.parseInt(startBucket, 16);
+		let endBucketNumber = Number.parseInt(endBucket, 16);
+		
+		startBucketNumber -= this.Config.Server.BucketRnd;
+		endBucketNumber -= this.Config.Server.BucketRnd;
+		
+		const bucketRange = endBucketNumber - startBucketNumber;
+		
+		const buckets = [];
+		
+		for (let i = 0; i <= bucketRange; i++) {
+			let currentBucket = startBucketNumber + i;
+			
+			currentBucket += this.Config.Server.BucketRnd;
+			
+			buckets.push(currentBucket.toString(16));
+		}
+		
+		return buckets;
 	}
 }
 

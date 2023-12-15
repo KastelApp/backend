@@ -132,7 +132,33 @@ export default class FetchAndCreateMessages extends Route {
 				},
 			});
 		}
-
+		
+		if (Req.query.limit && Number.isNaN(Req.query.limit) || Number(Req.query.limit) < 1 || Number(Req.query.limit) > 100) {
+			InvalidRequest.AddError({
+				Limit: {
+					Code: "InvalidLimit",
+					Message: "Limit must be a number between 1 and 100",
+				},
+			});
+		}
+		
+		if (Req.query.after && !this.App.Snowflake.Validate(Req.query.after)) {
+			InvalidRequest.AddError({
+				After: {
+					Code: "InvalidAfter",
+					Message: "After is not a valid snowflake",
+				},
+			});
+		}
+		
+		if (Req.query.before && !this.App.Snowflake.Validate(Req.query.before)) {
+			InvalidRequest.AddError({
+				Before: {
+					Code: "InvalidBefore",
+					Message: "Before is not a valid snowflake",
+				},
+			});
+		}
 
 		if (Object.keys(InvalidRequest.Errors).length > 0) {
 			Res.status(400).send(InvalidRequest.toJSON());
@@ -140,41 +166,9 @@ export default class FetchAndCreateMessages extends Route {
 			return;
 		}
 
-		let query = "SELECT * FROM messages WHERE channel_id = ? ";
-		const params = [
-			Encryption.Encrypt(Req.params.channelId)
-		];
+		const Messages = await this.GetMessages(Req.params.channelId, Number(Req.query.limit), Req.query.before, Req.query.after);
 		
-		if (Req.query.after) {
-			query += "AND message_id > ? ";
-			params.push(Encryption.Encrypt(Req.query.after));
-		}
-		
-		if (Req.query.before) {
-			query += "AND message_id < ? ";
-			params.push(Encryption.Encrypt(Req.query.before));
-		}
-		
-		query += "ORDER BY message_id DESC ";
-		
-		if (Number.isNaN(Number(Req.query.limit))) {
-			params.push("50");
-		} else {
-			params.push(String(Number(Req.query.limit)));
-		}
-		
-		query += "LIMIT ? ";
-		
-		const Messages = await this.App.Cassandra.Client.execute(
-			query,
-			params,
-			{
-				prepare: true,
-				
-			}
-		);
-		
-		const MappedMessages = Messages.rows.map((Msg) => {
+		const MappedMessages = Messages.map((Msg) => {
 			return {
 				ChannelId: Msg.channel_id,
 				MessageId: Msg.message_id.toString(),
@@ -189,7 +183,8 @@ export default class FetchAndCreateMessages extends Route {
 				ReplyingTo: Msg.replying_to,
 				UpdatedDate: Msg.updated_date,
 				Attachments: Msg.attachments ?? [],
-				AuthorId: Msg.author_id
+				AuthorId: Msg.author_id,
+				Bucket: Msg.bucket
 			}
 		});
 		
@@ -242,6 +237,66 @@ export default class FetchAndCreateMessages extends Route {
 		}
 
 		Res.send(Encryption.CompleteDecryption(NewMessages));
+	}
+	
+	private BuildQuery(
+		ChannelId: string,
+		Bucket: string,
+		Limit = 50,
+		Before?: string,
+		After?: string,
+		Order = "DESC"
+	) {
+		let Query = "SELECT * FROM messages WHERE channel_id = ? AND bucket = ?";
+		
+		const Params = [
+			Encryption.Encrypt(ChannelId),
+			Bucket
+		];
+		
+		if (Before) {
+			Query += "AND message_id < ? ";
+			Params.push(Encryption.Encrypt(Before));
+		}
+		
+		if (After) {
+			Query += "AND message_id > ? ";
+			Params.push(Encryption.Encrypt(After));
+		}
+		
+		Query += `ORDER BY message_id ${Order} LIMIT ?`;
+		
+		Params.push(String(Limit));
+		
+		return {
+			Query,
+			Params
+		}
+	}
+	
+	private async GetMessages(ChannelId: string, Limit = 50, Before?: string, After?: string) {
+		const Messages = [];
+		const PossibleBuckets = this.App.GetBuckets(ChannelId).reverse(); // reverse it so the newest buckets are first
+		
+		for (const Bucket of PossibleBuckets) {
+			const BuiltQuery = this.BuildQuery(ChannelId, Bucket, Limit, Before, After);
+			
+			const FetchedMessages = await this.App.Cassandra.Client.execute(
+				BuiltQuery.Query,
+				BuiltQuery.Params,
+				{
+					prepare: true,
+				}
+			);
+			
+			for (const Message of FetchedMessages.rows) {
+				Messages.push(Message);
+			}
+			
+			if (Messages.length >= Limit) break; // we have enough messages
+		}
+		
+		return Messages.slice(0, Limit); // in case we have more than the limit
 	}
 
 	private async CreateMessagePost(Req: Request<{ channelId: string }, any, Message>, Res: Response): Promise<void> {
@@ -544,7 +599,8 @@ export default class FetchAndCreateMessages extends Route {
 			// @ts-expect-error -- todo: fix this
 			MessageId, // darkerink: I want to encrypt this, but idk how to query messages then, since with this way we can sort by the message id size
 			Nonce: Nonce ? Encryption.Encrypt(Nonce) : "",
-			ReplyingTo: ReplyingTo ? Encryption.Encrypt(ReplyingTo) : ""
+			ReplyingTo: ReplyingTo ? Encryption.Encrypt(ReplyingTo) : "",
+			Bucket: this.App.GetBucket(Req.params.channelId)
 		};
 
 		await this.App.Cassandra.Models.Message.insert(BuiltMessage as Messages);

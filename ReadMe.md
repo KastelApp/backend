@@ -21,7 +21,9 @@ If you want to contribute fork the development branch, make your changes, verify
 
 ## Maintainers
 
-[Darker-Ink](https://github.com/Darker-Ink)
+[DarkerInk](https://github.com/Darker-Ink)
+
+[JDog](https://github.com/XD-JDoge)
 
 # License
 
