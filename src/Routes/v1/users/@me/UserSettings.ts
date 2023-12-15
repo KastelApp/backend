@@ -139,7 +139,7 @@ export default class UserSettings extends Route {
 			Theme,
 		};
 
-		return Res.send(Encryption.CompleteDecryption(SettingsObject));
+		Res.send(Encryption.CompleteDecryption(SettingsObject));
 	}
 
 	private async FetchUserSettings(UserId: string): Promise<Settings | null> {
