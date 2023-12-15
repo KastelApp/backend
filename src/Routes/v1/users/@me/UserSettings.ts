@@ -144,15 +144,6 @@ export default class UserSettings extends Route {
 			UserId: Encryption.Encrypt(Req.user.Id)
 		};
 
-		if (FilteredItems.Bio) {
-			SettingsObject.Bio = String(FilteredItems.Bio);
-
-			await this.App.Cassandra.Models.Settings.update({
-				UserId: Encryption.Encrypt(Req.user.Id),
-				Bio: Encryption.Encrypt(String(SettingsObject.Bio))
-			});
-		}
-
 		Res.send(SettingsObject);
 	}
 
