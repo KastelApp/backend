@@ -53,7 +53,7 @@
   "license": "GPL-3.0-or-later",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Kastelll/backend.git"
+    "url": "https://github.com/KastelApp/backend.git"
   },
   "optionalDependencies": {
     "whois-json": "^2.0.4"
