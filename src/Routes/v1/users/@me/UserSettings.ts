@@ -133,16 +133,13 @@ export default class UserSettings extends Route {
 
 		const SettingsObject: Partial<Settings> = {
 			Language,
-			MaxFileUploadSize: this.App.Constants.Settings.Max.MaxFileSize,
-			MaxGuilds: this.App.Constants.Settings.Max.GuildCount,
 			Presence: Presence ?? this.App.Constants.Presence.Online,
 			Privacy,
-			Status: Encryption.Encrypt(Status) ?? UserSettings?.Status,
+			Status: Status ?? UserSettings?.Status,
 			Theme,
-			UserId: Encryption.Encrypt(Req.user.Id)
 		};
 
-		Res.send(SettingsObject);
+		return Res.send(Encryption.CompleteDecryption(SettingsObject));
 	}
 
 	private async FetchUserSettings(UserId: string): Promise<Settings | null> {
