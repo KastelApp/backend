@@ -5,7 +5,7 @@
  *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
  * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
  * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
- * Copyright(c) 2022-2023 DarkerInk
+ * Copyright(c) 2022-2023 Jdog
  * GPL 3.0 Licensed
  */
 
@@ -13,10 +13,22 @@ import type { Request, Response } from 'express';
 import User from '../../../../Middleware/User.ts';
 import type App from '../../../../Utils/Classes/App.ts';
 import { Encryption } from '../../../../Utils/Classes/Encryption.ts';
+import ErrorGen from '../../../../Utils/Classes/ErrorGen.ts';
 import Route from '../../../../Utils/Classes/Route.ts';
 import type Settings from '../../../../Utils/Cql/Types/Settings.ts';
 
+interface EditableSettings {
+	Bio: string;
+	Language: string;
+	Presence: number;
+	Privacy: number;
+	Status: string;
+	Theme: string;
+};
+
 export default class UserSettings extends Route {
+	private readonly Editable: (keyof EditableSettings)[];
+
 	public constructor(App: App) {
 		super(App);
 
@@ -33,6 +45,15 @@ export default class UserSettings extends Route {
 		this.AllowedContentTypes = [];
 
 		this.Routes = ['/settings'];
+
+		this.Editable = [
+			'Bio',
+			'Language',
+			'Presence',
+			'Privacy',
+			'Status',
+			'Theme',
+		];
 	}
 
 	public override async Request(Req: Request<{ userId: string }>, Res: Response) {
@@ -59,12 +80,12 @@ export default class UserSettings extends Route {
 		}
 	}
 
-	public async FetchSettings(Req: Request<{ userId: string }>, Res: Response){
+	public async FetchSettings(Req: Request, Res: Response) {
 		const UserSettings = await this.FetchUserSettings(Req.user.Id);
 
-		if(!UserSettings) return null;
-		
-		const SettingsObject = {
+		if (!UserSettings) return null;
+
+		const SettingsObject: Partial<Settings> = {
 			Bio: UserSettings.Bio,
 			Language: UserSettings.Language,
 			Presence: UserSettings.Presence,
@@ -77,33 +98,70 @@ export default class UserSettings extends Route {
 	}
 
 	public async PatchSettings(Req: Request<{ userId: string }, any, Settings>, Res: Response) {
-		const { Bio, Language, Presence, Privacy, Status, Theme } = Req.body;
+		const { Language, Presence, Privacy, Status, Theme } = Req.body;
+		const Error = ErrorGen.FailedToPatchUser()
+		const UserSettings = await this.FetchUserSettings(Req.user.Id);
+
+		const FilteredItems = Object.entries(Req.body)
+			.filter(([key]) => {
+				return this.Editable.includes(key as keyof EditableSettings);
+			})
+			.reduce<{ [key: string]: number | string | null; }>((prev, [key, value]) => {
+				if (!['string', 'number'].includes(typeof value)) prev[key as string] = null;
+
+				prev[key as string] = value as number | string;
+
+				return prev;
+			}, {}) as unknown as EditableSettings;
+
+		if (Object.keys(FilteredItems).length === 0) {
+			Error.AddError({
+				Keys: {
+					Code: 'NoKeys',
+					Message: 'There are no keys',
+				},
+			});
+		}
+
+		if (Object.keys(Error.Errors).length > 0) {
+			Res.status(400).send(Error.toJSON());
+
+			return;
+		}
+
+		await this.App.Cassandra.Models.Settings.update({
+			...Encryption.CompleteEncryption(UserSettings)
+		});
 
 		const SettingsObject: Partial<Settings> = {
-			Bio: Encryption.Encrypt(Bio),
-			Language: Language,
+			Language,
 			MaxFileUploadSize: this.App.Constants.Settings.Max.MaxFileSize,
 			MaxGuilds: this.App.Constants.Settings.Max.GuildCount,
 			Presence: Presence ?? this.App.Constants.Presence.Online,
-			Privacy: Privacy,
-			Status: Encryption.Encrypt(Status),
-			Theme: Theme,
-			UserId: Encryption.Encrypt(Req.user.Id),
+			Privacy,
+			Status: Encryption.Encrypt(Status) ?? UserSettings?.Status,
+			Theme,
+			UserId: Encryption.Encrypt(Req.user.Id)
 		};
 
-		await this.App.Cassandra.Models.Settings.update(SettingsObject);
+		if (FilteredItems.Bio) {
+			SettingsObject.Bio = String(FilteredItems.Bio);
 
-		return Res.status(201).json({
-			...Encryption.CompleteDecryption(SettingsObject),
-		});
+			await this.App.Cassandra.Models.Settings.update({
+				UserId: Encryption.Encrypt(Req.user.Id),
+				Bio: Encryption.Encrypt(String(SettingsObject.Bio))
+			});
+		}
+
+		Res.send(SettingsObject);
 	}
 
-	private async FetchUserSettings(UserId: string){
+	private async FetchUserSettings(UserId: string): Promise<Settings | null> {
 		const User = await this.App.Cassandra.Models.Settings.get({
 			UserId: Encryption.Encrypt(UserId)
 		});
 
-		if(!User) return null;
+		if (!User) return null;
 
 		return Encryption.CompleteDecryption(User);
 	}
