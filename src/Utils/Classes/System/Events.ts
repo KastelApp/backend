@@ -1,7 +1,10 @@
 /* eslint-disable id-length */
-import type { ExpressUser } from '../../../Types/index.ts';
-import { OpCodes } from '../WsUtils.ts';
-import type { SystemSocket } from './SystemSocket';
+import type { types } from "@kastelll/cassandra-driver";
+import type { ExpressUser } from "../../../Types/index.ts";
+import { type MainObject } from "../../Cql/Types/Message.ts";
+import type { PermissionOverride } from "../../Cql/Types/index.ts";
+import { OpCodes } from "../WsUtils.ts";
+import type { SystemSocket } from "./SystemSocket";
 
 class Events {
 	public SendEvents: boolean;
@@ -13,49 +16,51 @@ class Events {
 	}
 
 	public MessageCreate(Message: {
-		AllowedMentions: number;
-		Author: {
-			Id: string;
-			JoinedAt: number;
-			Nickname: string | null;
-			Roles: string[];
-			User: {
-				AvatarHash: string | null;
-				Flags: number;
+		ChannelId: string;
+		Msg: {
+			AllowedMentions: number;
+			Attachments: string[];
+			Author: {
+				Avatar: string;
+				Bot: boolean;
+				Flags: string;
 				Id: string;
-				PublicFlags: number;
+				JoinedAt: Date;
+				PublicFlags: string;
+				Roles: string[];
 				Tag: string;
 				Username: string;
 			};
-		};
-		ChannelId: string;
-		Content: string;
-		CreatedAt: number;
-		Flags: number;
-		Id: string;
-		Nonce: null;
-		UpdatedAt: number;
+			Content: string;
+			Embeds: MainObject[];
+			Flags: number;
+			Id: string;
+			Mentions: {
+				Channels: string[];
+				Roles: string[];
+				Users: string[];
+			};
+			Nonce: string;
+			ReplyingTo: string;
+
+		}
 	}) {
 		if (this.SendEvents) {
 			this.SystemSocket.Ws?.send(
 				JSON.stringify({
 					Op: OpCodes.MessageCreate,
-					D: {
-						Message,
-					},
+					D: Message,
 				}),
 			);
 		}
 
 		return JSON.stringify({
 			Op: OpCodes.MessageCreate,
-			D: {
-				Message,
-			},
+			D: Message,
 		});
 	}
 
-	public MessageDelete(Message: { AuthorId: string; ChannelId: string; Id: string; Timestamp: number }) {
+	public MessageDelete(Message: { AuthorId: string; ChannelId: string; Id: string; Timestamp: number; }) {
 		if (this.SendEvents) {
 			this.SystemSocket.Ws?.send(
 				JSON.stringify({
@@ -112,7 +117,7 @@ class Events {
 		return StringifiedPayload;
 	}
 
-	public NewSession(data: { SessionId: string; UserId: string }) {
+	public NewSession(data: { SessionId: string; UserId: string; }) {
 		const StringifiedPayload = JSON.stringify({
 			Op: OpCodes.NewSession,
 			D: {
@@ -128,7 +133,7 @@ class Events {
 		return StringifiedPayload;
 	}
 
-	public DeletedSession(data: { SessionId: string; UserId: string }) {
+	public DeletedSession(data: { SessionId: string; UserId: string; }) {
 		const StringifiedPayload = JSON.stringify({
 			Op: OpCodes.DeleteSession,
 			D: {
@@ -160,7 +165,7 @@ class Events {
 	}) {
 		const StringifiedPayload = JSON.stringify({
 			Op: OpCodes.SelfUpdate,
-			d: User,
+			D: User,
 		});
 
 		if (this.SendEvents) {
@@ -171,7 +176,7 @@ class Events {
 	}
 
 	public RelationshipUpdate(Data: {
-		Causer: Omit<ExpressUser, 'FlagsUtil' | 'Token'>;
+		Causer: Omit<ExpressUser, "FlagsUtil" | "Token">;
 		To: {
 			Flags: number;
 			User: {
@@ -191,7 +196,100 @@ class Events {
 
 		const StringifiedPayload = JSON.stringify({
 			Op: OpCodes.RelationshipUpdate,
-			d: Data,
+			D: Data,
+		});
+
+		if (this.SendEvents) {
+			this.SystemSocket.Ws?.send(StringifiedPayload);
+		}
+
+		return StringifiedPayload;
+	}
+
+	public NewGuild(Data: {
+		Channels: Record<string, string[] | boolean | number | string | null>[];
+		CoOwners: never[];
+		Description: string | null;
+		Features: string[];
+		Flags: number;
+		Icon: string | null;
+		Id: string;
+		MaxMembers: number;
+		Name: string;
+		OwnerId: string;
+		Roles: Record<string, types.Long | boolean | number | string>[];
+	}) {
+		const StringifiedPayload = JSON.stringify({
+			Op: OpCodes.GuildNew,
+			D: Data,
+		});
+
+		if (this.SendEvents) {
+			this.SystemSocket.Ws?.send(StringifiedPayload);
+		}
+
+		return StringifiedPayload;
+	}
+
+	public ChannelNew(Data: {
+		AllowedMentions: number;
+		ChannelId: string;
+		Children: string[];
+		Description: string;
+		GuildId: string;
+		Name: string;
+		Nsfw: boolean;
+		ParentId: string;
+		PermissionsOverrides: PermissionOverride[];
+		Position: number;
+		Slowmode: number;
+		Type: number;
+	}) {
+		const StringifiedPayload = JSON.stringify({
+			Op: OpCodes.ChannelNew,
+			D: Data,
+		});
+
+		if (this.SendEvents) {
+			this.SystemSocket.Ws?.send(StringifiedPayload);
+		}
+
+		return StringifiedPayload;
+	}
+
+	public ChannelUpdate(Data: {
+		AllowedMentions: number;
+		ChannelId: string;
+		Children: string[];
+		Description: string;
+		GuildId: string;
+		Name: string;
+		Nsfw: boolean;
+		ParentId: string;
+		PermissionsOverrides: PermissionOverride[];
+		Position: number;
+		Slowmode: number;
+		Type: number;
+	}) {
+		const StringifiedPayload = JSON.stringify({
+			Op: OpCodes.ChannelUpdate,
+			D: Data,
+		});
+
+		if (this.SendEvents) {
+			this.SystemSocket.Ws?.send(StringifiedPayload);
+		}
+
+		return StringifiedPayload;
+	}
+
+	public GuildJoin(Data: {
+		GuildId: string;
+		UserId: string;
+	}) {
+		const StringifiedPayload = JSON.stringify({
+			Op: OpCodes.GuildJoin,
+			D: Data,
 		});
 
 		if (this.SendEvents) {

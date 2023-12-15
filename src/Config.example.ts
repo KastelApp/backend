@@ -19,60 +19,61 @@ import type {
 	MailServer as MailServerConfigType,
 	Config as ConfigType,
 	EmailTemplates as EmailTemplatesConfigType,
-} from './Types/ConfigTypes';
+} from "./Types/ConfigTypes";
 
 const Server: ServerConfigType = {
 	Port: 62_250,
-	Domain: 'kastelapp.com',
+	Domain: "kastelapp.com",
 	Secure: true, // https or http
 	WorkerId: 1,
 	Cache: {
 		ClearInterval: 1_000 * 60 * 60 * 6, // six hours
 		ClearOnStart: false,
 	},
+	CloudflareAccessOnly: false, // If you are behind cloudflare and have a cloudflare worker forwarding the requests to the server then set this to true
 	StrictRouting: true,
 	CaptchaEnabled: true,
-	TurnstileSecret: '',
+	TurnstileSecret: "",
 	Sentry: {
 		Enabled: false,
-		Dsn: '',
+		Dsn: "",
 		TracesSampleRate: 1,
 		OtherOptions: {
-			environment: 'development',
+			environment: "development",
 		},
 		RequestOptions: {
-			user: ['email', 'id'],
+			user: ["email", "id"],
 			ip: true,
 		},
 	},
-	LocalIps: ['0.0.0.0', 'localhost'], // These are for local tests, and to allow the WebSocket to make HTTP requests to the server
+	LocalIps: ["0.0.0.0", "localhost"], // These are for local tests, and to allow the WebSocket to make HTTP requests to the server
 };
 
 const Encryption: EncrpytionConfigType = {
-	Algorithm: 'aes-256-cbc',
-	InitVector: '',
-	SecurityKey: '',
-	TokenKey: '',
+	Algorithm: "aes-256-cbc",
+	InitVector: "",
+	SecurityKey: "",
+	TokenKey: "",
 };
 
 const Ws: WsConfigType = {
-	Url: 'ws://localhost:8080/system',
-	Password: '123',
+	Url: "ws://localhost:8080/system",
+	Password: "123",
 };
 
 const Redis: RedisConfigType = {
-	Host: 'localhost',
+	Host: "localhost",
 	Port: 6_379,
-	Username: '',
-	Password: '',
+	Username: "",
+	Password: "",
 	DB: 0,
 };
 
 const ScyllaDB: ScyllaDBConfigType = {
-	Nodes: ['172.17.0.1'],
-	Keyspace: 'kastel',
-	Username: 'kstl',
-	Password: '',
+	Nodes: ["172.17.0.1"],
+	Keyspace: "kastel",
+	Username: "kstl",
+	Password: "",
 	CassandraOptions: {},
 	DurableWrites: true,
 	NetworkTopologyStrategy: {},
@@ -82,50 +83,50 @@ const MailServer: MailServerConfigType = {
 	Enabled: true,
 	Users: [
 		{
-			Host: '',
+			Host: "",
 			Port: 465,
 			Secure: true,
-			User: 'no-reply@kastelapp.com',
-			Password: '',
-			ShortCode: 'NoReply',
+			User: "no-reply@kastelapp.com",
+			Password: "",
+			ShortCode: "NoReply",
 		},
 		{
-			Host: '',
+			Host: "",
 			Port: 465,
 			Secure: true,
-			User: 'support@kastelapp.com',
-			Password: '',
-			ShortCode: 'Support',
+			User: "support@kastelapp.com",
+			Password: "",
+			ShortCode: "Support",
 		},
 	],
 };
 
 const EmailTemplates: EmailTemplatesConfigType = {
 	VerifyEmail: {
-		Subject: 'Verify your email',
-		Template: '', // can be a url or a file path
+		Subject: "Verify your email",
+		Template: "", // can be a url or a file path
 		PlaceHolders: {
-			Username: '{{USERNAME}}',
-			VerifyLink: '{{VERIFICATION_LINK}}',
-			SupportEmail: '{{SUPPORT_EMAIL}}',
+			Username: "{{USERNAME}}",
+			VerifyLink: "{{VERIFICATION_LINK}}",
+			SupportEmail: "{{SUPPORT_EMAIL}}",
 		},
 	},
 	ResetPassword: {
-		Subject: 'Reset your password',
-		Template: 'https://example.com', // can be a url or a file path
+		Subject: "Reset your password",
+		Template: "https://example.com", // can be a url or a file path
 		PlaceHolders: {
-			Username: '{{USERNAME}}',
-			ResetLink: '{{RESET_LINK}}',
-			SupportEmail: '{{SUPPORT_EMAIL}}',
+			Username: "{{USERNAME}}",
+			ResetLink: "{{RESET_LINK}}",
+			SupportEmail: "{{SUPPORT_EMAIL}}",
 		},
 	},
 	DisabledAccount: {
-		Subject: 'Your account has been disabled',
-		Template: 'https://example.com', // can be a url or a file path
+		Subject: "Your account has been disabled",
+		Template: "https://example.com", // can be a url or a file path
 		PlaceHolders: {
-			Uusername: '{{USERNAME}}',
-			SupportEmail: '{{SUPPORT_EMAIL}}',
-			Reason: '{{REASON}}', // Can Be HTML
+			Uusername: "{{USERNAME}}",
+			SupportEmail: "{{SUPPORT_EMAIL}}",
+			Reason: "{{REASON}}", // Can Be HTML
 		},
 	},
 };

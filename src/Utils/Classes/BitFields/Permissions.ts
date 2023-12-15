@@ -9,8 +9,8 @@
  * GPL 3.0 Licensed
  */
 
-import { Permissions as Perms, RolePermissions, ChannelPermissions, MixedPermissions } from '../../../Constants.ts';
-import FlagUtilsBInt from './NewFlags.ts';
+import { Permissions as Perms, RolePermissions, ChannelPermissions, MixedPermissions } from "../../../Constants.ts";
+import FlagUtilsBInt from "./NewFlags.ts";
 
 class Permissions extends FlagUtilsBInt<typeof Perms> {
 	public constructor(bits: bigint | number | string) {

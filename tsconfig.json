@@ -34,7 +34,8 @@
 		"allowJs": true,
 		"noEmit": true,
 		"allowImportingTsExtensions": true,
-		"moduleDetection": "force"
+		"moduleDetection": "force",
+		"noErrorTruncation": true // darkerink: this is just so I can see the full types
 	},
 	"include": ["src/**/*", "scripts/**/*"],
 	"exclude": [".github"]

@@ -9,12 +9,12 @@
  * GPL 3.0 Licensed
  */
 
-import type { Request, Response } from 'express';
-import User from '../../../../Middleware/User.ts';
-import type App from '../../../../Utils/Classes/App';
-import Encryption from '../../../../Utils/Classes/Encryption.ts';
-import ErrorGen from '../../../../Utils/Classes/ErrorGen.ts';
-import Route from '../../../../Utils/Classes/Route.ts';
+import type { Request, Response } from "express";
+import User from "../../../../Middleware/User.ts";
+import type App from "../../../../Utils/Classes/App";
+import Encryption from "../../../../Utils/Classes/Encryption.ts";
+import ErrorGen from "../../../../Utils/Classes/ErrorGen.ts";
+import Route from "../../../../Utils/Classes/Route.ts";
 
 interface Tokens {
 	CreatedDate: Date;
@@ -33,30 +33,30 @@ export default class Sessions extends Route {
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ['GET', 'DELETE'];
+		this.Methods = ["GET", "DELETE"];
 
 		this.Middleware = [
 			User({
-				AccessType: 'LoggedIn',
-				AllowedRequesters: 'User',
+				AccessType: "LoggedIn",
+				AllowedRequesters: "User",
 				App,
 			}),
 		];
 
-		this.AllowedContentTypes = ['application/json'];
+		this.AllowedContentTypes = ["application/json"];
 
-		this.Routes = ['/sessions'];
+		this.Routes = ["/sessions"];
 	}
 
 	public override async Request(Req: Request, Res: Response) {
 		switch (Req.method.toLowerCase()) {
-			case 'delete': {
+			case "delete": {
 				await this.DeleteSession(Req, Res);
 
 				break;
 			}
 
-			case 'get': {
+			case "get": {
 				await this.FetchSession(Req, Res);
 
 				break;
@@ -65,7 +65,7 @@ export default class Sessions extends Route {
 			default: {
 				this.App.Logger.warn(`Weird Bypass in Method (${Req.method})`);
 
-				Res.status(500).send('Internal Server Error :(');
+				Res.status(500).send("Internal Server Error :(");
 
 				break;
 			}
@@ -81,8 +81,8 @@ export default class Sessions extends Route {
 			if (!Id) {
 				Error.AddError({
 					Id: {
-						Code: 'InvalidId',
-						Message: 'The Id provided is Invalid, or Missing',
+						Code: "InvalidId",
+						Message: "The Id provided is Invalid, or Missing",
 					},
 				});
 			}
@@ -90,8 +90,8 @@ export default class Sessions extends Route {
 			if (!Password) {
 				Error.AddError({
 					Password: {
-						Code: 'InvalidPassword',
-						Message: 'The Password provided is Invalid, or Missing',
+						Code: "InvalidPassword",
+						Message: "The Password provided is Invalid, or Missing",
 					},
 				});
 			}
@@ -106,8 +106,8 @@ export default class Sessions extends Route {
 
 			Error.AddError({
 				Password: {
-					Code: 'InvalidPassword',
-					Message: 'The Password provided is Invalid, or Missing',
+					Code: "InvalidPassword",
+					Message: "The Password provided is Invalid, or Missing",
 				},
 			});
 
@@ -155,7 +155,7 @@ export default class Sessions extends Route {
 				UserId: Encryption.Encrypt(UserId),
 			},
 			{
-				fields: ['tokens'],
+				fields: ["tokens"],
 			},
 		);
 

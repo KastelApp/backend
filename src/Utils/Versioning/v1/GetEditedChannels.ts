@@ -1,5 +1,5 @@
-import deepEqual from 'deep-equal';
-import type { Channel } from '../../Cql/Types';
+import deepEqual from "deep-equal";
+import type { Channel } from "../../Cql/Types";
 
 export const GetEditedChannels = (Before: Channel[], Current: Channel[]) => {
 	const ChangedChannels = [];

@@ -9,9 +9,9 @@
  * GPL 3.0 Licensed
  */
 
-import crypto from 'node:crypto';
+import crypto from "node:crypto";
 
-const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789';
+const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789";
 
 /**
  * Generates a random invite with a selected length
@@ -19,12 +19,12 @@ const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789';
 const InviteGenerator = (Length = 15): string => {
 	if (Number.isNaN(Length)) {
 		throw new TypeError(
-			`"length" argument is expected to be a number, Got ${typeof Length === 'number' ? 'NaN' : typeof Length}`,
+			`"length" argument is expected to be a number, Got ${typeof Length === "number" ? "NaN" : typeof Length}`,
 		);
 	}
 
 	const randomBytes = crypto.randomBytes(Length);
-	return [...randomBytes].map((byte) => chars[byte % chars.length]).join('');
+	return [...randomBytes].map((byte) => chars[byte % chars.length]).join("");
 };
 
 export default InviteGenerator;

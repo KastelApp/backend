@@ -9,15 +9,15 @@
  * GPL 3.0 Licensed
  */
 
-import { HTTPErrors } from '@kastelll/util';
-import type { NextFunction, Request, Response } from 'express';
-import type { Captcha as CaptchaType } from '../Types/Routes.ts';
+import { HTTPErrors } from "@kastelll/util";
+import type { NextFunction, Request, Response } from "express";
+import type { Captcha as CaptchaType } from "../Types/Routes.ts";
 
 // TO DO: Cdata support
 
 const Captcha = (options: CaptchaType) => {
 	return async (req: Request, res: Response, next: NextFunction) => {
-		const CaptchaHeader = req.headers['cf-turnstile-response'];
+		const CaptchaHeader = req.headers["cf-turnstile-response"];
 
 		if (!options.Enabled) {
 			next();
@@ -39,8 +39,8 @@ const Captcha = (options: CaptchaType) => {
 
 			Errors.AddError({
 				Captcha: {
-					Code: 'MissingCaptcha',
-					Message: 'You need to solve the captcha to access this endpoint',
+					Code: "MissingCaptcha",
+					Message: "You need to solve the captcha to access this endpoint",
 				},
 			});
 
@@ -49,13 +49,13 @@ const Captcha = (options: CaptchaType) => {
 			return;
 		}
 
-		if (typeof CaptchaHeader !== 'string') {
+		if (typeof CaptchaHeader !== "string") {
 			const Errors = new HTTPErrors(5_000);
 
 			Errors.AddError({
 				Captcha: {
-					Code: 'InvalidCaptcha',
-					Message: 'The captcha you provided is invalid',
+					Code: "InvalidCaptcha",
+					Message: "The captcha you provided is invalid",
 				},
 			});
 
@@ -71,8 +71,8 @@ const Captcha = (options: CaptchaType) => {
 
 			Errors.AddError({
 				Captcha: {
-					Code: 'InvalidCaptcha',
-					Message: 'The captcha you provided is invalid',
+					Code: "InvalidCaptcha",
+					Message: "The captcha you provided is invalid",
 				},
 			});
 
@@ -86,8 +86,8 @@ const Captcha = (options: CaptchaType) => {
 
 			Errors.AddError({
 				Captcha: {
-					Code: 'InvalidCaptcha',
-					Message: 'The captcha you provided is invalid',
+					Code: "InvalidCaptcha",
+					Message: "The captcha you provided is invalid",
 				},
 			});
 

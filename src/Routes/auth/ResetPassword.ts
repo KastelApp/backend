@@ -9,13 +9,13 @@
  * GPL 3.0 Licensed
  */
 
-import type { Request, Response } from 'express';
-import User from '../../Middleware/User.ts';
-import type App from '../../Utils/Classes/App';
-import Encryption from '../../Utils/Classes/Encryption.ts';
-import ErrorGen from '../../Utils/Classes/ErrorGen.ts';
-import Route from '../../Utils/Classes/Route.ts';
-import type { User as UserType } from '../../Utils/Cql/Types/index.ts';
+import type { Request, Response } from "express";
+import User from "../../Middleware/User.ts";
+import type App from "../../Utils/Classes/App";
+import Encryption from "../../Utils/Classes/Encryption.ts";
+import ErrorGen from "../../Utils/Classes/ErrorGen.ts";
+import Route from "../../Utils/Classes/Route.ts";
+import type { User as UserType } from "../../Utils/Cql/Types/index.ts";
 
 interface ResetBody {
 	Code: string;
@@ -27,19 +27,19 @@ export default class ResetPassword extends Route {
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ['PATCH'];
+		this.Methods = ["PATCH"];
 
 		this.Middleware = [
 			User({
-				AccessType: 'LoggedOut',
-				AllowedRequesters: 'User',
+				AccessType: "LoggedOut",
+				AllowedRequesters: "User",
 				App,
 			}),
 		];
 
-		this.AllowedContentTypes = ['application/json'];
+		this.AllowedContentTypes = ["application/json"];
 
-		this.Routes = ['/reset'];
+		this.Routes = ["/reset"];
 	}
 
 	public override async Request(Req: Request<any, any, ResetBody>, Res: Response) {
@@ -49,14 +49,14 @@ export default class ResetPassword extends Route {
 
 		this.App.Logger.debug(`[Reset Password] Email: ${Email}, Password: ${NewPassword}, Code: ${Code}`);
 
-		if (typeof Email !== 'string' || !PasswordValidtor.test(NewPassword) || typeof Code !== 'string') {
+		if (typeof Email !== "string" || !PasswordValidtor.test(NewPassword) || typeof Code !== "string") {
 			const Error = ErrorGen.MissingAuthField();
 
-			if (typeof Email !== 'string') {
+			if (typeof Email !== "string") {
 				Error.AddError({
 					Email: {
-						Code: 'InvalidEmail',
-						Message: 'The Email provided is Invalid, Missing or already in use',
+						Code: "InvalidEmail",
+						Message: "The Email provided is Invalid, Missing or already in use",
 					},
 				});
 			}
@@ -64,17 +64,17 @@ export default class ResetPassword extends Route {
 			if (!PasswordValidtor.test(NewPassword)) {
 				Error.AddError({
 					Password: {
-						Code: 'InvalidPassword',
-						Message: 'The Password provided is Invalid, or Missing',
+						Code: "InvalidPassword",
+						Message: "The Password provided is Invalid, or Missing",
 					},
 				});
 			}
 
-			if (typeof Code !== 'string') {
+			if (typeof Code !== "string") {
 				Error.AddError({
 					Code: {
-						Code: 'InvalidCode',
-						Message: 'The Code provided is Invalid, or Missing',
+						Code: "InvalidCode",
+						Message: "The Code provided is Invalid, or Missing",
 					},
 				});
 			}
@@ -93,8 +93,8 @@ export default class ResetPassword extends Route {
 
 			Error.AddError({
 				Email: {
-					Code: 'InvalidEmail',
-					Message: 'The Email provided is Invalid, Missing or already in use',
+					Code: "InvalidEmail",
+					Message: "The Email provided is Invalid, Missing or already in use",
 				},
 			});
 
@@ -115,8 +115,8 @@ export default class ResetPassword extends Route {
 
 			Error.AddError({
 				Code: {
-					Code: 'InvalidCode',
-					Message: 'The Code provided is Invalid, or Missing',
+					Code: "InvalidCode",
+					Message: "The Code provided is Invalid, or Missing",
 				},
 			});
 
@@ -128,12 +128,12 @@ export default class ResetPassword extends Route {
 		if (LinkVerification.Flags !== this.App.Constants.VerificationFlags.ForgotPassword) {
 			const Error = ErrorGen.MissingAuthField();
 
-			this.App.Logger.debug('[Reset Password] Code is not a Forgot Password code');
+			this.App.Logger.debug("[Reset Password] Code is not a Forgot Password code");
 
 			Error.AddError({
 				Code: {
-					Code: 'InvalidCode',
-					Message: 'The Code provided is Invalid, or Missing',
+					Code: "InvalidCode",
+					Message: "The Code provided is Invalid, or Missing",
 				},
 			});
 
@@ -145,12 +145,12 @@ export default class ResetPassword extends Route {
 		if (Date.now() >= LinkVerification.ExpireDate.getTime()) {
 			const Error = ErrorGen.MissingAuthField();
 
-			this.App.Logger.debug('[Reset Password] Code is expired :/');
+			this.App.Logger.debug("[Reset Password] Code is expired :/");
 
 			Error.AddError({
 				Code: {
-					Code: 'InvalidCode',
-					Message: 'The code provided is Invalid, or Missing',
+					Code: "InvalidCode",
+					Message: "The code provided is Invalid, or Missing",
 				},
 			});
 
@@ -161,7 +161,7 @@ export default class ResetPassword extends Route {
 
 		await this.App.Cassandra.Models.User.update({
 			UserId: Encryption.Encrypt(FetchedUser.UserId),
-			Password: await Bun.password.hash(NewPassword, 'argon2id'),
+			Password: await Bun.password.hash(NewPassword, "argon2id"),
 		});
 
 		await this.App.Cassandra.Models.Settings.update({
@@ -186,7 +186,7 @@ export default class ResetPassword extends Route {
 
 		return Encryption.CompleteDecryption({
 			...FetchedUser,
-			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
+			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : "0",
 		});
 	}
 }

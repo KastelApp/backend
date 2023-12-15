@@ -9,14 +9,14 @@
  * GPL 3.0 Licensed
  */
 
-import type { Request, Response } from 'express';
-import User from '../../../../Middleware/User.ts';
-import type App from '../../../../Utils/Classes/App';
-import FlagFields from '../../../../Utils/Classes/BitFields/Flags.ts';
-import Encryption from '../../../../Utils/Classes/Encryption.ts';
-import ErrorGen from '../../../../Utils/Classes/ErrorGen.ts';
-import Route from '../../../../Utils/Classes/Route.ts';
-import type { User as UserType } from '../../../../Utils/Cql/Types/index.ts';
+import type { Request, Response } from "express";
+import User from "../../../../Middleware/User.ts";
+import type App from "../../../../Utils/Classes/App";
+import FlagFields from "../../../../Utils/Classes/BitFields/Flags.ts";
+import Encryption from "../../../../Utils/Classes/Encryption.ts";
+import ErrorGen from "../../../../Utils/Classes/ErrorGen.ts";
+import Route from "../../../../Utils/Classes/Route.ts";
+import type { User as UserType } from "../../../../Utils/Cql/Types/index.ts";
 
 interface Body {
 	Password: string;
@@ -27,19 +27,19 @@ export default class DisableDelete extends Route {
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ['DELETE'];
+		this.Methods = ["DELETE"];
 
 		this.Middleware = [
 			User({
-				AccessType: 'LoggedIn',
-				AllowedRequesters: 'User',
+				AccessType: "LoggedIn",
+				AllowedRequesters: "User",
 				App,
 			}),
 		];
 
-		this.AllowedContentTypes = ['application/json'];
+		this.AllowedContentTypes = ["application/json"];
 
-		this.Routes = ['/disable', '/delete'];
+		this.Routes = ["/disable", "/delete"];
 	}
 
 	public override async Request(Req: Request<any, any, Body>, Res: Response) {
@@ -50,8 +50,8 @@ export default class DisableDelete extends Route {
 		if (!Password) {
 			Error.AddError({
 				Password: {
-					Code: 'InvalidPassword',
-					Message: 'The Password provided is Invalid, or Missing',
+					Code: "InvalidPassword",
+					Message: "The Password provided is Invalid, or Missing",
 				},
 			});
 
@@ -60,10 +60,10 @@ export default class DisableDelete extends Route {
 			return;
 		}
 
-		const FetchedUser = await this.FetchUser(Req.user.Id, ['password', 'flags', 'public_flags']);
+		const FetchedUser = await this.FetchUser(Req.user.Id, ["password", "flags", "public_flags"]);
 
 		if (!FetchedUser) {
-			Res.status(500).send('Internal Server Error :(');
+			Res.status(500).send("Internal Server Error :(");
 
 			return;
 		}
@@ -71,8 +71,8 @@ export default class DisableDelete extends Route {
 		if (!(await Bun.password.verify(Password, FetchedUser.Password))) {
 			Error.AddError({
 				Password: {
-					Code: 'InvalidPassword',
-					Message: 'The Password provided is Invalid, or Missing',
+					Code: "InvalidPassword",
+					Message: "The Password provided is Invalid, or Missing",
 				},
 			});
 
@@ -89,18 +89,18 @@ export default class DisableDelete extends Route {
 		const Flags = new FlagFields(FetchedUser.Flags, FetchedUser.PublicFlags);
 
 		Flags.PrivateFlags.add(
-			Req.path.endsWith('/delete')
-				? 'WaitingOnAccountDeletion'
-				: Req.path.endsWith('/disable')
-				? 'WaitingOnDisableDataUpdate'
-				: 'Disabled',
+			Req.path.endsWith("/delete")
+				? "WaitingOnAccountDeletion"
+				: Req.path.endsWith("/disable")
+				? "WaitingOnDisableDataUpdate"
+				: "Disabled",
 		);
 
-		Flags.PrivateFlags.add('Disabled');
+		Flags.PrivateFlags.add("Disabled");
 
 		this.App.Logger.debug(
 			`😭 someone is ${
-				Req.path.endsWith('/delete') ? 'Deleting' : Req.path.endsWith('/disable') ? 'Disabling' : `Idk lol ${Req.path}`
+				Req.path.endsWith("/delete") ? "Deleting" : Req.path.endsWith("/disable") ? "Disabling" : `Idk lol ${Req.path}`
 			} their account :(`,
 		);
 
@@ -109,7 +109,7 @@ export default class DisableDelete extends Route {
 			Flags: String(Flags.PrivateFlags.bits),
 		});
 
-		Res.send('See you next time!');
+		Res.send("See you next time!");
 	}
 
 	private async FetchUser(UserId: string, Fields: string[]): Promise<UserType | null> {
@@ -126,7 +126,7 @@ export default class DisableDelete extends Route {
 
 		return Encryption.CompleteDecryption({
 			...FetchedUser,
-			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : '0',
+			Flags: FetchedUser?.Flags ? String(FetchedUser.Flags) : "0",
 		});
 	}
 }

@@ -7,16 +7,17 @@ import {
 	createWriteStream,
 	createReadStream,
 	rmSync,
-} from 'node:fs';
-import { join } from 'node:path';
-import { setInterval } from 'node:timers';
-import { URL } from 'node:url';
-import * as ark from 'archiver';
-import ProcessArgs from '../ProcessArgs.ts';
+} from "node:fs";
+import { join } from "node:path";
+import { setInterval } from "node:timers";
+import { URL } from "node:url";
+import * as Sentry from "@sentry/node";
+import * as ark from "archiver";
+import ProcessArgs from "../ProcessArgs.ts";
 
-type Logtypes = 'debug' | 'error' | 'fatal' | 'importantDebug' | 'info' | 'timer' | 'trace' | 'verbose' | 'warn';
+type Logtypes = "debug" | "error" | "fatal" | "importantDebug" | "info" | "timer" | "trace" | "verbose" | "warn";
 
-const Args = ProcessArgs(['debug', 'no-verbose', 'no-console', 'super-debug']);
+const Args = ProcessArgs(["debug", "no-verbose", "no-console", "super-debug"]);
 
 class Logger {
 	private readonly logDirectory: string;
@@ -31,14 +32,14 @@ class Logger {
 
 	private readonly backlog: {
 		date: Date;
-		file: 'error' | 'latest';
+		file: "error" | "latest";
 		message: any[];
 		toShow?: string;
 		type: Logtypes;
 	}[]; // when we are compressing logs we haven't saved yet need to be kept here.
 
 	private readonly writingQueue: {
-		file: 'error' | 'latest';
+		file: "error" | "latest";
 		message: string[];
 	}[];
 
@@ -48,8 +49,6 @@ class Logger {
 	};
 
 	private readonly console: boolean;
-
-	// private readonly nextingInterval: NodeJS.Timeout;
 
 	private readonly timers: Map<
 		string,
@@ -68,11 +67,11 @@ class Logger {
 			console?: boolean;
 		} = {},
 	) {
-		this.logDirectory = options.LogDirectory ?? join(new URL('.', import.meta.url).pathname, '..', '..', '..', 'logs');
+		this.logDirectory = options.LogDirectory ?? join(new URL(".", import.meta.url).pathname, "..", "..", "..", "logs");
 
-		this.latestLog = join(this.logDirectory, 'latest.log');
+		this.latestLog = join(this.logDirectory, "latest.log");
 
-		this.errorLogs = join(this.logDirectory, 'errors.log');
+		this.errorLogs = join(this.logDirectory, "errors.log");
 
 		void this.init();
 
@@ -98,13 +97,13 @@ class Logger {
 				Now.getMonth() !== this.prevDate.getMonth() ||
 				Now.getFullYear() !== this.prevDate.getFullYear()
 			) {
-				this.supersecretdebug(`Date changed, compressing logs`);
+				this.supersecretdebug("Date changed, compressing logs");
 
 				void this.init();
 
 				this.prevDate = Now;
 
-				this.supersecretdebug(`Compressed logs`);
+				this.supersecretdebug("Compressed logs");
 			}
 		}, 25);
 
@@ -113,38 +112,18 @@ class Logger {
 		}, 25);
 
 		this.colorTypes = {
-			info: '#78C3FB',
-			verbose: '#78C3FB',
-			warn: '#E6AF2E',
-			error: '#941C2F',
-			debug: '#666A86',
-			fatal: '#941C2F',
-			trace: '#026C7C',
-			timer: '#026C7C',
+			info: "#78C3FB",
+			verbose: "#78C3FB",
+			warn: "#E6AF2E",
+			error: "#941C2F",
+			debug: "#666A86",
+			fatal: "#941C2F",
+			trace: "#026C7C",
+			timer: "#026C7C",
 			// important debug should be bright, catch the eye
-			importantDebug: '#5d6af0',
+			importantDebug: "#5d6af0",
 			...options.Colors,
 		};
-
-		// process.on('SIGINT', async () => {
-		//     if (this.writingQueue.length > 0) {
-		//         for (const queue of this.writingQueue) {
-		//             this.next();
-
-		//             const index = this.writingQueue.indexOf(queue);
-
-		//             console.log(index, this.writingQueue.length - 1)
-
-		//             if (index === this.writingQueue.length - 1) {
-		//                 setTimeout(() => {
-		//                     process.exit(0);
-		//                 }, 250);
-		//             }
-		//         }
-		//     } else {
-		//         process.exit(0);
-		//     }
-		// });
 	}
 
 	private async init(): Promise<void> {
@@ -153,35 +132,35 @@ class Logger {
 		const Compressed = await this.compress();
 
 		if (Compressed) {
-			this.supersecretdebug('Compressed logs');
+			this.supersecretdebug("Compressed logs");
 		} else {
-			this.supersecretdebug('No logs to compress');
+			this.supersecretdebug("No logs to compress");
 		}
 
 		if (!existsSync(this.latestLog)) {
-			this.supersecretdebug('Latest log does not exist, creating it');
+			this.supersecretdebug("Latest log does not exist, creating it");
 
-			writeFileSync(this.latestLog, '');
+			writeFileSync(this.latestLog, "");
 
-			this.supersecretdebug('Created latest log');
+			this.supersecretdebug("Created latest log");
 		}
 
 		if (!existsSync(this.errorLogs)) {
-			this.supersecretdebug('Error log does not exist, creating it');
+			this.supersecretdebug("Error log does not exist, creating it");
 
-			writeFileSync(this.errorLogs, '');
+			writeFileSync(this.errorLogs, "");
 
-			this.supersecretdebug('Created error log');
+			this.supersecretdebug("Created error log");
 		}
 
-		this.supersecretdebug('Logger initialized');
+		this.supersecretdebug("Logger initialized");
 	}
 
-	private hexToAnsi(hex: string): {
+	public static hexToAnsi(hex: string): {
 		end: string;
 		rgb: string;
 	} {
-		const replacedHex = hex.replace('#', '');
+		const replacedHex = hex.replace("#", "");
 
 		const int = Number.parseInt(replacedHex, 16);
 
@@ -190,7 +169,7 @@ class Logger {
 		const blue = int & 255;
 
 		return {
-			end: '\u001B[0m',
+			end: "\u001B[0m",
 			rgb: `\u001B[38;2;${red};${green};${blue}m`,
 		};
 	}
@@ -203,20 +182,20 @@ class Logger {
 
 			const CurrentDate = new Date();
 
-			const LogFiles = Files.filter((file) => file.endsWith('.log'));
+			const LogFiles = Files.filter((file) => file.endsWith(".log"));
 			const GzipFiles = Files.filter(
-				(file) => file.startsWith(`${CurrentDate.toISOString().slice(0, 10)}-`) && file.endsWith('.log.zip'),
+				(file) => file.startsWith(`${CurrentDate.toISOString().slice(0, 10)}-`) && file.endsWith(".log.zip"),
 			);
 
 			if (LogFiles.length === 0) {
-				this.supersecretdebug('No log files to compress');
+				this.supersecretdebug("No log files to compress");
 
 				resolve(false);
 
 				return;
 			}
 
-			const Archive = ark.default.create('zip', {
+			const Archive = ark.default.create("zip", {
 				zlib: { level: 9 },
 			});
 
@@ -231,14 +210,14 @@ class Logger {
 				this.supersecretdebug(`Added ${file} to archive`);
 			}
 
-			Archive.on('finish', () => {
+			Archive.on("finish", () => {
 				for (const file of LogFiles) {
 					rmSync(join(this.logDirectory, file));
 
 					this.supersecretdebug(`Deleted ${file}`);
 				}
 
-				this.supersecretdebug('Deleted old log files');
+				this.supersecretdebug("Deleted old log files");
 
 				this.compressing = false;
 
@@ -247,29 +226,29 @@ class Logger {
 
 			void Archive.finalize();
 
-			this.supersecretdebug('Finalized archive');
+			this.supersecretdebug("Finalized archive");
 		});
 	}
 
 	private supersecretdebug(...msg: string[]) {
-		if (Args.Valid.includes('super-debug')) console.log(`[DEBUG] [LOGGER]: ${msg.join(' ')}`);
+		if (Args.Valid.includes("super-debug")) console.log(`[DEBUG] [LOGGER]: ${msg.join(" ")}`);
 	}
 
 	private next(): boolean {
 		if (this.writingQueue.length === 0) return true;
 
-		this.supersecretdebug(`Writing message`);
+		this.supersecretdebug("Writing message");
 
 		const Message = this.writingQueue.shift();
 
 		if (!Message) return true;
 
-		if (Message.file === 'latest') {
-			this.supersecretdebug(`Writing to latest log`);
-			writeFileSync(this.latestLog, `${Message.message.join('\n')}\n`, { flag: 'a' });
-		} else if (Message.file === 'error') {
-			this.supersecretdebug(`Writing to crash log`);
-			writeFileSync(this.errorLogs, `${Message.message.join('\n')}\n`, { flag: 'a' });
+		if (Message.file === "latest") {
+			this.supersecretdebug("Writing to latest log");
+			writeFileSync(this.latestLog, `${Message.message.join("\n")}\n`, { flag: "a" });
+		} else if (Message.file === "error") {
+			this.supersecretdebug("Writing to crash log");
+			writeFileSync(this.errorLogs, `${Message.message.join("\n")}\n`, { flag: "a" });
 		} else {
 			throw new Error(`Unknown file ${Message.file}`);
 		}
@@ -280,7 +259,7 @@ class Logger {
 	private addLog(options: {
 		console?: boolean;
 		date: Date;
-		file: 'error' | 'latest';
+		file: "error" | "latest";
 		message: any[];
 		toShow?: string;
 		type: Logtypes;
@@ -306,20 +285,20 @@ class Logger {
 		for (const item of options.message) {
 			const LastMessage: any = Messages[Messages.length - 1];
 			if (
-				typeof item === 'string' ||
-				typeof item === 'number' ||
-				typeof item === 'boolean' ||
+				typeof item === "string" ||
+				typeof item === "number" ||
+				typeof item === "boolean" ||
 				item === null ||
 				item === undefined
 			) {
-				if (LastMessage && typeof LastMessage === 'string') {
+				if (LastMessage && typeof LastMessage === "string") {
 					Messages[Messages.length - 1] = `${LastMessage} ${item}`;
 				} else {
 					Messages.push(item.trim());
 				}
 			} else if (item instanceof Error) {
 				if (item.stack) {
-					for (const line of item.stack.split('\n')) {
+					for (const line of item.stack.split("\n")) {
 						Messages.push(line.trim());
 					}
 				} else {
@@ -331,14 +310,14 @@ class Logger {
 		}
 
 		const NewMessages = Messages.map((msg) => {
-			if (typeof msg === 'string') {
+			if (typeof msg === "string") {
 				return `${Message} ${msg}`.trim();
 			} else {
 				const Strongified = JSON.stringify(msg, null, 2);
 
-				return Strongified.split('\n')
+				return Strongified.split("\n")
 					.map((line) => `${Message} ${line}`.trim())
-					.join('\n');
+					.join("\n");
 			}
 		});
 
@@ -348,7 +327,7 @@ class Logger {
 		});
 
 		if (options.console) {
-			const color = this.hexToAnsi(this.colorTypes[options.type]);
+			const color = Logger.hexToAnsi(this.colorTypes[options.type]);
 
 			if (color) {
 				for (const msg of NewMessages) {
@@ -360,9 +339,9 @@ class Logger {
 
 	public info(...message: any[]) {
 		this.addLog({
-			type: 'info',
+			type: "info",
 			date: new Date(),
-			file: 'latest',
+			file: "latest",
 			message,
 			console: this.console,
 		});
@@ -372,9 +351,9 @@ class Logger {
 
 	public warn(...message: any[]) {
 		this.addLog({
-			type: 'warn',
+			type: "warn",
 			date: new Date(),
-			file: 'latest',
+			file: "latest",
 			message,
 			console: this.console,
 		});
@@ -383,10 +362,12 @@ class Logger {
 	}
 
 	public error(...message: any[]) {
+		Sentry.captureException(message.join("\n"));
+
 		this.addLog({
-			type: 'error',
+			type: "error",
 			date: new Date(),
-			file: 'error',
+			file: "error",
 			message,
 			console: this.console,
 		});
@@ -395,12 +376,12 @@ class Logger {
 	}
 
 	public debug(...message: any[]) {
-		if (!Args.Valid.includes('debug')) return this;
+		if (!Args.Valid.includes("debug")) return this;
 
 		this.addLog({
-			type: 'debug',
+			type: "debug",
 			date: new Date(),
-			file: 'latest',
+			file: "latest",
 			message,
 			console: this.console,
 		});
@@ -409,25 +390,27 @@ class Logger {
 	}
 
 	public importantDebug(...message: any[]) {
-		if (!Args.Valid.includes('debug')) return this;
+		if (!Args.Valid.includes("debug")) return this;
 
 		this.addLog({
-			type: 'importantDebug',
+			type: "importantDebug",
 			date: new Date(),
-			file: 'latest',
+			file: "latest",
 			message,
 			console: this.console,
-			toShow: 'Debug',
+			toShow: "Debug",
 		});
 
 		return this;
 	}
 
 	public fatal(...message: any[]) {
+		Sentry.captureException(message.join("\n"));
+
 		this.addLog({
-			type: 'fatal',
+			type: "fatal",
 			date: new Date(),
-			file: 'error',
+			file: "error",
 			message,
 			console: this.console,
 		});
@@ -437,9 +420,9 @@ class Logger {
 
 	public trace(...message: any[]) {
 		this.addLog({
-			type: 'trace',
+			type: "trace",
 			date: new Date(),
-			file: 'latest',
+			file: "latest",
 			message,
 			console: this.console,
 		});
@@ -448,15 +431,15 @@ class Logger {
 	}
 
 	public verbose(...message: any[]) {
-		if (Args.Valid.includes('no-verbose')) return this;
+		if (Args.Valid.includes("no-verbose")) return this;
 
 		this.addLog({
-			type: 'verbose',
+			type: "verbose",
 			date: new Date(),
-			file: 'latest',
+			file: "latest",
 			message,
 			console: this.console,
-			toShow: 'Info',
+			toShow: "Info",
 		});
 
 		return this;
@@ -480,12 +463,12 @@ class Logger {
 
 		const diff = end.getTime() - timer.start.getTime();
 
-		if (timer.debug && !Args.Valid.includes('debug')) return this;
+		if (timer.debug && !Args.Valid.includes("debug")) return this;
 
 		this.addLog({
-			type: 'timer',
+			type: "timer",
 			date: new Date(),
-			file: 'latest',
+			file: "latest",
 			message: [`Timer ${name} took ${diff}ms`],
 			console: this.console,
 		});
@@ -495,7 +478,7 @@ class Logger {
 
 	public hex(hex: string) {
 		return (...message: string[]) => {
-			const color = this.hexToAnsi(hex);
+			const color = Logger.hexToAnsi(hex);
 
 			if (color) {
 				for (const msg of message) {
@@ -503,6 +486,16 @@ class Logger {
 				}
 			}
 		};
+	}
+
+	public static colorize(hex: string, str: string) {
+		const color = this.hexToAnsi(hex);
+
+		if (color) {
+			return `${color.rgb}${str}${color.end}`;
+		} else {
+			return str;
+		}
 	}
 }
 

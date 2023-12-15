@@ -9,10 +9,10 @@
  * GPL 3.0 Licensed
  */
 
-import { PrivateFlags, PublicFlags } from '../../../Constants.ts';
-import FlagUtilsBInt from './NewFlags.ts';
+import { PrivateFlags, PublicFlags } from "../../../Constants.ts";
+import FlagUtilsBInt from "./NewFlags.ts";
 
-const PublicPrivateFlags: (keyof typeof PrivateFlags)[] = ['System', 'Ghost', 'Spammer', 'VerifiedBot', 'Bot'];
+const PublicPrivateFlags: (keyof typeof PrivateFlags)[] = ["System", "Ghost", "Spammer", "VerifiedBot", "Bot"];
 
 class FlagFields {
 	public PrivateFlags: FlagUtilsBInt<typeof PrivateFlags>;

@@ -1,12 +1,12 @@
 /* eslint-disable id-length */
-import type { Buffer } from 'node:buffer';
-import zlib from 'node:zlib';
-import { WebSocket } from 'ws';
-import Config from '../../../Config.ts';
-import type { AuthedPayload, NormalPayload } from '../../../Types/Socket/MiscPayloads';
-import type App from '../App.ts';
-import { OpCodes, SystemOpCodes } from '../WsUtils.ts';
-import Events from './Events.ts';
+import type { Buffer } from "node:buffer";
+import zlib from "node:zlib";
+import { WebSocket } from "ws";
+import Config from "../../../Config.ts";
+import type { AuthedPayload, NormalPayload } from "../../../Types/Socket/MiscPayloads";
+import type App from "../App.ts";
+import { OpCodes, SystemOpCodes } from "../WsUtils.ts";
+import Events from "./Events.ts";
 
 class SystemSocket {
 	public Ws: WebSocket | null;
@@ -63,8 +63,8 @@ class SystemSocket {
 			);
 
 			// @ts-expect-error -- It does exist, though bun doing the funky with the internal ws module
-			this.Ws.on('error', () => {
-				this.App.Logger.error('Failed to connect to System Socket / Recieved an Error');
+			this.Ws.on("error", () => {
+				this.App.Logger.error("Failed to connect to System Socket / Recieved an Error");
 
 				this.HandleDisconnect();
 
@@ -77,13 +77,13 @@ class SystemSocket {
 			});
 
 			// @ts-expect-error -- It does exist, though bun doing the funky with the internal ws module
-			this.Ws.on('open', () => {
-				this.App.Logger.info('Connected to System Socket');
+			this.Ws.on("open", () => {
+				this.App.Logger.info("Connected to System Socket");
 			});
 
 			// @ts-expect-error -- It does exist, though bun doing the funky with the internal ws module
-			this.Ws.on('close', (code: number, reason: string) => {
-				this.App.Logger.warn('Disconnected from System Socket', reason?.toString(), code);
+			this.Ws.on("close", (code: number, reason: string) => {
+				this.App.Logger.warn("Disconnected from System Socket", reason?.toString(), code);
 
 				this.HandleDisconnect();
 
@@ -94,13 +94,13 @@ class SystemSocket {
 			});
 
 			// @ts-expect-error -- It does exist, though bun doing the funky with the internal ws module
-			this.Ws.on('message', (data: Buffer) => {
+			this.Ws.on("message", (data: Buffer) => {
 				const decoded = this.decode(data);
 
 				if (decoded?.S) this.Sequence = decoded.S;
 
 				if (decoded?.Authed === true) {
-					this.App.Logger.info('Authed to System Socket');
+					this.App.Logger.info("Authed to System Socket");
 
 					this.FailedConnectionAttempts = 0; // Reset the failed connection attempts (Since we are now connected)
 
@@ -110,10 +110,10 @@ class SystemSocket {
 
 					this.ApproximateMembers = AuthPayload.ApproximateMembers;
 
-					if (typeof AuthPayload.Misc.HeartbeatInterval === 'number') {
-						this.App.Logger.debug('Starting Heartbeat Interval');
+					if (typeof AuthPayload.Misc.HeartbeatInterval === "number") {
+						this.App.Logger.debug("Starting Heartbeat Interval");
 						this.HeartbeatInterval = setInterval(() => {
-							this.App.Logger.debug('Sending Heartbeat');
+							this.App.Logger.debug("Sending Heartbeat");
 							this.Ws?.send(
 								JSON.stringify({
 									Op: OpCodes.HeartBeat,
@@ -124,7 +124,7 @@ class SystemSocket {
 							);
 							this.LastHeartbeat = Date.now();
 
-							this.App.Logger.debug(`Heartbeat Sent`);
+							this.App.Logger.debug("Heartbeat Sent");
 						}, AuthPayload.Misc.HeartbeatInterval - 2_000);
 					}
 
@@ -142,7 +142,7 @@ class SystemSocket {
 					switch (NormalPayload.Op) {
 						case OpCodes.HeartBeatAck:
 							this.LastHeartbeatAck = Date.now();
-							this.App.Logger.debug(`Heartbeat Acknowledged`);
+							this.App.Logger.debug("Heartbeat Acknowledged");
 							break;
 
 						case Object.values(SystemOpCodes).find((op) => op === NormalPayload.Op):
@@ -185,7 +185,7 @@ class SystemSocket {
 		this.Ws?.removeAllListeners();
 
 		if (!Force && this.FailedConnectionAttempts >= 15) {
-			this.App.Logger.error('Failed to connect to System Socket 15 times, stopping attempts');
+			this.App.Logger.error("Failed to connect to System Socket 15 times, stopping attempts");
 			return;
 		}
 
