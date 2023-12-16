@@ -318,10 +318,6 @@ export default class FetchPatchUser extends Route {
 							Message: "The Avatar provided is Invalid",
 						},
 					});
-					
-					Res.status(400).send(Error.toJSON());
-					
-					break;
 				}
 			}
 
@@ -385,11 +381,14 @@ export default class FetchPatchUser extends Route {
 			return;
 		}
 
+		console.log(FetchedUser)
+		
 		await this.App.Cassandra.Models.User.update({
 			...Encryption.CompleteEncryption(FetchedUser),
 			Tag: FetchedUser.Tag,
 			Password: FetchedUser.Password,
 			Flags: FetchedUser.Flags,
+			PublicFlags: FetchedUser.PublicFlags,
 		});
 
 		const UserObject: UserObject = {
