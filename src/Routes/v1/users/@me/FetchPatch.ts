@@ -384,8 +384,6 @@ export default class FetchPatchUser extends Route {
 
 		const FixedUser = EmptyStringToNull(FetchedUser);
 		
-		console.log(FixedUser);
-		
 		await this.App.Cassandra.Models.User.update({
 			...Encryption.CompleteEncryption(FixedUser),
 			Tag: FetchedUser.Tag,
