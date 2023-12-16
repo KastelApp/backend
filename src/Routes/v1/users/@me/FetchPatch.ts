@@ -108,8 +108,6 @@ export default class FetchPatchUser extends Route {
 			"Tag",
 			"Username",
 			"NewPassword",
-			"AFlags",
-			"RFlags",
 			"Bio",
 		];
 	}
@@ -291,29 +289,40 @@ export default class FetchPatchUser extends Route {
 				continue;
 			}
 
-			// darkerink: Is there a better way to do this? yes, we could instead allow updating all flags but I would rather just support
-			// removing and adding flags here and there (RFlags = Remove Flags, AFlags = Add Flags)
-			if ((item === "RFlags" || item === "AFlags") && ParsedFlags.has("Staff")) {
-				const Flags = FilteredItems[item] as number;
-
-				this.App.Logger.warn(
-					`[Updating User] User ${Req.user.Id} Has updated their flags, Their old flags are "${
-						FetchedUser.Flags
-					}", They are ${item === "RFlags" ? "Removing Flags" : "Adding Flags"} "${Flags}"`,
-				);
-
-				const FilteredFlagsParsed = new FlagFields(0n, Flags);
-
-				if (item === "RFlags") ParsedFlags.PublicFlags.remove(FilteredFlagsParsed.PublicFlags.cleaned);
-				if (item === "AFlags") ParsedFlags.PublicFlags.add(FilteredFlagsParsed.PublicFlags.cleaned);
-
-				FetchedUser.PublicFlags = String(ParsedFlags.PublicFlags.cleaned);
-
-				continue;
-			}
-
 			if (item === "Email") {
 				FetchedUser.Email = (FilteredItems.Email as string).replaceAll(PlusReplace, "");
+			}
+			
+			if (item === "Avatar") {
+				const FoundAvatar = await this.App.Cassandra.Models.File.get({
+					Hash: Encryption.Encrypt(FilteredItems.Avatar as string),
+				});
+				
+				if (!FoundAvatar) {
+					Error.AddError({
+						Avatar: {
+							Code: "InvalidAvatar",
+							Message: "The Avatar provided is Invalid",
+						},
+					});
+					
+					Res.status(400).send(Error.toJSON());
+					
+					break;
+				}
+				
+				if (FoundAvatar.UploadedBy !== Encryption.Encrypt(FetchedUser.UserId)) {
+					Error.AddError({
+						Avatar: {
+							Code: "InvalidAvatar",
+							Message: "The Avatar provided is Invalid",
+						},
+					});
+					
+					Res.status(400).send(Error.toJSON());
+					
+					break;
+				}
 			}
 
 			if (FetchedUser?.[item as keyof SchemaUser] === undefined) {
@@ -453,6 +462,7 @@ export default class FetchPatchUser extends Route {
 				},
 			);
 
+			// @ts-expect-error -- todo: fix this
 			UserObject.Bio = Settings?.Bio ? Encryption.Decrypt(Settings.Bio) : null;
 		}
 
