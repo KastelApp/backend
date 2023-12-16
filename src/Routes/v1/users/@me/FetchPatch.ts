@@ -17,6 +17,7 @@ import Encryption from "../../../../Utils/Classes/Encryption.ts";
 import ErrorGen from "../../../../Utils/Classes/ErrorGen.ts";
 import Route from "../../../../Utils/Classes/Route.ts";
 import type { User as UserType } from "../../../../Utils/Cql/Types/index.ts";
+import { EmptyStringToNull } from "../../../../Utils/StringFormatter.ts";
 import { TagValidator } from "../../../../Utils/TagGenerator.ts";
 
 interface EditableUser {
@@ -381,10 +382,12 @@ export default class FetchPatchUser extends Route {
 			return;
 		}
 
-		console.log(FetchedUser)
+		const FixedUser = EmptyStringToNull(FetchedUser);
+		
+		console.log(FixedUser);
 		
 		await this.App.Cassandra.Models.User.update({
-			...Encryption.CompleteEncryption(FetchedUser),
+			...Encryption.CompleteEncryption(FixedUser),
 			Tag: FetchedUser.Tag,
 			Password: FetchedUser.Password,
 			Flags: FetchedUser.Flags,
