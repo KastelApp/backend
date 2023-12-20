@@ -58,7 +58,6 @@ interface UserObject {
 }
 
 interface UpdateUserBody {
-	AFlags?: number;
 	Avatar?: string | null;
 	Bio?: string;
 	Email?: string;
@@ -66,7 +65,6 @@ interface UpdateUserBody {
 	NewPassword?: string;
 	Password?: string;
 	PhoneNumber?: string;
-	RFlags?: number;
 	Tag?: string;
 	TwoFaCode?: string;
 	Username?: string;
@@ -96,9 +94,9 @@ export default class FetchPatchUser extends Route {
 
 		this.Routes = ["/"];
 
-		this.PasswordRequired = ["Email", "PhoneNumber", "NewPassword", "AFlags", "RFlags"]; // These are also the fields that require a 2fa code (soon™️)
+		this.PasswordRequired = ["Email", "PhoneNumber", "NewPassword"]; // These are also the fields that require a 2fa code (soon™️)
 
-		this.BotCantEdit = ["Email", "NewPassword", "Password", "PhoneNumber", "AFlags", "RFlags"];
+		this.BotCantEdit = ["Email", "NewPassword", "Password", "PhoneNumber"];
 
 		this.Editable = [
 			"Avatar",
@@ -295,6 +293,10 @@ export default class FetchPatchUser extends Route {
 			}
 			
 			if (item === "Avatar") {
+				if (FilteredItems.Avatar === null) {
+					continue;	
+				}
+				
 				const FoundAvatar = await this.App.Cassandra.Models.File.get({
 					Hash: Encryption.Encrypt(FilteredItems.Avatar as string),
 				});
