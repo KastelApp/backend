@@ -221,7 +221,7 @@ export default class FetchPatchUser extends Route {
 			.filter(([key]) => {
 				return this.Editable.includes(key as keyof EditableUser);
 			})
-			.reduce<{ [key: string]: number | string | null }>((prev, [key, value]) => {
+			.reduce<{ [key: string]: number | string | null; }>((prev, [key, value]) => {
 				if (!["string", "number"].includes(typeof value)) prev[key as string] = null;
 
 				prev[key as string] = value as number | string;
@@ -291,16 +291,18 @@ export default class FetchPatchUser extends Route {
 			if (item === "Email") {
 				FetchedUser.Email = (FilteredItems.Email as string).replaceAll(PlusReplace, "");
 			}
-			
+
 			if (item === "Avatar") {
 				if (FilteredItems.Avatar === null) {
-					continue;	
+					FetchedUser[item as keyof SchemaUser] = FilteredItems[item as keyof UpdateUserBody] as string[] & string;
+
+					continue;
 				}
-				
+
 				const FoundAvatar = await this.App.Cassandra.Models.File.get({
 					Hash: Encryption.Encrypt(FilteredItems.Avatar as string),
 				});
-				
+
 				if (!FoundAvatar) {
 					Error.AddError({
 						Avatar: {
@@ -308,12 +310,12 @@ export default class FetchPatchUser extends Route {
 							Message: "The Avatar provided is Invalid",
 						},
 					});
-					
+
 					Res.status(400).send(Error.toJSON());
-					
+
 					break;
 				}
-				
+
 				if (FoundAvatar.UploadedBy !== Encryption.Encrypt(FetchedUser.UserId)) {
 					Error.AddError({
 						Avatar: {
@@ -385,7 +387,7 @@ export default class FetchPatchUser extends Route {
 		}
 
 		const FixedUser = EmptyStringToNull(FetchedUser);
-		
+
 		await this.App.Cassandra.Models.User.update({
 			...Encryption.CompleteEncryption(FixedUser),
 			Tag: FetchedUser.Tag,
