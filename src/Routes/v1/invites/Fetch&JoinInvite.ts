@@ -180,9 +180,9 @@ export default class FetchAndJoinInvite extends Route {
 			const UserObject: UserObject = {
 				Id: FetchedUser.UserId,
 				Username: FetchedUser.Username,
-				GlobalNickname: FetchedUser.GlobalNickname.length === 0 ? null : FetchedUser.GlobalNickname,
+				GlobalNickname: FetchedUser.GlobalNickname ? FetchedUser.GlobalNickname.length === 0 ? null : FetchedUser.GlobalNickname : FetchedUser.GlobalNickname,
 				Tag: FetchedUser.Tag,
-				Avatar: FetchedUser.Avatar.length === 0 ? null : FetchedUser.Avatar,
+				Avatar: FetchedUser.Avatar ? FetchedUser.Avatar.length === 0 ? null : FetchedUser.Avatar : FetchedUser.Avatar,
 				PublicFlags: Number(FlagUtils.PublicFlags.cleaned),
 				Flags: Number(FlagUtils.PublicPrivateFlags),
 			};

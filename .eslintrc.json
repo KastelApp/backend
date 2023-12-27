@@ -1,6 +1,7 @@
 {
 	"root": true,
 	"extends": ["neon/common", "neon/node", "neon/typescript", "neon/prettier"],
+	"plugins": ["prefer-arrow"],
 	"parserOptions": {
 		"project": "./tsconfig.json"
 	},
@@ -11,6 +12,20 @@
 		"no-restricted-globals": "off", // off due to bun
 		"tsdoc/syntax": "off",
 		"quotes": ["error", "double", { "avoidEscape": true }],
-		"id-length": "off"
+		"id-length": "off",
+		"@typescript-eslint/naming-convention": [
+			"error",
+			{
+			  "selector": "variable",
+			  "types": ["function"],
+			  "format": ["PascalCase"]
+			},
+			{
+			  "selector": "variable",
+			  "format": ["PascalCase"]
+			}
+		  ],
+		  "prefer-arrow/prefer-arrow-functions": "error",
+		  "object-curly-spacing": ["error", "always"]
 	}
 }

@@ -4,5 +4,6 @@
 	"singleQuote": true,
 	"quoteProps": "as-needed",
 	"trailingComma": "all",
-	"endOfLine": "lf"
+	"endOfLine": "lf",
+	"extends": ["neon/common", "neon/node", "neon/typescript", "neon/prettier"]
 }

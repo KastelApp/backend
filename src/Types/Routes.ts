@@ -46,7 +46,7 @@ export interface UserMiddleware {
 
 export interface GuildMiddleware {
 	App: App;
-	PermissionsRequired?:  (keyof typeof Permissions | "Owner")[]
+	PermissionsRequired?: (keyof typeof Permissions | "Owner")[];
 	Required: boolean;
 }
 

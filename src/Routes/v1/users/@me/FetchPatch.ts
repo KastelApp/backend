@@ -111,7 +111,7 @@ export default class FetchPatchUser extends Route {
 		];
 	}
 
-	public override async Request(Req: Request, Res: Response) {
+	public override async Request(Req: Request<any, any, any, { include: string }>, Res: Response) {
 		switch (Req.method.toLowerCase()) {
 			case "patch": {
 				await this.PatchSelf(Req, Res);
@@ -158,13 +158,13 @@ export default class FetchPatchUser extends Route {
 				};
 			});
 
-			for (const item of Mapped) {
-				if (!item.NotAllowed) continue;
+			for (const Item of Mapped) {
+				if (!Item.NotAllowed) continue;
 
 				Error.AddError({
-					[item.Key]: {
+					[Item.Key]: {
 						Code: "NotAllowed",
-						Message: `You are not allowed to edit "${item.Key}" Due to you being a bot`,
+						Message: `You are not allowed to edit "${Item.Key}" Due to you being a bot`,
 					},
 				});
 			}
@@ -273,28 +273,28 @@ export default class FetchPatchUser extends Route {
 
 		const ContinuePast = ["Password", "Bio"];
 		// eslint-disable-next-line guard-for-in -- darkerink: We filtered it already.. it should be good
-		for (const item in FilteredItems) {
-			if (ContinuePast.includes(item)) continue;
+		for (const Item in FilteredItems) {
+			if (ContinuePast.includes(Item)) continue;
 
-			if (item === "NewPassword") {
-				FetchedUser.Password = await Bun.password.hash(FilteredItems[item] as string, "argon2id");
+			if (Item === "NewPassword") {
+				FetchedUser.Password = await Bun.password.hash(FilteredItems[Item] as string, "argon2id");
 
 				continue;
 			}
 
-			if (item === "Tag") {
+			if (Item === "Tag") {
 				FetchedUser.Tag = TagValidator(FetchedUser.Tag, FilteredItems.Tag ?? "");
 
 				continue;
 			}
 
-			if (item === "Email") {
+			if (Item === "Email") {
 				FetchedUser.Email = (FilteredItems.Email as string).replaceAll(PlusReplace, "");
 			}
 
-			if (item === "Avatar") {
+			if (Item === "Avatar") {
 				if (FilteredItems.Avatar === null) {
-					FetchedUser[item as keyof SchemaUser] = FilteredItems[item as keyof UpdateUserBody] as string[] & string;
+					FetchedUser[Item as keyof SchemaUser] = FilteredItems[Item as keyof UpdateUserBody] as string[] & string;
 
 					continue;
 				}
@@ -326,13 +326,13 @@ export default class FetchPatchUser extends Route {
 				}
 			}
 
-			if (FetchedUser?.[item as keyof SchemaUser] === undefined) {
-				this.App.Logger.debug(`Warning, FetchedUser does not have a field for ${item}`, FetchedUser, item);
+			if (FetchedUser?.[Item as keyof SchemaUser] === undefined) {
+				this.App.Logger.debug(`Warning, FetchedUser does not have a field for ${Item}`, FetchedUser, Item);
 
 				continue;
 			}
 
-			FetchedUser[item as keyof SchemaUser] = FilteredItems[item as keyof UpdateUserBody] as string[] & string;
+			FetchedUser[Item as keyof SchemaUser] = FilteredItems[Item as keyof UpdateUserBody] as string[] & string;
 		}
 
 		if (FilteredItems.Email) {
@@ -425,8 +425,8 @@ export default class FetchPatchUser extends Route {
 		Res.send(UserObject);
 	}
 
-	private async FetchSelf(Req: Request, Res: Response) {
-		const { include } = Req.query;
+	private async FetchSelf(Req: Request<any, any, any, { include: string }>, Res: Response) {
+		const { include: Include } = Req.query;
 
 		const FetchedUser = await this.FetchUser(Req.user.Id);
 
@@ -439,16 +439,16 @@ export default class FetchPatchUser extends Route {
 		}
 
 		const Flags = new FlagFields(FetchedUser.Flags, FetchedUser.PublicFlags);
-		const SplitInclude = String(include).split(",");
+		const SplitInclude = String(Include).split(",");
 
 		const UserObject: UserObject = {
 			Id: FetchedUser.UserId,
 			Email: FetchedUser.Email,
 			EmailVerified: Flags.PrivateFlags.has("EmailVerified"),
 			Username: FetchedUser.Username,
-			GlobalNickname: FetchedUser.GlobalNickname.length === 0 ? null : FetchedUser.GlobalNickname,
+			GlobalNickname: FetchedUser.GlobalNickname ? FetchedUser.GlobalNickname.length === 0 ? null : FetchedUser.GlobalNickname : FetchedUser.GlobalNickname,
 			Tag: FetchedUser.Tag,
-			Avatar: FetchedUser.Avatar.length === 0 ? null : FetchedUser.Avatar,
+			Avatar: FetchedUser.Avatar ? FetchedUser.Avatar.length === 0 ? null : FetchedUser.Avatar : FetchedUser.Avatar,
 			PublicFlags: Number(Flags.PublicFlags.cleaned),
 			Flags: Number(Flags.PublicPrivateFlags),
 			PhoneNumber: null,

@@ -10,7 +10,7 @@
  */
 
 import type { NextFunction, Request, Response } from "express";
-import type { GuildMiddleware } from "../Types/Routes";
+import type { GuildMiddleware } from "../Types/Routes.ts";
 import GuildMemberFlags from "../Utils/Classes/BitFields/GuildMember.ts";
 import Encryption from "../Utils/Classes/Encryption.ts";
 import ErrorGen from "../Utils/Classes/ErrorGen.ts";
@@ -18,7 +18,7 @@ import type Roles from "../Utils/Cql/Types/Role.ts";
 import PermissionHandler from "../Utils/Versioning/v1/PermissionCheck.ts";
 
 const Guild = (options: GuildMiddleware) => {
-	return async (Req: Request<{ guildId?: string }>, Res: Response, next: NextFunction) => {
+	return async (Req: Request<{ guildId?: string; }>, Res: Response, next: NextFunction) => {
 		const Error = ErrorGen.UnknownGuild();
 
 		if ((options.Required && !Req.params.guildId) || !Req.user?.Id) {
@@ -125,7 +125,7 @@ const Guild = (options: GuildMiddleware) => {
 
 			return;
 		}
-		
+
 		if (options.PermissionsRequired && options.PermissionsRequired.length > 0) {
 			const RolePromises = [];
 
@@ -136,11 +136,11 @@ const Guild = (options: GuildMiddleware) => {
 					}),
 				);
 			}
-	
+
 			const FetchedRoles = (await Promise.all(RolePromises)).filter(Boolean) as Roles[];
-	
+
 			const roles = FetchedRoles.map((Role) => Encryption.CompleteDecryption(Role));
-			
+
 			const PermissionCheck = new PermissionHandler(
 				Req.user.Id,
 				MemberFlags.cleaned,
@@ -152,19 +152,19 @@ const Guild = (options: GuildMiddleware) => {
 					};
 				})
 			);
-			
+
 			if (!options.PermissionsRequired.some((Permission) => Permission === "Owner" ? PermissionCheck.GuildMemberFlags.has("Owner") : PermissionCheck.HasAnyRole(Permission))) {
 				const MissingPermissions = ErrorGen.MissingPermissions();
-	
+
 				MissingPermissions.AddError({
 					Permissions: {
 						Code: "MissingPermissions",
 						Message: "You are missing the permissions to do this action.",
 					},
 				});
-	
+
 				Res.status(403).json(MissingPermissions.toJSON());
-	
+
 				return;
 			}
 		}

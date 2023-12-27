@@ -11,7 +11,7 @@
 
 import type { NextFunction, Request, Response } from "express";
 import type { ExpressUser } from "../Types";
-import type { UserMiddleware } from "../Types/Routes";
+import type { UserMiddleware } from "../Types/Routes.ts";
 import App from "../Utils/Classes/App.ts";
 import FlagFields from "../Utils/Classes/BitFields/Flags.ts";
 import Encryption from "../Utils/Classes/Encryption.ts";
@@ -290,7 +290,7 @@ const User = (options: UserMiddleware) => {
 				}
 			}
 
-			const CompleteDecrypted: { Email: string; Flags: string; Guilds: string[]; Password: string; UserId: string } =
+			const CompleteDecrypted: { Email: string; Flags: string; Guilds: string[]; Password: string; UserId: string; } =
 				Encryption.CompleteDecryption({
 					...UserData,
 					Flags: UserData.Flags.toString(),
