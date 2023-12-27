@@ -90,29 +90,29 @@ class PermissionHandler {
 	}
 
 	public HasChannelPermission(channelId: string, permission: keyof typeof PermissionConstants): boolean {
-		const channel = this.Channels.find((channel) => channel.Id === channelId);
+		const Channel = this.Channels.find((channel) => channel.Id === channelId);
 
-		if (!channel) return false;
+		if (!Channel) return false;
 
 		if (this.HasAnyRole("Administrator")) return true;
 
-		const userOverride = channel.Overrides.find(
+		const UserOverride = Channel.Overrides.find(
 			(override) => override.Type === "Member" && override.Id === this.GuildMemberId,
 		);
-		if (userOverride) {
-			if ((BigInt(userOverride.Allow) & PermissionConstants[permission]) === PermissionConstants[permission])
+		if (UserOverride) {
+			if ((BigInt(UserOverride.Allow) & PermissionConstants[permission]) === PermissionConstants[permission])
 				return true;
-			if ((BigInt(userOverride.Deny) & PermissionConstants[permission]) === PermissionConstants[permission])
+			if ((BigInt(UserOverride.Deny) & PermissionConstants[permission]) === PermissionConstants[permission])
 				return false;
 		}
 
-		for (const role of this.MemberRoles) {
-			const roleOverride = channel.Overrides.find((override) => override.Type === "Role" && override.Id === role.Id);
+		for (const Role of this.MemberRoles) {
+			const RoleOverride = Channel.Overrides.find((override) => override.Type === "Role" && override.Id === Role.Id);
 
-			if (roleOverride) {
-				if ((BigInt(roleOverride.Allow) & PermissionConstants[permission]) === PermissionConstants[permission])
+			if (RoleOverride) {
+				if ((BigInt(RoleOverride.Allow) & PermissionConstants[permission]) === PermissionConstants[permission])
 					return true;
-				if ((BigInt(roleOverride.Deny) & PermissionConstants[permission]) === PermissionConstants[permission])
+				if ((BigInt(RoleOverride.Deny) & PermissionConstants[permission]) === PermissionConstants[permission])
 					return false;
 			}
 		}

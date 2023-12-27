@@ -290,7 +290,7 @@ const User = (options: UserMiddleware) => {
 				}
 			}
 
-			const CompleteDecrypted: { Email: string; Flags: string; Guilds: string[]; Password: string; UserId: string; } =
+			const CompleteDecrypted: { Email: string; Flags: string; Guilds: string[]; Password: string; UserId: string } =
 				Encryption.CompleteDecryption({
 					...UserData,
 					Flags: UserData.Flags.toString(),
@@ -303,7 +303,7 @@ const User = (options: UserMiddleware) => {
 				Email: CompleteDecrypted.Email,
 				Id: CompleteDecrypted.UserId,
 				Password: CompleteDecrypted.Password,
-				Guilds: CompleteDecrypted.Guilds ?? []
+				Guilds: CompleteDecrypted.Guilds ?? [],
 			} as ExpressUser;
 
 			next();

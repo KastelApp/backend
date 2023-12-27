@@ -160,17 +160,17 @@ class Logger {
 		end: string;
 		rgb: string;
 	} {
-		const replacedHex = hex.replace("#", "");
+		const ReplacedHex = hex.replace("#", "");
 
-		const int = Number.parseInt(replacedHex, 16);
+		const Int = Number.parseInt(ReplacedHex, 16);
 
-		const red = (int >> 16) & 255;
-		const green = (int >> 8) & 255;
-		const blue = int & 255;
+		const Red = (Int >> 16) & 255;
+		const Green = (Int >> 8) & 255;
+		const Blue = Int & 255;
 
 		return {
 			end: "\u001B[0m",
-			rgb: `\u001B[38;2;${red};${green};${blue}m`,
+			rgb: `\u001B[38;2;${Red};${Green};${Blue}m`,
 		};
 	}
 
@@ -205,16 +205,16 @@ class Logger {
 
 			Archive.pipe(Output);
 
-			for (const file of LogFiles) {
-				Archive.append(createReadStream(join(this.logDirectory, file)), { name: file });
-				this.supersecretdebug(`Added ${file} to archive`);
+			for (const File of LogFiles) {
+				Archive.append(createReadStream(join(this.logDirectory, File)), { name: File });
+				this.supersecretdebug(`Added ${File} to archive`);
 			}
 
 			Archive.on("finish", () => {
-				for (const file of LogFiles) {
-					rmSync(join(this.logDirectory, file));
+				for (const File of LogFiles) {
+					rmSync(join(this.logDirectory, File));
 
-					this.supersecretdebug(`Deleted ${file}`);
+					this.supersecretdebug(`Deleted ${File}`);
 				}
 
 				this.supersecretdebug("Deleted old log files");
@@ -282,30 +282,30 @@ class Logger {
 
 		const Messages = [];
 
-		for (const item of options.message) {
+		for (const Item of options.message) {
 			const LastMessage: any = Messages[Messages.length - 1];
 			if (
-				typeof item === "string" ||
-				typeof item === "number" ||
-				typeof item === "boolean" ||
-				item === null ||
-				item === undefined
+				typeof Item === "string" ||
+				typeof Item === "number" ||
+				typeof Item === "boolean" ||
+				Item === null ||
+				Item === undefined
 			) {
 				if (LastMessage && typeof LastMessage === "string") {
-					Messages[Messages.length - 1] = `${LastMessage} ${item}`;
+					Messages[Messages.length - 1] = `${LastMessage} ${Item}`;
 				} else {
-					Messages.push(item.trim());
+					Messages.push(Item.trim());
 				}
-			} else if (item instanceof Error) {
-				if (item.stack) {
-					for (const line of item.stack.split("\n")) {
-						Messages.push(line.trim());
+			} else if (Item instanceof Error) {
+				if (Item.stack) {
+					for (const Line of Item.stack.split("\n")) {
+						Messages.push(Line.trim());
 					}
 				} else {
-					Messages.push(item.message.trim());
+					Messages.push(Item.message.trim());
 				}
 			} else {
-				Messages.push(item);
+				Messages.push(Item);
 			}
 		}
 
@@ -327,11 +327,11 @@ class Logger {
 		});
 
 		if (options.console) {
-			const color = Logger.hexToAnsi(this.colorTypes[options.type]);
+			const Color = Logger.hexToAnsi(this.colorTypes[options.type]);
 
-			if (color) {
-				for (const msg of NewMessages) {
-					console.log(`${color.rgb}${msg}${color.end}`);
+			if (Color) {
+				for (const Msg of NewMessages) {
+					console.log(`${Color.rgb}${Msg}${Color.end}`);
 				}
 			}
 		}
@@ -455,21 +455,21 @@ class Logger {
 	}
 
 	public stopTimer(name: string) {
-		const timer = this.timers.get(name);
+		const Timer = this.timers.get(name);
 
-		if (!timer) throw new Error(`Timer ${name} not found`);
+		if (!Timer) throw new Error(`Timer ${name} not found`);
 
-		const end = new Date();
+		const End = new Date();
 
-		const diff = end.getTime() - timer.start.getTime();
+		const Diff = End.getTime() - Timer.start.getTime();
 
-		if (timer.debug && !Args.Valid.includes("debug")) return this;
+		if (Timer.debug && !Args.Valid.includes("debug")) return this;
 
 		this.addLog({
 			type: "timer",
 			date: new Date(),
 			file: "latest",
-			message: [`Timer ${name} took ${diff}ms`],
+			message: [`Timer ${name} took ${Diff}ms`],
 			console: this.console,
 		});
 
@@ -478,21 +478,21 @@ class Logger {
 
 	public hex(hex: string) {
 		return (...message: string[]) => {
-			const color = Logger.hexToAnsi(hex);
+			const Color = Logger.hexToAnsi(hex);
 
-			if (color) {
-				for (const msg of message) {
-					console.log(`${color.rgb}${msg}${color.end}`);
+			if (Color) {
+				for (const Msg of message) {
+					console.log(`${Color.rgb}${Msg}${Color.end}`);
 				}
 			}
 		};
 	}
 
 	public static colorize(hex: string, str: string) {
-		const color = this.hexToAnsi(hex);
+		const Color = this.hexToAnsi(hex);
 
-		if (color) {
-			return `${color.rgb}${str}${color.end}`;
+		if (Color) {
+			return `${Color.rgb}${str}${Color.end}`;
 		} else {
 			return str;
 		}

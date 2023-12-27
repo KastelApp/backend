@@ -74,13 +74,12 @@ export default class FetchCreateAndDeleteInvites extends Route {
 			}
 
 			case "GET": {
-
 				if (Req.path.includes("/@me")) {
 					await this.FetchAtMeInvites(Req, Res);
 				} else {
 					await this.FetchInvites(Req, Res);
 				}
-				
+
 				break;
 			}
 
@@ -241,7 +240,7 @@ export default class FetchCreateAndDeleteInvites extends Route {
 		);
 	}
 
-	public async DeleteInvite(Req: Request<{ inviteId?: string; }>, Res: Response): Promise<void> {
+	public async DeleteInvite(Req: Request<{ inviteId?: string }>, Res: Response): Promise<void> {
 		const Member = await this.FetchMember(Req.user.Id, Req.guild.Guild.Id);
 
 		if (!Member) return; // will never happen
@@ -281,7 +280,7 @@ export default class FetchCreateAndDeleteInvites extends Route {
 			GuildId: Encryption.Encrypt(Req.guild.Guild.Id),
 			Code: Encryption.Encrypt(Req.params.inviteId as string),
 		});
-		
+
 		Res.status(204).send();
 	}
 
@@ -328,16 +327,15 @@ export default class FetchCreateAndDeleteInvites extends Route {
 		const FixedInvites = [];
 
 		for (const InvitePayload of Invites.toArray()) {
-			
 			if (InvitePayload.Expires < new Date()) {
 				await this.App.Cassandra.Models.Invite.remove({
 					GuildId: InvitePayload.GuildId,
-					Code: InvitePayload.Code
+					Code: InvitePayload.Code,
 				});
-				
+
 				continue;
 			}
-			
+
 			FixedInvites.push({
 				Code: InvitePayload.Code,
 				CreatorId: InvitePayload.CreatorId,
@@ -351,7 +349,7 @@ export default class FetchCreateAndDeleteInvites extends Route {
 
 		Res.send(Encryption.CompleteDecryption(FixedInvites));
 	}
-	
+
 	public async FetchAtMeInvites(Req: Request, Res: Response): Promise<void> {
 		const Invites = await this.App.Cassandra.Models.Invite.find({
 			GuildId: Encryption.Encrypt(Req.guild.Guild.Id),
@@ -363,12 +361,12 @@ export default class FetchCreateAndDeleteInvites extends Route {
 			if (InvitePayload.Expires < new Date()) {
 				await this.App.Cassandra.Models.Invite.remove({
 					GuildId: InvitePayload.GuildId,
-					Code: InvitePayload.Code
+					Code: InvitePayload.Code,
 				});
-				
+
 				continue;
 			}
-			
+
 			if (InvitePayload.CreatorId !== Encryption.Encrypt(Req.user.Id)) continue;
 
 			FixedInvites.push({
@@ -381,7 +379,7 @@ export default class FetchCreateAndDeleteInvites extends Route {
 				Deleteable: InvitePayload.Deleteable,
 			});
 		}
-		
+
 		Res.send(Encryption.CompleteDecryption(FixedInvites));
 	}
 

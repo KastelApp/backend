@@ -16,16 +16,16 @@
 		"@typescript-eslint/naming-convention": [
 			"error",
 			{
-			  "selector": "variable",
-			  "types": ["function"],
-			  "format": ["PascalCase"]
+				"selector": "variable",
+				"types": ["function"],
+				"format": ["PascalCase"]
 			},
 			{
-			  "selector": "variable",
-			  "format": ["PascalCase"]
+				"selector": "variable",
+				"format": ["PascalCase"]
 			}
-		  ],
-		  "prefer-arrow/prefer-arrow-functions": "error",
-		  "object-curly-spacing": ["error", "always"]
+		],
+		"prefer-arrow/prefer-arrow-functions": "error",
+		"object-curly-spacing": ["error", "always"]
 	}
 }

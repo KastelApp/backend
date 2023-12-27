@@ -9,13 +9,13 @@
  * GPL 3.0 Licensed
  */
 
-import type { Request, Response } from 'express';
-import User from '../../../../Middleware/User.ts';
-import type App from '../../../../Utils/Classes/App.ts';
-import { Encryption } from '../../../../Utils/Classes/Encryption.ts';
-import ErrorGen from '../../../../Utils/Classes/ErrorGen.ts';
-import Route from '../../../../Utils/Classes/Route.ts';
-import type Settings from '../../../../Utils/Cql/Types/Settings.ts';
+import type { Request, Response } from "express";
+import User from "../../../../Middleware/User.ts";
+import type App from "../../../../Utils/Classes/App.ts";
+import { Encryption } from "../../../../Utils/Classes/Encryption.ts";
+import ErrorGen from "../../../../Utils/Classes/ErrorGen.ts";
+import Route from "../../../../Utils/Classes/Route.ts";
+import type Settings from "../../../../Utils/Cql/Types/Settings.ts";
 
 interface EditableSettings {
 	Language: string;
@@ -23,7 +23,7 @@ interface EditableSettings {
 	Privacy: number;
 	Status: string;
 	Theme: string;
-};
+}
 
 export default class UserSettings extends Route {
 	private readonly Editable: (keyof EditableSettings)[];
@@ -31,38 +31,32 @@ export default class UserSettings extends Route {
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ['GET', 'PATCH'];
+		this.Methods = ["GET", "PATCH"];
 
 		this.Middleware = [
 			User({
-				AccessType: 'LoggedIn',
-				AllowedRequesters: 'User',
+				AccessType: "LoggedIn",
+				AllowedRequesters: "User",
 				App,
 			}),
 		];
 
 		this.AllowedContentTypes = [];
 
-		this.Routes = ['/settings'];
+		this.Routes = ["/settings"];
 
-		this.Editable = [
-			'Language',
-			'Presence',
-			'Privacy',
-			'Status',
-			'Theme',
-		];
+		this.Editable = ["Language", "Presence", "Privacy", "Status", "Theme"];
 	}
 
 	public override async Request(Req: Request<{ userId: string }>, Res: Response) {
 		switch (Req.methodi) {
-			case 'GET': {
+			case "GET": {
 				await this.FetchSettings(Req, Res);
 				break;
 			}
 
-			case 'PATCH': {
-				if (Req.path.endsWith('/fetch')) {
+			case "PATCH": {
+				if (Req.path.endsWith("/fetch")) {
 					Req.fourohfourit();
 					break;
 				}
@@ -97,15 +91,15 @@ export default class UserSettings extends Route {
 
 	public async PatchSettings(Req: Request<{ userId: string }, any, Settings>, Res: Response) {
 		const { Language, Presence, Privacy, Status, Theme } = Req.body;
-		const Error = ErrorGen.FailedToPatchUser()
+		const Error = ErrorGen.FailedToPatchUser();
 		const UserSettings = await this.FetchUserSettings(Req.user.Id);
 
 		const FilteredItems = Object.entries(Req.body)
 			.filter(([key]) => {
 				return this.Editable.includes(key as keyof EditableSettings);
 			})
-			.reduce<{ [key: string]: number | string | null; }>((prev, [key, value]) => {
-				if (!['string', 'number'].includes(typeof value)) prev[key as string] = null;
+			.reduce<{ [key: string]: number | string | null }>((prev, [key, value]) => {
+				if (!["string", "number"].includes(typeof value)) prev[key as string] = null;
 
 				prev[key as string] = value as number | string;
 
@@ -115,8 +109,8 @@ export default class UserSettings extends Route {
 		if (Object.keys(FilteredItems).length === 0) {
 			Error.AddError({
 				Keys: {
-					Code: 'NoKeys',
-					Message: 'There are no keys',
+					Code: "NoKeys",
+					Message: "There are no keys",
 				},
 			});
 		}
@@ -128,7 +122,7 @@ export default class UserSettings extends Route {
 		}
 
 		await this.App.Cassandra.Models.Settings.update({
-			...Encryption.CompleteEncryption(UserSettings)
+			...Encryption.CompleteEncryption(UserSettings),
 		});
 
 		const SettingsObject: Partial<Settings> = {

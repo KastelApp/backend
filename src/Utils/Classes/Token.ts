@@ -15,39 +15,39 @@ import { Encryption } from "../../Config.ts";
 
 class Token {
 	public static GenerateToken(UserId: string): string {
-		const snowflakeBase64 = this.Encode(UserId);
-		const nonce = crypto.randomBytes(16).toString("base64url");
+		const SnowflakeBase64 = this.Encode(UserId);
+		const Nonce = crypto.randomBytes(16).toString("base64url");
 
-		const StringDated = this.Encode(String(Date.now()) + nonce);
+		const StringDated = this.Encode(String(Date.now()) + Nonce);
 
-		const hmac = crypto.createHmac("sha256", Encryption.TokenKey);
+		const Hmac = crypto.createHmac("sha256", Encryption.TokenKey);
 
-		hmac.update(`${snowflakeBase64}.${StringDated}`);
+		Hmac.update(`${SnowflakeBase64}.${StringDated}`);
 
-		return `${snowflakeBase64}.${StringDated}.${hmac.digest("base64url")}`;
+		return `${SnowflakeBase64}.${StringDated}.${Hmac.digest("base64url")}`;
 	}
 
 	public static ValidateToken(Token: string): boolean {
-		const [snowflakeBase64, StringDated, hmacSignature] = Token.split(".");
+		const [SnowflakeBase64, StringDated, HmacSignature] = Token.split(".");
 
-		if (!snowflakeBase64 || !StringDated || !hmacSignature) return false;
+		if (!SnowflakeBase64 || !StringDated || !HmacSignature) return false;
 
-		const hmac = crypto.createHmac("sha256", Encryption.TokenKey);
+		const Hmac = crypto.createHmac("sha256", Encryption.TokenKey);
 
-		hmac.update(`${snowflakeBase64}.${StringDated}`);
+		Hmac.update(`${SnowflakeBase64}.${StringDated}`);
 
-		return hmac.digest("base64url") === hmacSignature;
+		return Hmac.digest("base64url") === HmacSignature;
 	}
 
 	public static DecodeToken(Token: string): {
 		Snowflake: string;
 		Timestamp: number;
 	} {
-		const [snowflakeBase64, StringDated] = Token.split(".");
+		const [SnowflakeBase64, StringDated] = Token.split(".");
 
-		if (!snowflakeBase64 || !StringDated) throw new Error("Invalid token provided.");
+		if (!SnowflakeBase64 || !StringDated) throw new Error("Invalid token provided.");
 
-		const Snowflake = Buffer.from(snowflakeBase64, "base64url").toString("utf8");
+		const Snowflake = Buffer.from(SnowflakeBase64, "base64url").toString("utf8");
 
 		const DecodedTimestamp = Buffer.from(StringDated, "base64url").toString("utf8");
 

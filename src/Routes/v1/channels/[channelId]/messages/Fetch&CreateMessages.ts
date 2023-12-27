@@ -62,7 +62,10 @@ export default class FetchAndCreateMessages extends Route {
 		this.Routes = ["/"];
 	}
 
-	public override async Request(Req: Request<{ channelId: string }, any, any, { after: string, before: string, limit: string }>, Res: Response): Promise<void> {
+	public override async Request(
+		Req: Request<{ channelId: string }, any, any, { after: string; before: string; limit: string }>,
+		Res: Response,
+	): Promise<void> {
 		switch (Req.methodi) {
 			case "GET": {
 				await this.FetchMessagesGet(Req, Res);
@@ -84,7 +87,10 @@ export default class FetchAndCreateMessages extends Route {
 		}
 	}
 
-	private async FetchMessagesGet(Req: Request<{ channelId: string }, any, any, { after: string, before: string, limit: string }>, Res: Response): Promise<void> {
+	private async FetchMessagesGet(
+		Req: Request<{ channelId: string }, any, any, { after: string; before: string; limit: string }>,
+		Res: Response,
+	): Promise<void> {
 		const InvalidRequest = ErrorGen.InvalidField();
 
 		const Member = await this.FetchMember(Req.user.Id, (await this.FetchGuildId(Req.params.channelId)) ?? "");
@@ -123,7 +129,7 @@ export default class FetchAndCreateMessages extends Route {
 				},
 			],
 		);
-		
+
 		if (!PermissionCheck.HasChannelPermission(Req.params.channelId, "ReadMessages")) {
 			InvalidRequest.AddError({
 				Permissions: {
@@ -132,8 +138,12 @@ export default class FetchAndCreateMessages extends Route {
 				},
 			});
 		}
-		
-		if (Req.query.limit && Number.isNaN(Req.query.limit) || Number(Req.query.limit) < 1 || Number(Req.query.limit) > 100) {
+
+		if (
+			(Req.query.limit && Number.isNaN(Req.query.limit)) ||
+			Number(Req.query.limit) < 1 ||
+			Number(Req.query.limit) > 100
+		) {
 			InvalidRequest.AddError({
 				Limit: {
 					Code: "InvalidLimit",
@@ -141,7 +151,7 @@ export default class FetchAndCreateMessages extends Route {
 				},
 			});
 		}
-		
+
 		if (Req.query.after && !this.App.Snowflake.Validate(Req.query.after)) {
 			InvalidRequest.AddError({
 				After: {
@@ -150,7 +160,7 @@ export default class FetchAndCreateMessages extends Route {
 				},
 			});
 		}
-		
+
 		if (Req.query.before && !this.App.Snowflake.Validate(Req.query.before)) {
 			InvalidRequest.AddError({
 				Before: {
@@ -166,8 +176,13 @@ export default class FetchAndCreateMessages extends Route {
 			return;
 		}
 
-		const Messages = await this.GetMessages(Req.params.channelId, Number(Req.query.limit), Req.query.before, Req.query.after);
-		
+		const Messages = await this.GetMessages(
+			Req.params.channelId,
+			Number(Req.query.limit),
+			Req.query.before,
+			Req.query.after,
+		);
+
 		const MappedMessages = Messages.map((Msg) => {
 			return {
 				ChannelId: Msg.channel_id,
@@ -184,17 +199,20 @@ export default class FetchAndCreateMessages extends Route {
 				UpdatedDate: Msg.updated_date,
 				Attachments: Msg.attachments ?? [],
 				AuthorId: Msg.author_id,
-				Bucket: Msg.bucket
-			}
+				Bucket: Msg.bucket,
+			};
 		});
-		
+
 		const NewMessages = [];
-		
+
 		for (const Message of MappedMessages) {
-			const Member = await this.FetchMember(Encryption.Decrypt(Message.AuthorId), (await this.FetchGuildId(Req.params.channelId)) ?? "");
-			
+			const Member = await this.FetchMember(
+				Encryption.Decrypt(Message.AuthorId),
+				(await this.FetchGuildId(Req.params.channelId)) ?? "",
+			);
+
 			if (!Member) continue; // will never happen
-			
+
 			const UserData = await this.App.Cassandra.Models.User.get(
 				{
 					UserId: Message.AuthorId,
@@ -203,9 +221,9 @@ export default class FetchAndCreateMessages extends Route {
 					fields: ["avatar", "tag", "avatar", "username", "flags", "public_flags"],
 				},
 			);
-			
+
 			if (!UserData) continue; // will never happen
-			
+
 			const DataToSend = {
 				AllowedMentions: Message.AllowedMentions,
 				Attachments: Message.Attachments,
@@ -230,72 +248,58 @@ export default class FetchAndCreateMessages extends Route {
 				},
 				Id: Message.MessageId,
 				Nonce: Message.Nonce,
-				ReplyingTo: Message.ReplyingTo
-			}
-			
+				ReplyingTo: Message.ReplyingTo,
+			};
+
 			NewMessages.push(this.FixObject(DataToSend));
 		}
 
 		Res.send(Encryption.CompleteDecryption(NewMessages));
 	}
-	
-	private BuildQuery(
-		ChannelId: string,
-		Bucket: string,
-		Limit = 50,
-		Before?: string,
-		After?: string,
-		Order = "DESC"
-	) {
+
+	private BuildQuery(ChannelId: string, Bucket: string, Limit = 50, Before?: string, After?: string, Order = "DESC") {
 		let Query = "SELECT * FROM messages WHERE channel_id = ? AND bucket = ?";
-		
-		const Params = [
-			Encryption.Encrypt(ChannelId),
-			Bucket
-		];
-		
+
+		const Params = [Encryption.Encrypt(ChannelId), Bucket];
+
 		if (Before) {
 			Query += "AND message_id < ? ";
 			Params.push(Encryption.Encrypt(Before));
 		}
-		
+
 		if (After) {
 			Query += "AND message_id > ? ";
 			Params.push(Encryption.Encrypt(After));
 		}
-		
+
 		Query += `ORDER BY message_id ${Order} LIMIT ?`;
-		
+
 		Params.push(String(Limit));
-		
+
 		return {
 			Query,
-			Params
-		}
+			Params,
+		};
 	}
-	
+
 	private async GetMessages(ChannelId: string, Limit = 50, Before?: string, After?: string) {
 		const Messages = [];
 		const PossibleBuckets = this.App.GetBuckets(ChannelId).reverse(); // reverse it so the newest buckets are first
-		
+
 		for (const Bucket of PossibleBuckets) {
 			const BuiltQuery = this.BuildQuery(ChannelId, Bucket, Limit, Before, After);
-			
-			const FetchedMessages = await this.App.Cassandra.Client.execute(
-				BuiltQuery.Query,
-				BuiltQuery.Params,
-				{
-					prepare: true,
-				}
-			);
-			
+
+			const FetchedMessages = await this.App.Cassandra.Client.execute(BuiltQuery.Query, BuiltQuery.Params, {
+				prepare: true,
+			});
+
 			for (const Message of FetchedMessages.rows) {
 				Messages.push(Message);
 			}
-			
+
 			if (Messages.length >= Limit) break; // we have enough messages
 		}
-		
+
 		return Messages.slice(0, Limit); // in case we have more than the limit
 	}
 
@@ -497,7 +501,7 @@ export default class FetchAndCreateMessages extends Route {
 				},
 			});
 		}
-		
+
 		if (ReplyingTo) {
 			const FetchedMessage = await this.App.Cassandra.Models.Message.get(
 				{
@@ -509,7 +513,7 @@ export default class FetchAndCreateMessages extends Route {
 					fields: ["message_id"],
 				},
 			);
-			
+
 			if (!FetchedMessage) {
 				InvalidRequest.AddError({
 					ReplyingTo: {
@@ -525,7 +529,7 @@ export default class FetchAndCreateMessages extends Route {
 
 			return;
 		}
-		
+
 		const UserData = await this.App.Cassandra.Models.User.get(
 			{
 				UserId: Encryption.Encrypt(Req.user.Id),
@@ -549,7 +553,8 @@ export default class FetchAndCreateMessages extends Route {
 			);
 
 			if (FetchedMessage) {
-				const ObjToSend = { // just like if you were to fetch this message
+				const ObjToSend = {
+					// just like if you were to fetch this message
 					AllowedMentions: FetchedMessage.AllowedMentions,
 					Attachments: FetchedMessage.Attachments ?? [],
 					Author: {
@@ -573,11 +578,11 @@ export default class FetchAndCreateMessages extends Route {
 					},
 					Id: FetchedMessage.MessageId.toString(),
 					Nonce: FetchedMessage.Nonce,
-					ReplyingTo: FetchedMessage.ReplyingTo
+					ReplyingTo: FetchedMessage.ReplyingTo,
 				};
 
 				Res.status(200).send(this.FixObject(Encryption.CompleteDecryption(ObjToSend)));
-				
+
 				return;
 			}
 		}
@@ -600,11 +605,11 @@ export default class FetchAndCreateMessages extends Route {
 			MessageId, // darkerink: I want to encrypt this, but idk how to query messages then, since with this way we can sort by the message id size
 			Nonce: Nonce ? Encryption.Encrypt(Nonce) : "",
 			ReplyingTo: ReplyingTo ? Encryption.Encrypt(ReplyingTo) : "",
-			Bucket: this.App.GetBucket(Req.params.channelId)
+			Bucket: this.App.GetBucket(Req.params.channelId),
 		};
 
 		await this.App.Cassandra.Models.Message.insert(BuiltMessage as Messages);
-		
+
 		const DataToSend = {
 			AllowedMentions: BuiltMessage.AllowedMentions as number,
 			Attachments: BuiltMessage.Attachments as string[],
@@ -629,14 +634,14 @@ export default class FetchAndCreateMessages extends Route {
 			},
 			Id: MessageId.toString(),
 			Nonce: Nonce ?? null,
-			ReplyingTo: ReplyingTo ?? null
-		}
-		
+			ReplyingTo: ReplyingTo ?? null,
+		};
+
 		this.App.SystemSocket.Events.MessageCreate({
 			Msg: DataToSend,
 			ChannelId: Req.params.channelId,
 		});
-		
+
 		Res.status(201).send(this.FixObject(Encryption.CompleteDecryption(DataToSend)));
 	}
 
@@ -724,7 +729,7 @@ export default class FetchAndCreateMessages extends Route {
 
 		return Encryption.Decrypt<string>(Channel.GuildId);
 	}
-	
+
 	private FixObject(object: {
 		AllowedMentions: number;
 		Attachments: string[];
@@ -754,27 +759,27 @@ export default class FetchAndCreateMessages extends Route {
 		// In embeds, if the value is "null" remove it.
 		// Stuff like nonce, replyingTo, and avatar in author if its an empty string change it to null
 		const NewObject: Record<string, any> = {};
-		
+
 		for (const [key, value] of Object.entries(object)) {
 			if (key === "Embeds") {
 				const NewEmbeds: MainObject[] = [];
-				
+
 				for (const Embed of value as MainObject[]) {
 					const NewEmbed: Record<string, any> = {};
-					
+
 					for (const [EmbedKey, EmbedValue] of Object.entries(Embed)) {
 						if (EmbedValue === null) continue;
-						
+
 						NewEmbed[EmbedKey] = EmbedValue;
 					}
-					
+
 					NewEmbeds.push(NewEmbed as MainObject);
 				}
-				
+
 				NewObject[key] = NewEmbeds;
 			} else if (key === "Author") {
 				const NewAuthor: Record<string, any> = {};
-				
+
 				for (const [AuthorKey, AuthorValue] of Object.entries(value)) {
 					if (AuthorValue === "") {
 						NewAuthor[AuthorKey] = null;
@@ -782,7 +787,7 @@ export default class FetchAndCreateMessages extends Route {
 						NewAuthor[AuthorKey] = AuthorValue;
 					}
 				}
-				
+
 				NewObject[key] = NewAuthor;
 			} else if (value === "") {
 				NewObject[key] = null;
@@ -790,7 +795,7 @@ export default class FetchAndCreateMessages extends Route {
 				NewObject[key] = value;
 			}
 		}
-		
+
 		return NewObject;
 	}
 }

@@ -109,20 +109,20 @@ export default class Guilds extends Route {
 	}
 
 	private async FetchGuilds(
-		Req: Request<any, any, any, { after?: string; before?: string; include?: string; limit?: string; }>,
+		Req: Request<any, any, any, { After?: string; Before?: string; Include?: string; Limit?: string; }>,
 		Res: Response,
 	): Promise<void> {
-		const { include, after, before, limit } = Req.query;
-		const Include = (String(include)?.split(",") ?? []).filter((include) =>
+		const { Include: IncludeQuery, After, Before, Limit: QueryLimit } = Req.query;
+		const Include = (String(IncludeQuery)?.split(",") ?? []).filter((include) =>
 			this.Includeable.includes(include as any),
 		) as Includeable[];
-		const ParsedLimit = Number.parseInt(limit ?? "100", 10);
+		const ParsedLimit = Number.parseInt(QueryLimit ?? "100", 10);
 		const Limit = Number.isNaN(ParsedLimit) ? 50 : ParsedLimit > 100 ? 50 : ParsedLimit < 1 ? 1 : ParsedLimit;
 
 		const InvalidSnowflake = ErrorGen.InvalidSnowflake();
 
-		if (after || before) {
-			if (after && !this.App.Snowflake.Validate(after)) {
+		if (After || Before) {
+			if (After && !this.App.Snowflake.Validate(After)) {
 				InvalidSnowflake.AddError({
 					After: {
 						Code: "InvalidSnowflake",
@@ -131,7 +131,7 @@ export default class Guilds extends Route {
 				});
 			}
 
-			if (before && !this.App.Snowflake.Validate(before)) {
+			if (Before && !this.App.Snowflake.Validate(Before)) {
 				InvalidSnowflake.AddError({
 					Before: {
 						Code: "InvalidSnowflake",
@@ -140,7 +140,7 @@ export default class Guilds extends Route {
 				});
 			}
 
-			if (before && after) {
+			if (Before && After) {
 				InvalidSnowflake.AddError({
 					Before: {
 						Code: "InvalidSnowflake",
@@ -168,8 +168,8 @@ export default class Guilds extends Route {
 			return;
 		}
 
-		if (after) {
-			const AfterIndex = Guilds.indexOf(after);
+		if (After) {
+			const AfterIndex = Guilds.indexOf(After);
 
 			if (AfterIndex === -1) {
 				InvalidSnowflake.AddError({
@@ -187,8 +187,8 @@ export default class Guilds extends Route {
 			Guilds.splice(0, AfterIndex + 1); // also removes the after snowflake guild
 		}
 
-		if (before) {
-			const BeforeIndex = Guilds.indexOf(before);
+		if (Before) {
+			const BeforeIndex = Guilds.indexOf(Before);
 
 			if (BeforeIndex === -1) {
 				InvalidSnowflake.AddError({

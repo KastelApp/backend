@@ -14,7 +14,7 @@ import type { GuildMiddleware } from "../Types/Routes.ts";
 import ErrorGen from "../Utils/Classes/ErrorGen.ts";
 
 const Channel = (options: GuildMiddleware) => {
-	return async (Req: Request<{ channelId?: string; }>, Res: Response, next: NextFunction) => {
+	return async (Req: Request<{ channelId?: string }>, Res: Response, next: NextFunction) => {
 		const Error = ErrorGen.UnknownChannel();
 
 		if ((options.Required && !Req.params.channelId) || !Req.user?.Id) {

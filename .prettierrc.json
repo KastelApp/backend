@@ -1,9 +1,8 @@
 {
 	"printWidth": 120,
 	"useTabs": true,
-	"singleQuote": true,
+	"singleQuote": false,
 	"quoteProps": "as-needed",
 	"trailingComma": "all",
-	"endOfLine": "lf",
-	"extends": ["neon/common", "neon/node", "neon/typescript", "neon/prettier"]
+	"endOfLine": "lf"
 }

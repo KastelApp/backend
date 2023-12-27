@@ -6,25 +6,25 @@ const ProcessArgs = (allowedArgs: string[]): { Invalid: string[]; Valid: string[
 
 	if (!Array.isArray(allowedArgs)) throw new TypeError("Allowed args must be an array.");
 
-	for (const arg of process.argv) {
-		const isArgRegex = /^--(?<args>[a-z]+)$/;
+	for (const Arg of process.argv) {
+		const IsArgRegex = /^--(?<args>[a-z]+)$/;
 
-		if (isArgRegex.test(arg)) {
-			const argName = isArgRegex.exec(arg)?.[1];
+		if (IsArgRegex.test(Arg)) {
+			const ArgName = IsArgRegex.exec(Arg)?.[1];
 
-			if (!argName) {
-				Invalid.push(arg);
+			if (!ArgName) {
+				Invalid.push(Arg);
 
 				continue;
 			}
 
-			if (allowedArgs.includes(argName)) {
-				Valid.push(argName);
+			if (allowedArgs.includes(ArgName)) {
+				Valid.push(ArgName);
 			} else {
-				Invalid.push(argName);
+				Invalid.push(ArgName);
 			}
 		} else {
-			Invalid.push(arg);
+			Invalid.push(Arg);
 		}
 	}
 

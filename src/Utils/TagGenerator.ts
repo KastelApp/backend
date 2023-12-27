@@ -10,24 +10,25 @@
  */
 
 const TagGenerator = (tags: (number | string)[]): string => {
-	const existingTags = new Set(tags.map(Number));
+	const ExistingTags = new Set(tags.map(Number));
 
-	let num = Math.floor(Math.random() * 10_000);
-	while (existingTags.has(num)) {
-		num = Math.floor(Math.random() * 10_000);
+	let Num = Math.floor(Math.random() * 10_000);
+
+	while (ExistingTags.has(Num)) {
+		Num = Math.floor(Math.random() * 10_000);
 	}
 
-	return num.toString().padStart(4, "0000");
+	return Num.toString().padStart(4, "0000");
 };
 
 const TagValidator = (originalTag: string, newTag: number | string): string => {
-	const fixTag = newTag.toString();
+	const FixedTag = newTag.toString();
 
-	if (fixTag.length !== 4) return originalTag;
+	if (FixedTag.length !== 4) return originalTag;
 
-	if (fixTag === "0000") return originalTag;
+	if (FixedTag === "0000") return originalTag;
 
-	return fixTag;
+	return FixedTag;
 };
 
 export default TagGenerator;

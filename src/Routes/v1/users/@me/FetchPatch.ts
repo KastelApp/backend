@@ -43,7 +43,7 @@ type SchemaUser = Omit<EditableUser, "AFlags" | "Bio" | "NewPassword" | "RFlags"
 
 interface UserObject {
 	Avatar: string | null;
-	Bio?: string;
+	Bio?: string | null;
 	Email: string;
 	EmailVerified: boolean;
 	Flags: number;
@@ -221,7 +221,7 @@ export default class FetchPatchUser extends Route {
 			.filter(([key]) => {
 				return this.Editable.includes(key as keyof EditableUser);
 			})
-			.reduce<{ [key: string]: number | string | null; }>((prev, [key, value]) => {
+			.reduce<{ [key: string]: number | string | null }>((prev, [key, value]) => {
 				if (!["string", "number"].includes(typeof value)) prev[key as string] = null;
 
 				prev[key as string] = value as number | string;
@@ -446,9 +446,9 @@ export default class FetchPatchUser extends Route {
 			Email: FetchedUser.Email,
 			EmailVerified: Flags.PrivateFlags.has("EmailVerified"),
 			Username: FetchedUser.Username,
-			GlobalNickname: FetchedUser.GlobalNickname ? FetchedUser.GlobalNickname.length === 0 ? null : FetchedUser.GlobalNickname : FetchedUser.GlobalNickname,
+			GlobalNickname: FetchedUser.GlobalNickname,
 			Tag: FetchedUser.Tag,
-			Avatar: FetchedUser.Avatar ? FetchedUser.Avatar.length === 0 ? null : FetchedUser.Avatar : FetchedUser.Avatar,
+			Avatar: FetchedUser.Avatar,
 			PublicFlags: Number(Flags.PublicFlags.cleaned),
 			Flags: Number(Flags.PublicPrivateFlags),
 			PhoneNumber: null,
@@ -466,7 +466,6 @@ export default class FetchPatchUser extends Route {
 				},
 			);
 
-			// @ts-expect-error -- todo: fix this
 			UserObject.Bio = Settings?.Bio ? Encryption.Decrypt(Settings.Bio) : null;
 		}
 

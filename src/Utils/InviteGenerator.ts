@@ -11,7 +11,7 @@
 
 import crypto from "node:crypto";
 
-const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789";
+const Chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789";
 
 /**
  * Generates a random invite with a selected length
@@ -23,8 +23,9 @@ const InviteGenerator = (Length = 15): string => {
 		);
 	}
 
-	const randomBytes = crypto.randomBytes(Length);
-	return [...randomBytes].map((byte) => chars[byte % chars.length]).join("");
+	const RandomBytes = crypto.randomBytes(Length);
+
+	return [...RandomBytes].map((byte) => Chars[byte % Chars.length]).join("");
 };
 
 export default InviteGenerator;

@@ -13,7 +13,7 @@ import type { ClientOptions } from "@kastelll/cassandra-driver";
 import type * as Sentry from "@sentry/node";
 
 export interface Server {
-	BucketInterval: number,
+	BucketInterval: number;
 	BucketRnd: number;
 	Cache: {
 		ClearInterval: number;

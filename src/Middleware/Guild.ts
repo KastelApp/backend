@@ -18,7 +18,7 @@ import type Roles from "../Utils/Cql/Types/Role.ts";
 import PermissionHandler from "../Utils/Versioning/v1/PermissionCheck.ts";
 
 const Guild = (options: GuildMiddleware) => {
-	return async (Req: Request<{ guildId?: string; }>, Res: Response, next: NextFunction) => {
+	return async (Req: Request<{ guildId?: string }>, Res: Response, next: NextFunction) => {
 		const Error = ErrorGen.UnknownGuild();
 
 		if ((options.Required && !Req.params.guildId) || !Req.user?.Id) {
@@ -150,10 +150,16 @@ const Guild = (options: GuildMiddleware) => {
 						Permissions: role.Permissions.toString(),
 						Position: role.Position,
 					};
-				})
+				}),
 			);
 
-			if (!options.PermissionsRequired.some((Permission) => Permission === "Owner" ? PermissionCheck.GuildMemberFlags.has("Owner") : PermissionCheck.HasAnyRole(Permission))) {
+			if (
+				!options.PermissionsRequired.some((Permission) =>
+					Permission === "Owner"
+						? PermissionCheck.GuildMemberFlags.has("Owner")
+						: PermissionCheck.HasAnyRole(Permission),
+				)
+			) {
 				const MissingPermissions = ErrorGen.MissingPermissions();
 
 				MissingPermissions.AddError({

@@ -112,32 +112,32 @@ class SystemInfo {
 	}
 
 	public FormatBytes(bytes: number) {
-		const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+		const Sizes = ["Bytes", "KB", "MB", "GB", "TB"];
 
 		if (bytes <= 0) return "0 Byte";
 
-		const byteCount = Math.floor(Math.log(bytes) / Math.log(1_024));
+		const ByteCount = Math.floor(Math.log(bytes) / Math.log(1_024));
 
-		return `${Math.round(bytes / 1_024 ** byteCount)} ${sizes[byteCount]}`;
+		return `${Math.round(bytes / 1_024 ** ByteCount)} ${Sizes[ByteCount]}`;
 	}
 
 	public FormatSeconds(seconds: number) {
-		const ms = seconds * 1_000;
-		const day = Math.floor(ms / 86_400_000);
-		const hour = Math.floor((ms % 86_400_000) / 3_600_000);
-		const minute = Math.floor((ms % 3_600_000) / 60_000);
-		const secs = Math.floor((ms % 60_000) / 1_000);
-		const msRemainder = ms % 1_000;
+		const Ms = seconds * 1_000;
+		const Day = Math.floor(Ms / 86_400_000);
+		const Hour = Math.floor((Ms % 86_400_000) / 3_600_000);
+		const Minute = Math.floor((Ms % 3_600_000) / 60_000);
+		const Secs = Math.floor((Ms % 60_000) / 1_000);
+		const MsRemainder = Ms % 1_000;
 
-		const parts = [];
+		const Parts = [];
 
-		if (day > 0) parts.push(`${day}d`);
-		if (hour > 0) parts.push(`${hour}h`);
-		if (minute > 0) parts.push(`${minute}m`);
-		if (secs > 0) parts.push(`${secs}s`);
-		if (msRemainder > 0) parts.push(`${msRemainder}ms`);
+		if (Day > 0) Parts.push(`${Day}d`);
+		if (Hour > 0) Parts.push(`${Hour}h`);
+		if (Minute > 0) Parts.push(`${Minute}m`);
+		if (Secs > 0) Parts.push(`${Secs}s`);
+		if (MsRemainder > 0) Parts.push(`${MsRemainder}ms`);
 
-		return parts.join(" ");
+		return Parts.join(" ");
 	}
 
 	public async InternetAccess(): Promise<boolean> {

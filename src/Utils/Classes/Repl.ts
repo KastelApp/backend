@@ -38,23 +38,23 @@ const BuiltInHelp: Command = {
 		},
 	],
 	flags: [],
-	cb(args, _, repl) {
+	cb: (args, _, repl) => {
 		if (args.length === 0) {
-			for (const cmd of repl.cmds) {
-				console.log(`${Logger.colorize("#f3432c", "Command:")} ${cmd.name} - ${cmd.description}`);
+			for (const Cmd of repl.cmds) {
+				console.log(`${Logger.colorize("#f3432c", "Command:")} ${Cmd.name} - ${Cmd.description}`);
 
-				for (const arg of cmd.args) {
+				for (const Arg of Cmd.args) {
 					console.log(
-						`${Logger.colorize("#f39d2c", "Argument:")} ${arg.optional ? `[${arg.name}]` : `<${arg.name}>`} - ${
-							arg.description
+						`${Logger.colorize("#f39d2c", "Argument:")} ${Arg.optional ? `[${Arg.name}]` : `<${Arg.name}>`} - ${
+							Arg.description
 						}`,
 					);
 				}
 
-				for (const flag of cmd.flags) {
+				for (const Flag of Cmd.flags) {
 					console.log(
-						`${Logger.colorize("#f3c12c", "Flag:")} ${flag.optional ? `[${flag.name}]` : `<${flag.name}>`} - ${
-							flag.description
+						`${Logger.colorize("#f3c12c", "Flag:")} ${Flag.optional ? `[${Flag.name}]` : `<${Flag.name}>`} - ${
+							Flag.description
 						}`,
 					);
 				}
@@ -62,23 +62,23 @@ const BuiltInHelp: Command = {
 				console.log("\n");
 			}
 		} else {
-			const cmd = repl.cmds.find((cmd) => cmd.name === args[0]);
+			const Cmd = repl.cmds.find((cmd) => cmd.name === args[0]);
 
-			if (cmd) {
-				console.log(`${Logger.colorize("#f3432c", "Command:")} ${cmd.name} - ${cmd.description}`);
+			if (Cmd) {
+				console.log(`${Logger.colorize("#f3432c", "Command:")} ${Cmd.name} - ${Cmd.description}`);
 
-				for (const arg of cmd.args) {
+				for (const Arg of Cmd.args) {
 					console.log(
-						`${Logger.colorize("#f39d2c", "Argument:")} ${arg.optional ? `[${arg.name}]` : `<${arg.name}>`} - ${
-							arg.description
+						`${Logger.colorize("#f39d2c", "Argument:")} ${Arg.optional ? `[${Arg.name}]` : `<${Arg.name}>`} - ${
+							Arg.description
 						}`,
 					);
 				}
 
-				for (const flag of cmd.flags) {
+				for (const Flag of Cmd.flags) {
 					console.log(
-						`${Logger.colorize("#f3c12c", "Flag:")} ${flag.optional ? `[${flag.name}]` : `<${flag.name}>`} - ${
-							flag.description
+						`${Logger.colorize("#f3c12c", "Flag:")} ${Flag.optional ? `[${Flag.name}]` : `<${Flag.name}>`} - ${
+							Flag.description
 						}`,
 					);
 				}
@@ -133,7 +133,7 @@ class Repl {
 				process.exit();
 			}
 
-			const booleans = {
+			const Booleans = {
 				enter: key === "\u000D",
 				backspace: key === "\u007F",
 				tab: key === "\t",
@@ -141,22 +141,22 @@ class Repl {
 				downKey: key === "\u001B\u005B\u0042",
 			};
 
-			if (!booleans.enter && !booleans.backspace && !booleans.tab && !booleans.upKey && !booleans.downKey) {
+			if (!Booleans.enter && !Booleans.backspace && !Booleans.tab && !Booleans.upKey && !Booleans.downKey) {
 				this.currentString += key;
-			} else if (booleans.backspace) {
+			} else if (Booleans.backspace) {
 				if (this.currentString.length === 0) {
 					process.stdout.write("\u0007");
 				} else {
 					this.currentString = this.currentString.slice(0, -1);
 				}
-			} else if (booleans.tab) {
-				const newStr = this.onTab() ?? this.currentString;
+			} else if (Booleans.tab) {
+				const NewStr = this.onTab() ?? this.currentString;
 
-				this.currentString = newStr;
+				this.currentString = NewStr;
 
 				this.historyIndex = 0; // set it to 0 as this is now something new
-			} else if (booleans.enter) {
-				const command = this.getCmdName();
+			} else if (Booleans.enter) {
+				const Command = this.getCmdName();
 
 				console.log(`${this.start}${this.currentString}`);
 
@@ -164,62 +164,62 @@ class Repl {
 
 				this.historyIndex = 0; // we set it to 0 because we just added a new item to the history
 
-				const cmd = this.cmds.find((cmd) => cmd.name === command);
+				const Cmd = this.cmds.find((cmd) => cmd.name === Command);
 
-				if (!cmd) {
+				if (!Cmd) {
 					console.log(
-						`Unknown command ${command}${
-							command ? `, did you mean one of these? "${this.getSimilarCommands(command ?? "").join('", "')}"` : "."
+						`Unknown command ${Command}${
+							Command ? `, did you mean one of these? "${this.getSimilarCommands(Command ?? "").join('", "')}"` : "."
 						}`,
 					);
 				}
 
-				if (cmd) {
-					const args = this.getArgs();
-					const flags = this.getFlags();
+				if (Cmd) {
+					const Args = this.getArgs();
+					const Flags = this.getFlags();
 
-					const missingArgs = cmd.args.filter((arg) => !arg.optional && !args.includes(arg.name));
-					const missingFlags = cmd.flags.filter((flag) => !flag.optional && !Object.keys(flags).includes(flag.name));
-					const invalidFlags = cmd.flags.filter((flag) => {
-						const flagValue = flags[flag.name];
+					const MissingArgs = Cmd.args.filter((arg) => !arg.optional && !Args.includes(arg.name));
+					const MissingFlags = Cmd.flags.filter((flag) => !flag.optional && !Object.keys(Flags).includes(flag.name));
+					const InvalidFlags = Cmd.flags.filter((flag) => {
+						const FlagValue = Flags[flag.name];
 
-						if (flagValue === undefined) {
+						if (FlagValue === undefined) {
 							return false;
 						}
 
 						if (
-							(flag.value === "boolean" && typeof flagValue !== "boolean") ||
-							(flag.value === "string" && typeof flagValue !== "string")
+							(flag.value === "boolean" && typeof FlagValue !== "boolean") ||
+							(flag.value === "string" && typeof FlagValue !== "string")
 						) {
 							return true;
 						}
 
 						return Boolean(
-							typeof flagValue === "string" &&
-								((flag.minLength && flagValue.length < flag.minLength) ||
-									(flag.maxLength && flagValue.length > flag.maxLength)),
+							typeof FlagValue === "string" &&
+								((flag.minLength && FlagValue.length < flag.minLength) ||
+									(flag.maxLength && FlagValue.length > flag.maxLength)),
 						);
 					});
 
-					if (missingArgs.length > 0) {
-						console.log(`Missing arguments: ${missingArgs.map((arg) => arg.name).join(", ")}`);
+					if (MissingArgs.length > 0) {
+						console.log(`Missing arguments: ${MissingArgs.map((arg) => arg.name).join(", ")}`);
 					}
 
-					if (missingFlags.length > 0) {
-						console.log(`Missing flags: ${missingFlags.map((flag) => flag.name).join(", ")}`);
+					if (MissingFlags.length > 0) {
+						console.log(`Missing flags: ${MissingFlags.map((flag) => flag.name).join(", ")}`);
 					}
 
-					if (invalidFlags.length > 0) {
-						console.log(`Invalid flags: ${invalidFlags.map((flag) => flag.name).join(", ")}`);
+					if (InvalidFlags.length > 0) {
+						console.log(`Invalid flags: ${InvalidFlags.map((flag) => flag.name).join(", ")}`);
 					}
 
-					if (missingArgs.length === 0 && missingFlags.length === 0) {
-						cmd.cb(args, flags, this);
+					if (MissingArgs.length === 0 && MissingFlags.length === 0) {
+						Cmd.cb(Args, Flags, this);
 					}
 				}
 
 				this.currentString = "";
-			} else if (booleans.upKey) {
+			} else if (Booleans.upKey) {
 				if (this.historyIndex === 0) {
 					this.oldString = this.currentString;
 				}
@@ -229,7 +229,7 @@ class Repl {
 				}
 
 				this.currentString = this.history[this.historyIndex - 1] ?? this.oldString;
-			} else if (booleans.downKey) {
+			} else if (Booleans.downKey) {
 				if (this.historyIndex > 0) {
 					this.historyIndex--;
 				}
@@ -244,194 +244,194 @@ class Repl {
 
 		process.stdout.write(this.start);
 
-		const originalConsole = console.log;
+		const OriginalConsole = console.log;
 
-		const overriteLogs = (message?: any, ...optionalParams: any[]) => {
+		const OverriteLogs = (message?: any, ...optionalParams: any[]) => {
 			process.stdout.clearLine(0);
 			process.stdout.cursorTo(0);
 
-			originalConsole(message, ...optionalParams);
+			OriginalConsole(message, ...optionalParams);
 
 			process.stdout.write(this.start + this.currentString);
 		};
 
-		console.log = overriteLogs;
-		console.warn = overriteLogs;
-		console.error = overriteLogs;
-		console.info = overriteLogs;
+		console.log = OverriteLogs;
+		console.warn = OverriteLogs;
+		console.error = OverriteLogs;
+		console.info = OverriteLogs;
 	}
 
 	public onTab() {
-		const isTypingCommand = this.currentString.split(" ").length === 1;
+		const IsTypingCommand = this.currentString.split(" ").length === 1;
 
-		if (isTypingCommand) {
-			const cmds = this.cmds.map((cmd) => cmd.name);
-			const filteredCmds = cmds.filter((cmd) => cmd.startsWith(this.currentString));
+		if (IsTypingCommand) {
+			const Cmds = this.cmds.map((cmd) => cmd.name);
+			const FilteredCmds = Cmds.filter((cmd) => cmd.startsWith(this.currentString));
 
-			if (filteredCmds.length === 0) {
+			if (FilteredCmds.length === 0) {
 				return this.currentString;
 			}
 
-			if (filteredCmds.length === 1) {
-				return filteredCmds[0];
+			if (FilteredCmds.length === 1) {
+				return FilteredCmds[0];
 			}
 
-			const mostMatching = filteredCmds.sort((a, b) => {
-				const aMatches = a.split("").filter((char, index) => char === this.currentString[index]).length;
-				const bMatches = b.split("").filter((char, index) => char === this.currentString[index]).length;
+			const MostMatching = FilteredCmds.sort((a, b) => {
+				const AMatches = a.split("").filter((char, index) => char === this.currentString[index]).length;
+				const BMatches = b.split("").filter((char, index) => char === this.currentString[index]).length;
 
-				return bMatches - aMatches;
+				return BMatches - AMatches;
 			});
 
-			return mostMatching[0] ?? this.currentString;
+			return MostMatching[0] ?? this.currentString;
 		} else {
-			const command = this.getCmdName();
+			const Command = this.getCmdName();
 
-			if (!command) {
+			if (!Command) {
 				process.stdout.write("\u0007");
 
 				return this.currentString;
 			}
 
-			const cmd = this.cmds.find((cmd) => cmd.name === command);
+			const Cmd = this.cmds.find((cmd) => cmd.name === Command);
 
-			if (!cmd) {
+			if (!Cmd) {
 				process.stdout.write("\u0007");
 
 				return this.currentString;
 			}
 
-			const flags = this.getFlags(true);
+			const Flags = this.getFlags(true);
 
-			const flagNames = Object.keys(flags);
+			const FlagNames = Object.keys(Flags);
 
-			if (flagNames.length === 0) {
+			if (FlagNames.length === 0) {
 				return this.currentString;
 			}
 
-			const filteredFlags = cmd.flags.filter((flag) => flag.name.startsWith(flagNames[flagNames.length - 1] ?? ""));
+			const FilteredFlags = Cmd.flags.filter((flag) => flag.name.startsWith(FlagNames[FlagNames.length - 1] ?? ""));
 
-			if (filteredFlags.length === 0) {
+			if (FilteredFlags.length === 0) {
 				return this.currentString;
 			}
 
-			if (filteredFlags.length === 1) {
-				const flag = filteredFlags[0];
+			if (FilteredFlags.length === 1) {
+				const Flag = FilteredFlags[0];
 
-				return `${this.currentString.slice(0, -(flagNames[flagNames?.length - 1]?.length ?? 0))}${flag?.name}`;
+				return `${this.currentString.slice(0, -(FlagNames[FlagNames?.length - 1]?.length ?? 0))}${Flag?.name}`;
 			}
 
-			const mostMatching = filteredFlags.sort((a, b) => {
-				const aMatches = a.name
+			const MostMatching = FilteredFlags.sort((a, b) => {
+				const AMatches = a.name
 					.split("")
-					.filter((char, index) => char === flagNames[flagNames.length - 1]?.[index]).length;
-				const bMatches = b.name
+					.filter((char, index) => char === FlagNames[FlagNames.length - 1]?.[index]).length;
+				const BMatches = b.name
 					.split("")
-					.filter((char, index) => char === flagNames[flagNames.length - 1]?.[index]).length;
+					.filter((char, index) => char === FlagNames[FlagNames.length - 1]?.[index]).length;
 
-				return bMatches - aMatches;
+				return BMatches - AMatches;
 			});
 
-			const flag = mostMatching[0];
+			const Flag = MostMatching[0];
 
-			return `${this.currentString.slice(0, -(flagNames[flagNames?.length - 1]?.length ?? 0))}${flag?.name}`;
+			return `${this.currentString.slice(0, -(FlagNames[FlagNames?.length - 1]?.length ?? 0))}${Flag?.name}`;
 		}
 	}
 
 	public getCurrentCommand() {
-		const args = this.getArgs();
-		const command = this.getCmdName();
-		const flags = this.getFlags();
+		const Args = this.getArgs();
+		const Command = this.getCmdName();
+		const Flags = this.getFlags();
 
 		return {
-			command,
-			args,
-			flags,
+			Command,
+			Args,
+			Flags,
 		};
 	}
 
 	private getCmdName() {
-		const args = this.currentString.split(" ");
+		const Args = this.currentString.split(" ");
 
-		return args.shift();
+		return Args.shift();
 	}
 
 	private getFlags(raw: boolean = false) {
-		const flags: Record<string, boolean | string> = {};
-		const currentCmdName = this.getCmdName();
-		const cmd = this.cmds.find((cmd) => cmd.name === currentCmdName);
+		const Flags: Record<string, boolean | string> = {};
+		const CurrentCmdName = this.getCmdName();
+		const Cmd = this.cmds.find((cmd) => cmd.name === CurrentCmdName);
 
-		if (!cmd) {
-			return flags;
+		if (!Cmd) {
+			return Flags;
 		}
 
-		const regex = /--?(\w+)(?:\s+([\s\w]+))?/g;
+		const Regex = /--?(\w+)(?:\s+([\s\w]+))?/g;
 
-		let match;
-		while ((match = regex.exec(this.currentString)) !== null) {
-			const flagName = match[1] ?? "UNKNOWN";
-			const flagValue = match[2]?.trim() ?? true;
-			flags[flagName] = flagValue;
+		let Match;
+		while ((Match = Regex.exec(this.currentString)) !== null) {
+			const FlagName = Match[1] ?? "UNKNOWN";
+			const FlagValue = Match[2]?.trim() ?? true;
+			Flags[FlagName] = FlagValue;
 		}
 
 		if (raw) {
-			return flags;
+			return Flags;
 		}
 
-		const newFlags: Record<string, boolean | string> = {};
+		const NewFlags: Record<string, boolean | string> = {};
 
-		for (const flagName in flags) {
+		for (const FlagName in Flags) {
 			// protects against prototype pollution
-			if (["hasOwnProperty", "propertyIsEnumerable"].includes(flagName)) {
+			if (["hasOwnProperty", "propertyIsEnumerable"].includes(FlagName)) {
 				continue;
 			}
 
-			const flag = cmd.flags.find((flag) => flag.name === flagName || flag.shortName === flagName);
+			const Flag = Cmd.flags.find((flag) => flag.name === FlagName || flag.shortName === FlagName);
 
-			if (flag) {
-				if (flag.value === "string" && typeof flags[flagName] !== "string") {
-					newFlags[flag.name] = "";
-				} else if (flag.value === "boolean" && typeof flags[flagName] !== "boolean") {
-					newFlags[flag.name] = true;
+			if (Flag) {
+				if (Flag.value === "string" && typeof Flags[FlagName] !== "string") {
+					NewFlags[Flag.name] = "";
+				} else if (Flag.value === "boolean" && typeof Flags[FlagName] !== "boolean") {
+					NewFlags[Flag.name] = true;
 				} else {
-					newFlags[flag.name] = flags[flagName] ?? true;
+					NewFlags[Flag.name] = Flags[FlagName] ?? true;
 				}
 			}
 		}
 
-		return newFlags;
+		return NewFlags;
 	}
 
 	private getArgs() {
-		const args = this.currentString.split(" ");
-		const cmd = this.cmds.find((cmd) => cmd.name === args[0]);
+		const Args = this.currentString.split(" ");
+		const Cmd = this.cmds.find((cmd) => cmd.name === Args[0]);
 
-		if (!cmd) {
+		if (!Cmd) {
 			return [];
 		}
 
-		args.shift();
+		Args.shift();
 
-		return args.filter((arg) => !arg.startsWith("--") && !arg.startsWith("-"));
+		return Args.filter((arg) => !arg.startsWith("--") && !arg.startsWith("-"));
 	}
 
 	private getSimilarCommands(command: string) {
-		const cmds = this.cmds.map((cmd) => cmd.name);
-		const filteredCmds = cmds.filter((cmd) => cmd.startsWith(command));
+		const Cmds = this.cmds.map((cmd) => cmd.name);
+		const FilteredCmds = Cmds.filter((cmd) => cmd.startsWith(command));
 
-		if (filteredCmds.length === 0) {
+		if (FilteredCmds.length === 0) {
 			return [];
 		}
 
-		if (filteredCmds.length === 1) {
-			return filteredCmds;
+		if (FilteredCmds.length === 1) {
+			return FilteredCmds;
 		}
 
-		return filteredCmds.sort((a, b) => {
-			const aMatches = a.split("").filter((char, index) => char === command[index]).length;
-			const bMatches = b.split("").filter((char, index) => char === command[index]).length;
+		return FilteredCmds.sort((a, b) => {
+			const AMatches = a.split("").filter((char, index) => char === command[index]).length;
+			const BMatches = b.split("").filter((char, index) => char === command[index]).length;
 
-			return bMatches - aMatches;
+			return BMatches - AMatches;
 		});
 	}
 

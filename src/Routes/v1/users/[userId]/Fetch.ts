@@ -20,7 +20,7 @@ import type { User as UserType } from "../../../../Utils/Cql/Types/index.ts";
 
 interface UserObject {
 	Avatar: string | null;
-	Bio?: string;
+	Bio?: string | null;
 	Flags: number;
 	GlobalNickname: string | null;
 	Id: string;
@@ -49,10 +49,10 @@ export default class FetchPatchUser extends Route {
 	}
 
 	public override async Request(Req: Request, Res: Response) {
-		const { userId } = Req.params as { userId: string };
-		const { include } = Req.query;
+		const { userId: UserId } = Req.params as { userId: string };
+		const { include: Include } = Req.query;
 
-		const FetchedUser = await this.FetchUser(userId);
+		const FetchedUser = await this.FetchUser(UserId);
 
 		if (!FetchedUser) {
 			const Error = ErrorGen.InvalidUser();
@@ -69,16 +69,16 @@ export default class FetchPatchUser extends Route {
 			return;
 		}
 
-		const SplitInclude = String(include).split(",");
+		const SplitInclude = String(Include).split(",");
 
 		const FlagUtils = new FlagFields(FetchedUser.Flags, FetchedUser.PublicFlags);
 
 		const UserObject: UserObject = {
 			Id: FetchedUser.UserId,
 			Username: FetchedUser.Username,
-			GlobalNickname: FetchedUser.GlobalNickname.length === 0 ? null : FetchedUser.GlobalNickname,
+			GlobalNickname: FetchedUser.GlobalNickname,
 			Tag: FetchedUser.Tag,
-			Avatar: FetchedUser.Avatar.length === 0 ? null : FetchedUser.Avatar,
+			Avatar: FetchedUser.Avatar,
 			PublicFlags: Number(FlagUtils.PublicFlags.cleaned),
 			Flags: Number(FlagUtils.PublicPrivateFlags),
 		};

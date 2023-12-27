@@ -12,7 +12,6 @@
 import type { NextFunction, Request, Response } from "express";
 import type { TwofaMiddleware } from "../Types/Routes.ts";
 
-
 const TwoFa = (options: TwofaMiddleware) => {
 	return async (_: Request, __: Response, next: NextFunction) => {
 		next();
