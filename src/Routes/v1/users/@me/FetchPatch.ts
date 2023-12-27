@@ -356,7 +356,7 @@ export default class FetchPatchUser extends Route {
 			}
 		}
 
-		if (FilteredItems.Username && FetchedUser.Username !== FilteredItems.Username) {
+		if ((FilteredItems.Username && FetchedUser.Username !== FilteredItems.Username) || (FilteredItems.Tag && FetchedUser.Tag !== FilteredItems.Tag)) {
 			const MaxUsers = await this.MaxUsernamesReached(FilteredItems.Username);
 
 			if (MaxUsers) {
@@ -367,7 +367,7 @@ export default class FetchPatchUser extends Route {
 					},
 				});
 			} else {
-				const FoundUser = await this.UserExists(FilteredItems.Username, FilteredItems.Tag ?? FetchedUser.Tag);
+				const FoundUser = await this.UserExists(FilteredItems.Username ?? FetchedUser.Username, FilteredItems.Tag ?? FetchedUser.Tag);
 
 				if (FoundUser) {
 					Error.AddError({
