@@ -68,3 +68,15 @@ export interface Captcha {
 export interface RatelimitConfig {
 	App: App;
 }
+
+type GetParam<T extends string> = T extends `${infer _}/${infer _2}:${infer Param}/${infer _3}`
+	? Record<Param, string>
+	: T extends `${infer _}:${infer Param}/${infer _2}`
+	? Record<Param, string>
+	: T extends `${infer _}/${infer _2}:${infer Param}`
+	? Record<Param, string>
+	: T extends `${infer _}:${infer Param}`
+	? Record<Param, string>
+	: {};
+
+export type GetParams<T extends string> = GetParam<T> & (T extends `${infer _}/${infer Rest}` ? GetParams<Rest> : T extends `${infer _}:${infer Rest}` ? GetParams<Rest> : {});

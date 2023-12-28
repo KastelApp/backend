@@ -3,27 +3,25 @@ import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 import process from "node:process";
 import { URL } from "node:url";
+import { cors } from "@elysiajs/cors";
+import { serverTiming } from "@elysiajs/server-timing";
 import { Snowflake, Turnstile, CacheManager } from "@kastelll/util";
 import * as Sentry from "@sentry/node";
-import bodyParser from "body-parser";
-import cors from "cors";
-import type { NextFunction, Request, Response } from "express";
-import express from "express";
+import { Elysia } from "elysia";
 import { type SimpleGit, simpleGit } from "simple-git";
 import { Config } from "../../Config.ts";
 import Constants, { Relative } from "../../Constants.ts";
-import type { ExpressMethodCap } from "../../Types/index.ts";
 import ProcessArgs from "../ProcessArgs.ts";
 import Connection from "./Connection.ts";
 import Emails from "./Emails.ts";
 import ErrorGen from "./ErrorGen.ts";
 import { IpUtils } from "./IpUtils.ts";
 import CustomLogger from "./Logger.ts";
-import Repl from "./Repl.ts";
-import type { ContentTypes, ExpressMethod } from "./Route.ts";
+import type { ContentTypes, Method } from "./Route.ts";
 import RouteBuilder from "./Route.ts";
 import SystemSocket from "./System/SystemSocket.ts";
 import SystemInfo from "./SystemInfo.ts";
+
 
 type GitType = "Added" | "Copied" | "Deleted" | "Ignored" | "Modified" | "None" | "Renamed" | "Unmerged" | "Untracked";
 
@@ -32,7 +30,7 @@ const SupportedArgs = ["debug", "skip-online-check", "behind-proxy", "no-ip-chec
 class App {
 	private RouteDirectory: string = join(new URL(".", import.meta.url).pathname, "../../Routes");
 
-	public ExpressApp: express.Application;
+	public ElysiaApp: Elysia;
 
 	public Ready: boolean = false;
 
@@ -63,9 +61,13 @@ class App {
 	public static StaticLogger: CustomLogger = new CustomLogger();
 
 	public Routes: {
-		default: RouteBuilder;
-		directory: string;
-		route: string;
+		Default: RouteBuilder;
+		Directory: string;
+		Routes: {
+			ContentTypes: ContentTypes[];
+			Method: Method;
+			Path: string;
+		}[];
 	}[] = [];
 
 	private Clean: boolean = false;
@@ -95,13 +97,13 @@ class App {
 		" ": "None",
 	};
 
-	public Repl: Repl;
+	// public Repl: Repl;
 
 	public Args: typeof SupportedArgs = ProcessArgs(SupportedArgs as unknown as string[])
 		.Valid as unknown as typeof SupportedArgs;
 
 	public constructor() {
-		this.ExpressApp = express();
+		this.ElysiaApp = new Elysia();
 
 		this.Snowflake = new Snowflake(Constants.Snowflake);
 
@@ -130,79 +132,77 @@ class App {
 
 		this.Logger = new CustomLogger();
 
-		this.Repl = new Repl(CustomLogger.colorize("#E6AF2E", "> "), [
-			{
-				name: "disable",
-				description: "Disable something (Route, User, etc)",
-				args: [],
-				flags: [
-					{
-						name: "route",
-						description: "The route to disable",
-						shortName: "r",
-						value: "string",
-						maxLength: 1e3,
-						minLength: 1,
-						optional: true,
-					},
-					{
-						name: "user",
-						description: "The user to disable",
-						shortName: "u",
-						value: "string",
-						maxLength: 1e3,
-						minLength: 1,
-						optional: true,
-					},
-				],
-				cb: () => {},
-			},
-			{
-				name: "version",
-				description: "Get the version of the backend",
-				args: [],
-				flags: [],
-				cb: () => {
-					console.log(
-						`You're running version ${
-							Relative.Version ? `v${Relative.Version}` : "Unknown version"
-						} of Kastel's Backend. Bun version ${Bun.version}`,
-					);
-				},
-			},
-			{
-				name: "close",
-				description: "Close the REPL (Note: you will need to restart the backend to open it again)",
-				args: [],
-				flags: [],
-				cb: () => {
-					this.Repl.endRepl();
-				},
-			},
-			{
-				name: "clear",
-				description: "Clear the console",
-				args: [],
-				flags: [],
-				cb: () => {
-					console.clear();
-				},
-			},
-		]);
+		// this.Repl = new Repl(CustomLogger.colorize("#E6AF2E", "> "), [
+		// 	{
+		// 		name: "disable",
+		// 		description: "Disable something (Route, User, etc)",
+		// 		args: [],
+		// 		flags: [
+		// 			{
+		// 				name: "route",
+		// 				description: "The route to disable",
+		// 				shortName: "r",
+		// 				value: "string",
+		// 				maxLength: 1e3,
+		// 				minLength: 1,
+		// 				optional: true,
+		// 			},
+		// 			{
+		// 				name: "user",
+		// 				description: "The user to disable",
+		// 				shortName: "u",
+		// 				value: "string",
+		// 				maxLength: 1e3,
+		// 				minLength: 1,
+		// 				optional: true,
+		// 			},
+		// 		],
+		// 		cb: () => {},
+		// 	},
+		// 	{
+		// 		name: "version",
+		// 		description: "Get the version of the backend",
+		// 		args: [],
+		// 		flags: [],
+		// 		cb: () => {
+		// 			console.log(
+		// 				`You're running version ${
+		// 					Relative.Version ? `v${Relative.Version}` : "Unknown version"
+		// 				} of Kastel's Backend. Bun version ${Bun.version}`,
+		// 			);
+		// 		},
+		// 	},
+		// 	{
+		// 		name: "close",
+		// 		description: "Close the REPL (Note: you will need to restart the backend to open it again)",
+		// 		args: [],
+		// 		flags: [],
+		// 		cb: () => {
+		// 			this.Repl.endRepl();
+		// 		},
+		// 	},
+		// 	{
+		// 		name: "clear",
+		// 		description: "Clear the console",
+		// 		args: [],
+		// 		flags: [],
+		// 		cb: () => {
+		// 			console.clear();
+		// 		},
+		// 	},
+		// ]);
 	}
 
 	public async Init(): Promise<void> {
 		this.Logger.hex("#ca8911")(
-			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${
-				Relative.Version ? `v${Relative.Version}` : "Unknown version"
-			} of Kastel's Backend. Bun version ${
-				Bun.version
+			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${Relative.Version ? `v${Relative.Version}` : "Unknown version"
+			} of Kastel's Backend. Bun version ${Bun.version
 			}\nIf you would like to support this project please consider donating to https://opencollective.com/kastel\n`,
 		);
 
 		await this.SetupDebug(this.Args.includes("debug"));
 
-		this.Repl.startRepl();
+		// this.Repl.startRepl();
 
 		this.Cache.on("Connected", () => this.Logger.info("Connected to Redis"));
 		this.Cache.on("Error", (err) => {
@@ -277,240 +277,168 @@ class App {
 			this.Logger.info("Mail Server disabled!");
 		}
 
-		if (Config.Server.Sentry.Enabled) {
-			Sentry.init({
-				...Config.Server.Sentry.OtherOptions,
-				dsn: Config.Server.Sentry.Dsn,
-				tracesSampleRate: Config.Server.Sentry.TracesSampleRate,
-				integrations: (integrations) => {
-					return [
-						...integrations.map((integration) => {
-							if (integration.name === "OnUncaughtException") {
-								return new Sentry.Integrations.OnUncaughtException({
-									exitEvenIfOtherHandlersAreRegistered: false,
-								});
-							} else {
-								return integration;
+		this.ElysiaApp.use(cors())
+			.use(serverTiming())
+			.onError(({ code, request, path }) => {
+				if (code === "NOT_FOUND") {
+					const FoundRoutes = this.Routes.filter((Routes) => {
+						return Routes.Routes.filter((Route) => {
+							if (Route.Path.includes(":")) {
+								const Regex = new RegExp(`^${Route.Path.replaceAll(/:[^/]+/g, "[^/]+")}$`);
+
+								return Regex.test(path);
 							}
-						}),
-						new Sentry.Integrations.Http({ tracing: true }),
-						new Sentry.Integrations.Express({ app: this.ExpressApp }),
-					];
-				},
-			});
-		}
 
-		process
-			.on("uncaughtException", (err) => {
-				if (Config.Server.Sentry.Enabled) {
-					Sentry.captureException(err);
+							return Route.Path === path;
+						});
+					});
+
+					if (FoundRoutes.length === 0) {
+						const Error = ErrorGen.NotFound();
+
+						Error.AddError({
+							NotFound: {
+								Code: "NotFound",
+								Message: `Could not find route for ${request.method} ${path}`,
+							},
+						});
+
+						return Error.toJSON();
+					}
+
+
+					const MethodNotAlowed = ErrorGen.MethodNotAllowed();
+
+					MethodNotAlowed.AddError({
+						MethodNotAllowed: {
+							Code: "MethodNotAllowed",
+							Message: `Method "${request.method}" is not allowed for "${path}", allowed methods are [${FoundRoutes.map((Routes) => Routes.Routes.map((Route) => Route.Method).join(", ")).join(", ").toUpperCase()}]`,
+						},
+					});
+
+					return MethodNotAlowed.toJSON();
 				}
 
-				this.Logger.error("Uncaught Exception, \n", err?.stack ? err.stack : err);
-			})
-			.on("unhandledRejection", (reason: any) => {
-				if (Config.Server.Sentry.Enabled) {
-					Sentry.captureException(reason);
+				if (code === "INTERNAL_SERVER_ERROR") {
+					return "Internal Server Error :(";
 				}
 
-				this.Logger.error(`Unhandled Rejection, \n${reason?.stack ? reason.stack : reason}`);
+				return "Unknown error";
 			});
-
-		this.ExpressApp.use(cors())
-			.use(bodyParser.json())
-			.use(bodyParser.urlencoded({ extended: true }))
-			.use(bodyParser.raw())
-			.disable("x-powered-by");
-
-		if (Config.Server.Sentry.Enabled) {
-			this.ExpressApp.use(
-				Sentry.Handlers.requestHandler({
-					...Config.Server.Sentry.RequestOptions,
-				}),
-			)
-				.use(Sentry.Handlers.tracingHandler())
-				.use(Sentry.Handlers.errorHandler());
-		}
-
-		// eslint-disable-next-line promise/prefer-await-to-callbacks -- (Its not)
-		this.ExpressApp.use((error: Error, _: Request, res: Response, __: NextFunction) => {
-			// @ts-expect-error -- express being weird
-			if (error instanceof SyntaxError && error.status === 400 && "body" in error) {
-				this.Logger.error("Someone sent invalid JSON", error);
-
-				res.status(500).json({
-					Message: `Invalid JSON (${error.message})`,
-				});
-			} else {
-				res.status(500).json({
-					Message: "Internal Server Error :(",
-				});
-			}
-		});
-
-		this.ExpressApp.use(async (req, res, next) => {
-			req.clientIp = IpUtils.GetIp(req);
-			req.methodi = req.method as ExpressMethodCap;
-			req.captcha = new Turnstile(this.Config.Server.CaptchaEnabled, this.Config.Server.TurnstileSecret ?? "secret");
-
-			req.fourohfourit = () => {
-				const Error = ErrorGen.NotFound();
-
-				Error.AddError({
-					NotFound: {
-						Code: "NotFound",
-						Message: `Could not find route for ${req.method} ${req.path}`,
-					},
-				});
-
-				res.status(404).json(Error.toJSON());
-
-				return true;
-			};
-
-			if (
-				Config.Server.CloudflareAccessOnly &&
-				!(await IpUtils.isCloudflareIp(req.headers["x-forwarded-for"] as string))
-			) {
-				req.fourohfourit();
-
-				return;
-			}
-
-			// we have a hard limit of 1mb for requests, any higher and we 408 it
-			if (req.socket.bytesRead > 1e6) {
-				const Error = ErrorGen.TooLarge();
-
-				Error.AddError({
-					TooLarge: {
-						Code: "TooLarge",
-						Message: "Request body too large",
-					},
-				});
-
-				res.status(408).json(Error.toJSON());
-
-				return;
-			}
-
-			next();
-		});
 
 		// guilds with params should be at the bottom as ones without them take priority
 		const LoadedRoutes = (await this.LoadRoutes()).sort((a, b) => {
-			if (a.route.includes(":") && !b.route.includes(":")) {
+
+			a.Routes.sort((c, d) => {
+				if (c.Path.includes(":") && !d.Path.includes(":")) {
+					return 1;
+				}
+
+				if (!c.Path.includes(":") && c.Path.includes(":")) {
+					return -1;
+				}
+
+				return 0;
+			});
+
+			b.Routes.sort((c, d) => {
+
+				if (c.Path.includes(":") && !d.Path.includes(":")) {
+					return 1;
+				}
+
+				if (!c.Path.includes(":") && c.Path.includes(":")) {
+					return -1;
+				}
+
+				return 0;
+			});
+
+			if (a.Routes.some((route) => route.Path.includes(":")) && !b.Routes.some((route) => route.Path.includes(":"))) {
 				return 1;
 			}
 
-			if (!a.route.includes(":") && b.route.includes(":")) {
+			if (!a.Routes.some((route) => route.Path.includes(":")) && b.Routes.some((route) => route.Path.includes(":"))) {
 				return -1;
 			}
 
 			return 0;
 		});
 
-		for (const route of LoadedRoutes) {
-			this.Logger.verbose(
-				`Loaded "${route.route.length === 0 ? "/" : route.route}" [${route.default.Methods.join(", ")}]`,
-			);
-		}
-
 		this.Logger.info(`Loaded ${LoadedRoutes.length} routes`);
 
-		for (const Route of LoadedRoutes) {
-			for (const Method of Route.default.Methods) {
-				this.ExpressApp[Method.toLowerCase() as ExpressMethod](
-					Route.route,
-					...Route.default.Middleware,
-					(req: Request, res: Response) => {
-						this.Logger.verbose(
-							`Request for ${req.path} (${req.method}) ${
-								req?.user?.Id ? `from ${req.user.Id}` : "from a logged out user."
-							}`,
-						);
+		for (const Routes of LoadedRoutes) {
+			for (const Route of Routes.Routes) {
+				this.Logger.verbose(`Loaded "${Route.Path.length === 0 ? "/" : Route.Path}" [${Route.Method}]`);
 
-						const ContentType = req.headers["content-type"] ?? "";
+				this.ElysiaApp[Route.Method](Route.Path, async ({ body, headers, params, path, query, request, set, store }) => {
+					const FinishedMiddlewares = [];
 
-						res.on("finish", () => {
-							this.Logger.verbose(
-								`Request for ${req.path} (${req.method}) ${
-									req?.user?.Id ? `from ${req.user.Id}` : "from a logged out user."
-								} finished with status code ${res.statusCode}`,
-							);
+					this.Logger.info(`Request to "${Route.Path.length === 0 ? "/" : Route.Path}" [${Route.Method}]`);
 
-							Route.default.Finish(res, res.statusCode, new Date());
+					for (const Middleware of Routes.Default.Middleware) {
+						const Finished = await Middleware({
+							app: this,
+							body: body as {},
+							headers,
+							params,
+							path,
+							query,
+							request,
+							set,
+							store
 						});
 
-						if (Route.default.KillSwitched) {
-							const Error = ErrorGen.ServiceUnavailable();
+						if (set.status !== 200) {
+							this.Logger.info(`Request to "${Route.Path.length === 0 ? "/" : Route.Path}" [${Route.Method}] finished with status ${set.status} from middleware ${Middleware.name}`);
 
-							Error.AddError({
-								ServiceUnavailable: {
-									Code: "ServiceUnavailable",
-									Message: "This endpoint is currently disabled",
-								},
-							});
-
-							res.status(503).json(Error.toJSON());
-
-							return;
+							return Finished;
 						}
 
-						if (
-							Route.default.AllowedContentTypes.length > 0 &&
-							!Route.default.AllowedContentTypes.includes(ContentType as ContentTypes)
-						) {
-							const Error = ErrorGen.InvalidContentType();
+						FinishedMiddlewares.push(Finished);
+					}
 
-							Error.AddError({
-								ContentType: {
-									Code: "InvalidContentType",
-									Message: `Invalid Content-Type header, Expected (${Route.default.AllowedContentTypes.join(
-										", ",
-									)}), Got (${ContentType})`,
-								},
-							});
+					if (Route.ContentTypes.length > 0 && !Route.ContentTypes.includes((headers["content-type"] ?? "text/plain") as ContentTypes)) {
+						const Error = ErrorGen.InvalidContentType();
 
-							res.status(400).json(Error);
-
-							return;
-						}
-
-						const PreRan = Route.default.PreRun(req, res);
-
-						if (!PreRan) {
-							// note: we expect that it returns a response itself (also PreRun should only be used for special routes not used all the time)
-							return;
-						}
-
-						// @ts-expect-error -- im tired
-						// eslint-disable-next-line promise/prefer-await-to-callbacks, promise/prefer-await-to-then, @typescript-eslint/no-confusing-void-expression
-						Route.default.Request(req, res)?.catch((error: Error) => {
-							this.Logger.error(error);
-
-							if (!res.headersSent) {
-								res.status(500).send("Internal Server Error :(");
-							}
+						Error.AddError({
+							ContentType: {
+								Code: "InvalidContentType",
+								Message: `Invalid Content-Type header, Expected (${Route.ContentTypes.join(
+									", ",
+								)}), Got (${headers["content-type"]})`,
+							},
 						});
-					},
-				);
+
+						set.status = 400;
+						set.headers["Content-Type"] = "application/json";
+
+						this.Logger.info(`Request to "${Route.Path.length === 0 ? "/" : Route.Path}" [${Route.Method}] finished with status ${set.status} from invalid content type`);
+
+						return Error.toJSON();
+					}
+
+					const Requested = await Routes.Default.Request({
+						app: this,
+						body: body as {},
+						headers,
+						params,
+						path,
+						query,
+						request,
+						set,
+						store,
+						...FinishedMiddlewares.reduce((a, b) => ({ ...a, ...b }), {})
+					}) as Promise<unknown>;
+
+					this.Logger.info(`Request to "${Route.Path.length === 0 ? "/" : Route.Path}" [${Route.Method}] finished with status ${set.status}`);
+
+					return Requested;
+				});
 			}
 		}
 
-		this.ExpressApp.all("*", (req, res) => {
-			const Error = ErrorGen.NotFound();
-
-			Error.AddError({
-				NotFound: {
-					Code: "NotFound",
-					Message: `Could not find route for ${req.method} ${req.path}`,
-				},
-			});
-
-			res.status(404).json(Error.toJSON());
-		});
-
-		this.ExpressApp.listen(Config.Server.Port, () => {
+		this.ElysiaApp.listen(Config.Server.Port, () => {
 			this.Logger.info(`Listening on port ${Config.Server.Port}`);
 		});
 	}
@@ -541,18 +469,30 @@ class App {
 				continue;
 			}
 
-			for (const SubRoute of RouteInstance.Routes) {
-				const fixedRoute = (
+			const Routes: {
+				ContentTypes: ContentTypes[];
+				Method: Method;
+				Path: string;
+			}[] = [];
+
+			for (const SubRoute of RouteInstance.Route) {
+				const FixedRoute = (
 					(Route.split(this.RouteDirectory)[1]?.replaceAll(/\\/g, "/").split("/").slice(0, -1).join("/") ?? "") +
-					(SubRoute as string)
+					(SubRoute.Path as string)
 				).replace(/\/$/, "");
 
-				this.Routes.push({
-					default: RouteInstance,
-					directory: Route,
-					route: fixedRoute.replaceAll(/\[([^\]]+)]/g, ":$1"), // eslint-disable-line prefer-named-capture-group
+				Routes.push({
+					Method: SubRoute.Method,
+					Path: FixedRoute,
+					ContentTypes: SubRoute.ContentTypes,
 				});
 			}
+
+			this.Routes.push({
+				Default: RouteInstance,
+				Directory: Route,
+				Routes,
+			});
 		}
 
 		return this.Routes;
@@ -607,14 +547,19 @@ class App {
 			"Git Info:",
 			`Branch: ${this.GitBranch}`,
 			`Commit: ${GithubInfo.CommitShort ?? GithubInfo.Commit}`,
-			`Status: ${
-				this.Clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
+			`Status: ${this.Clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
 			}`,
 			this.Clean ? "" : "=".repeat(40),
 			`${this.Clean ? "" : "Changed Files:"}`,
 		];
 
 		for (const File of this.GitFiles) {
+			// if the directory is "node_modules", ".bun", ".git", ".yarn" we want to ignore it
+
+			if (["node_modules", ".bun", ".git", ".yarn"].includes(File.filePath.split("/")[0] ?? "")) {
+				continue;
+			}
+
 			Strings.push(`${File.type}: ${File.filePath}`);
 		}
 
@@ -681,28 +626,28 @@ class App {
 	}
 
 	public GetBuckets(StartId: string, EndId?: string) {
-		const startBucket = this.GetBucket(StartId);
-		const endBucket = this.GetBucket(EndId);
+		const StartBucket = this.GetBucket(StartId);
+		const EndBucket = this.GetBucket(EndId);
 
-		let startBucketNumber = Number.parseInt(startBucket, 16);
-		let endBucketNumber = Number.parseInt(endBucket, 16);
+		let StartBucketNumber = Number.parseInt(StartBucket, 16);
+		let EndBucketNumber = Number.parseInt(EndBucket, 16);
 
-		startBucketNumber -= this.Config.Server.BucketRnd;
-		endBucketNumber -= this.Config.Server.BucketRnd;
+		StartBucketNumber -= this.Config.Server.BucketRnd;
+		EndBucketNumber -= this.Config.Server.BucketRnd;
 
-		const bucketRange = endBucketNumber - startBucketNumber;
+		const BucketRange = EndBucketNumber - StartBucketNumber;
 
-		const buckets = [];
+		const Buckets = [];
 
-		for (let i = 0; i <= bucketRange; i++) {
-			let currentBucket = startBucketNumber + i;
+		for (let Int = 0; Int <= BucketRange; Int++) {
+			let CurrentBucket = StartBucketNumber + Int;
 
-			currentBucket += this.Config.Server.BucketRnd;
+			CurrentBucket += this.Config.Server.BucketRnd;
 
-			buckets.push(currentBucket.toString(16));
+			Buckets.push(CurrentBucket.toString(16));
 		}
 
-		return buckets;
+		return Buckets;
 	}
 }
 

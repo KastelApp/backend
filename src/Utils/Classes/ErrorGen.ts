@@ -139,6 +139,12 @@ const ErrorGen = {
 	UnknownChannel: () => {
 		return new HTTPErrors(4_022);
 	},
+	/**
+	 * The method provided was not allowed
+	 */
+	MethodNotAllowed: () => {
+		return new HTTPErrors(4_023);
+	},
 	/*
 	 * Used when the resource is unavailable (503 error)
 	 */

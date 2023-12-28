@@ -10,16 +10,16 @@
  */
 
 import type { Request, Response } from "express";
-import Constants from "../../Constants.ts";
-import User from "../../Middleware/User.ts";
-import type App from "../../Utils/Classes/App";
-import VerifyFields from "../../Utils/Classes/BitFields/VerifyFlags.ts";
-import Encryption from "../../Utils/Classes/Encryption.ts";
-import ErrorGen from "../../Utils/Classes/ErrorGen.ts";
-import LinkGeneration from "../../Utils/Classes/LinkGeneration.ts";
-import Route from "../../Utils/Classes/Route.ts";
-import type { User as UserType, VerificationLink } from "../../Utils/Cql/Types/index.ts";
-import { T } from "../../Utils/TypeCheck.ts";
+import Constants from "@/Constants.ts";
+import User from "@/Middleware/User.ts";
+import type App from "@/Utils/Classes/App";
+import VerifyFields from "@/Utils/Classes/BitFields/VerifyFlags.ts";
+import Encryption from "@/Utils/Classes/Encryption.ts";
+import ErrorGen from "@/Utils/Classes/ErrorGen.ts";
+import LinkGeneration from "@/Utils/Classes/LinkGeneration.ts";
+import Route from "@/Utils/Classes/Route.ts";
+import type { User as UserType, VerificationLink } from "@/Utils/Cql/Types/index.ts";
+import { T } from "@/Utils/TypeCheck.ts";
 
 interface ForgotBody {
 	Email: string;
@@ -29,8 +29,6 @@ export default class ForgotPassword extends Route {
 	public constructor(App: App) {
 		super(App);
 
-		this.Methods = ["POST"];
-
 		this.Middleware = [
 			User({
 				AccessType: "LoggedOut",
@@ -39,9 +37,11 @@ export default class ForgotPassword extends Route {
 			}),
 		];
 
-		this.AllowedContentTypes = ["application/json"];
-
-		this.Routes = ["/forgot"];
+		this.Route = [{
+			ContentTypes: ["application/json"],
+			Method: "post",
+			Path: "/forgot"
+		}];
 	}
 
 	public override async Request(Req: Request<any, any, ForgotBody>, Res: Response) {

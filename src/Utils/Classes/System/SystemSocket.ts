@@ -95,16 +95,16 @@ class SystemSocket {
 
 			// @ts-expect-error -- It does exist, though bun doing the funky with the internal ws module
 			this.Ws.on("message", (data: Buffer) => {
-				const decoded = this.decode(data);
+				const Decoded = this.decode(data);
 
-				if (decoded?.S) this.Sequence = decoded.S;
+				if (Decoded?.S) this.Sequence = Decoded.S;
 
-				if (decoded?.Authed === true) {
+				if (Decoded?.Authed === true) {
 					this.App.Logger.info("Authed to System Socket");
 
 					this.FailedConnectionAttempts = 0; // Reset the failed connection attempts (Since we are now connected)
 
-					const AuthPayload = decoded as AuthedPayload;
+					const AuthPayload = Decoded as AuthedPayload;
 
 					this.SessionId = AuthPayload.Misc.SessionId;
 
@@ -134,8 +134,8 @@ class SystemSocket {
 					}
 				}
 
-				if (decoded?.Op) {
-					const NormalPayload = decoded as NormalPayload;
+				if (Decoded?.Op) {
+					const NormalPayload = Decoded as NormalPayload;
 
 					this.App.Logger.debug(`Received Payload: ${JSON.stringify(NormalPayload)}`);
 
