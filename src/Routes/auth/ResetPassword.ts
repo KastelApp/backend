@@ -45,7 +45,7 @@ export default class ResetPassword extends Route {
 	public override async Request(Req: Request<any, any, ResetBody>, Res: Response) {
 		const { Email, NewPassword, Code } = Req.body;
 
-		const PasswordValidtor = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()-=_+{};:<>,.?/~]{6,72}$/; // eslint-disable-line unicorn/better-regex
+		const PasswordValidtor = /^.{4,72}$/; // eslint-disable-line unicorn/better-regex
 
 		this.App.Logger.debug(`[Reset Password] Email: ${Email}, Password: ${NewPassword}, Code: ${Code}`);
 

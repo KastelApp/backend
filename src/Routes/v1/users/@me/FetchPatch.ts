@@ -143,7 +143,7 @@ export default class FetchPatchUser extends Route {
 		const PasswordRequiredKey = RequestKeys.some((y) => this.PasswordRequired.includes(y as keyof UpdateUserBody));
 
 		const PlusReplace = /\+([^@]+)/g; // eslint-disable-line prefer-named-capture-group
-		const PasswordValidtor = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()-=_+{};:<>,.?/~]{6,72}$/; // eslint-disable-line unicorn/better-regex
+		const PasswordValidtor = /^.{4,72}$/; // eslint-disable-line unicorn/better-regex
 		const EmailValidator = /^[\w%+.-]+@[\d.A-Za-z-]+\.[A-Za-z]{2,}$/;
 		const UsernameValidator =
 			/^(?=.*[a-zA-Z0-9!$%^&*()\-_~>.<?/\s\u0020-\uD7FF\uE000-\uFFFD])[a-zA-Z0-9!$%^&*()\-_~>.<?/\s\u0020-\uD7FF\uE000-\uFFFD]{2,30}$/; // eslint-disable-line unicorn/better-regex

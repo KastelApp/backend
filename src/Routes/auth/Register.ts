@@ -56,7 +56,7 @@ export default class Register extends Route {
 		const { Email, Password, Username } = Req.body;
 
 		const PlusReplace = /\+([^@]+)/g; // eslint-disable-line prefer-named-capture-group
-		const PasswordValidtor = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()-=_+{};:<>,.?/~]{6,72}$/; // eslint-disable-line unicorn/better-regex
+		const PasswordValidtor = /^.{4,72}$/
 		const EmailValidator = /^[\w%+.-]+@[\d.A-Za-z-]+\.[A-Za-z]{2,}$/;
 		const UsernameValidator =
 			/^(?=.*[a-zA-Z0-9!$%^&*()\-_~>.<?/\s\u0020-\uD7FF\uE000-\uFFFD])[a-zA-Z0-9!$%^&*()\-_~>.<?/\s\u0020-\uD7FF\uE000-\uFFFD]{2,30}$/; // eslint-disable-line unicorn/better-regex
