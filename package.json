@@ -16,7 +16,7 @@
 		"geoip-lite": "^1.4.7",
 		"nodemailer": "^6.9.4",
 		"simple-git": "^3.19.1",
-		"undici": "^5.23.0"
+		"undici": "^6.2.1"
 	},
 	"devDependencies": {
 		"@commitlint/cli": "^17.7.1",
