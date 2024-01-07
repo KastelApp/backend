@@ -9,12 +9,12 @@
  * GPL 3.0 Licensed
  */
 
-import { VerificationFlags } from "../../../Constants.ts";
+import { verificationFlags } from "../../../Constants.ts";
 import { FlagUtils } from "./NewFlags.ts";
 
-class VerifyFields extends FlagUtils<typeof VerificationFlags> {
+class VerifyFields extends FlagUtils<typeof verificationFlags> {
 	public constructor(bits: bigint | number | string) {
-		super(bits, VerificationFlags);
+		super(bits, verificationFlags);
 	}
 }
 

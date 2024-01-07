@@ -26,14 +26,10 @@
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 		"experimentalDecorators": true,
-		"lib": [
-			"esnext"
-		],
+		"lib": ["esnext"],
 		"target": "esnext",
 		"useDefineForClassFields": true,
-		"types": [
-			"bun-types"
-		],
+		"types": ["bun-types"],
 		"skipLibCheck": true,
 		"allowJs": true,
 		"noEmit": true,
@@ -41,17 +37,9 @@
 		"moduleDetection": "force",
 		"noErrorTruncation": true, // darkerink: this is just so I can see the full types
 		"paths": {
-			"@/*": [
-				"./src/*"
-			],
+			"@/*": ["./src/*"]
 		}
 	},
-	"include": [
-		"src/**/*",
-		"scripts/**/*",
-		"old/Routes"
-	],
-	"exclude": [
-		".github"
-	]
+	"include": ["src/**/*", "scripts/**/*", "old/Routes"],
+	"exclude": [".github"]
 }

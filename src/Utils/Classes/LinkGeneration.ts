@@ -11,61 +11,61 @@
 
 import crypto from "node:crypto";
 import { Snowflake as SnowflakeBuilder, Base64 } from "@kastelll/util";
-import { Encryption } from "../../Config.ts";
+import { encryption } from "../../Config.ts";
 import Constants from "../../Constants.ts";
 import App from "./App.ts";
 
-const Snowflake = new SnowflakeBuilder(Constants.Snowflake);
+const snowflake = new SnowflakeBuilder(Constants.snowflake);
 
 class LinkGeneration {
 	public static VerifcationLink(snowflakeId: string): string {
-		const CurrentDate = Date.now();
+		const currentDate = Date.now();
 
 		const nonce = Base64.OldBase64(crypto.randomBytes(16).toString("base64"));
 		const snowflake = Base64.Encode(snowflakeId);
 
-		const hmac = crypto.createHmac("sha256", Encryption.TokenKey);
+		const hmac = crypto.createHmac("sha256", encryption.TokenKey);
 
-		hmac.update(`${snowflake}.${CurrentDate}.${nonce}`);
+		hmac.update(`${snowflake}.${currentDate}.${nonce}`);
 
-		const Secret = Base64.OldBase64(hmac.digest("base64"));
+		const secret = Base64.OldBase64(hmac.digest("base64"));
 
-		return Base64.Encode(`${snowflake}.${Base64.Encode(String(CurrentDate))}.${nonce}.${Secret}`);
+		return Base64.Encode(`${snowflake}.${Base64.Encode(String(currentDate))}.${nonce}.${secret}`);
 	}
 
 	public static Verify(link: string): boolean {
-		const DecodedLink = Base64.Decode(link);
+		const decodedLink = Base64.Decode(link);
 
-		const [base64snowflake, base64createdDate, nonce, secret] = DecodedLink.split(".");
+		const [base64snowflake, base64createdDate, nonce, secret] = decodedLink.split(".");
 
 		if (!base64snowflake || !base64createdDate || !nonce || !secret) return false;
 
-		const snowflake = Base64.Decode(base64snowflake);
-		const CreatedDate = Base64.Decode(base64createdDate);
+		const decodedSnowflake = Base64.Decode(base64snowflake);
+		const createdDate = Base64.Decode(base64createdDate);
 
-		App.StaticLogger.debug("Snowflake", snowflake);
+		App.StaticLogger.debug("Snowflake", decodedSnowflake);
 
-		if (!Snowflake.Validate(snowflake)) return false;
+		if (!snowflake.Validate(decodedSnowflake)) return false;
 
 		App.StaticLogger.debug("Snowflake good");
 
-		const CreatedDateParsed = new Date(CreatedDate);
+		const createdDateParsed = new Date(createdDate);
 
 		// the max age of these will be around 2 weeks (MAX) so just hard code the check here
-		if (CreatedDateParsed.getTime() + 1_209_600_000 < Date.now()) return false;
+		if (createdDateParsed.getTime() + 1_209_600_000 < Date.now()) return false;
 
 		App.StaticLogger.debug("Date good");
 
-		const hmac = crypto.createHmac("sha256", Encryption.TokenKey);
+		const hmac = crypto.createHmac("sha256", encryption.TokenKey);
 
 		hmac.update(`${base64snowflake}.${base64createdDate}.${nonce}`);
 
-		const Newsecret = Base64.OldBase64(hmac.digest("base64"));
+		const newsecret = Base64.OldBase64(hmac.digest("base64"));
 
-		App.StaticLogger.debug("New Secret", Newsecret);
+		App.StaticLogger.debug("New Secret", newsecret);
 		App.StaticLogger.debug("Old Secret", secret);
 
-		if (Newsecret !== secret) return false;
+		if (newsecret !== secret) return false;
 
 		App.StaticLogger.debug("New vs Old = Yes");
 
@@ -77,17 +77,17 @@ class LinkGeneration {
 	}
 
 	public static GetSnowflake(link: string): string | null {
-		const DecodedLink = Base64.Decode(link);
+		const decodedLink = Base64.Decode(link);
 
-		const [base64snowflake, base64createdDate, nonce, secret] = DecodedLink.split(".");
+		const [base64snowflake, base64createdDate, nonce, secret] = decodedLink.split(".");
 
 		if (!base64snowflake || !base64createdDate || !nonce || !secret) return null;
 
-		const snowflake = Base64.Decode(base64snowflake);
+		const decodedSnowflake = Base64.Decode(base64snowflake);
 
-		if (!Snowflake.Validate(snowflake)) return null;
+		if (!snowflake.Validate(decodedSnowflake)) return null;
 
-		return snowflake;
+		return decodedSnowflake;
 	}
 }
 

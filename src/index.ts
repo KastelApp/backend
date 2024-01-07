@@ -12,13 +12,13 @@
 import process from "node:process";
 import App from "./Utils/Classes/App.ts";
 
-const Application = new App();
+const application = new App();
 
 try {
-	await Application.Init();
+	await application.Init();
 } catch (error) {
-	Application.Logger.fatal("A fatal error occurred before the server could start.");
-	Application.Logger.fatal(error);
+	application.Logger.fatal("A fatal error occurred before the server could start.");
+	application.Logger.fatal(error);
 
 	process.exit(1);
 }

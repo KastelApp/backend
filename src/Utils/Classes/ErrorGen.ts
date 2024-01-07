@@ -1,6 +1,6 @@
 import { HTTPErrors } from "@kastelll/util";
 
-const ErrorGen = {
+const errorGen = {
 	/*
 	 * When the content type does not match the allowed content types for example the routes content type is "application/json" but the request content type is "text/html"
 	 */
@@ -139,7 +139,7 @@ const ErrorGen = {
 	UnknownChannel: () => {
 		return new HTTPErrors(4_022);
 	},
-	/**
+	/*
 	 * The method provided was not allowed
 	 */
 	MethodNotAllowed: () => {
@@ -153,6 +153,6 @@ const ErrorGen = {
 	},
 };
 
-export default ErrorGen;
+export default errorGen;
 
-export { ErrorGen };
+export { errorGen as ErrorGen };

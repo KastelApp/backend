@@ -12,8 +12,9 @@
  */
 
 import process from "node:process";
+import { version } from "../package.json";
 
-const Settings = {
+const settings = {
 	Max: {
 		GuildCount: 50,
 		ChannelCount: 250,
@@ -56,7 +57,7 @@ const Settings = {
 
 // Note: You should NOT change these at all unless you know what you are doing
 // The frontend depends on these
-const GuildFeatures = [
+const guildFeatures = [
 	{
 		Name: "Partnered",
 		Deprecated: false, // deprecated means it will be removed in the future
@@ -92,7 +93,7 @@ const GuildFeatures = [
 	},
 ] as const;
 
-const AllowedMentions: {
+const allowedMentions: {
 	All?: number;
 	Everyone: number;
 	Here: number;
@@ -105,9 +106,9 @@ const AllowedMentions: {
 	Users: 1 << 8,
 };
 
-AllowedMentions.All = AllowedMentions.Everyone | AllowedMentions.Here | AllowedMentions.Roles | AllowedMentions.Users;
+allowedMentions.All = allowedMentions.Everyone | allowedMentions.Here | allowedMentions.Roles | allowedMentions.Users;
 
-const GuildMemberFlags = {
+const guildMemberFlags = {
 	Left: 1 << 0,
 	In: 1 << 1,
 	Kicked: 1 << 2,
@@ -116,7 +117,7 @@ const GuildMemberFlags = {
 	CoOwner: 1 << 5,
 };
 
-const ChannelTypes = {
+const channelTypes = {
 	GuildCategory: 1 << 0,
 	GuildText: 1 << 1,
 	GuildNews: 1 << 2,
@@ -127,29 +128,28 @@ const ChannelTypes = {
 	GroupChat: 1 << 11,
 };
 
-const Presence = {
-	Online: 1 << 0,
-	Idle: 1 << 1,
-	Dnd: 1 << 2,
-	Offline: 1 << 3,
+const presence = {
+	Online: 1,
+	Idle: 2,
+	Dnd: 3,
+	Offline: 0,
 };
 
-const MessageFlags = {
+const messageFlags = {
 	System: 1 << 0,
 	Normal: 1 << 1,
-	Reply: 1 << 2,
 	Deleted: 1 << 3, // NOTE: this is only used when the message has the reported flag
 	Reported: 1 << 4, // Note: this is private to the users (they won't receive the flag)
 };
 
-const InviteFlags = {
+const inviteFlags = {
 	Normal: 1 << 0, // invite for a guild channel
 	GroupChat: 1 << 1, // invite for a gdm
 	FriendLink: 1 << 2, // This lets you "add" a friend rather then having them send you a friend request, this is an instant friend
 	Vanity: 1 << 3, // This is a vanity invite (like kastelapp.com/invite/kastel) Undeleatable 1 per guild
 };
 
-const PublicFlags = {
+const publicFlags = {
 	StaffBadge: 1n << 0n,
 	GhostBadge: 1n << 1n,
 	SponsorBadge: 1n << 2n,
@@ -163,7 +163,7 @@ const PublicFlags = {
 	MajorBugHunterBadge: 1n << 10n,
 };
 
-const PrivateFlags = {
+const privateFlags = {
 	Ghost: 1n << 0n,
 	System: 1n << 1n,
 	Staff: 1n << 2n,
@@ -192,7 +192,7 @@ const PrivateFlags = {
 	IncreasedMessageLength8k: 1n << 30n,
 };
 
-const MixedPermissions = {
+const mixedPermissions = {
 	ManageMessages: 1n << 9n,
 	SendMessages: 1n << 10n,
 	ReadMessages: 1n << 11n,
@@ -201,7 +201,7 @@ const MixedPermissions = {
 	ManageWebhooks: 1n << 19n,
 };
 
-const RolePermissions = {
+const rolePermissions = {
 	Administrator: 1n << 0n,
 	ManageGuild: 1n << 1n,
 	ManageRoles: 1n << 2n,
@@ -219,39 +219,38 @@ const RolePermissions = {
 	ViewChannels: 1n << 22n,
 };
 
-const ChannelPermissions = {
+const channelPermissions = {
 	ViewChannel: 1n << 15n,
 	ManageChannel: 1n << 17n,
 };
 
-const Permissions = {
-	...MixedPermissions,
-	...RolePermissions,
-	...ChannelPermissions,
+const permissions = {
+	...mixedPermissions,
+	...rolePermissions,
+	...channelPermissions,
 };
 
-const RelationshipFlags = {
-	None: 1 << 0,
-	Blocked: 1 << 1,
-	FriendRequest: 1 << 2,
-	Friend: 1 << 3,
-	Denied: 1 << 4,
-	MutualFriend: 1 << 5,
+const relationshipFlags = {
+	None: 0,
+	Blocked: 1,
+	FriendRequest: 2,
+	Friend: 3,
+	MutualFriend: 4,
 };
 
-const AuditLogActions = {};
+const auditLogActions = {};
 
-const Relative = {
-	Version: "0.0.1",
+const relative = {
+	Version: version,
 };
 
-const VerificationFlags = {
-	VerifyEmail: 1 << 0,
-	ForgotPassword: 1 << 1,
-	ChangeEmail: 1 << 2,
+const verificationFlags = {
+	VerifyEmail: 1,
+	ForgotPassword: 2,
+	ChangeEmail: 3,
 };
 
-const Snowflake = {
+const snowflake = {
 	Epoch: 1_641_016_800_000n,
 	SequenceBytes: 6,
 	WorkerIdBytes: 12,
@@ -260,54 +259,54 @@ const Snowflake = {
 	ProcessId: process.pid,
 };
 
-const PermissionOverrideTypes = {
+const permissionOverrideTypes = {
 	Role: 1 << 0,
 	Member: 1 << 1,
 	Everyone: 1 << 2,
 };
 
 export default {
-	Settings,
-	AllowedMentions,
-	ChannelTypes,
-	Presence,
-	PrivateFlags,
-	Permissions,
-	RelationshipFlags,
-	AuditLogActions,
-	Relative,
-	GuildMemberFlags,
-	MessageFlags,
-	MixedPermissions,
-	RolePermissions,
-	ChannelPermissions,
-	VerificationFlags,
-	Snowflake,
-	PublicFlags,
-	GuildFeatures,
-	PermissionOverrideTypes,
-	InviteFlags,
+	settings,
+	allowedMentions,
+	channelTypes,
+	presence,
+	privateFlags,
+	permissions,
+	relationshipFlags,
+	auditLogActions,
+	relative,
+	guildMemberFlags,
+	messageFlags,
+	mixedPermissions,
+	rolePermissions,
+	channelPermissions,
+	verificationFlags,
+	snowflake,
+	publicFlags,
+	guildFeatures,
+	permissionOverrideTypes,
+	inviteFlags,
 };
 
 export {
-	Settings,
-	AllowedMentions,
-	ChannelTypes,
-	Presence,
-	PrivateFlags,
-	Permissions,
-	RelationshipFlags,
-	AuditLogActions,
-	Relative,
-	GuildMemberFlags,
-	MessageFlags,
-	MixedPermissions,
-	RolePermissions,
-	ChannelPermissions,
-	VerificationFlags,
-	Snowflake,
-	PublicFlags,
-	GuildFeatures,
-	PermissionOverrideTypes,
-	InviteFlags,
+	settings,
+	allowedMentions,
+	channelTypes,
+	presence,
+	privateFlags,
+	permissions,
+	relationshipFlags,
+	auditLogActions,
+	relative,
+	guildMemberFlags,
+	messageFlags,
+	mixedPermissions,
+	rolePermissions,
+	channelPermissions,
+	verificationFlags,
+	snowflake,
+	publicFlags,
+	guildFeatures,
+	permissionOverrideTypes,
+	inviteFlags,
 };

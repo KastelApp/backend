@@ -1,4 +1,4 @@
-const OpCodes = {
+const opCodes = {
 	Hello: 0, // This is the first thing you get when you connect (just so you know we know you exist)
 	Auth: 1, // You send this to Identify yourself
 	Authed: 2, // This gets sent to you when you are authenticated
@@ -35,7 +35,7 @@ const OpCodes = {
 	GuildJoin: 34, // private
 };
 
-const SystemOpCodes = {
+const systemOpCodes = {
 	MessageCreateAck: 1,
 	DeleteMessageAck: 2,
 	UpdateMessageAck: 3,
@@ -63,9 +63,9 @@ const SystemOpCodes = {
 	RelationshipUpdateAck: 25,
 };
 
-export { OpCodes, SystemOpCodes };
+export { opCodes, systemOpCodes };
 
 export default {
-	OpCodes,
-	SystemOpCodes,
+	opCodes,
+	systemOpCodes,
 };

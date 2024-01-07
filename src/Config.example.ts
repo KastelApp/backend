@@ -9,6 +9,7 @@
  * GPL 3.0 Licensed
  */
 
+// import type { Encryption, MongoDB, Redis, Regexs, Server, Ws, MailServer, Config, EmailTemplates } from './Types/Config';
 import type {
 	Encryption as EncrpytionConfigType,
 	ScyllaDB as ScyllaDBConfigType,
@@ -21,89 +22,90 @@ import type {
 	EmailTemplates as EmailTemplatesConfigType,
 } from "./Types/ConfigTypes";
 
-const Server: ServerConfigType = {
+const server: ServerConfigType = {
 	Port: 62_250,
-	Domain: "kastelapp.com",
+	Domain: "example.com",
 	Secure: true, // https or http
 	WorkerId: 1,
 	BucketInterval: 1_000 * 60 * 60 * 24 * 14, // 14 days
-	BucketRnd: 3_595_537_112,
+	BucketRnd: 9_211_111_198,
 	Cache: {
 		ClearInterval: 1_000 * 60 * 60 * 6, // six hours
 		ClearOnStart: false,
 	},
-	CloudflareAccessOnly: false, // If you are behind cloudflare and have a cloudflare worker forwarding the requests to the server then set this to true
+	CloudflareAccessOnly: false,
 	StrictRouting: true,
 	CaptchaEnabled: true,
 	TurnstileSecret: "",
 	Sentry: {
-		Enabled: false,
+		Enabled: true,
 		Dsn: "",
 		TracesSampleRate: 1,
 		OtherOptions: {
 			environment: "development",
 		},
 		RequestOptions: {
-			user: ["email", "id"],
+			user: [],
 			ip: true,
 		},
 	},
-	LocalIps: ["0.0.0.0", "localhost"], // These are for local tests, and to allow the WebSocket to make HTTP requests to the server
+	LocalIps: [""], // These are for local tests, and to allow the WebSocket to make HTTP requests to the server
+	Features: ["DisableEmailVerification", "DisablePasswordReset"],
 };
 
-const Encryption: EncrpytionConfigType = {
-	Algorithm: "aes-256-cbc",
+const encryption: EncrpytionConfigType = {
+	Algorithm: "",
 	InitVector: "",
 	SecurityKey: "",
 	TokenKey: "",
 };
 
-const Ws: WsConfigType = {
-	Url: "ws://localhost:8080/system",
+const ws: WsConfigType = {
+	Url: "wss://example.com/system",
 	Password: "123",
 };
 
-const Redis: RedisConfigType = {
-	Host: "localhost",
-	Port: 6_379,
+const redis: RedisConfigType = {
+	Host: "",
+	Port: 9_999,
 	Username: "",
 	Password: "",
-	DB: 0,
+	DB: 6,
 };
 
-const ScyllaDB: ScyllaDBConfigType = {
-	Nodes: ["172.17.0.1"],
-	Keyspace: "kastel",
-	Username: "kstl",
+const scyllaDB: ScyllaDBConfigType = {
+	Nodes: [""],
+	Keyspace: "",
+	Username: "",
 	Password: "",
 	CassandraOptions: {},
 	DurableWrites: true,
 	NetworkTopologyStrategy: {},
 };
 
-const MailServer: MailServerConfigType = {
+const mailServer: MailServerConfigType = {
 	Enabled: true,
 	Users: [
 		{
-			Host: "",
-			Port: 465,
-			Secure: true,
+			Host: "localhost",
+			Port: 1_025,
+			Secure: false,
 			User: "no-reply@kastelapp.com",
-			Password: "",
+			Password: undefined,
 			ShortCode: "NoReply",
 		},
 		{
-			Host: "",
-			Port: 465,
-			Secure: true,
+			Host: "localhost",
+			Port: 1_025,
+			Secure: false,
 			User: "support@kastelapp.com",
-			Password: "",
+			Password: undefined,
 			ShortCode: "Support",
 		},
 	],
 };
 
-const EmailTemplates: EmailTemplatesConfigType = {
+const emailTemplates: EmailTemplatesConfigType = {
 	VerifyEmail: {
 		Subject: "Verify your email",
 		Template: "", // can be a url or a file path
@@ -133,7 +135,7 @@ const EmailTemplates: EmailTemplatesConfigType = {
 	},
 };
 
-const Regexs: RegexsConfigType = {
+const regexs: RegexsConfigType = {
 	PlusReplace: /\+([^@]+)/g, // eslint-disable-line prefer-named-capture-group
 	PasswordValidtor: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()-=_+{};:<>,.?/~]{6,72}$/g, // eslint-disable-line unicorn/better-regex
 	EmailValidator: /^[\w%+.-]+@[\d.A-Za-z-]+\.[A-Za-z]{2,}$/g,
@@ -141,27 +143,27 @@ const Regexs: RegexsConfigType = {
 		/^(?=.*[a-zA-Z0-9!$%^&*()\-_~>.<?/\s\u0020-\uD7FF\uE000-\uFFFD])[a-zA-Z0-9!$%^&*()\-_~>.<?/\s\u0020-\uD7FF\uE000-\uFFFD]{2,30}$/g, // eslint-disable-line unicorn/better-regex
 };
 
-const Config: ConfigType = {
-	Server,
-	Encryption,
-	Ws,
-	Redis,
-	ScyllaDB,
-	Regexs,
-	MailServer,
-	EmailTemplates,
+const config: ConfigType = {
+	Server: server,
+	Encryption: encryption,
+	Ws: ws,
+	Redis: redis,
+	ScyllaDB: scyllaDB,
+	Regexs: regexs,
+	MailServer: mailServer,
+	EmailTemplates: emailTemplates,
 };
 
-export { Config, Server, Encryption, Ws, Redis, ScyllaDB, Regexs, MailServer, EmailTemplates };
+export { config, server, encryption, ws, redis, scyllaDB, regexs, mailServer, emailTemplates };
 
 export default {
-	Config,
-	Server,
-	Encryption,
-	Ws,
-	Redis,
-	ScyllaDB,
-	Regexs,
-	MailServer,
-	EmailTemplates,
+	config,
+	server,
+	encryption,
+	ws,
+	redis,
+	scyllaDB,
+	regexs,
+	mailServer,
+	emailTemplates,
 };

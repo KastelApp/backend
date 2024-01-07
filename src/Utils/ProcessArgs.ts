@@ -1,37 +1,37 @@
 import process from "node:process";
 
-const ProcessArgs = (allowedArgs: string[]): { Invalid: string[]; Valid: string[] } => {
-	const Valid = [];
-	const Invalid = [];
+const processArgs = <T = string[]>(allowedArgs: T): { invalid: string[]; valid: T } => {
+	const valid = [];
+	const invalid = [];
 
 	if (!Array.isArray(allowedArgs)) throw new TypeError("Allowed args must be an array.");
 
-	for (const Arg of process.argv) {
-		const IsArgRegex = /^--(?<args>[a-z]+)$/;
+	for (const arg of process.argv) {
+		const isArgRegex = /^--(?<args>[a-z]+)$/;
 
-		if (IsArgRegex.test(Arg)) {
-			const ArgName = IsArgRegex.exec(Arg)?.[1];
+		if (isArgRegex.test(arg)) {
+			const argName = isArgRegex.exec(arg)?.[1];
 
-			if (!ArgName) {
-				Invalid.push(Arg);
+			if (!argName) {
+				invalid.push(arg);
 
 				continue;
 			}
 
-			if (allowedArgs.includes(ArgName)) {
-				Valid.push(ArgName);
+			if (allowedArgs.includes(argName)) {
+				valid.push(argName);
 			} else {
-				Invalid.push(ArgName);
+				invalid.push(argName);
 			}
 		} else {
-			Invalid.push(Arg);
+			invalid.push(arg);
 		}
 	}
 
 	return {
-		Invalid,
-		Valid,
+		invalid,
+		valid: valid as T,
 	};
 };
 
-export default ProcessArgs;
+export default processArgs;

@@ -2,7 +2,7 @@ import type { CookieOptions } from "elysia";
 import type { Prettify } from "elysia/types";
 import type { HTTPStatusName } from "elysia/utils";
 import type { GetParams } from "@/Types/Routes.ts";
-import type App from "./App.ts";
+import type App from "../App.ts";
 
 type Method = "all" | "delete" | "get" | "head" | "options" | "patch" | "post" | "put";
 
@@ -26,11 +26,15 @@ type ContentTypes =
 	| "video/mp4"
 	| "video/ogg"
 	| "video/quicktime"
-	| "video/webm"
+	| "video/webm";
 
 type CreateMiddleware<ExtraOptions extends Record<string, any> | string = Record<string, any>> = ExtraOptions;
 
-interface CreateRouteOptions<Route extends string, Body extends Record<string, boolean | number | string | null | undefined> | unknown = unknown, params extends string[] = []> {
+interface CreateRouteOptions<
+	Route extends string,
+	Body extends Record<string, boolean | number | string | null | undefined> | unknown = unknown,
+	params extends string[] = [],
+> {
 	app: App;
 	body: Body;
 	headers: Record<string, string | undefined>;
@@ -39,9 +43,14 @@ interface CreateRouteOptions<Route extends string, Body extends Record<string, b
 	query: Record<string, string | undefined>;
 	request: globalThis.Request;
 	set: {
-		cookie?: Record<string, Prettify<CookieOptions & {
-			value: string;
-		}>>;
+		cookie?: Record<
+			string,
+			Prettify<
+				CookieOptions & {
+					value: string;
+				}
+			>
+		>;
 		headers: Record<string, string> & {
 			"Set-Cookie"?: string[] | string;
 		};
@@ -53,51 +62,58 @@ interface CreateRouteOptions<Route extends string, Body extends Record<string, b
 
 type MiddlewareArray<Arr extends Record<string, unknown>[]> = Arr extends [infer First, ...infer Rest]
 	? First extends Record<string, unknown>
-	? Rest extends Record<string, unknown>[]
-	? CreateMiddleware<First> & MiddlewareArray<Rest>
-	: never
-	: never
+		? Rest extends Record<string, unknown>[]
+			? CreateMiddleware<First> & MiddlewareArray<Rest>
+			: never
+		: never
 	: {};
 
 // turn this into an object from an array
 type ParamsArray<Arr extends string[]> = Arr extends [infer First, ...infer Rest]
 	? First extends string
-	? Rest extends string[]
-	? ParamsArray<Rest> & Record<First, string>
-	: never
-	: never
+		? Rest extends string[]
+			? ParamsArray<Rest> & Record<First, string>
+			: never
+		: never
 	: {};
 
-type CreateRoute<Route extends string = string, Body extends Record<string, boolean | number | string | null | undefined> | unknown = unknown, MiddlewareSettings extends Record<string, unknown>[] = [], params extends string[] = []> = CreateRouteOptions<Route, Body, params> & MiddlewareArray<MiddlewareSettings>;
+type CreateRoute<
+	Route extends string = string,
+	Body extends Record<string, boolean | number | string | null | undefined> | unknown = unknown,
+	MiddlewareSettings extends Record<string, unknown>[] = [],
+	params extends string[] = [],
+> = CreateRouteOptions<Route, Body, params> & MiddlewareArray<MiddlewareSettings>;
 
 class Route {
 	public readonly App: App;
-
-	public Middleware: ((req: CreateRouteOptions<string, {}>) => CreateMiddleware | Promise<CreateMiddleware>)[];
-
-	public Route: {
-		ContentTypes: ContentTypes[];
-		Method: Method;
-		Path: string;
-	}[];
 
 	public KillSwitched: boolean; // KillSwitched routes will be populated in the routes, though when someone tries to use it, we'll return a 503 error (default is false)
 
 	public constructor(App: App) {
 		this.App = App;
 
-		this.Route = [];
-
 		this.KillSwitched = false;
-
-		this.Middleware = [];
-	}
-
-
-	public Request(req: any) {
-		return req;
 	}
 }
+
+interface Decorators {
+	__contentTypes: {
+		name: string;
+		type: ContentTypes[];
+	}[];
+	__descriptions: {
+		// Description of the route method (for documentation)
+		description: string;
+		name: string;
+	}[];
+	__methods: { method: Method; name: string }[];
+	__middlewares: {
+		name: string;
+		ware(req: CreateRouteOptions<string, {}>): CreateMiddleware | Promise<CreateMiddleware>;
+	}[];
+}
+
+interface Route extends Decorators {}
 
 export default Route;
 

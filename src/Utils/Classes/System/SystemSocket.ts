@@ -5,7 +5,7 @@ import { WebSocket } from "ws";
 import Config from "../../../Config.ts";
 import type { AuthedPayload, NormalPayload } from "../../../Types/Socket/MiscPayloads";
 import type App from "../App.ts";
-import { OpCodes, SystemOpCodes } from "../WsUtils.ts";
+import { opCodes, systemOpCodes } from "../WsUtils.ts";
 import Events from "./Events.ts";
 
 class SystemSocket {
@@ -31,6 +31,8 @@ class SystemSocket {
 
 	private Resolved: boolean;
 
+	private Interval: number;
+
 	public constructor(App: App) {
 		this.App = App;
 
@@ -50,6 +52,8 @@ class SystemSocket {
 
 		this.FailedConnectionAttempts = 0; // We allow for 15 failed connection attempts before we stop trying to connect
 
+		this.Interval = 5_000; // 5 seconds
+
 		this.Events = new Events(this);
 
 		this.Resolved = false;
@@ -58,7 +62,7 @@ class SystemSocket {
 	public async Connect(): Promise<void> {
 		return new Promise<void>((resolve) => {
 			this.Ws = new WebSocket(
-				`${Config.Ws.Url}?v=${Config.Ws.version ?? 0}&p=${encodeURIComponent(Config.Ws.Password)}&c=true&encoding=json`,
+				`${Config.ws.Url}?v=${Config.ws.version ?? 0}&p=${encodeURIComponent(Config.ws.Password)}&c=true&encoding=json`,
 				{},
 			);
 
@@ -72,6 +76,7 @@ class SystemSocket {
 
 				if (!this.Resolved) {
 					this.Resolved = true;
+
 					resolve();
 				}
 			});
@@ -95,28 +100,28 @@ class SystemSocket {
 
 			// @ts-expect-error -- It does exist, though bun doing the funky with the internal ws module
 			this.Ws.on("message", (data: Buffer) => {
-				const Decoded = this.decode(data);
+				const decoded = this.decode(data);
 
-				if (Decoded?.S) this.Sequence = Decoded.S;
+				if (decoded?.S) this.Sequence = decoded.S;
 
-				if (Decoded?.Authed === true) {
+				if (decoded?.Authed === true) {
 					this.App.Logger.info("Authed to System Socket");
 
 					this.FailedConnectionAttempts = 0; // Reset the failed connection attempts (Since we are now connected)
 
-					const AuthPayload = Decoded as AuthedPayload;
+					const authPayload = decoded as AuthedPayload;
 
-					this.SessionId = AuthPayload.Misc.SessionId;
+					this.SessionId = authPayload.Misc.SessionId;
 
-					this.ApproximateMembers = AuthPayload.ApproximateMembers;
+					this.ApproximateMembers = authPayload.ApproximateMembers;
 
-					if (typeof AuthPayload.Misc.HeartbeatInterval === "number") {
+					if (typeof authPayload.Misc.HeartbeatInterval === "number") {
 						this.App.Logger.debug("Starting Heartbeat Interval");
 						this.HeartbeatInterval = setInterval(() => {
 							this.App.Logger.debug("Sending Heartbeat");
 							this.Ws?.send(
 								JSON.stringify({
-									Op: OpCodes.HeartBeat,
+									Op: opCodes.HeartBeat,
 									D: {
 										Sequence: this.Sequence,
 									},
@@ -125,7 +130,7 @@ class SystemSocket {
 							this.LastHeartbeat = Date.now();
 
 							this.App.Logger.debug("Heartbeat Sent");
-						}, AuthPayload.Misc.HeartbeatInterval - 2_000);
+						}, authPayload.Misc.HeartbeatInterval - 2_000);
 					}
 
 					if (!this.Resolved) {
@@ -134,21 +139,21 @@ class SystemSocket {
 					}
 				}
 
-				if (Decoded?.Op) {
-					const NormalPayload = Decoded as NormalPayload;
+				if (decoded?.Op) {
+					const normalPayload = decoded as NormalPayload;
 
-					this.App.Logger.debug(`Received Payload: ${JSON.stringify(NormalPayload)}`);
+					this.App.Logger.debug(`Received Payload: ${JSON.stringify(normalPayload)}`);
 
-					switch (NormalPayload.Op) {
-						case OpCodes.HeartBeatAck:
+					switch (normalPayload.Op) {
+						case opCodes.HeartBeatAck:
 							this.LastHeartbeatAck = Date.now();
 							this.App.Logger.debug("Heartbeat Acknowledged");
 							break;
 
-						case Object.values(SystemOpCodes).find((op) => op === NormalPayload.Op):
+						case Object.values(systemOpCodes).find((op) => op === normalPayload.Op):
 							this.App.Logger.debug(
-								`Received Event: ${Object.keys(SystemOpCodes).find(
-									(op) => SystemOpCodes[op as keyof typeof SystemOpCodes] === NormalPayload.Op,
+								`Received Event: ${Object.keys(systemOpCodes).find(
+									(op) => systemOpCodes[op as keyof typeof systemOpCodes] === normalPayload.Op,
 								)}`,
 							);
 							break;
@@ -161,9 +166,9 @@ class SystemSocket {
 	private decode(data: Buffer): any {
 		try {
 			// eslint-disable-next-line n/no-sync
-			const ZlibDecoded = zlib.unzipSync(data);
+			const zlibDecoded = zlib.unzipSync(data);
 
-			return JSON.parse(ZlibDecoded.toString());
+			return JSON.parse(zlibDecoded.toString());
 		} catch {
 			try {
 				return JSON.parse(data.toString());
@@ -184,9 +189,12 @@ class SystemSocket {
 		// @ts-expect-error -- It does exist, though bun doing the funky with the internal ws module
 		this.Ws?.removeAllListeners();
 
-		if (!Force && this.FailedConnectionAttempts >= 15) {
-			this.App.Logger.error("Failed to connect to System Socket 15 times, stopping attempts");
-			return;
+		if (!Force && this.FailedConnectionAttempts > 1 && this.FailedConnectionAttempts % 15 === 0) {
+			this.Interval += 30_000;
+
+			this.App.Logger.error(
+				`Failed to connect to System Socket 15 times, increasing the interval to ${this.Interval / 1_000} seconds`,
+			);
 		}
 
 		this.FailedConnectionAttempts++;
@@ -196,7 +204,7 @@ class SystemSocket {
 
 		setTimeout(async () => {
 			await this.Connect();
-		}, 5_000);
+		}, this.Interval);
 	}
 }
 

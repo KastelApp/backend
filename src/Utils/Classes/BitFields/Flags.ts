@@ -9,33 +9,33 @@
  * GPL 3.0 Licensed
  */
 
-import { PrivateFlags, PublicFlags } from "../../../Constants.ts";
+import { privateFlags, publicFlags } from "../../../Constants.ts";
 import FlagUtilsBInt from "./NewFlags.ts";
 
-const PublicPrivateFlags: (keyof typeof PrivateFlags)[] = ["System", "Ghost", "Spammer", "VerifiedBot", "Bot"];
+const publicPrivateFlags: (keyof typeof privateFlags)[] = ["System", "Ghost", "Spammer", "VerifiedBot", "Bot"];
 
 class FlagFields {
-	public PrivateFlags: FlagUtilsBInt<typeof PrivateFlags>;
+	public PrivateFlags: FlagUtilsBInt<typeof privateFlags>;
 
-	public PublicFlags: FlagUtilsBInt<typeof PublicFlags>;
+	public PublicFlags: FlagUtilsBInt<typeof publicFlags>;
 
 	public constructor(PrivFlags: bigint | number | string, PubFlags: bigint | number | string) {
-		this.PrivateFlags = new FlagUtilsBInt(PrivFlags, PrivateFlags);
+		this.PrivateFlags = new FlagUtilsBInt(PrivFlags, privateFlags);
 
-		this.PublicFlags = new FlagUtilsBInt(PubFlags, PublicFlags);
+		this.PublicFlags = new FlagUtilsBInt(PubFlags, publicFlags);
 	}
 
 	public get PublicPrivateFlags(): bigint {
-		return this.PrivateFlags.clean(PublicPrivateFlags);
+		return this.PrivateFlags.clean(publicPrivateFlags);
 	}
 
-	public has(bit: bigint | number | keyof typeof PrivateFlags | keyof typeof PublicFlags) {
+	public has(bit: bigint | number | keyof typeof privateFlags | keyof typeof publicFlags) {
 		return (
-			this.PrivateFlags.has(bit as keyof typeof PrivateFlags) || this.PublicFlags.has(bit as keyof typeof PublicFlags)
+			this.PrivateFlags.has(bit as keyof typeof privateFlags) || this.PublicFlags.has(bit as keyof typeof publicFlags)
 		);
 	}
 
-	public toArray(): (keyof typeof PrivateFlags | keyof typeof PublicFlags)[] {
+	public toArray(): (keyof typeof privateFlags | keyof typeof publicFlags)[] {
 		return [...this.PrivateFlags.toArray(), ...this.PublicFlags.toArray()];
 	}
 }

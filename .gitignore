@@ -44,3 +44,6 @@ dtests/
 # Old Stuff
 oldApiRoutes/
 old/
+
+# Where responses are stored
+openSpecStorage/

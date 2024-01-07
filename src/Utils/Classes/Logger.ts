@@ -13,11 +13,11 @@ import { setInterval } from "node:timers";
 import { URL } from "node:url";
 import * as Sentry from "@sentry/node";
 import * as ark from "archiver";
-import ProcessArgs from "../ProcessArgs.ts";
+import processArgs from "../ProcessArgs.ts";
 
 type Logtypes = "debug" | "error" | "fatal" | "importantDebug" | "info" | "timer" | "trace" | "verbose" | "warn";
 
-const Args = ProcessArgs(["debug", "no-verbose", "no-console", "super-debug"]);
+const args = processArgs(["debug", "no-verbose", "no-console", "super-debug"]);
 
 class Logger {
 	private readonly logDirectory: string;
@@ -90,18 +90,18 @@ class Logger {
 		setInterval(() => {
 			if (this.compressing) return; // if we are compressing logs then we don't want to do anything.
 
-			const Now = new Date();
+			const now = new Date();
 
 			if (
-				Now.getDate() !== this.prevDate.getDate() ||
-				Now.getMonth() !== this.prevDate.getMonth() ||
-				Now.getFullYear() !== this.prevDate.getFullYear()
+				now.getDate() !== this.prevDate.getDate() ||
+				now.getMonth() !== this.prevDate.getMonth() ||
+				now.getFullYear() !== this.prevDate.getFullYear()
 			) {
 				this.supersecretdebug("Date changed, compressing logs");
 
 				void this.init();
 
-				this.prevDate = Now;
+				this.prevDate = now;
 
 				this.supersecretdebug("Compressed logs");
 			}
@@ -129,9 +129,9 @@ class Logger {
 	private async init(): Promise<void> {
 		if (!existsSync(this.logDirectory)) mkdirSync(this.logDirectory);
 
-		const Compressed = await this.compress();
+		const compressed = await this.compress();
 
-		if (Compressed) {
+		if (compressed) {
 			this.supersecretdebug("Compressed logs");
 		} else {
 			this.supersecretdebug("No logs to compress");
@@ -160,17 +160,17 @@ class Logger {
 		end: string;
 		rgb: string;
 	} {
-		const ReplacedHex = hex.replace("#", "");
+		const replacedHex = hex.replace("#", "");
 
-		const Int = Number.parseInt(ReplacedHex, 16);
+		const int = Number.parseInt(replacedHex, 16);
 
-		const Red = (Int >> 16) & 255;
-		const Green = (Int >> 8) & 255;
-		const Blue = Int & 255;
+		const red = (int >> 16) & 255;
+		const green = (int >> 8) & 255;
+		const blue = int & 255;
 
 		return {
 			end: "\u001B[0m",
-			rgb: `\u001B[38;2;${Red};${Green};${Blue}m`,
+			rgb: `\u001B[38;2;${red};${green};${blue}m`,
 		};
 	}
 
@@ -178,16 +178,16 @@ class Logger {
 		return new Promise((resolve) => {
 			this.compressing = true;
 
-			const Files = readdirSync(this.logDirectory);
+			const files = readdirSync(this.logDirectory);
 
-			const CurrentDate = new Date();
+			const currentDate = new Date();
 
-			const LogFiles = Files.filter((file) => file.endsWith(".log"));
-			const GzipFiles = Files.filter(
-				(file) => file.startsWith(`${CurrentDate.toISOString().slice(0, 10)}-`) && file.endsWith(".log.zip"),
+			const logFiles = files.filter((file) => file.endsWith(".log"));
+			const gzipFiles = files.filter(
+				(file) => file.startsWith(`${currentDate.toISOString().slice(0, 10)}-`) && file.endsWith(".log.zip"),
 			);
 
-			if (LogFiles.length === 0) {
+			if (logFiles.length === 0) {
 				this.supersecretdebug("No log files to compress");
 
 				resolve(false);
@@ -195,26 +195,26 @@ class Logger {
 				return;
 			}
 
-			const Archive = ark.default.create("zip", {
+			const archive = ark.default.create("zip", {
 				zlib: { level: 9 },
 			});
 
-			const Output = createWriteStream(
-				join(this.logDirectory, `${CurrentDate.toISOString().slice(0, 10)}-${GzipFiles.length + 1}.log.zip`),
+			const output = createWriteStream(
+				join(this.logDirectory, `${currentDate.toISOString().slice(0, 10)}-${gzipFiles.length + 1}.log.zip`),
 			);
 
-			Archive.pipe(Output);
+			archive.pipe(output);
 
-			for (const File of LogFiles) {
-				Archive.append(createReadStream(join(this.logDirectory, File)), { name: File });
-				this.supersecretdebug(`Added ${File} to archive`);
+			for (const file of logFiles) {
+				archive.append(createReadStream(join(this.logDirectory, file)), { name: file });
+				this.supersecretdebug(`Added ${file} to archive`);
 			}
 
-			Archive.on("finish", () => {
-				for (const File of LogFiles) {
-					rmSync(join(this.logDirectory, File));
+			archive.on("finish", () => {
+				for (const file of logFiles) {
+					rmSync(join(this.logDirectory, file));
 
-					this.supersecretdebug(`Deleted ${File}`);
+					this.supersecretdebug(`Deleted ${file}`);
 				}
 
 				this.supersecretdebug("Deleted old log files");
@@ -224,14 +224,14 @@ class Logger {
 				resolve(true);
 			});
 
-			void Archive.finalize();
+			void archive.finalize();
 
 			this.supersecretdebug("Finalized archive");
 		});
 	}
 
 	private supersecretdebug(...msg: string[]) {
-		if (Args.Valid.includes("super-debug")) console.log(`[DEBUG] [LOGGER]: ${msg.join(" ")}`);
+		if (args.valid.includes("super-debug")) console.log(`[DEBUG] [LOGGER]: ${msg.join(" ")}`);
 	}
 
 	private next(): boolean {
@@ -239,18 +239,18 @@ class Logger {
 
 		this.supersecretdebug("Writing message");
 
-		const Message = this.writingQueue.shift();
+		const message = this.writingQueue.shift();
 
-		if (!Message) return true;
+		if (!message) return true;
 
-		if (Message.file === "latest") {
+		if (message.file === "latest") {
 			this.supersecretdebug("Writing to latest log");
-			writeFileSync(this.latestLog, `${Message.message.join("\n")}\n`, { flag: "a" });
-		} else if (Message.file === "error") {
+			writeFileSync(this.latestLog, `${message.message.join("\n")}\n`, { flag: "a" });
+		} else if (message.file === "error") {
 			this.supersecretdebug("Writing to crash log");
-			writeFileSync(this.errorLogs, `${Message.message.join("\n")}\n`, { flag: "a" });
+			writeFileSync(this.errorLogs, `${message.message.join("\n")}\n`, { flag: "a" });
 		} else {
-			throw new Error(`Unknown file ${Message.file}`);
+			throw new Error(`Unknown file ${message.file}`);
 		}
 
 		return true;
@@ -276,62 +276,63 @@ class Logger {
 			return;
 		}
 
-		const Message = `[${options.date.toLocaleTimeString()}] [MASTER / ${
+		const message = `[${options.date.toLocaleTimeString()}] [MASTER / ${
 			options.toShow ? options.toShow.toUpperCase() : options.type.toUpperCase()
 		}]:`;
 
-		const Messages = [];
+		const messages = [];
 
-		for (const Item of options.message) {
-			const LastMessage: any = Messages[Messages.length - 1];
+		for (const item of options.message) {
+			const lastMessage: any = messages[messages.length - 1];
 			if (
-				typeof Item === "string" ||
-				typeof Item === "number" ||
-				typeof Item === "boolean" ||
-				Item === null ||
-				Item === undefined
+				typeof item === "string" ||
+				typeof item === "number" ||
+				typeof item === "boolean" ||
+				item === null ||
+				item === undefined
 			) {
-				if (LastMessage && typeof LastMessage === "string") {
-					Messages[Messages.length - 1] = `${LastMessage} ${Item}`;
+				if (lastMessage && typeof lastMessage === "string") {
+					messages[messages.length - 1] = `${lastMessage} ${item}`;
 				} else {
-					Messages.push(Item.trim());
+					messages.push(item.trim());
 				}
-			} else if (Item instanceof Error) {
-				if (Item.stack) {
-					for (const Line of Item.stack.split("\n")) {
-						Messages.push(Line.trim());
+			} else if (item instanceof Error) {
+				if (item.stack) {
+					for (const line of item.stack.split("\n")) {
+						messages.push(line.trim());
 					}
 				} else {
-					Messages.push(Item.message.trim());
+					messages.push(item.message.trim());
 				}
 			} else {
-				Messages.push(Item);
+				messages.push(item);
 			}
 		}
 
-		const NewMessages = Messages.map((msg) => {
+		const newMessages = messages.map((msg) => {
 			if (typeof msg === "string") {
-				return `${Message} ${msg}`.trim();
+				return `${message} ${msg}`.trim();
 			} else {
-				const Strongified = JSON.stringify(msg, null, 2);
+				const stringified = JSON.stringify(msg, null, 2);
 
-				return Strongified.split("\n")
-					.map((line) => `${Message} ${line}`.trim())
+				return stringified
+					.split("\n")
+					.map((line) => `${message} ${line}`.trim())
 					.join("\n");
 			}
 		});
 
 		this.writingQueue.push({
 			file: options.file,
-			message: NewMessages,
+			message: newMessages,
 		});
 
 		if (options.console) {
-			const Color = Logger.hexToAnsi(this.colorTypes[options.type]);
+			const color = Logger.hexToAnsi(this.colorTypes[options.type]);
 
-			if (Color) {
-				for (const Msg of NewMessages) {
-					console.log(`${Color.rgb}${Msg}${Color.end}`);
+			if (color) {
+				for (const msg of newMessages) {
+					console.log(`${color.rgb}${msg}${color.end}`);
 				}
 			}
 		}
@@ -376,7 +377,7 @@ class Logger {
 	}
 
 	public debug(...message: any[]) {
-		if (!Args.Valid.includes("debug")) return this;
+		if (!args.valid.includes("debug")) return this;
 
 		this.addLog({
 			type: "debug",
@@ -390,7 +391,7 @@ class Logger {
 	}
 
 	public importantDebug(...message: any[]) {
-		if (!Args.Valid.includes("debug")) return this;
+		if (!args.valid.includes("debug")) return this;
 
 		this.addLog({
 			type: "importantDebug",
@@ -431,7 +432,7 @@ class Logger {
 	}
 
 	public verbose(...message: any[]) {
-		if (Args.Valid.includes("no-verbose")) return this;
+		if (args.valid.includes("no-verbose")) return this;
 
 		this.addLog({
 			type: "verbose",
@@ -455,21 +456,21 @@ class Logger {
 	}
 
 	public stopTimer(name: string) {
-		const Timer = this.timers.get(name);
+		const timer = this.timers.get(name);
 
-		if (!Timer) throw new Error(`Timer ${name} not found`);
+		if (!timer) throw new Error(`Timer ${name} not found`);
 
-		const End = new Date();
+		const end = new Date();
 
-		const Diff = End.getTime() - Timer.start.getTime();
+		const diff = end.getTime() - timer.start.getTime();
 
-		if (Timer.debug && !Args.Valid.includes("debug")) return this;
+		if (timer.debug && !args.valid.includes("debug")) return this;
 
 		this.addLog({
 			type: "timer",
 			date: new Date(),
 			file: "latest",
-			message: [`Timer ${name} took ${Diff}ms`],
+			message: [`Timer ${name} took ${diff}ms`],
 			console: this.console,
 		});
 
@@ -478,21 +479,21 @@ class Logger {
 
 	public hex(hex: string) {
 		return (...message: string[]) => {
-			const Color = Logger.hexToAnsi(hex);
+			const coor = Logger.hexToAnsi(hex);
 
-			if (Color) {
-				for (const Msg of message) {
-					console.log(`${Color.rgb}${Msg}${Color.end}`);
+			if (coor) {
+				for (const msg of message) {
+					console.log(`${coor.rgb}${msg}${coor.end}`);
 				}
 			}
 		};
 	}
 
 	public static colorize(hex: string, str: string) {
-		const Color = this.hexToAnsi(hex);
+		const color = this.hexToAnsi(hex);
 
-		if (Color) {
-			return `${Color.rgb}${str}${Color.end}`;
+		if (color) {
+			return `${color.rgb}${str}${color.end}`;
 		} else {
 			return str;
 		}

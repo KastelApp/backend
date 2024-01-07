@@ -11,23 +11,23 @@
 
 import crypto from "node:crypto";
 
-const Chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789";
+const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789";
 
 /**
  * Generates a random invite with a selected length
  */
-const InviteGenerator = (Length = 15): string => {
-	if (Number.isNaN(Length)) {
+const inviteGenerator = (length = 15): string => {
+	if (Number.isNaN(length)) {
 		throw new TypeError(
-			`"length" argument is expected to be a number, Got ${typeof Length === "number" ? "NaN" : typeof Length}`,
+			`"length" argument is expected to be a number, Got ${typeof length === "number" ? "NaN" : typeof length}`,
 		);
 	}
 
-	const RandomBytes = crypto.randomBytes(Length);
+	const randomBytes = crypto.randomBytes(length);
 
-	return [...RandomBytes].map((byte) => Chars[byte % Chars.length]).join("");
+	return [...randomBytes].map((byte) => chars[byte % chars.length]).join("");
 };
 
-export default InviteGenerator;
+export default inviteGenerator;
 
-export { InviteGenerator };
+export { inviteGenerator as InviteGenerator };

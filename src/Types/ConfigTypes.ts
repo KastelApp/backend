@@ -12,6 +12,17 @@
 import type { ClientOptions } from "@kastelll/cassandra-driver";
 import type * as Sentry from "@sentry/node";
 
+// Features for the API (So the frontend knows what to show)
+export type Features =
+	| "DisableChannelCreation"
+	| "DisableEmailVerification"
+	| "DisableGuildCreation"
+	| "DisableLogin"
+	| "DisablePasswordReset"
+	| "DisableRegistration";
+
+// omit the features thats already in the array
+
 export interface Server {
 	BucketInterval: number;
 	BucketRnd: number;
@@ -23,6 +34,7 @@ export interface Server {
 	CaptchaEnabled: boolean;
 	CloudflareAccessOnly: boolean;
 	Domain: string;
+	Features: Features[];
 	LocalIps?: string[];
 	Port: number | string;
 	Secure: boolean;

@@ -1,5 +1,4 @@
 /* eslint-disable id-length */
-import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 import process from "node:process";
 import { URL } from "node:url";
@@ -9,23 +8,22 @@ import { Snowflake, Turnstile, CacheManager } from "@kastelll/util";
 import * as Sentry from "@sentry/node";
 import { Elysia } from "elysia";
 import { type SimpleGit, simpleGit } from "simple-git";
-import { Config } from "../../Config.ts";
-import Constants, { Relative } from "../../Constants.ts";
-import ProcessArgs from "../ProcessArgs.ts";
+import { config } from "../../Config.ts";
+import Constants, { relative } from "../../Constants.ts";
+import processArgs from "../ProcessArgs.ts";
 import Connection from "./Connection.ts";
-import Emails from "./Emails.ts";
-import ErrorGen from "./ErrorGen.ts";
+import errorGen from "./ErrorGen.ts";
+import FileSystemRouter from "./FileSystemRouter.ts";
 import { IpUtils } from "./IpUtils.ts";
 import CustomLogger from "./Logger.ts";
-import type { ContentTypes, Method } from "./Route.ts";
-import RouteBuilder from "./Route.ts";
+import type { ContentTypes } from "./Routing/Route.ts";
+import RouteBuilder from "./Routing/Route.ts";
 import SystemSocket from "./System/SystemSocket.ts";
 import SystemInfo from "./SystemInfo.ts";
 
-
 type GitType = "Added" | "Copied" | "Deleted" | "Ignored" | "Modified" | "None" | "Renamed" | "Unmerged" | "Untracked";
 
-const SupportedArgs = ["debug", "skip-online-check", "behind-proxy", "no-ip-checking"] as const;
+const supportedArgs = ["debug", "skip-online-check", "behind-proxy", "no-ip-checking"] as const;
 
 class App {
 	private RouteDirectory: string = join(new URL(".", import.meta.url).pathname, "../../Routes");
@@ -42,17 +40,13 @@ class App {
 
 	public Turnstile: Turnstile;
 
-	public Support: Emails | null = null;
-
-	public NoReply: Emails | null = null;
-
 	public IpUtils: IpUtils;
 
 	public SystemSocket: SystemSocket;
 
 	public Sentry: typeof Sentry;
 
-	public Config: typeof Config = Config;
+	public Config: typeof config = config;
 
 	public Constants: typeof Constants = Constants;
 
@@ -60,15 +54,14 @@ class App {
 
 	public static StaticLogger: CustomLogger = new CustomLogger();
 
-	public Routes: {
-		Default: RouteBuilder;
-		Directory: string;
-		Routes: {
-			ContentTypes: ContentTypes[];
-			Method: Method;
-			Path: string;
-		}[];
-	}[] = [];
+	public RouteCache: Map<
+		string,
+		{
+			path: string;
+			route: string;
+			routeClass: RouteBuilder;
+		}
+	> = new Map();
 
 	private Clean: boolean = false;
 
@@ -99,30 +92,31 @@ class App {
 
 	// public Repl: Repl;
 
-	public Args: typeof SupportedArgs = ProcessArgs(SupportedArgs as unknown as string[])
-		.Valid as unknown as typeof SupportedArgs;
+	public Args = processArgs(supportedArgs).valid;
+
+	protected Router: FileSystemRouter;
 
 	public constructor() {
 		this.ElysiaApp = new Elysia();
 
-		this.Snowflake = new Snowflake(Constants.Snowflake);
+		this.Snowflake = new Snowflake(Constants.snowflake);
 
 		this.Cache = new CacheManager({
-			...Config.Redis,
+			...config.Redis,
 			AllowForDangerousCommands: true,
 		});
 
 		this.Cassandra = new Connection(
-			Config.ScyllaDB.Nodes,
-			Config.ScyllaDB.Username,
-			Config.ScyllaDB.Password,
-			Config.ScyllaDB.Keyspace,
-			Config.ScyllaDB.NetworkTopologyStrategy,
-			Config.ScyllaDB.DurableWrites,
-			Config.ScyllaDB.CassandraOptions,
+			config.ScyllaDB.Nodes,
+			config.ScyllaDB.Username,
+			config.ScyllaDB.Password,
+			config.ScyllaDB.Keyspace,
+			config.ScyllaDB.NetworkTopologyStrategy,
+			config.ScyllaDB.DurableWrites,
+			config.ScyllaDB.CassandraOptions,
 		);
 
-		this.Turnstile = new Turnstile(Config.Server.CaptchaEnabled, Config.Server.TurnstileSecret ?? "secret");
+		this.Turnstile = new Turnstile(config.Server.CaptchaEnabled, config.Server.TurnstileSecret ?? "secret");
 
 		this.IpUtils = new IpUtils();
 
@@ -131,6 +125,13 @@ class App {
 		this.Sentry = Sentry;
 
 		this.Logger = new CustomLogger();
+
+		this.Router = new FileSystemRouter({
+			dir: this.RouteDirectory,
+			style: "nextjs",
+			watch: true,
+			allowIndex: false,
+		});
 
 		// this.Repl = new Repl(CustomLogger.colorize("#E6AF2E", "> "), [
 		// 	{
@@ -195,14 +196,39 @@ class App {
 
 	public async Init(): Promise<void> {
 		this.Logger.hex("#ca8911")(
-			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${Relative.Version ? `v${Relative.Version}` : "Unknown version"
-			} of Kastel's Backend. Bun version ${Bun.version
+			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${
+				relative.Version ? `v${relative.Version}` : "Unknown version"
+			} of Kastel's Backend. Bun version ${
+				Bun.version
 			}\nIf you would like to support this project please consider donating to https://opencollective.com/kastel\n`,
 		);
 
 		await this.SetupDebug(this.Args.includes("debug"));
 
 		// this.Repl.startRepl();
+
+		this.Router.on("reload", async ({ path, type, directory }) => {
+			this.Logger.verbose(
+				`Reloaded Routes due to a ${directory ? "directory" : "file"} (${path}) being ${
+					type === "A" ? "Added" : type === "M" ? "Modified" : type === "D" ? "Removed" : "Unknown"
+				}`,
+			);
+
+			if (!directory && type !== "D") {
+				const loaded = await this.LoadRoute(
+					path,
+					Object.keys(this.Router.routes).find((route) => this.Router.routes[route] === path) ?? "",
+				);
+
+				if (!loaded) {
+					this.Logger.warn(`Failed to load ${path}`);
+
+					return;
+				}
+
+				this.Logger.info(`Loaded ${loaded.route}`);
+			}
+		});
 
 		this.Cache.on("Connected", () => this.Logger.info("Connected to Redis"));
 		this.Cache.on("Error", (err) => {
@@ -213,7 +239,6 @@ class App {
 		this.Cache.on("MissedPing", () => this.Logger.warn("Missed Redis ping"));
 		this.Cassandra.on("Connected", () => this.Logger.info("Connected to ScyllaDB"));
 		this.Cassandra.on("Error", (err) => {
-			console.error(err);
 			this.Logger.fatal(err);
 
 			process.exit(1);
@@ -227,49 +252,23 @@ class App {
 		this.Logger.info("Creating ScyllaDB Tables.. This may take a while..");
 		this.Logger.warn("IT IS NOT FROZEN, ScyllaDB may take a while to create the tables");
 
-		const TablesCreated = await this.Cassandra.CreateTables();
+		const tablesCreated = await this.Cassandra.CreateTables();
 
-		if (TablesCreated) {
+		if (tablesCreated) {
 			this.Logger.info("Created ScyllaDB tables");
 		} else {
-			this.Logger.warn("whar");
+			this.Logger.error("This shouldn't happen, please report this");
 		}
 
-		if (Config.MailServer.Enabled) {
-			const Support = Config.MailServer.Users.find((user) => user.ShortCode === "Support");
-			const NoReply = Config.MailServer.Users.find((user) => user.ShortCode === "NoReply");
+		if (config.MailServer.Enabled) {
+			const support = config.MailServer.Users.find((user) => user.ShortCode === "Support");
+			const noReply = config.MailServer.Users.find((user) => user.ShortCode === "NoReply");
 
-			if (!Support || !NoReply) {
+			if (!support || !noReply) {
 				this.Logger.fatal("Missing Support or NoReply user in config");
 				this.Logger.fatal("Disable MailServer in config to ignore this error");
 
 				process.exit(0);
-			}
-
-			this.Support = new Emails(
-				Support.Host,
-				Support.Port,
-				Support.Secure,
-				Boolean(Support.Password),
-				Support.User,
-				Support.Password,
-			);
-
-			this.NoReply = new Emails(
-				NoReply.Host,
-				NoReply.Port,
-				NoReply.Secure,
-				Boolean(Support.Password),
-				NoReply.User,
-				NoReply.Password,
-			);
-
-			try {
-				await Promise.all([this.Support.Connect(), this.NoReply.Connect()]);
-			} catch (error) {
-				this.Logger.fatal("Failed to connect to Mail Server", error);
-
-				process.exit(1);
 			}
 
 			this.Logger.info("Mail Server connected!");
@@ -280,145 +279,111 @@ class App {
 		this.ElysiaApp.use(cors())
 			.use(serverTiming())
 			.onError(({ code, request, path }) => {
-				if (code === "NOT_FOUND") {
-					const FoundRoutes = this.Routes.filter((Routes) => {
-						return Routes.Routes.filter((Route) => {
-							if (Route.Path.includes(":")) {
-								const Regex = new RegExp(`^${Route.Path.replaceAll(/:[^/]+/g, "[^/]+")}$`);
+				this.Logger.error(`Error ${code} on route ${path} [${request.method}]`);
 
-								return Regex.test(path);
-							}
-
-							return Route.Path === path;
-						});
-					});
-
-					if (FoundRoutes.length === 0) {
-						const Error = ErrorGen.NotFound();
-
-						Error.AddError({
-							NotFound: {
-								Code: "NotFound",
-								Message: `Could not find route for ${request.method} ${path}`,
-							},
-						});
-
-						return Error.toJSON();
-					}
-
-
-					const MethodNotAlowed = ErrorGen.MethodNotAllowed();
-
-					MethodNotAlowed.AddError({
-						MethodNotAllowed: {
-							Code: "MethodNotAllowed",
-							Message: `Method "${request.method}" is not allowed for "${path}", allowed methods are [${FoundRoutes.map((Routes) => Routes.Routes.map((Route) => Route.Method).join(", ")).join(", ").toUpperCase()}]`,
-						},
-					});
-
-					return MethodNotAlowed.toJSON();
-				}
-
-				if (code === "INTERNAL_SERVER_ERROR") {
-					return "Internal Server Error :(";
-				}
-
-				return "Unknown error";
+				return "Internal Server Error :(";
 			});
 
-		// guilds with params should be at the bottom as ones without them take priority
-		const LoadedRoutes = (await this.LoadRoutes()).sort((a, b) => {
+		for (const [name, route] of Object.entries(this.Router.routes)) {
+			const loaded = await this.LoadRoute(route, name);
 
-			a.Routes.sort((c, d) => {
-				if (c.Path.includes(":") && !d.Path.includes(":")) {
-					return 1;
-				}
+			if (!loaded) {
+				this.Logger.warn(`Failed to load ${name}`);
 
-				if (!c.Path.includes(":") && c.Path.includes(":")) {
-					return -1;
-				}
-
-				return 0;
-			});
-
-			b.Routes.sort((c, d) => {
-
-				if (c.Path.includes(":") && !d.Path.includes(":")) {
-					return 1;
-				}
-
-				if (!c.Path.includes(":") && c.Path.includes(":")) {
-					return -1;
-				}
-
-				return 0;
-			});
-
-			if (a.Routes.some((route) => route.Path.includes(":")) && !b.Routes.some((route) => route.Path.includes(":"))) {
-				return 1;
+				continue;
 			}
 
-			if (!a.Routes.some((route) => route.Path.includes(":")) && b.Routes.some((route) => route.Path.includes(":"))) {
-				return -1;
+			this.Logger.info(`Loaded ${loaded.route}`);
+		}
+
+		this.Logger.info(`Loaded ${Object.keys(this.Router.routes).length} routes`);
+
+		this.ElysiaApp.all("*", async ({ body, headers, params, path, query, request, set, store }) => {
+			const matched = this.Router.match(request);
+
+			if (!matched) {
+				const error = errorGen.NotFound();
+
+				error.AddError({
+					notFound: {
+						code: "NotFound",
+						message: `Could not find route for ${request.method} ${path}`,
+					},
+				});
+
+				return error.toJSON();
 			}
 
-			return 0;
-		});
+			const route = this.RouteCache.get(matched.filePath);
 
-		this.Logger.info(`Loaded ${LoadedRoutes.length} routes`);
+			if (!route) {
+				this.Logger.error(`Could not find route for ${request.method} ${path} but it was successfully matched`);
 
-		for (const Routes of LoadedRoutes) {
-			for (const Route of Routes.Routes) {
-				this.Logger.verbose(`Loaded "${Route.Path.length === 0 ? "/" : Route.Path}" [${Route.Method}]`);
+				return "Internal Server Error :(";
+			}
 
-				this.ElysiaApp[Route.Method](Route.Path, async ({ body, headers, params, path, query, request, set, store }) => {
-					const FinishedMiddlewares = [];
+			this.Logger.info(`Request to "${route.route}" [${request.method}]`);
 
-					this.Logger.info(`Request to "${Route.Path.length === 0 ? "/" : Route.Path}" [${Route.Method}]`);
+			const foundMethod = route.routeClass.__methods.find((method) => method.method === request.method.toLowerCase());
 
-					for (const Middleware of Routes.Default.Middleware) {
-						const Finished = await Middleware({
-							app: this,
-							body: body as {},
-							headers,
-							params,
-							path,
-							query,
-							request,
-							set,
-							store
-						});
+			if (!foundMethod) {
+				const error = errorGen.MethodNotAllowed();
 
-						if (set.status !== 200) {
-							this.Logger.info(`Request to "${Route.Path.length === 0 ? "/" : Route.Path}" [${Route.Method}] finished with status ${set.status} from middleware ${Middleware.name}`);
+				error.AddError({
+					methodNotAllowed: {
+						code: "MethodNotAllowed",
+						message: `Method "${
+							request.method
+						}" is not allowed for "${path}", allowed methods are [${route.routeClass.__methods
+							.map((method) => method.method.toUpperCase())
+							.join(", ")}]`,
+					},
+				});
 
-							return Finished;
-						}
+				return error.toJSON();
+			}
 
-						FinishedMiddlewares.push(Finished);
-					}
+			const middleware = route.routeClass.__middlewares.filter((middleware) => middleware.name === foundMethod.name);
+			const contentTypes = route.routeClass.__contentTypes.find((contentType) => contentType.name === foundMethod.name);
+			// @ts-expect-error -- I know what I'm doing
+			const routeClassFunction = route.routeClass[foundMethod.name];
+			const finishedMiddlewares = [];
 
-					if (Route.ContentTypes.length > 0 && !Route.ContentTypes.includes((headers["content-type"] ?? "text/plain") as ContentTypes)) {
-						const Error = ErrorGen.InvalidContentType();
+			if (!routeClassFunction) {
+				this.Logger.error(`Could not find function for ${request.method} ${path} but it was successfully matched`);
 
-						Error.AddError({
-							ContentType: {
-								Code: "InvalidContentType",
-								Message: `Invalid Content-Type header, Expected (${Route.ContentTypes.join(
-									", ",
-								)}), Got (${headers["content-type"]})`,
-							},
-						});
+				return "Internal Server Error :(";
+			}
 
-						set.status = 400;
-						set.headers["Content-Type"] = "application/json";
+			if (
+				contentTypes &&
+				contentTypes.type.length > 0 &&
+				!contentTypes.type.includes((headers["content-type"] ?? "text/plain") as ContentTypes)
+			) {
+				const error = errorGen.InvalidContentType();
 
-						this.Logger.info(`Request to "${Route.Path.length === 0 ? "/" : Route.Path}" [${Route.Method}] finished with status ${set.status} from invalid content type`);
+				error.AddError({
+					contentType: {
+						code: "InvalidContentType",
+						message: `Invalid Content-Type header, Expected (${contentTypes.type.join(", ")}), Got (${
+							headers["content-type"]
+						})`,
+					},
+				});
 
-						return Error.toJSON();
-					}
+				set.status = 400;
+				set.headers["Content-Type"] = "application/json";
 
-					const Requested = await Routes.Default.Request({
+				this.Logger.info(
+					`Request to "${route.route}" [${request.method}] finished with status ${set.status} from invalid content type`,
+				);
+
+				return error.toJSON();
+			}
+
+			if (middleware.length > 0) {
+				for (const middle of middleware) {
+					const finished = await middle.ware({
 						app: this,
 						body: body as {},
 						headers,
@@ -428,146 +393,200 @@ class App {
 						request,
 						set,
 						store,
-						...FinishedMiddlewares.reduce((a, b) => ({ ...a, ...b }), {})
-					}) as Promise<unknown>;
+					});
 
-					this.Logger.info(`Request to "${Route.Path.length === 0 ? "/" : Route.Path}" [${Route.Method}] finished with status ${set.status}`);
+					if (set.status !== 200) {
+						this.Logger.info(
+							`Request to "${route.route}" [${request.method}] finished with status ${set.status} from middleware ${middle.ware.name}`,
+						);
 
-					return Requested;
-				});
+						return finished;
+					}
+
+					finishedMiddlewares.push(finished);
+				}
 			}
-		}
 
-		this.ElysiaApp.listen(Config.Server.Port, () => {
-			this.Logger.info(`Listening on port ${Config.Server.Port}`);
+			const requested = (await routeClassFunction({
+				app: this,
+				body: body as {},
+				headers,
+				params,
+				path,
+				query,
+				request,
+				set,
+				store,
+				...finishedMiddlewares.reduce((a, b) => ({ ...a, ...b }), {}),
+			})) as Promise<unknown>;
+
+			this.Logger.info(`Request to "${route.route}" [${request.method}] finished with status ${set.status}`);
+
+			return requested;
+		});
+
+		this.ElysiaApp.listen(config.Server.Port, () => {
+			this.Logger.info(`Listening on port ${config.Server.Port}`);
 		});
 	}
 
-	private async LoadRoutes(): Promise<(typeof this)["Routes"]> {
-		const Routes = await this.WalkDirectory(this.RouteDirectory);
-
-		for (const Route of Routes) {
-			if (!Route.endsWith(".ts")) {
-				this.Logger.debug(`Skipping ${Route} as it is not a .ts file`);
-
-				continue;
-			}
-
-			const RouteClass = await import(Route);
-
-			if (!RouteClass.default) {
-				this.Logger.warn(`Skipping ${Route} as it does not have a default export`);
-
-				continue;
-			}
-
-			const RouteInstance = new RouteClass.default(this);
-
-			if (!(RouteInstance instanceof RouteBuilder)) {
-				this.Logger.warn(`Skipping ${Route} as it does not extend Route`);
-
-				continue;
-			}
-
-			const Routes: {
-				ContentTypes: ContentTypes[];
-				Method: Method;
-				Path: string;
-			}[] = [];
-
-			for (const SubRoute of RouteInstance.Route) {
-				const FixedRoute = (
-					(Route.split(this.RouteDirectory)[1]?.replaceAll(/\\/g, "/").split("/").slice(0, -1).join("/") ?? "") +
-					(SubRoute.Path as string)
-				).replace(/\/$/, "");
-
-				Routes.push({
-					Method: SubRoute.Method,
-					Path: FixedRoute,
-					ContentTypes: SubRoute.ContentTypes,
-				});
-			}
-
-			this.Routes.push({
-				Default: RouteInstance,
-				Directory: Route,
-				Routes,
-			});
+	private async LoadRoute(path: string, route: string) {
+		if (this.RouteCache.has(path)) {
+			this.RouteCache.delete(path);
 		}
 
-		return this.Routes;
-	}
+		// this is a hack to make sure it doesn't cache the file
+		const routeClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof RouteBuilder };
 
-	private async WalkDirectory(dir: string): Promise<string[]> {
-		const Routes = await readdir(dir, { withFileTypes: true });
+		if (!routeClass.default) {
+			this.Logger.warn(`Skipping ${path} as it does not have a default export`);
 
-		const Files: string[] = [];
-
-		for (const Route of Routes) {
-			if (Route.isDirectory()) {
-				const SubFiles = await this.WalkDirectory(join(dir, Route.name));
-				Files.push(...SubFiles);
-			} else {
-				Files.push(join(dir, Route.name));
-			}
+			return;
 		}
 
-		return Files;
+		const routeInstance = new routeClass.default(this);
+
+		if (!(routeInstance instanceof RouteBuilder)) {
+			this.Logger.warn(`Skipping ${path} as it does not extend Route`);
+
+			return;
+		}
+
+		this.RouteCache.set(path, {
+			path,
+			route,
+			routeClass: routeInstance,
+		});
+
+		return this.RouteCache.get(path);
 	}
+
+	// private async LoadRoutes(): Promise<(typeof this)["Routes"]> {
+	// 	const routes = await this.WalkDirectory(this.RouteDirectory);
+
+	// 	for (const route of routes) {
+	// 		if (!route.endsWith(".ts")) {
+	// 			this.Logger.debug(`Skipping ${route} as it is not a .ts file`);
+
+	// 			continue;
+	// 		}
+
+	// 		const routeClass = await import(route);
+
+	// 		if (!routeClass.default) {
+	// 			this.Logger.warn(`Skipping ${route} as it does not have a default export`);
+
+	// 			continue;
+	// 		}
+
+	// 		const routeInstance = new routeClass.default(this);
+
+	// 		if (!(routeInstance instanceof RouteBuilder)) {
+	// 			this.Logger.warn(`Skipping ${route} as it does not extend Route`);
+
+	// 			continue;
+	// 		}
+
+	// 		const routes: {
+	// 			contentTypes: ContentTypes[];
+	// 			method: Method;
+	// 			path: string;
+	// 		}[] = [];
+
+	// 		for (const subRoute of routeInstance.Route) {
+	// 			const fixedRoute = (
+	// 				(route.split(this.RouteDirectory)[1]?.replaceAll(/\\/g, "/").split("/").slice(0, -1).join("/") ?? "") +
+	// 				(subRoute.Path as string)
+	// 			).replace(/\/$/, "");
+
+	// 			routes.push({
+	// 				method: subRoute.Method,
+	// 				path: fixedRoute,
+	// 				contentTypes: subRoute.ContentTypes,
+	// 			});
+	// 		}
+
+	// 		this.Routes.push({
+	// 			default: routeInstance,
+	// 			directory: route,
+	// 			routes,
+	// 		});
+	// 	}
+
+	// 	return this.Routes;
+	// }
+
+	// private async WalkDirectory(dir: string): Promise<string[]> {
+	// 	const routes = await readdir(dir, { withFileTypes: true });
+
+	// 	const files: string[] = [];
+
+	// 	for (const route of routes) {
+	// 		if (route.isDirectory()) {
+	// 			const subFiles = await this.WalkDirectory(join(dir, route.name));
+	// 			files.push(...subFiles);
+	// 		} else {
+	// 			files.push(join(dir, route.name));
+	// 		}
+	// 	}
+
+	// 	return files;
+	// }
 
 	private async SetupDebug(Log: boolean) {
-		const SystemClass = new SystemInfo();
-		const System = await SystemClass.Info();
-		const GithubInfo = await this.GithubInfo();
+		const systemClass = new SystemInfo();
+		const system = await systemClass.Info();
+		const githubInfo = await this.GithubInfo();
 
-		const Strings = [
+		const strings = [
 			"=".repeat(40),
 			"Kastel Debug Logs",
 			"=".repeat(40),
-			`Backend Version: ${this.Constants.Relative.Version}`,
+			`Backend Version: ${this.Constants.relative.Version}`,
 			`Bun Version: ${Bun.version}`,
 			"=".repeat(40),
 			"System Info:",
-			`OS: ${System.OperatingSystem.Platform}`,
-			`Arch: ${System.OperatingSystem.Arch}`,
-			`Os Release: ${System.OperatingSystem.Release}`,
-			`Internet Status: ${System.InternetAccess ? "Online" : "Offline - Some features may not work"}`,
+			`OS: ${system.operatingSystem.platform}`,
+			`Arch: ${system.operatingSystem.arch}`,
+			`Os Release: ${system.operatingSystem.release}`,
+			`Internet Status: ${system.internetAccess ? "Online" : "Offline - Some features may not work"}`,
 			"=".repeat(40),
 			"Hardware Info:",
-			`CPU: ${System.Cpu.Type}`,
-			`CPU Cores: ${System.Cpu.Cores}`,
-			`Total Memory: ${System.Ram.Total}`,
-			`Free Memory: ${System.Ram.Available}`,
-			`Used Memory: ${System.Ram.Usage}`,
+			`CPU: ${system.cpu.type}`,
+			`CPU Cores: ${system.cpu.cores}`,
+			`Total Memory: ${system.ram.Total}`,
+			`Free Memory: ${system.ram.Available}`,
+			`Used Memory: ${system.ram.Usage}`,
 			"=".repeat(40),
 			"Process Info:",
 			`PID: ${process.pid}`,
-			`Uptime: ${System.Process.Uptime}`,
+			`Uptime: ${system.process.uptime}`,
 			"=".repeat(40),
 			"Git Info:",
 			`Branch: ${this.GitBranch}`,
-			`Commit: ${GithubInfo.CommitShort ?? GithubInfo.Commit}`,
-			`Status: ${this.Clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
+			`Commit: ${githubInfo.CommitShort ?? githubInfo.Commit}`,
+			`Status: ${
+				this.Clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
 			}`,
 			this.Clean ? "" : "=".repeat(40),
 			`${this.Clean ? "" : "Changed Files:"}`,
 		];
 
-		for (const File of this.GitFiles) {
+		for (const file of this.GitFiles) {
 			// if the directory is "node_modules", ".bun", ".git", ".yarn" we want to ignore it
 
-			if (["node_modules", ".bun", ".git", ".yarn"].includes(File.filePath.split("/")[0] ?? "")) {
+			if (["node_modules", ".bun", ".git", ".yarn"].includes(file.filePath.split("/")[0] ?? "")) {
 				continue;
 			}
 
-			Strings.push(`${File.type}: ${File.filePath}`);
+			strings.push(`${file.type}: ${file.filePath}`);
 		}
 
-		Strings.push("=".repeat(40));
+		strings.push("=".repeat(40));
 
 		if (Log) {
-			for (const String of Strings) {
-				this.Logger.importantDebug(String);
+			for (const string of strings) {
+				this.Logger.importantDebug(string);
 			}
 		}
 	}
@@ -578,76 +597,76 @@ class App {
 		Commit: string | undefined;
 		CommitShort: string | undefined;
 	}> {
-		const Branch = await this.Git.branch();
-		const Commit = await this.Git.log();
-		const Status = await this.Git.status();
+		const branch = await this.Git.branch();
+		const commit = await this.Git.log();
+		const status = await this.Git.status();
 
-		if (!Commit.latest?.hash) {
+		if (!commit.latest?.hash) {
 			this.Logger.fatal("Could not get Commit Info, are you sure you pulled the repo correctly?");
 
 			process.exit(1);
 		}
 
-		this.GitBranch = Branch.current;
+		this.GitBranch = branch.current;
 
-		this.GitCommit = Commit.latest.hash;
+		this.GitCommit = commit.latest.hash;
 
-		this.Clean = Status.files.length === 0;
+		this.Clean = status.files.length === 0;
 
-		for (const File of Status.files) {
+		for (const file of status.files) {
 			this.GitFiles.push({
-				filePath: File.path,
-				type: this.TypeIndex[File.working_dir as keyof typeof this.TypeIndex] as GitType,
+				filePath: file.path,
+				type: this.TypeIndex[file.working_dir as keyof typeof this.TypeIndex] as GitType,
 			});
 		}
 
 		return {
-			Branch: Branch.current,
-			Commit: Commit.latest.hash,
-			CommitShort: Commit.latest.hash.slice(0, 7),
-			Clean: Status.files.length === 0,
+			Branch: branch.current,
+			Commit: commit.latest.hash,
+			CommitShort: commit.latest.hash.slice(0, 7),
+			Clean: status.files.length === 0,
 		};
 	}
 
 	public GetBucket(Snowflake?: string): string {
-		let BucketNumber;
+		let bucketNumber;
 
 		if (Snowflake) {
-			BucketNumber = BigInt(this.Snowflake.TimeStamp(Snowflake)) - this.Snowflake.Epoch;
+			bucketNumber = BigInt(this.Snowflake.TimeStamp(Snowflake)) - this.Snowflake.Epoch;
 		} else {
-			BucketNumber = BigInt(Date.now()) - this.Snowflake.Epoch;
+			bucketNumber = BigInt(Date.now()) - this.Snowflake.Epoch;
 		}
 
-		let Bucket = BucketNumber / BigInt(this.Config.Server.BucketInterval);
+		let bucket = bucketNumber / BigInt(this.Config.Server.BucketInterval);
 
-		Bucket += BigInt(this.Config.Server.BucketRnd);
+		bucket += BigInt(this.Config.Server.BucketRnd);
 
-		return Bucket.toString(16);
+		return bucket.toString(16);
 	}
 
 	public GetBuckets(StartId: string, EndId?: string) {
-		const StartBucket = this.GetBucket(StartId);
-		const EndBucket = this.GetBucket(EndId);
+		const startBucket = this.GetBucket(StartId);
+		const endBucket = this.GetBucket(EndId);
 
-		let StartBucketNumber = Number.parseInt(StartBucket, 16);
-		let EndBucketNumber = Number.parseInt(EndBucket, 16);
+		let startBucketNumber = Number.parseInt(startBucket, 16);
+		let endBucketNumber = Number.parseInt(endBucket, 16);
 
-		StartBucketNumber -= this.Config.Server.BucketRnd;
-		EndBucketNumber -= this.Config.Server.BucketRnd;
+		startBucketNumber -= this.Config.Server.BucketRnd;
+		endBucketNumber -= this.Config.Server.BucketRnd;
 
-		const BucketRange = EndBucketNumber - StartBucketNumber;
+		const bucketRange = endBucketNumber - startBucketNumber;
 
-		const Buckets = [];
+		const buckets = [];
 
-		for (let Int = 0; Int <= BucketRange; Int++) {
-			let CurrentBucket = StartBucketNumber + Int;
+		for (let int = 0; int <= bucketRange; int++) {
+			let currentBucket = startBucketNumber + int;
 
-			CurrentBucket += this.Config.Server.BucketRnd;
+			currentBucket += this.Config.Server.BucketRnd;
 
-			Buckets.push(CurrentBucket.toString(16));
+			buckets.push(currentBucket.toString(16));
 		}
 
-		return Buckets;
+		return buckets;
 	}
 }
 

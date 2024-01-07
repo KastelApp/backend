@@ -3,7 +3,7 @@ import type { types } from "@kastelll/cassandra-driver";
 import type { ExpressUser } from "../../../Types/index.ts";
 import { type MainObject } from "../../Cql/Types/Message.ts";
 import type { PermissionOverride } from "../../Cql/Types/index.ts";
-import { OpCodes } from "../WsUtils.ts";
+import { opCodes } from "../WsUtils.ts";
 import type { SystemSocket } from "./SystemSocket";
 
 class Events {
@@ -47,14 +47,14 @@ class Events {
 		if (this.SendEvents) {
 			this.SystemSocket.Ws?.send(
 				JSON.stringify({
-					Op: OpCodes.MessageCreate,
+					Op: opCodes.MessageCreate,
 					D: Message,
 				}),
 			);
 		}
 
 		return JSON.stringify({
-			Op: OpCodes.MessageCreate,
+			Op: opCodes.MessageCreate,
 			D: Message,
 		});
 	}
@@ -63,7 +63,7 @@ class Events {
 		if (this.SendEvents) {
 			this.SystemSocket.Ws?.send(
 				JSON.stringify({
-					Op: OpCodes.MessageDelete,
+					Op: opCodes.MessageDelete,
 					D: {
 						Message,
 					},
@@ -72,7 +72,7 @@ class Events {
 		}
 
 		return JSON.stringify({
-			Op: OpCodes.MessageDelete,
+			Op: opCodes.MessageDelete,
 			D: {
 				Message,
 			},
@@ -102,23 +102,23 @@ class Events {
 		Nonce: string;
 		UpdatedAt: number;
 	}) {
-		const StringifiedPayload = JSON.stringify({
-			Op: OpCodes.MessageUpdate,
+		const stringifiedPayload = JSON.stringify({
+			Op: opCodes.MessageUpdate,
 			D: {
 				Message,
 			},
 		});
 
 		if (this.SendEvents) {
-			this.SystemSocket.Ws?.send(StringifiedPayload);
+			this.SystemSocket.Ws?.send(stringifiedPayload);
 		}
 
-		return StringifiedPayload;
+		return stringifiedPayload;
 	}
 
 	public NewSession(data: { SessionId: string; UserId: string }) {
-		const StringifiedPayload = JSON.stringify({
-			Op: OpCodes.NewSession,
+		const stringifiedPayload = JSON.stringify({
+			Op: opCodes.NewSession,
 			D: {
 				SessionId: data.SessionId,
 				UserId: data.UserId,
@@ -126,15 +126,15 @@ class Events {
 		});
 
 		if (this.SendEvents) {
-			this.SystemSocket.Ws?.send(StringifiedPayload);
+			this.SystemSocket.Ws?.send(stringifiedPayload);
 		}
 
-		return StringifiedPayload;
+		return stringifiedPayload;
 	}
 
 	public DeletedSession(data: { SessionId: string; UserId: string }) {
-		const StringifiedPayload = JSON.stringify({
-			Op: OpCodes.DeleteSession,
+		const stringifiedPayload = JSON.stringify({
+			Op: opCodes.DeleteSession,
 			D: {
 				SessionId: data.SessionId,
 				UserId: data.UserId,
@@ -142,10 +142,10 @@ class Events {
 		});
 
 		if (this.SendEvents) {
-			this.SystemSocket.Ws?.send(StringifiedPayload);
+			this.SystemSocket.Ws?.send(stringifiedPayload);
 		}
 
-		return StringifiedPayload;
+		return stringifiedPayload;
 	}
 
 	public UpdateUser(User: {
@@ -162,16 +162,16 @@ class Events {
 		TwoFaVerified: boolean;
 		Username: string;
 	}) {
-		const StringifiedPayload = JSON.stringify({
-			Op: OpCodes.SelfUpdate,
+		const stringifiedPayload = JSON.stringify({
+			Op: opCodes.SelfUpdate,
 			D: User,
 		});
 
 		if (this.SendEvents) {
-			this.SystemSocket.Ws?.send(StringifiedPayload);
+			this.SystemSocket.Ws?.send(stringifiedPayload);
 		}
 
-		return StringifiedPayload;
+		return stringifiedPayload;
 	}
 
 	public RelationshipUpdate(Data: {
@@ -193,16 +193,16 @@ class Events {
 		// @ts-expect-error -- Too lazy to fix
 		delete Data.Causer.FlagsUtil;
 
-		const StringifiedPayload = JSON.stringify({
-			Op: OpCodes.RelationshipUpdate,
+		const stringifiedPayload = JSON.stringify({
+			Op: opCodes.RelationshipUpdate,
 			D: Data,
 		});
 
 		if (this.SendEvents) {
-			this.SystemSocket.Ws?.send(StringifiedPayload);
+			this.SystemSocket.Ws?.send(stringifiedPayload);
 		}
 
-		return StringifiedPayload;
+		return stringifiedPayload;
 	}
 
 	public NewGuild(Data: {
@@ -218,16 +218,16 @@ class Events {
 		OwnerId: string;
 		Roles: Record<string, types.Long | boolean | number | string>[];
 	}) {
-		const StringifiedPayload = JSON.stringify({
-			Op: OpCodes.GuildNew,
+		const stringifiedPayload = JSON.stringify({
+			Op: opCodes.GuildNew,
 			D: Data,
 		});
 
 		if (this.SendEvents) {
-			this.SystemSocket.Ws?.send(StringifiedPayload);
+			this.SystemSocket.Ws?.send(stringifiedPayload);
 		}
 
-		return StringifiedPayload;
+		return stringifiedPayload;
 	}
 
 	public ChannelNew(Data: {
@@ -244,16 +244,16 @@ class Events {
 		Slowmode: number;
 		Type: number;
 	}) {
-		const StringifiedPayload = JSON.stringify({
-			Op: OpCodes.ChannelNew,
+		const stringifiedPayload = JSON.stringify({
+			Op: opCodes.ChannelNew,
 			D: Data,
 		});
 
 		if (this.SendEvents) {
-			this.SystemSocket.Ws?.send(StringifiedPayload);
+			this.SystemSocket.Ws?.send(stringifiedPayload);
 		}
 
-		return StringifiedPayload;
+		return stringifiedPayload;
 	}
 
 	public ChannelUpdate(Data: {
@@ -270,29 +270,29 @@ class Events {
 		Slowmode: number;
 		Type: number;
 	}) {
-		const StringifiedPayload = JSON.stringify({
-			Op: OpCodes.ChannelUpdate,
+		const stringifiedPayload = JSON.stringify({
+			Op: opCodes.ChannelUpdate,
 			D: Data,
 		});
 
 		if (this.SendEvents) {
-			this.SystemSocket.Ws?.send(StringifiedPayload);
+			this.SystemSocket.Ws?.send(stringifiedPayload);
 		}
 
-		return StringifiedPayload;
+		return stringifiedPayload;
 	}
 
 	public GuildJoin(Data: { GuildId: string; UserId: string }) {
-		const StringifiedPayload = JSON.stringify({
-			Op: OpCodes.GuildJoin,
+		const stringifiedPayload = JSON.stringify({
+			Op: opCodes.GuildJoin,
 			D: Data,
 		});
 
 		if (this.SendEvents) {
-			this.SystemSocket.Ws?.send(StringifiedPayload);
+			this.SystemSocket.Ws?.send(stringifiedPayload);
 		}
 
-		return StringifiedPayload;
+		return stringifiedPayload;
 	}
 }
 

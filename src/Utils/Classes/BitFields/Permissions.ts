@@ -9,7 +9,7 @@
  * GPL 3.0 Licensed
  */
 
-import { Permissions as Perms, RolePermissions, ChannelPermissions, MixedPermissions } from "../../../Constants.ts";
+import { permissions as Perms, rolePermissions, channelPermissions, mixedPermissions } from "../../../Constants.ts";
 import FlagUtilsBInt from "./NewFlags.ts";
 
 class Permissions extends FlagUtilsBInt<typeof Perms> {
@@ -20,8 +20,8 @@ class Permissions extends FlagUtilsBInt<typeof Perms> {
 	public static RemoveRolePerms(permissions: bigint): bigint {
 		let newPermissions = permissions;
 
-		for (const key of Object.keys(RolePermissions)) {
-			newPermissions &= ~RolePermissions[key as keyof typeof RolePermissions];
+		for (const key of Object.keys(rolePermissions)) {
+			newPermissions &= ~rolePermissions[key as keyof typeof rolePermissions];
 		}
 
 		return newPermissions;
@@ -30,8 +30,8 @@ class Permissions extends FlagUtilsBInt<typeof Perms> {
 	public static RemoveChannelPerms(permissions: bigint): bigint {
 		let newPermissions = permissions;
 
-		for (const key of Object.keys(ChannelPermissions)) {
-			newPermissions &= ~ChannelPermissions[key as keyof typeof ChannelPermissions];
+		for (const key of Object.keys(channelPermissions)) {
+			newPermissions &= ~channelPermissions[key as keyof typeof channelPermissions];
 		}
 
 		return newPermissions;
@@ -41,8 +41,8 @@ class Permissions extends FlagUtilsBInt<typeof Perms> {
 	public static RemoveMixedPerms(permissions: bigint): bigint {
 		let newPermissions = permissions;
 
-		for (const key of Object.keys(MixedPermissions)) {
-			newPermissions &= ~MixedPermissions[key as keyof typeof MixedPermissions];
+		for (const key of Object.keys(mixedPermissions)) {
+			newPermissions &= ~mixedPermissions[key as keyof typeof mixedPermissions];
 		}
 
 		return newPermissions;

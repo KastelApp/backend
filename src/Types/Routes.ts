@@ -9,8 +9,7 @@
  * GPL 3.0 Licensed
  */
 
-import type { Permissions, PrivateFlags } from "../Constants.ts";
-import type App from "../Utils/Classes/App.ts";
+import type { permissions, privateFlags } from "../Constants.ts";
 
 export type Methods =
 	| "ALL"
@@ -38,20 +37,14 @@ export interface UserMiddleware {
 	AccessType: "All" | "LoggedIn" | "LoggedOut";
 	AllowedRequesters: "All" | "Bot" | "User";
 	// The flags that are not allowed to access the endpoint (Default: null)
-	App: App;
-	DisallowedFlags?: (keyof typeof PrivateFlags)[];
+	DisallowedFlags?: (keyof typeof privateFlags)[];
 	// The type of user that can access the endpoint (Default: 'All')
-	Flags?: (keyof typeof PrivateFlags)[];
+	Flags?: (keyof typeof privateFlags)[];
 }
 
 export interface GuildMiddleware {
-	App: App;
-	PermissionsRequired?: (keyof typeof Permissions | "Owner")[];
+	PermissionsRequired?: (keyof typeof permissions | "Owner")[];
 	Required: boolean;
-}
-
-export interface TwofaMiddleware {
-	App: App;
 }
 
 export interface Captcha {
@@ -65,10 +58,6 @@ export interface Captcha {
 	ExpectedCData?: string;
 }
 
-export interface RatelimitConfig {
-	App: App;
-}
-
 type GetParam<T extends string> = T extends `${infer _}/${infer _2}:${infer Param}/${infer _3}`
 	? Record<Param, string>
 	: T extends `${infer _}:${infer Param}/${infer _2}`
@@ -79,4 +68,9 @@ type GetParam<T extends string> = T extends `${infer _}/${infer _2}:${infer Para
 	? Record<Param, string>
 	: {};
 
-export type GetParams<T extends string> = GetParam<T> & (T extends `${infer _}/${infer Rest}` ? GetParams<Rest> : T extends `${infer _}:${infer Rest}` ? GetParams<Rest> : {});
+export type GetParams<T extends string> = GetParam<T> &
+	(T extends `${infer _}/${infer Rest}`
+		? GetParams<Rest>
+		: T extends `${infer _}:${infer Rest}`
+		? GetParams<Rest>
+		: {});

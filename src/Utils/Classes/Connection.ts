@@ -69,8 +69,8 @@ class Connection extends EventEmitter {
 		Webhook: cassandra.mapping.ModelMapper<Webhook>;
 	};
 
-	public UnderScoreCqlToPascalCaseMappings: mapping.UnderscoreCqlToPascalCaseMappings =
-		new mapping.UnderscoreCqlToPascalCaseMappings(true);
+	public UnderScoreCqlToPascalCaseMappings: mapping.UnderscoreCqlToCamelCaseMappings =
+		new mapping.UnderscoreCqlToCamelCaseMappings(true);
 
 	public DurableWrites: boolean;
 
@@ -166,21 +166,21 @@ class Connection extends EventEmitter {
 
 			this.Connected = true;
 
-			let CreateKeySpace = `CREATE KEYSPACE IF NOT EXISTS ${this.KeySpace}`;
+			let createKeySpace = `CREATE KEYSPACE IF NOT EXISTS ${this.KeySpace}`;
 
 			if (this.NetworkTopologyStrategy && Object.keys(this.NetworkTopologyStrategy).length > 0) {
-				CreateKeySpace += ` WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy' ${Object.entries(
+				createKeySpace += ` WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy' ${Object.entries(
 					this.NetworkTopologyStrategy,
 				)
 					.map(([DataCenter, ReplicationFactor]) => `, '${DataCenter}' : ${ReplicationFactor}`)
 					.join(", ")} }`;
 			} else {
-				CreateKeySpace += " WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }";
+				createKeySpace += " WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }";
 			}
 
-			CreateKeySpace += ` AND DURABLE_WRITES = ${this.DurableWrites};`;
+			createKeySpace += ` AND DURABLE_WRITES = ${this.DurableWrites};`;
 
-			await this.Execute(CreateKeySpace).catch((error) => {
+			await this.Execute(createKeySpace).catch((error) => {
 				this.emit("Error", error);
 			});
 
@@ -229,28 +229,28 @@ class Connection extends EventEmitter {
 	}
 
 	private async WalkDirectory(dir: string): Promise<string[]> {
-		const Paths = await fs.readdir(dir, { withFileTypes: true });
-		const Files: string[] = [];
+		const paths = await fs.readdir(dir, { withFileTypes: true });
+		const files: string[] = [];
 
-		for (const Path of Paths) {
-			if (Path.isDirectory()) {
-				const SubFiles = await this.WalkDirectory(path.join(dir, Path.name));
-				Files.push(...SubFiles);
+		for (const filePath of paths) {
+			if (filePath.isDirectory()) {
+				const subFiles = await this.WalkDirectory(path.join(dir, filePath.name));
+				files.push(...subFiles);
 			} else {
-				Files.push(path.join(dir, Path.name));
+				files.push(path.join(dir, filePath.name));
 			}
 		}
 
-		return Files;
+		return files;
 	}
 
 	public async CreateTables() {
-		const Files = await this.WalkDirectory(this.TableDirectory);
+		const files = await this.WalkDirectory(this.TableDirectory);
 
-		for (const File of Files) {
-			const Query = await fs.readFile(File, "utf8");
+		for (const file of files) {
+			const query = await fs.readFile(file, "utf8");
 
-			const SplitQuery = Query.split("\n");
+			const splitQuery = query.split("\n");
 
 			// When theres a '' in the array it means theres a newline that used to be there so for example
 			/*
@@ -271,33 +271,33 @@ class Connection extends EventEmitter {
 			// that means we need to make a new array with the CREATE TABLE... and then the CREATE INDEX... and then execute those one by one
 			// There definetly is a better way to do this but I'm too lazy to figure it out
 
-			const NewSplitQuery: string[][] = [];
+			const newSplitQuery: string[][] = [];
 
-			let CurrentQuery: string[] = [];
+			let currentQuery: string[] = [];
 
-			for (const Line of SplitQuery) {
-				if (Line === "") {
-					NewSplitQuery.push(CurrentQuery);
+			for (const line of splitQuery) {
+				if (line === "") {
+					newSplitQuery.push(currentQuery);
 
-					CurrentQuery = [];
+					currentQuery = [];
 				} else {
-					CurrentQuery.push(Line);
+					currentQuery.push(line);
 				}
 			}
 
-			if (CurrentQuery.length > 0) {
-				NewSplitQuery.push(CurrentQuery);
+			if (currentQuery.length > 0) {
+				newSplitQuery.push(currentQuery);
 			}
 
-			for (const Query of NewSplitQuery) {
-				const Joined = Query.join("\n");
+			for (const query of newSplitQuery) {
+				const joined = query.join("\n");
 
-				if (Joined.length < 1) continue;
+				if (joined.length < 1) continue;
 
 				try {
-					await this.Execute(Query.join("\n"));
+					await this.Execute(query.join("\n"));
 				} catch {
-					this.emit("Error", `Failed to execute query ${Joined}`);
+					this.emit("Error", `Failed to execute query ${joined}`);
 				}
 			}
 		}

@@ -10,19 +10,19 @@
  */
 
 import type { Request } from "express";
-import { Server } from "../../Config.ts";
+import { server } from "../../Config.ts";
 
 class IpUtils {
 	public static GetIp(req: Request): string {
 		const normalIps = req.headers["cf-connecting-ip"] ?? req.headers["x-forwarded-for"] ?? req.socket.remoteAddress;
 
-		let Ip = req.headers["cf-true-ip"] ?? normalIps;
+		let ip = req.headers["cf-true-ip"] ?? normalIps;
 
-		if (typeof Ip === "string") {
-			Ip = Ip.split(",")[0];
+		if (typeof ip === "string") {
+			ip = ip.split(",")[0];
 		}
 
-		return (Ip as string)?.replace("::ffff:", "") ?? "127.0.0.1";
+		return (ip as string)?.replace("::ffff:", "") ?? "127.0.0.1";
 	}
 
 	public static IsLocalIp(ip: string): boolean {
@@ -34,7 +34,7 @@ class IpUtils {
 			if (!ip) return false;
 
 			// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires -- Require & Imports work together due to Bun.
-			const whois = require("whois-json");
+			const whois = require("whois-json"); // TODO: Change this to an import instead of require
 
 			const results = await whois(ip.replace("::ffff:", ""));
 
@@ -46,7 +46,7 @@ class IpUtils {
 				false
 			);
 		} catch {
-			if (Server.CloudflareAccessOnly) {
+			if (server.CloudflareAccessOnly) {
 				throw new Error("CloudflareAccessOnly is enabled but the whois-json package is not installed");
 			}
 		}
