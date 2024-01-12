@@ -9,16 +9,28 @@
  * GPL 3.0 Licensed
  */
 
-const tagGenerator = (tags: (number | string)[]): string => {
-	const existingTags = new Set(tags.map(Number));
+const generateMissingNumbers = (existingNumbers: Set<number>): number[] => {
+	const missingNumbers: number[] = [];
 
-	let num = Math.floor(Math.random() * 10_000);
-
-	while (existingTags.has(num)) {
-		num = Math.floor(Math.random() * 10_000);
+	for (let i = 0; i <= 9_999; i++) {
+		if (!existingNumbers.has(i)) {
+			missingNumbers.push(i);
+		}
 	}
 
-	return num.toString().padStart(4, "0000");
+	return missingNumbers;
+};
+
+const tagGenerator = (tags: (number | string)[]): string | null => {
+	const existingTags = new Set(tags.map(Number));
+
+	existingTags.add(0);
+
+	if (existingTags.size >= 9_999) return null;
+
+	const missingTags = generateMissingNumbers(existingTags);
+
+	return missingTags[Math.floor(Math.random() * missingTags.length)]?.toString().padStart(4, "0") ?? "0001";
 };
 
 const tagValidator = (originalTag: string, newTag: number | string): string => {

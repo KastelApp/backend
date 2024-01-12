@@ -1,166 +1,77 @@
 import type { BodyValidator } from "@/Types/BodyValidation.ts";
-import type App from "@/Utils/Classes/App.ts";
-import { ErrorGen } from "@/Utils/Classes/ErrorGen.ts";
+import errorGen from "@/Utils/Classes/ErrorGen.ts";
 import type { CreateMiddleware, CreateRoute } from "@/Utils/Classes/Routing/Route.ts";
-import t from "@/Utils/TypeCheck.ts";
 
-const validate = (options: BodyValidator[], body: Record<string, any>, app: App) => {
-	const failedKeys: {
-		key: string;
-		messageKey?: string;
-		type: "missing" | "too-long" | "too-short" | "wrong-type";
-	}[] = [];
-
-	for (const option of options) {
-		const foundKey = body[option.key];
-
-		if (option.required && foundKey === undefined) {
-			failedKeys.push({
-				key: option.key,
-				type: "missing",
-			});
-
-			continue;
-		}
-
-		if (option.nullable && foundKey === null) continue;
-
-		if (foundKey === undefined) continue;
-
-		if (option.type === "complex") {
-			const failed = validate(option.body ?? [], foundKey, app);
-
-			if (failed.length > 0) {
-				failedKeys.push(
-					...failed.map((failed) => ({
-						...failed,
-						messageKey: `${option.key}.${failed.key}`,
-					})),
-				);
-			}
-
-			continue;
-		}
-
-		if (option.type === "snowflake") {
-			if (!t(foundKey, "string")) {
-				failedKeys.push({
-					key: option.key,
-					type: "wrong-type",
-				});
-
-				continue;
-			}
-
-			if (option.mustBeValid && !app.Snowflake.Validate(foundKey)) {
-				failedKeys.push({
-					key: option.key,
-					type: "wrong-type",
-				});
-			}
-
-			continue;
-		}
-
-		if (option.type === "number") {
-			if (!t(foundKey, "number")) {
-				failedKeys.push({
-					key: option.key,
-					type: "wrong-type",
-				});
-
-				continue;
-			}
-
-			if (option.max && foundKey > option.max) {
-				failedKeys.push({
-					key: option.key,
-					type: "too-long",
-				});
-			}
-
-			if (option.min && foundKey < option.min) {
-				failedKeys.push({
-					key: option.key,
-					type: "too-short",
-				});
-			}
-
-			continue;
-		}
-
-		if (!t(foundKey, option.type)) {
-			failedKeys.push({
-				key: option.key,
-				type: "wrong-type",
-			});
-		}
-	}
-
-	return failedKeys;
+const isBodyValidator = (value: any): value is BodyValidator => {
+	return typeof value === "object" && !("validate" in value);
 };
 
-const getErrorMessages = (
-	failedKey: {
+const validate = (
+	errors: {
+		code: "invalid" | "missing";
+		expected?: string;
 		key: string;
-		messageKey?: string;
-		type: "missing" | "too-long" | "too-short" | "wrong-type";
-	},
-	options: BodyValidator[],
+		received?: string;
+	}[],
+	body: Record<string, unknown>,
+	value: BodyValidator,
+	fullKey?: string,
 ) => {
-	const option = options.find((option) => option.key === failedKey.key);
+	const newErrors = errors;
 
-	if (!option)
-		return {
-			code: "InvalidFieldType",
-			message: `Expected ${failedKey.key} to be ${failedKey.type} but it was missing`,
-		};
+	for (const [key, validator] of Object.entries(value)) {
+		if (isBodyValidator(validator)) {
+			newErrors.push(
+				...validate(
+					newErrors,
+					(body[key] as Record<string, unknown>) ?? {},
+					validator,
+					fullKey ? `${fullKey}.${key}` : key,
+				),
+			);
+		} else if (typeof validator === "object" && "validate" in validator) {
+			const valid = validator.validate(body[key]);
 
-	if (failedKey.type === "missing") {
-		return {
-			code: "MissingField",
-			message: `Expected ${failedKey.key} to be ${option.type} but it was missing`,
-		};
+			if (!valid) {
+				if (validator.required && body[key] === undefined) {
+					newErrors.push({
+						code: "missing",
+						key: fullKey ? `${fullKey}.${key}` : key,
+						expected: validator.type,
+					});
+				} else {
+					newErrors.push({
+						code: "invalid",
+						key: fullKey ? `${fullKey}.${key}` : key,
+						expected: validator.type,
+						received: body[key] === null ? "null" : typeof body[key],
+					});
+				}
+			}
+		}
 	}
 
-	if ((failedKey.type === "too-long" || failedKey.type === "too-short") && option.type === "number") {
-		return {
-			code: failedKey.type === "too-long" ? "NumberTooLong" : "NumberTooShort",
-			message: `${failedKey.key} must be between ${option.min} and ${option.max} but it was ${
-				failedKey.type === "too-long" ? "too long" : "too short"
-			}`,
-		};
-	}
-
-	if (failedKey.type === "wrong-type") {
-		return {
-			code: "InvalidFieldType",
-			message: `Expected ${failedKey.key} to be ${option.type} but it was ${typeof option}`,
-		};
-	}
-
-	return {
-		code: "InvalidFieldType",
-		message: `Expected ${failedKey.key} to be ${option.type} but it was missing`,
-	};
+	return newErrors;
 };
 
-const bodyValidator = (options: BodyValidator[]) => {
-	return ({
-		body,
-		set,
-		app,
-	}: CreateRoute<string, Record<string, string>>): CreateMiddleware<Record<string, unknown>> => {
-		const failedKeys = validate(options, body, app);
+const bodyValidator = (options: BodyValidator) => {
+	return ({ body, set }: CreateRoute<string, Record<string, string>>): CreateMiddleware<Record<string, unknown>> => {
+		const errors = validate([], body, options);
 
-		if (failedKeys.length > 0) {
+		if (errors.length > 0) {
 			set.status = 400;
 
-			const error = ErrorGen.InvalidField();
+			const error = errorGen.InvalidField();
 
-			for (const failedKey of failedKeys) {
+			for (const err of errors) {
 				error.AddError({
-					[failedKey.messageKey ?? failedKey.key]: getErrorMessages(failedKey, options),
+					[err.key]: {
+						code: err.code === "invalid" ? "InvalidType" : "MissingField",
+						message:
+							err.code === "invalid"
+								? `${err.key} was invalid, expected type was ${err.expected}, received type was ${err.received}`
+								: `${err.key} was missing, expected type was ${err.expected}`,
+					},
 				});
 			}
 

@@ -11,8 +11,32 @@ export default class Index extends Route {
 
 	@Method("get")
 	@Description("Get the features of the API")
-	@ContentTypes("application/json")
+	@ContentTypes("any")
 	public Request() {
-		return {};
+		const apiVersions = Object.keys(this.App.Router.routes)
+			.map((route) => {
+				const rr = route.split("/")[1]?.trim() ?? "NA";
+
+				return rr.length > 0 ? rr : "NA";
+			})
+			.filter((route) => !["auth", "NA", "billing"].includes(route))
+			.map((route) => Number.parseInt(route.replace("v", ""), 10))
+			.filter((route) => !Number.isNaN(route))
+			.sort((a, b) => a - b)
+			.reduce<number[]>((acc, cur) => {
+				if (acc.includes(cur)) {
+					return acc;
+				}
+
+				return [...acc, cur];
+			}, []);
+
+		return {
+			api: {
+				versions: apiVersions,
+				latest: apiVersions[apiVersions.length - 1],
+			},
+			features: this.App.Config.Server.Features ?? [],
+		};
 	}
 }

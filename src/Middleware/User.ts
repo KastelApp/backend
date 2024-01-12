@@ -7,13 +7,13 @@ import Token from "@/Utils/Classes/Token.ts";
 
 export interface UserMiddlewareType extends Record<string, any> {
 	user: {
-		Bot: boolean;
-		Email: string;
-		FlagsUtil: FlagFields;
-		Guilds: string[];
-		Id: string;
-		Password: string;
-		Token: string;
+		bot: boolean;
+		email: string;
+		flagsUtil: FlagFields;
+		guilds: string[];
+		id: string;
+		password: string;
+		token: string;
 	};
 }
 
@@ -84,7 +84,7 @@ const userMiddleware = (options: UserMiddleware) => {
 				unAuthorizedError.AddError({
 					user: {
 						code: "InvalidToken",
-						message: "Unauthorized",
+						message: "The token provided was invalid",
 					},
 				});
 
@@ -97,7 +97,7 @@ const userMiddleware = (options: UserMiddleware) => {
 
 			const usersSettings = await app.Cassandra.Models.Settings.get(
 				{
-					userId: Encryption.Encrypt(decodedToken.Snowflake),
+					userId: Encryption.encrypt(decodedToken.Snowflake),
 				},
 				{
 					fields: ["tokens", "max_file_upload_size"],
@@ -106,7 +106,7 @@ const userMiddleware = (options: UserMiddleware) => {
 
 			const userData = await app.Cassandra.Models.User.get(
 				{
-					userId: Encryption.Encrypt(decodedToken.Snowflake),
+					userId: Encryption.encrypt(decodedToken.Snowflake),
 				},
 				{
 					fields: ["email", "user_id", "flags", "password", "public_flags", "guilds"],
@@ -120,14 +120,12 @@ const userMiddleware = (options: UserMiddleware) => {
 				unAuthorizedError.AddError({
 					user: {
 						code: "InvalidToken",
-						message: "Unauthorized",
+						message: "The token provided was invalid",
 					},
 				});
 
 				if (!usersSettings || !userData) {
 					// darkerink: just in case there is one but not the other (has happened in very rare cases) contacting support will be the only way to fix this (for now);
-					// Res.status(500).send("Internal Server Error :(");
-
 					set.status = 500;
 
 					return "Internal Server Error :(";
@@ -138,17 +136,16 @@ const userMiddleware = (options: UserMiddleware) => {
 				}
 			}
 
-			if (!usersSettings?.tokens?.some((Token) => Token.token === Encryption.Encrypt(authHeader as string))) {
+			if (!usersSettings?.tokens?.some((Token) => Token.token === Encryption.encrypt(authHeader as string))) {
+				console.log(authHeader, usersSettings?.tokens);
 				app.Logger.debug("Token not found in the user settings");
 
 				unAuthorizedError.AddError({
 					user: {
 						code: "InvalidToken",
-						message: "Unauthorized",
+						message: "The token provided was invalid",
 					},
 				});
-
-				// Res.status(401).json(UnAuthorized.toJSON());
 
 				set.status = 401;
 
@@ -224,7 +221,7 @@ const userMiddleware = (options: UserMiddleware) => {
 				unAuthorizedError.AddError({
 					user: {
 						code: "InvalidToken",
-						message: "Unauthorized",
+						message: "You are not allowed to access this endpoint.",
 					},
 				});
 
@@ -242,7 +239,7 @@ const userMiddleware = (options: UserMiddleware) => {
 				unAuthorizedError.AddError({
 					user: {
 						code: "InvalidToken",
-						message: "Unauthorized",
+						message: "You are not allowed to access this endpoint.",
 					},
 				});
 
@@ -258,8 +255,8 @@ const userMiddleware = (options: UserMiddleware) => {
 
 						unAuthorizedError.AddError({
 							user: {
-								code: "InvalidToken",
-								message: "Unauthorized",
+								code: "LostInTheMaze",
+								message: "You seemed to have gotten lost in the maze.. Are you sure it was meant for you?",
 							},
 						});
 
@@ -277,8 +274,8 @@ const userMiddleware = (options: UserMiddleware) => {
 
 						unAuthorizedError.AddError({
 							user: {
-								code: "InvalidToken",
-								message: "Unauthorized",
+								code: "LostInTheMaze",
+								message: "You seemed to have gotten lost in the maze.. Are you sure it was meant for you?",
 							},
 						});
 
@@ -289,21 +286,21 @@ const userMiddleware = (options: UserMiddleware) => {
 				}
 			}
 
-			const completeDecrypted: { email: string; flags: string; guilds: string[]; password: string; userId: string } =
-				Encryption.CompleteDecryption({
-					...userData,
-					Flags: userData.flags.toString(),
-				});
+			const completeDecrypted = Encryption.completeDecryption({
+				...userData,
+				flags: userData.flags.toString(),
+				publicFlags: userData.publicFlags.toString(),
+			});
 
 			return {
 				user: {
-					Token: authHeader,
-					Bot: userFlags.PrivateFlags.has("Bot") || userFlags.PrivateFlags.has("VerifiedBot"),
-					FlagsUtil: userFlags,
-					Email: completeDecrypted.email,
-					Id: completeDecrypted.userId,
-					Password: completeDecrypted.password,
-					Guilds: completeDecrypted.guilds ?? [],
+					token: authHeader,
+					bot: userFlags.PrivateFlags.has("Bot") || userFlags.PrivateFlags.has("VerifiedBot"),
+					flagsUtil: userFlags,
+					email: completeDecrypted.email,
+					id: completeDecrypted.userId,
+					password: completeDecrypted.password,
+					guilds: completeDecrypted.guilds ?? [],
 				},
 			};
 		}

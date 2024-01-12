@@ -3,6 +3,7 @@ export type Type =
 	| "bigint"
 	| "boolean"
 	| "date"
+	| "email"
 	| "function"
 	| "number"
 	| "object"
@@ -32,6 +33,25 @@ const t = (item: unknown, type: Type, nullable?: boolean): boolean => {
 		} catch {
 			return false;
 		}
+	}
+
+	if (type === "email") {
+		if (typeof item !== "string") return false;
+
+		const regex =
+			/^[\w!#$%&'*+/=?^`{|}~-](?<email>\.?[\w!#$%&'*+/=?^`{|}~-])*@[\dA-Za-z](?<domain>-*\.?[\dA-Za-z])*\.[A-Za-z](?<tld>-?[\dA-Za-z])+$/;
+
+		if (!regex.test(item)) return false;
+
+		const [local, domain] = item.split("@");
+
+		if (!local || local.length > 64) return false;
+
+		if (!domain || domain.length > 255) return false;
+
+		const domainParts = domain.split(".");
+
+		return !domainParts.some((part) => part.length > 63);
 	}
 
 	// eslint-disable-next-line valid-typeof

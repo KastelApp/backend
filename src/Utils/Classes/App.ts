@@ -32,7 +32,7 @@ class App {
 
 	public Ready: boolean = false;
 
-	public Snowflake: Snowflake;
+	public static Snowflake: Snowflake = new Snowflake(Constants.snowflake);
 
 	public Cassandra: Connection;
 
@@ -90,16 +90,12 @@ class App {
 		" ": "None",
 	};
 
-	// public Repl: Repl;
-
 	public Args = processArgs(supportedArgs).valid;
 
-	protected Router: FileSystemRouter;
+	public Router: FileSystemRouter;
 
 	public constructor() {
 		this.ElysiaApp = new Elysia();
-
-		this.Snowflake = new Snowflake(Constants.snowflake);
 
 		this.Cache = new CacheManager({
 			...config.Redis,
@@ -132,66 +128,6 @@ class App {
 			watch: true,
 			allowIndex: false,
 		});
-
-		// this.Repl = new Repl(CustomLogger.colorize("#E6AF2E", "> "), [
-		// 	{
-		// 		name: "disable",
-		// 		description: "Disable something (Route, User, etc)",
-		// 		args: [],
-		// 		flags: [
-		// 			{
-		// 				name: "route",
-		// 				description: "The route to disable",
-		// 				shortName: "r",
-		// 				value: "string",
-		// 				maxLength: 1e3,
-		// 				minLength: 1,
-		// 				optional: true,
-		// 			},
-		// 			{
-		// 				name: "user",
-		// 				description: "The user to disable",
-		// 				shortName: "u",
-		// 				value: "string",
-		// 				maxLength: 1e3,
-		// 				minLength: 1,
-		// 				optional: true,
-		// 			},
-		// 		],
-		// 		cb: () => {},
-		// 	},
-		// 	{
-		// 		name: "version",
-		// 		description: "Get the version of the backend",
-		// 		args: [],
-		// 		flags: [],
-		// 		cb: () => {
-		// 			console.log(
-		// 				`You're running version ${
-		// 					Relative.Version ? `v${Relative.Version}` : "Unknown version"
-		// 				} of Kastel's Backend. Bun version ${Bun.version}`,
-		// 			);
-		// 		},
-		// 	},
-		// 	{
-		// 		name: "close",
-		// 		description: "Close the REPL (Note: you will need to restart the backend to open it again)",
-		// 		args: [],
-		// 		flags: [],
-		// 		cb: () => {
-		// 			this.Repl.endRepl();
-		// 		},
-		// 	},
-		// 	{
-		// 		name: "clear",
-		// 		description: "Clear the console",
-		// 		args: [],
-		// 		flags: [],
-		// 		cb: () => {
-		// 			console.clear();
-		// 		},
-		// 	},
-		// ]);
 	}
 
 	public async Init(): Promise<void> {
@@ -278,8 +214,10 @@ class App {
 
 		this.ElysiaApp.use(cors())
 			.use(serverTiming())
-			.onError(({ code, request, path }) => {
+			.onError(({ code, request, path, error }) => {
 				this.Logger.error(`Error ${code} on route ${path} [${request.method}]`);
+
+				console.log(error);
 
 				return "Internal Server Error :(";
 			});
@@ -324,7 +262,9 @@ class App {
 
 			this.Logger.info(`Request to "${route.route}" [${request.method}]`);
 
-			const foundMethod = route.routeClass.__methods.find((method) => method.method === request.method.toLowerCase());
+			const foundMethod = route.routeClass.__methods?.find(
+				(method) => method.method === request.method.toLowerCase(),
+			) ?? { name: "Request", method: "get" };
 
 			if (!foundMethod) {
 				const error = errorGen.MethodNotAllowed();
@@ -343,10 +283,12 @@ class App {
 				return error.toJSON();
 			}
 
-			const middleware = route.routeClass.__middlewares.filter((middleware) => middleware.name === foundMethod.name);
-			const contentTypes = route.routeClass.__contentTypes.find((contentType) => contentType.name === foundMethod.name);
+			const middleware = route.routeClass.__middlewares?.filter((middleware) => middleware.name === foundMethod.name);
+			const contentTypes = route.routeClass.__contentTypes?.find(
+				(contentType) => contentType.name === foundMethod.name,
+			);
 			// @ts-expect-error -- I know what I'm doing
-			const routeClassFunction = route.routeClass[foundMethod.name];
+			const routeClassFunction = route.routeClass[foundMethod.name].bind(route.routeClass);
 			const finishedMiddlewares = [];
 
 			if (!routeClassFunction) {
@@ -358,7 +300,8 @@ class App {
 			if (
 				contentTypes &&
 				contentTypes.type.length > 0 &&
-				!contentTypes.type.includes((headers["content-type"] ?? "text/plain") as ContentTypes)
+				!contentTypes.type.includes((headers["content-type"] ?? "text/plain") as ContentTypes) &&
+				!contentTypes.type.includes("any")
 			) {
 				const error = errorGen.InvalidContentType();
 
@@ -381,7 +324,7 @@ class App {
 				return error.toJSON();
 			}
 
-			if (middleware.length > 0) {
+			if (middleware && middleware.length > 0) {
 				for (const middle of middleware) {
 					const finished = await middle.ware({
 						app: this,
@@ -460,78 +403,6 @@ class App {
 
 		return this.RouteCache.get(path);
 	}
-
-	// private async LoadRoutes(): Promise<(typeof this)["Routes"]> {
-	// 	const routes = await this.WalkDirectory(this.RouteDirectory);
-
-	// 	for (const route of routes) {
-	// 		if (!route.endsWith(".ts")) {
-	// 			this.Logger.debug(`Skipping ${route} as it is not a .ts file`);
-
-	// 			continue;
-	// 		}
-
-	// 		const routeClass = await import(route);
-
-	// 		if (!routeClass.default) {
-	// 			this.Logger.warn(`Skipping ${route} as it does not have a default export`);
-
-	// 			continue;
-	// 		}
-
-	// 		const routeInstance = new routeClass.default(this);
-
-	// 		if (!(routeInstance instanceof RouteBuilder)) {
-	// 			this.Logger.warn(`Skipping ${route} as it does not extend Route`);
-
-	// 			continue;
-	// 		}
-
-	// 		const routes: {
-	// 			contentTypes: ContentTypes[];
-	// 			method: Method;
-	// 			path: string;
-	// 		}[] = [];
-
-	// 		for (const subRoute of routeInstance.Route) {
-	// 			const fixedRoute = (
-	// 				(route.split(this.RouteDirectory)[1]?.replaceAll(/\\/g, "/").split("/").slice(0, -1).join("/") ?? "") +
-	// 				(subRoute.Path as string)
-	// 			).replace(/\/$/, "");
-
-	// 			routes.push({
-	// 				method: subRoute.Method,
-	// 				path: fixedRoute,
-	// 				contentTypes: subRoute.ContentTypes,
-	// 			});
-	// 		}
-
-	// 		this.Routes.push({
-	// 			default: routeInstance,
-	// 			directory: route,
-	// 			routes,
-	// 		});
-	// 	}
-
-	// 	return this.Routes;
-	// }
-
-	// private async WalkDirectory(dir: string): Promise<string[]> {
-	// 	const routes = await readdir(dir, { withFileTypes: true });
-
-	// 	const files: string[] = [];
-
-	// 	for (const route of routes) {
-	// 		if (route.isDirectory()) {
-	// 			const subFiles = await this.WalkDirectory(join(dir, route.name));
-	// 			files.push(...subFiles);
-	// 		} else {
-	// 			files.push(join(dir, route.name));
-	// 		}
-	// 	}
-
-	// 	return files;
-	// }
 
 	private async SetupDebug(Log: boolean) {
 		const systemClass = new SystemInfo();
@@ -632,9 +503,9 @@ class App {
 		let bucketNumber;
 
 		if (Snowflake) {
-			bucketNumber = BigInt(this.Snowflake.TimeStamp(Snowflake)) - this.Snowflake.Epoch;
+			bucketNumber = BigInt(App.Snowflake.TimeStamp(Snowflake)) - App.Snowflake.Epoch;
 		} else {
-			bucketNumber = BigInt(Date.now()) - this.Snowflake.Epoch;
+			bucketNumber = BigInt(Date.now()) - App.Snowflake.Epoch;
 		}
 
 		let bucket = bucketNumber / BigInt(this.Config.Server.BucketInterval);

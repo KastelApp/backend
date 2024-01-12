@@ -9,8 +9,7 @@ export const fetchMentions = (
 	roles: string[];
 	users: string[];
 } => {
-	// eslint-disable-next-line prefer-named-capture-group
-	const regex = /<#(\d+)>|<@&(\d+)>|<@!?(\d+)>/g;
+	const regex = /<#(?<channels>\d+)>|<@&(?<roles>\d+)>|<@!?(?<users>\d+)>/g;
 
 	const channels: string[] = [];
 	const roles: string[] = [];

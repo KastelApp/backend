@@ -66,8 +66,7 @@ class SystemSocket {
 				{},
 			);
 
-			// @ts-expect-error -- It does exist, though bun doing the funky with the internal ws module
-			this.Ws.on("error", () => {
+			this.Ws.addEventListener("error", () => {
 				this.App.Logger.error("Failed to connect to System Socket / Recieved an Error");
 
 				this.HandleDisconnect();
@@ -81,13 +80,11 @@ class SystemSocket {
 				}
 			});
 
-			// @ts-expect-error -- It does exist, though bun doing the funky with the internal ws module
-			this.Ws.on("open", () => {
+			this.Ws.addEventListener("open", () => {
 				this.App.Logger.info("Connected to System Socket");
 			});
 
-			// @ts-expect-error -- It does exist, though bun doing the funky with the internal ws module
-			this.Ws.on("close", (code: number, reason: string) => {
+			this.Ws.addEventListener("close", ({ code, reason }) => {
 				this.App.Logger.warn("Disconnected from System Socket", reason?.toString(), code);
 
 				this.HandleDisconnect();
@@ -98,9 +95,8 @@ class SystemSocket {
 				}
 			});
 
-			// @ts-expect-error -- It does exist, though bun doing the funky with the internal ws module
-			this.Ws.on("message", (data: Buffer) => {
-				const decoded = this.decode(data);
+			this.Ws.addEventListener("message", ({ data }) => {
+				const decoded = this.decode(data as Buffer);
 
 				if (decoded?.S) this.Sequence = decoded.S;
 

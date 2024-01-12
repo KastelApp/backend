@@ -7,6 +7,7 @@ import type App from "../App.ts";
 type Method = "all" | "delete" | "get" | "head" | "options" | "patch" | "post" | "put";
 
 type ContentTypes =
+	| "any"
 	| "application/javascript"
 	| "application/json"
 	| "application/octet-stream"

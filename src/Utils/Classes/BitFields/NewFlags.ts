@@ -41,6 +41,8 @@ class FlagUtilsBInt<
 	public has(bit: bigint | number | keyof (typeof this)["Flags"]) {
 		const bits = typeof bit === "string" ? this.Flags[bit] ?? 0n : BigInt(bit as number);
 
+		if (bits === 0n) return false; // No bit is able to be 0
+
 		return (this.bits & bits) === bits;
 	}
 
@@ -142,6 +144,8 @@ class FlagUtils<
 
 	public has(bit: bigint | number | keyof (typeof this)["Flags"]) {
 		const bits = typeof bit === "string" ? this.Flags[bit] ?? 0 : Number(bit);
+
+		if (bits === 0) return false; // No bit is able to be 0
 
 		return (this.bits & bits) === bits;
 	}
