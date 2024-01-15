@@ -35,13 +35,15 @@ interface CreateRouteOptions<
 	Route extends string,
 	Body extends Record<string, boolean | number | string | null | undefined> | unknown = unknown,
 	params extends string[] = [],
+	query extends Record<string, string | undefined> = Record<string, string | undefined>,
 > {
 	app: App;
 	body: Body;
 	headers: Record<string, string | undefined>;
+	ip: string,
 	params: GetParams<Route> & ParamsArray<params>;
 	path: Route;
-	query: Record<string, string | undefined>;
+	query: query;
 	request: globalThis.Request;
 	set: {
 		cookie?: Record<
@@ -83,7 +85,8 @@ type CreateRoute<
 	Body extends Record<string, boolean | number | string | null | undefined> | unknown = unknown,
 	MiddlewareSettings extends Record<string, unknown>[] = [],
 	params extends string[] = [],
-> = CreateRouteOptions<Route, Body, params> & MiddlewareArray<MiddlewareSettings>;
+	query extends Record<string, string | undefined> = Record<string, string | undefined>,
+> = CreateRouteOptions<Route, Body, params, query> & MiddlewareArray<MiddlewareSettings>;
 
 class Route {
 	public readonly App: App;

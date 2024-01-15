@@ -30,6 +30,7 @@ const validate = (
 				),
 			);
 		} else if (typeof validator === "object" && "validate" in validator) {
+			// @ts-expect-error -- cat
 			const valid = validator.validate(body[key]);
 
 			if (!valid) {
@@ -64,7 +65,7 @@ const bodyValidator = (options: BodyValidator) => {
 			const error = errorGen.InvalidField();
 
 			for (const err of errors) {
-				error.AddError({
+				error.addError({
 					[err.key]: {
 						code: err.code === "invalid" ? "InvalidType" : "MissingField",
 						message:

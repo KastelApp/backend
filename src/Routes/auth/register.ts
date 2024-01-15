@@ -21,7 +21,7 @@ const postRequestBody = {
 	email: string().email(),
 	password: string().min(4).max(72),
 	username: string().min(3).max(32),
-	invite: string().notRequired()
+	invite: string().optional()
 };
 
 export default class Register extends Route {
@@ -51,7 +51,7 @@ export default class Register extends Route {
 		const failed = errorGen.FailedToRegister();
 
 		if (foundUser.length > 0) {
-			failed.AddError({
+			failed.addError({
 				email: {
 					code: "InvalidEmail",
 					message: "The email provided was invalid, or already in use."
@@ -60,7 +60,7 @@ export default class Register extends Route {
 		}
 
 		if (!tag || foundUser.length >= this.maxUsernames) {
-			failed.AddError({
+			failed.addError({
 				username: {
 					code: "MaxUsernames",
 					message: `The maximum amount of users with the username ${body.username} has been reached :(`
@@ -68,7 +68,7 @@ export default class Register extends Route {
 			});
 		}
 
-		if (Object.keys(failed.Errors).length > 0) {
+		if (failed.hasErrors()) {
 			set.status = 400;
 
 			return failed.toJSON();
@@ -89,9 +89,9 @@ export default class Register extends Route {
 			userId: Encryption.encryptedSnowflake(),
 			username: Encryption.encrypt(body.username)
 		};
-		
+
 		const token = Token.generateToken(Encryption.decrypt(userObject.userId));
-		
+
 		const settignsObject: Settings = {
 			bio: null,
 			language: "en-US",
@@ -109,14 +109,15 @@ export default class Register extends Route {
 				token: Encryption.encrypt(token),
 				tokenId: Encryption.encryptedSnowflake()
 			}],
-			userId: userObject.userId
-		}
-		
+			userId: userObject.userId,
+			guildOrder: []
+		};
+
 		await Promise.all([
 			this.App.Cassandra.Models.User.insert(userObject),
 			this.App.Cassandra.Models.Settings.insert(settignsObject)
 		]);
-		
+
 		return {
 			token,
 			user: {
@@ -127,7 +128,7 @@ export default class Register extends Route {
 				publicFlags: userObject.publicFlags,
 				flags: userObject.flags,
 			}
-		}
+		};
 	}
 
 	private async fetchUser(opts: {

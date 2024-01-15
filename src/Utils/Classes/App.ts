@@ -67,18 +67,18 @@ class App {
 
 	public InternetAccess: boolean = false;
 
-	public Git: SimpleGit = simpleGit();
+	public static Git: SimpleGit = simpleGit();
 
-	private GitFiles: {
+	public static GitFiles: {
 		filePath: string;
 		type: GitType;
 	}[] = [];
 
-	public GitBranch: string = "Unknown";
+	public static GitBranch: string = "Unknown";
 
-	public GitCommit: string = "Unknown";
+	public static GitCommit: string = "Unknown";
 
-	private TypeIndex = {
+	public static TypeIndex = {
 		A: "Added",
 		D: "Deleted",
 		M: "Modified",
@@ -132,10 +132,8 @@ class App {
 
 	public async Init(): Promise<void> {
 		this.Logger.hex("#ca8911")(
-			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${
-				relative.Version ? `v${relative.Version}` : "Unknown version"
-			} of Kastel's Backend. Bun version ${
-				Bun.version
+			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${relative.Version ? `v${relative.Version}` : "Unknown version"
+			} of Kastel's Backend. Bun version ${Bun.version
 			}\nIf you would like to support this project please consider donating to https://opencollective.com/kastel\n`,
 		);
 
@@ -145,8 +143,7 @@ class App {
 
 		this.Router.on("reload", async ({ path, type, directory }) => {
 			this.Logger.verbose(
-				`Reloaded Routes due to a ${directory ? "directory" : "file"} (${path}) being ${
-					type === "A" ? "Added" : type === "M" ? "Modified" : type === "D" ? "Removed" : "Unknown"
+				`Reloaded Routes due to a ${directory ? "directory" : "file"} (${path}) being ${type === "A" ? "Added" : type === "M" ? "Modified" : type === "D" ? "Removed" : "Unknown"
 				}`,
 			);
 
@@ -237,12 +234,23 @@ class App {
 		this.Logger.info(`Loaded ${Object.keys(this.Router.routes).length} routes`);
 
 		this.ElysiaApp.all("*", async ({ body, headers, params, path, query, request, set, store }) => {
+			const ip = IpUtils.getIp(request, this.ElysiaApp.server) ?? "";
+			const isLocalIp = IpUtils.isLocalIp(ip);
+
+			if (isLocalIp && process.env.NODE_ENV !== "development") {
+				this.Logger.warn(`Local IP ${ip} tried to access ${path}`);
+
+				set.status = 403;
+
+				return "Forbidden";
+			}
+			
 			const matched = this.Router.match(request);
 
 			if (!matched) {
 				const error = errorGen.NotFound();
 
-				error.AddError({
+				error.addError({
 					notFound: {
 						code: "NotFound",
 						message: `Could not find route for ${request.method} ${path}`,
@@ -269,14 +277,13 @@ class App {
 			if (!foundMethod) {
 				const error = errorGen.MethodNotAllowed();
 
-				error.AddError({
+				error.addError({
 					methodNotAllowed: {
 						code: "MethodNotAllowed",
-						message: `Method "${
-							request.method
-						}" is not allowed for "${path}", allowed methods are [${route.routeClass.__methods
-							.map((method) => method.method.toUpperCase())
-							.join(", ")}]`,
+						message: `Method "${request.method
+							}" is not allowed for "${path}", allowed methods are [${route.routeClass.__methods
+								.map((method) => method.method.toUpperCase())
+								.join(", ")}]`,
 					},
 				});
 
@@ -305,12 +312,11 @@ class App {
 			) {
 				const error = errorGen.InvalidContentType();
 
-				error.AddError({
+				error.addError({
 					contentType: {
 						code: "InvalidContentType",
-						message: `Invalid Content-Type header, Expected (${contentTypes.type.join(", ")}), Got (${
-							headers["content-type"]
-						})`,
+						message: `Invalid Content-Type header, Expected (${contentTypes.type.join(", ")}), Got (${headers["content-type"]
+							})`,
 					},
 				});
 
@@ -336,13 +342,14 @@ class App {
 						request,
 						set,
 						store,
+						ip
 					});
 
 					if (set.status !== 200) {
 						this.Logger.info(
 							`Request to "${route.route}" [${request.method}] finished with status ${set.status} from middleware ${middle.ware.name}`,
 						);
-
+						
 						return finished;
 					}
 
@@ -360,8 +367,26 @@ class App {
 				request,
 				set,
 				store,
+				ip,
 				...finishedMiddlewares.reduce((a, b) => ({ ...a, ...b }), {}),
 			})) as Promise<unknown>;
+			
+			if (typeof requested === "object") {
+				// Go through requested, we want to alert the console when we detect an "email, phone number, password" field in the response
+				// There will be whitelisted paths, such as /auth/register, /users/@me etc
+				// If we detect one we warn it to the console then return a 500 error
+				const whitelistedPaths = ["/auth/register", "/users/@me"];
+				
+				const checked = this.checkObjectForBlacklistedFields(requested, ["email", "phoneNumber", "password"]);
+				
+				if (checked && !(whitelistedPaths.includes(path) || whitelistedPaths.includes(path.slice(3)))) {
+					set.status = 500;
+					
+					this.Logger.warn(`Blacklisted field detected in response for ${path}`);
+					
+					return "Internal Server Error :(";
+				}
+			}
 
 			this.Logger.info(`Request to "${route.route}" [${request.method}] finished with status ${set.status}`);
 
@@ -372,6 +397,26 @@ class App {
 			this.Logger.info(`Listening on port ${config.Server.Port}`);
 		});
 	}
+	
+	public checkObjectForBlacklistedFields(object: unknown, blacklistedFields: string[]): boolean {
+		if (typeof object !== "object" || object === null || object instanceof Date) return false;
+		
+		if (Array.isArray(object)) {
+			for (const item of object) {
+				if (this.checkObjectForBlacklistedFields(item, blacklistedFields)) return true;
+			}
+			
+			return false;
+		}
+		
+		for (const [key, value] of Object.entries(object)) {
+			if (blacklistedFields.includes(key)) return true;
+			
+			if (this.checkObjectForBlacklistedFields(value, blacklistedFields)) return true;
+		}
+		
+		return false;
+	}
 
 	private async LoadRoute(path: string, route: string) {
 		if (this.RouteCache.has(path)) {
@@ -379,7 +424,7 @@ class App {
 		}
 
 		// this is a hack to make sure it doesn't cache the file
-		const routeClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof RouteBuilder };
+		const routeClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof RouteBuilder; };
 
 		if (!routeClass.default) {
 			this.Logger.warn(`Skipping ${path} as it does not have a default export`);
@@ -407,8 +452,12 @@ class App {
 	private async SetupDebug(Log: boolean) {
 		const systemClass = new SystemInfo();
 		const system = await systemClass.Info();
-		const githubInfo = await this.GithubInfo();
+		const githubInfo = await App.GithubInfo();
 
+		App.GitBranch = githubInfo.Branch;
+		App.GitCommit = githubInfo.Commit!;
+		this.Clean = githubInfo.Clean;
+		
 		const strings = [
 			"=".repeat(40),
 			"Kastel Debug Logs",
@@ -434,16 +483,15 @@ class App {
 			`Uptime: ${system.process.uptime}`,
 			"=".repeat(40),
 			"Git Info:",
-			`Branch: ${this.GitBranch}`,
+			`Branch: ${App.GitBranch}`,
 			`Commit: ${githubInfo.CommitShort ?? githubInfo.Commit}`,
-			`Status: ${
-				this.Clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
+			`Status: ${this.Clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
 			}`,
 			this.Clean ? "" : "=".repeat(40),
 			`${this.Clean ? "" : "Changed Files:"}`,
 		];
 
-		for (const file of this.GitFiles) {
+		for (const file of App.GitFiles) {
 			// if the directory is "node_modules", ".bun", ".git", ".yarn" we want to ignore it
 
 			if (["node_modules", ".bun", ".git", ".yarn"].includes(file.filePath.split("/")[0] ?? "")) {
@@ -462,30 +510,24 @@ class App {
 		}
 	}
 
-	private async GithubInfo(): Promise<{
+	public static async GithubInfo(): Promise<{
 		Branch: string;
 		Clean: boolean;
 		Commit: string | undefined;
 		CommitShort: string | undefined;
 	}> {
-		const branch = await this.Git.branch();
-		const commit = await this.Git.log();
-		const status = await this.Git.status();
+		const branch = await App.Git.branch();
+		const commit = await App.Git.log();
+		const status = await App.Git.status();
 
 		if (!commit.latest?.hash) {
-			this.Logger.fatal("Could not get Commit Info, are you sure you pulled the repo correctly?");
+			App.StaticLogger.fatal("Could not get Commit Info, are you sure you pulled the repo correctly?");
 
 			process.exit(1);
 		}
-
-		this.GitBranch = branch.current;
-
-		this.GitCommit = commit.latest.hash;
-
-		this.Clean = status.files.length === 0;
-
+		
 		for (const file of status.files) {
-			this.GitFiles.push({
+			App.GitFiles.push({
 				filePath: file.path,
 				type: this.TypeIndex[file.working_dir as keyof typeof this.TypeIndex] as GitType,
 			});

@@ -13,7 +13,20 @@ export interface UserMiddlewareType extends Record<string, any> {
 		guilds: string[];
 		id: string;
 		password: string;
+		// bio", "guild_order", "language", "privacy", "theme", "status
+		settings: {
+			bio: string | null;
+			guildOrder: {
+				guildId: string;
+				position: number;
+			}[];
+			language: string;
+			privacy: number;
+			status: string | null;
+			theme: string;
+		},
 		token: string;
+		username: string;
 	};
 }
 
@@ -31,7 +44,7 @@ const userMiddleware = (options: UserMiddleware) => {
 		if ((isBot && options.AllowedRequesters === "User") || (!isBot && options.AllowedRequesters === "Bot")) {
 			app.Logger.debug(`Unexpected User Type ${isBot ? "Is Bot" : "Isn't Bot"}`);
 
-			unAuthorizedError.AddError({
+			unAuthorizedError.addError({
 				user: {
 					code: "InvalidUserType",
 					message: "You are not allowed to access this endpoint.",
@@ -48,7 +61,7 @@ const userMiddleware = (options: UserMiddleware) => {
 		if (options.AccessType === "LoggedIn" && !authHeader) {
 			app.Logger.debug("User isn't logged in though it is expected");
 
-			unAuthorizedError.AddError({
+			unAuthorizedError.addError({
 				user: {
 					code: "NotLoggedIn",
 					message: "You need to be logged in to access this endpoint",
@@ -63,7 +76,7 @@ const userMiddleware = (options: UserMiddleware) => {
 		if (options.AccessType === "LoggedOut" && authHeader) {
 			app.Logger.debug("User is logged in though its not expected");
 
-			unAuthorizedError.AddError({
+			unAuthorizedError.addError({
 				user: {
 					code: "LoggedIn",
 					message: "You are not allowed to access this endpoint.",
@@ -81,7 +94,7 @@ const userMiddleware = (options: UserMiddleware) => {
 			if (!vaildatedToken) {
 				app.Logger.debug("Token couldn't be validated");
 
-				unAuthorizedError.AddError({
+				unAuthorizedError.addError({
 					user: {
 						code: "InvalidToken",
 						message: "The token provided was invalid",
@@ -100,7 +113,7 @@ const userMiddleware = (options: UserMiddleware) => {
 					userId: Encryption.encrypt(decodedToken.Snowflake),
 				},
 				{
-					fields: ["tokens", "max_file_upload_size"],
+					fields: ["tokens", "max_file_upload_size", "bio", "guild_order", "language", "privacy", "theme", "status"],
 				},
 			);
 
@@ -109,22 +122,22 @@ const userMiddleware = (options: UserMiddleware) => {
 					userId: Encryption.encrypt(decodedToken.Snowflake),
 				},
 				{
-					fields: ["email", "user_id", "flags", "password", "public_flags", "guilds"],
+					fields: ["email", "user_id", "flags", "password", "public_flags", "guilds", "username"],
 				},
 			);
 
 			if (!usersSettings || !userData) {
 				app.Logger.debug("User settings wasn't found", decodedToken.Snowflake);
-				app.Logger.debug(userData, usersSettings);
+				app.Logger.debug(userData ?? "null", usersSettings ?? "null");
 
-				unAuthorizedError.AddError({
+				unAuthorizedError.addError({
 					user: {
 						code: "InvalidToken",
 						message: "The token provided was invalid",
 					},
 				});
 
-				if (!usersSettings || !userData) {
+				if ((userData && !usersSettings) || (!userData && usersSettings)) {
 					// darkerink: just in case there is one but not the other (has happened in very rare cases) contacting support will be the only way to fix this (for now);
 					set.status = 500;
 
@@ -137,10 +150,9 @@ const userMiddleware = (options: UserMiddleware) => {
 			}
 
 			if (!usersSettings?.tokens?.some((Token) => Token.token === Encryption.encrypt(authHeader as string))) {
-				console.log(authHeader, usersSettings?.tokens);
 				app.Logger.debug("Token not found in the user settings");
 
-				unAuthorizedError.AddError({
+				unAuthorizedError.addError({
 					user: {
 						code: "InvalidToken",
 						message: "The token provided was invalid",
@@ -162,7 +174,7 @@ const userMiddleware = (options: UserMiddleware) => {
 			) {
 				app.Logger.debug("Account Is Deleted or about to be deleted");
 
-				accountNotAvailableError.AddError({
+				accountNotAvailableError.addError({
 					email: {
 						code: "AccountDeleted",
 						message: "The Account has been deleted",
@@ -177,7 +189,7 @@ const userMiddleware = (options: UserMiddleware) => {
 			if (userFlags.PrivateFlags.has("Terminated") || userFlags.PrivateFlags.has("Disabled")) {
 				app.Logger.debug("Account Is Disabled or Terminated");
 
-				accountNotAvailableError.AddError({
+				accountNotAvailableError.addError({
 					email: {
 						code: "AccountDisabled",
 						message: "The Account has been disabled",
@@ -200,7 +212,7 @@ const userMiddleware = (options: UserMiddleware) => {
 					(isBot && !userFlags.PrivateFlags.has("Bot")) || !userFlags.PrivateFlags.has("VerifiedBot"),
 				);
 
-				unAuthorizedError.AddError({
+				unAuthorizedError.addError({
 					user: {
 						code: "InvalidUserType",
 						message: "You are not allowed to access this endpoint.",
@@ -213,12 +225,12 @@ const userMiddleware = (options: UserMiddleware) => {
 			}
 
 			if (
-				options.AllowedRequesters === "User" &&
+				options.AllowedRequesters.includes("User") &&
 				(userFlags.PrivateFlags.has("Bot") || userFlags.PrivateFlags.has("VerifiedBot"))
 			) {
 				app.Logger.debug("User only endpoint though user is a bot");
 
-				unAuthorizedError.AddError({
+				unAuthorizedError.addError({
 					user: {
 						code: "InvalidToken",
 						message: "You are not allowed to access this endpoint.",
@@ -231,12 +243,12 @@ const userMiddleware = (options: UserMiddleware) => {
 			}
 
 			if (
-				options.AllowedRequesters === "Bot" &&
+				options.AllowedRequesters.includes("Bot") &&
 				!(userFlags.PrivateFlags.has("Bot") || userFlags.PrivateFlags.has("VerifiedBot"))
 			) {
 				app.Logger.debug("Bot only endpoint though user is not a bot");
 
-				unAuthorizedError.AddError({
+				unAuthorizedError.addError({
 					user: {
 						code: "InvalidToken",
 						message: "You are not allowed to access this endpoint.",
@@ -253,7 +265,7 @@ const userMiddleware = (options: UserMiddleware) => {
 					if (!userFlags.PrivateFlags.has(flag)) {
 						app.Logger.debug(`User is missing the ${flag} flag`);
 
-						unAuthorizedError.AddError({
+						unAuthorizedError.addError({
 							user: {
 								code: "LostInTheMaze",
 								message: "You seemed to have gotten lost in the maze.. Are you sure it was meant for you?",
@@ -272,7 +284,7 @@ const userMiddleware = (options: UserMiddleware) => {
 					if (userFlags.PrivateFlags.has(flag)) {
 						app.Logger.debug(`User has the ${flag} flag`);
 
-						unAuthorizedError.AddError({
+						unAuthorizedError.addError({
 							user: {
 								code: "LostInTheMaze",
 								message: "You seemed to have gotten lost in the maze.. Are you sure it was meant for you?",
@@ -301,6 +313,15 @@ const userMiddleware = (options: UserMiddleware) => {
 					id: completeDecrypted.userId,
 					password: completeDecrypted.password,
 					guilds: completeDecrypted.guilds ?? [],
+					username: completeDecrypted.username,
+					settings: Encryption.completeDecryption({
+						bio: usersSettings.bio,
+						guildOrder: usersSettings.guildOrder ?? [],
+						language: usersSettings.language,
+						privacy: usersSettings.privacy,
+						status: usersSettings.status,
+						theme: usersSettings.theme,
+					})
 				},
 			};
 		}

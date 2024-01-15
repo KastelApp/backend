@@ -31,15 +31,20 @@ export type Methods =
 	| "PUT"
 	| "put";
 
+type Requesters = "All" | "Bot" | "OAuth" | "User" | "Webhook";
+
+export type OAuth2Scopes = "user.guilds" | "user.identity.email" | "user.identity"
+
 export interface UserMiddleware {
 	// The flags required to access the endpoint (Default: null)
 	// If you need to be logged in to access the endpoint
 	AccessType: "All" | "LoggedIn" | "LoggedOut";
-	AllowedRequesters: "All" | "Bot" | "User";
+	AllowedRequesters: Requesters | Requesters[];
 	// The flags that are not allowed to access the endpoint (Default: null)
 	DisallowedFlags?: (keyof typeof privateFlags)[];
 	// The type of user that can access the endpoint (Default: 'All')
 	Flags?: (keyof typeof privateFlags)[];
+	OAuth2Scopes?: OAuth2Scopes[];
 }
 
 export interface GuildMiddleware {

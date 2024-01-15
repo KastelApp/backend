@@ -33,7 +33,7 @@ class Encryption {
 		}
 	}
 
-	public static decrypt<T = any>(data: string, raw = false): T {
+	public static decrypt(data: string, raw = false): string {
 		try {
 			const decipher = crypto.createDecipheriv(algorithm, securityKey, initVector);
 			const decrypted = decipher.update(data, "hex", "utf8") + decipher.final("utf8");
@@ -81,7 +81,7 @@ class Encryption {
 
 	public static completeDecryption<T = any>(items: T, raw = false): T {
 		if (typeof items === "string") {
-			if (Encryption.isEncrypted(items)) return Encryption.decrypt(items, raw);
+			if (Encryption.isEncrypted(items)) return Encryption.decrypt(items, raw) as T;
 
 			return items;
 		}

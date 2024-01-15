@@ -6,7 +6,6 @@ import App from "@/Utils/Classes/App.ts";
 import FlagFields from "@/Utils/Classes/BitFields/Flags.ts";
 import Encryption from "@/Utils/Classes/Encryption.ts";
 import errorGen from "@/Utils/Classes/ErrorGen.ts";
-import IpUtils from "@/Utils/Classes/IpUtils.ts";
 import ContentTypes from "@/Utils/Classes/Routing/Decorators/ContentTypes.ts";
 import Description from "@/Utils/Classes/Routing/Decorators/Description.ts";
 import Method from "@/Utils/Classes/Routing/Decorators/Method.ts";
@@ -18,7 +17,7 @@ import Token from "@/Utils/Classes/Token.ts";
 const postLoginBody = {
 	email: string(),
 	password: string(),
-	code: string().notRequired(),
+	code: string().optional(),
 };
 
 export default class Login extends Route {
@@ -36,16 +35,16 @@ export default class Login extends Route {
 		}),
 	)
 	@Middleware(bodyValidator(postLoginBody))
-	public async postLogin({ body, set, request }: CreateRoute<"/login", Infer<typeof postLoginBody>>) {
+	public async postLogin({ body, set, ip }: CreateRoute<"/login", Infer<typeof postLoginBody>>) {
 		const fetchedUser = await this.fetchUser(body.email);
 
 		if (!fetchedUser) {
 			const error = errorGen.InvalidCredentials();
 
-			error.AddError({
+			error.addError({
 				login: {
 					code: "BadLogin",
-					message: "The Email or Pasword provided were invalid or missing.",
+					message: "The Email or Password provided were invalid or missing.",
 				},
 			});
 
@@ -53,11 +52,11 @@ export default class Login extends Route {
 
 			return error.toJSON();
 		}
-
+		
 		if (!fetchedUser.password) {
 			const error = errorGen.InvalidCredentials();
 
-			error.AddError({
+			error.addError({
 				login: {
 					code: "MissingPassword",
 					message: "The account has no password set, please reset your password to login.",
@@ -74,10 +73,10 @@ export default class Login extends Route {
 		if (!verifiedPassword) {
 			const error = errorGen.InvalidCredentials();
 
-			error.AddError({
+			error.addError({
 				login: {
 					code: "BadLogin",
-					message: "The Email or Pasword provided were invalid or missing.",
+					message: "The Email or Password provided were invalid or missing.",
 				},
 			});
 
@@ -91,7 +90,7 @@ export default class Login extends Route {
 		if (flags.has("AccountDeleted")) {
 			const error = errorGen.AccountNotAvailable();
 
-			error.AddError({
+			error.addError({
 				login: {
 					code: "AccountDeleted",
 					message: "The account has been deleted.",
@@ -106,7 +105,7 @@ export default class Login extends Route {
 		if (flags.has("WaitingOnAccountDeletion") || flags.has("WaitingOnDisableDataUpdate")) {
 			const error = errorGen.AccountNotAvailable();
 
-			error.AddError({
+			error.addError({
 				login: {
 					code: "AccountDataUpdate",
 					message:
@@ -122,7 +121,7 @@ export default class Login extends Route {
 		if (flags.has("Terminated") || flags.has("Disabled")) {
 			const error = errorGen.AccountNotAvailable();
 
-			error.AddError({
+			error.addError({
 				login: {
 					code: "AccountDisabled",
 					message: "The account has been disabled.",
@@ -141,7 +140,7 @@ export default class Login extends Route {
 				userId: Encryption.encrypt(fetchedUser.userId),
 			},
 			{
-				fields: ["tokens"]
+				fields: ["user_id", "tokens"]
 			},
 		);
 
@@ -160,6 +159,7 @@ export default class Login extends Route {
 				theme: "dark",
 				tokens: [],
 				userId: Encryption.encrypt(fetchedUser.userId),
+				guildOrder: []
 			};
 		}
 
@@ -168,7 +168,7 @@ export default class Login extends Route {
 		tokens.tokens.push({
 			createdDate: new Date(App.Snowflake.TimeStamp(sessionId)),
 			flags: 0,
-			ip: IpUtils.getIp(request, this.App.ElysiaApp.server) ?? "",
+			ip,
 			token: Encryption.encrypt(newToken),
 			tokenId: Encryption.encrypt(sessionId),
 		});
@@ -192,6 +192,8 @@ export default class Login extends Route {
 	private async fetchUser(email: string) {
 		const fetched = await this.App.Cassandra.Models.User.get({
 			email: Encryption.encrypt(email),
+		}, {
+			fields: ["email", "user_id", "password", "flags", "public_flags"]
 		});
 
 		if (!fetched) {

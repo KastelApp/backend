@@ -34,7 +34,7 @@ export default class Index extends Route {
 		return {
 			api: {
 				versions: apiVersions,
-				latest: apiVersions[apiVersions.length - 1],
+				latest: apiVersions[apiVersions.length - 1] ?? 0,
 			},
 			features: this.App.Config.Server.Features ?? [],
 		};

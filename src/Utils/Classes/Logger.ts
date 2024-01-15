@@ -112,9 +112,9 @@ class Logger {
 		}, 25);
 
 		this.colorTypes = {
-			info: "#78C3FB",
-			verbose: "#78C3FB",
-			warn: "#E6AF2E",
+			info: "#2c85c7",
+			verbose: "#2c85c7",
+			warn: "#b5871b",
 			error: "#941C2F",
 			debug: "#666A86",
 			fatal: "#941C2F",
@@ -276,7 +276,7 @@ class Logger {
 			return;
 		}
 
-		const message = `[${options.date.toLocaleTimeString()}] [MASTER / ${
+		const message = `[${options.date.toLocaleTimeString()}] [${
 			options.toShow ? options.toShow.toUpperCase() : options.type.toUpperCase()
 		}]:`;
 
@@ -294,7 +294,7 @@ class Logger {
 				if (lastMessage && typeof lastMessage === "string") {
 					messages[messages.length - 1] = `${lastMessage} ${item}`;
 				} else {
-					messages.push(item.trim());
+					messages.push(item?.trim());
 				}
 			} else if (item instanceof Error) {
 				if (item.stack) {
@@ -310,7 +310,7 @@ class Logger {
 		}
 
 		const newMessages = messages.map((msg) => {
-			if (typeof msg === "string") {
+			if (typeof msg === "string" || msg === null || msg === undefined) {
 				return `${message} ${msg}`.trim();
 			} else {
 				const stringified = JSON.stringify(msg, null, 2);

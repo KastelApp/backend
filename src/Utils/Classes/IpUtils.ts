@@ -46,6 +46,8 @@ class IpUtils {
 	}
 
 	public static getIp(req: Request, server: Server | null) {
+		const rqIp = server?.requestIP(req)?.address;
+		
 		if (req.headers.get("x-forwarded-for")) return req.headers.get("x-forwarded-for")?.split(",")[0];
 
 		let clientIp: string | null | undefined = null;
@@ -57,8 +59,6 @@ class IpUtils {
 		}
 
 		if (!clientIp) {
-			const rqIp = server?.requestIP(req)?.address;
-
 			if (rqIp) return rqIp;
 
 			return null;
