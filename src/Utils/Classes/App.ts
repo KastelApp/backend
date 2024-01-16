@@ -233,7 +233,7 @@ class App {
 
 		this.Logger.info(`Loaded ${Object.keys(this.Router.routes).length} routes`);
 
-		this.ElysiaApp.all("*", async ({ body, headers, params, path, query, request, set, store }) => {
+		this.ElysiaApp.all("*", async ({ body, headers, path, query, request, set, store }) => {
 			const ip = IpUtils.getIp(request, this.ElysiaApp.server) ?? "";
 			const isLocalIp = IpUtils.isLocalIp(ip);
 
@@ -336,7 +336,7 @@ class App {
 						app: this,
 						body: body as {},
 						headers,
-						params,
+						params: matched.params,
 						path,
 						query,
 						request,
@@ -361,7 +361,7 @@ class App {
 				app: this,
 				body: body as {},
 				headers,
-				params,
+				params: matched.params,
 				path,
 				query,
 				request,
