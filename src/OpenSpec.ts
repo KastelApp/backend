@@ -259,7 +259,7 @@ for (const [name, route] of Object.entries(router.routes)) {
     });
 }
 
-await Bun.write("./test.json", JSON.stringify(dd, null, 4));
+await Bun.write("./test.json", JSON.stringify(dd.reverse(), null, 4));
 
 // eslint-disable-next-line n/prefer-global/process
 process.exit(0);
