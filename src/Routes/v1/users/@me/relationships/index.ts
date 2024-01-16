@@ -15,8 +15,8 @@ export default class UserSettings extends Route {
 	public getRelationships() {
 		return {};
 	}
-    
-    @Method("post")
+
+	@Method("post")
 	@Description("Create a new relationship")
 	@ContentTypes("application/json")
 	public postRelationships() {

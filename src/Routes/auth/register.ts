@@ -13,19 +13,18 @@ import Middleware from "@/Utils/Classes/Routing/Decorators/Middleware.ts";
 import type { CreateRoute } from "@/Utils/Classes/Routing/Route.ts";
 import Route from "@/Utils/Classes/Routing/Route.ts";
 import Token from "@/Utils/Classes/Token.ts";
+import tagGenerator from "@/Utils/TagGenerator.ts";
 import type Settings from "@/Utils/Cql/Types/Settings.ts";
 import type Users from "@/Utils/Cql/Types/User.ts";
-import tagGenerator from "@/Utils/TagGenerator.ts";
 
 const postRequestBody = {
 	email: string().email(),
 	password: string().min(4).max(72),
 	username: string().min(3).max(32),
-	invite: string().optional()
+	invite: string().optional(),
 };
 
 export default class Register extends Route {
-
 	public maxUsernames = 6_000; // You can create 9999 users with the same username, but on registration, it will be limited to 6000
 
 	public constructor(App: App) {
@@ -35,16 +34,14 @@ export default class Register extends Route {
 	@Method("post")
 	@Description("Register a new account")
 	@ContentTypes("application/json")
-	@Middleware(userMiddleware({
-		AccessType: "LoggedOut",
-		AllowedRequesters: "User"
-	}))
+	@Middleware(
+		userMiddleware({
+			AccessType: "LoggedOut",
+			AllowedRequesters: "User",
+		}),
+	)
 	@Middleware(bodyValidator(postRequestBody))
-	public async postRegister({
-		body,
-		set,
-		request
-	}: CreateRoute<"/", Infer<typeof postRequestBody>>) {
+	public async postRegister({ body, set, request }: CreateRoute<"/", Infer<typeof postRequestBody>>) {
 		const foundUser = await this.fetchUser({ email: Encryption.encrypt(body.email) }, ["email"]);
 		const foundUsers = await this.fetchUser({ username: Encryption.encrypt(body.username) }, ["tag"]);
 		const tag = tagGenerator(foundUsers.map((usr) => usr.tag));
@@ -54,8 +51,8 @@ export default class Register extends Route {
 			failed.addError({
 				email: {
 					code: "InvalidEmail",
-					message: "The email provided was invalid, or already in use."
-				}
+					message: "The email provided was invalid, or already in use.",
+				},
 			});
 		}
 
@@ -63,8 +60,8 @@ export default class Register extends Route {
 			failed.addError({
 				username: {
 					code: "MaxUsernames",
-					message: `The maximum amount of users with the username ${body.username} has been reached :(`
-				}
+					message: `The maximum amount of users with the username ${body.username} has been reached :(`,
+				},
 			});
 		}
 
@@ -87,7 +84,7 @@ export default class Register extends Route {
 			tag: tag as string, // ? not too sure why its not counted as a string
 			twoFaSecret: null,
 			userId: Encryption.encryptedSnowflake(),
-			username: Encryption.encrypt(body.username)
+			username: Encryption.encrypt(body.username),
 		};
 
 		const token = Token.generateToken(Encryption.decrypt(userObject.userId));
@@ -102,20 +99,22 @@ export default class Register extends Route {
 			privacy: 0,
 			status: null,
 			theme: "dark",
-			tokens: [{
-				createdDate: new Date(),
-				flags: 0,
-				ip: IpUtils.getIp(request, this.App.ElysiaApp.server) ?? "",
-				token: Encryption.encrypt(token),
-				tokenId: Encryption.encryptedSnowflake()
-			}],
+			tokens: [
+				{
+					createdDate: new Date(),
+					flags: 0,
+					ip: IpUtils.getIp(request, this.App.ElysiaApp.server) ?? "",
+					token: Encryption.encrypt(token),
+					tokenId: Encryption.encryptedSnowflake(),
+				},
+			],
 			userId: userObject.userId,
-			guildOrder: []
+			guildOrder: [],
 		};
 
 		await Promise.all([
 			this.App.Cassandra.Models.User.insert(userObject),
-			this.App.Cassandra.Models.Settings.insert(settignsObject)
+			this.App.Cassandra.Models.Settings.insert(settignsObject),
 		]);
 
 		return {
@@ -127,23 +126,28 @@ export default class Register extends Route {
 				tag: userObject.tag,
 				publicFlags: userObject.publicFlags,
 				flags: userObject.flags,
-			}
+			},
 		};
 	}
 
-	private async fetchUser(opts: {
-		email?: string;
-		username?: string;
-	}, fields: string[]) {
+	private async fetchUser(
+		opts: {
+			email?: string;
+			username?: string;
+		},
+		fields: string[],
+	) {
 		// eslint-disable-next-line unicorn/no-array-method-this-argument
 		const fetched = await this.App.Cassandra.Models.User.find(opts, {
-			fields: fields as any // ? Due to me changing something string[] won't work anymore, but this should be safe 
+			fields: fields as any, // ? Due to me changing something string[] won't work anymore, but this should be safe
 		});
 
-		return Encryption.completeDecryption(fetched.toArray().map((usr) => ({
-			...usr,
-			flags: usr.flags ? String(usr.flags) : "0",
-			publicFlags: usr.flags ? String(usr.publicFlags) : "0"
-		})));
+		return Encryption.completeDecryption(
+			fetched.toArray().map((usr) => ({
+				...usr,
+				flags: usr.flags ? String(usr.flags) : "0",
+				publicFlags: usr.flags ? String(usr.publicFlags) : "0",
+			})),
+		);
 	}
 }

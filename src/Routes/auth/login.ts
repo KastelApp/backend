@@ -52,7 +52,7 @@ export default class Login extends Route {
 
 			return error.toJSON();
 		}
-		
+
 		if (!fetchedUser.password) {
 			const error = errorGen.InvalidCredentials();
 
@@ -140,7 +140,7 @@ export default class Login extends Route {
 				userId: Encryption.encrypt(fetchedUser.userId),
 			},
 			{
-				fields: ["user_id", "tokens"]
+				fields: ["user_id", "tokens"],
 			},
 		);
 
@@ -159,7 +159,7 @@ export default class Login extends Route {
 				theme: "dark",
 				tokens: [],
 				userId: Encryption.encrypt(fetchedUser.userId),
-				guildOrder: []
+				guildOrder: [],
 			};
 		}
 
@@ -190,11 +190,14 @@ export default class Login extends Route {
 	}
 
 	private async fetchUser(email: string) {
-		const fetched = await this.App.Cassandra.Models.User.get({
-			email: Encryption.encrypt(email),
-		}, {
-			fields: ["email", "user_id", "password", "flags", "public_flags"]
-		});
+		const fetched = await this.App.Cassandra.Models.User.get(
+			{
+				email: Encryption.encrypt(email),
+			},
+			{
+				fields: ["email", "user_id", "password", "flags", "public_flags"],
+			},
+		);
 
 		if (!fetched) {
 			return null;

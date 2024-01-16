@@ -40,7 +40,7 @@ const patchSelf = {
 	email: string().email().optional(),
 	tag: string().min(4).max(4).optional(),
 	password: string().min(4).max(72).optional(),
-	newPassword: string().min(4).max(72).optional()
+	newPassword: string().min(4).max(72).optional(),
 };
 
 export default class FetchPatch extends Route {
@@ -51,21 +51,24 @@ export default class FetchPatch extends Route {
 	@Method("get")
 	@Description("Fetch the current user")
 	@ContentTypes("any")
-	@Middleware(userMiddleware({
-		AccessType: "LoggedIn",
-		AllowedRequesters: ["User", "OAuth"],
-		OAuth2Scopes: ["user.identity"]
-	}))
+	@Middleware(
+		userMiddleware({
+			AccessType: "LoggedIn",
+			AllowedRequesters: ["User", "OAuth"],
+			OAuth2Scopes: ["user.identity"],
+		}),
+	)
 	public async getFetch({
 		user,
 		query,
-		set
-	}: CreateRoute<"/@me", any, [UserMiddlewareType], any, { include?: string; }>) {
+		set,
+	}: CreateRoute<"/@me", any, [UserMiddlewareType], any, { include?: string }>) {
 		const fetchedUser = await this.App.Cassandra.Models.User.get({
-			userId: Encryption.encrypt(user.id)
+			userId: Encryption.encrypt(user.id),
 		});
 
-		if (!fetchedUser) { // ! Shouldn't happen, but just so we can satisfy typescript
+		if (!fetchedUser) {
+			// ! Shouldn't happen, but just so we can satisfy typescript
 			set.status = 500;
 
 			return "Internal Server Error :(";
@@ -91,11 +94,14 @@ export default class FetchPatch extends Route {
 		};
 
 		if (include.includes("bio")) {
-			const bio = await this.App.Cassandra.Models.Settings.get({
-				userId: Encryption.encrypt(user.id)
-			}, {
-				fields: ["bio"]
-			});
+			const bio = await this.App.Cassandra.Models.Settings.get(
+				{
+					userId: Encryption.encrypt(user.id),
+				},
+				{
+					fields: ["bio"],
+				},
+			);
 
 			userObject.bio = bio?.bio ?? null;
 		}
@@ -110,26 +116,22 @@ export default class FetchPatch extends Route {
 	@Method("patch")
 	@Description("Update the current user")
 	@ContentTypes("application/json")
-	@Middleware(userMiddleware({
-		AccessType: "LoggedIn",
-		AllowedRequesters: ["User"]
-	}))
+	@Middleware(
+		userMiddleware({
+			AccessType: "LoggedIn",
+			AllowedRequesters: ["User"],
+		}),
+	)
 	@Middleware(bodyValidator(patchSelf))
-	public async patchFetch({
-		body,
-		set,
-		user,
-		ip
-	}: CreateRoute<"/@me", Infer<typeof patchSelf>, [UserMiddlewareType]>) {
-
+	public async patchFetch({ body, set, user, ip }: CreateRoute<"/@me", Infer<typeof patchSelf>, [UserMiddlewareType]>) {
 		const failedToUpdateSelf = errorGen.FailedToPatchUser();
 
 		if (!body.password && this.passwordRequiredFields.some((field) => body[field])) {
 			failedToUpdateSelf.addError({
 				user: {
 					code: "PasswordRequired",
-					message: `You must provide your password to update "${this.passwordRequiredFields.join(", ")}"`
-				}
+					message: `You must provide your password to update "${this.passwordRequiredFields.join(", ")}"`,
+				},
 			});
 
 			set.status = 400;
@@ -141,8 +143,8 @@ export default class FetchPatch extends Route {
 			failedToUpdateSelf.addError({
 				user: {
 					code: "InvalidPassword",
-					message: "The password provided was invalid"
-				}
+					message: "The password provided was invalid",
+				},
 			});
 
 			set.status = 400;
@@ -156,26 +158,34 @@ export default class FetchPatch extends Route {
 		} = {};
 
 		if (body.username || body.tag) {
-			const foundUsers = await this.fetchUser({
-				username: body.username ? Encryption.encrypt(body.username) : Encryption.encrypt(user.username)
-			}, ["username", "tag"]);
+			const foundUsers = await this.fetchUser(
+				{
+					username: body.username ? Encryption.encrypt(body.username) : Encryption.encrypt(user.username),
+				},
+				["username", "tag"],
+			);
 
-			if (body.username && foundUsers.length >= this.maxUsernames && body.username && foundUsers.some((usr) => usr.username !== user.username)) {
+			if (
+				body.username &&
+				foundUsers.length >= this.maxUsernames &&
+				body.username &&
+				foundUsers.some((usr) => usr.username !== user.username)
+			) {
 				// ? If the user is trying to change their username, and the users with the same username are greater then the maxUsernames
 				// ? then we do not allow them to change their username. Each username can have around 8.5k users with it
 				// ? The other 1.5k is just so we don't have race conditions where two people take the same username
 				failedToUpdateSelf.addError({
 					username: {
 						code: "MaxUsernames",
-						message: `The maximum amount of users with the username ${body.username} has been reached :(`
-					}
+						message: `The maximum amount of users with the username ${body.username} has been reached :(`,
+					},
 				});
 			} else if (body.tag && foundUsers.some((usr) => usr.tag === body.tag && usr.username === user.username)) {
 				failedToUpdateSelf.addError({
 					tag: {
 						code: "TagInUse",
-						message: `The tag ${body.tag} is already in use by someone else`
-					}
+						message: `The tag ${body.tag} is already in use by someone else`,
+					},
 				});
 			}
 
@@ -184,7 +194,6 @@ export default class FetchPatch extends Route {
 
 				if (body.tag) stuffToUpdate.tag = body.tag;
 			}
-
 		}
 
 		if (body.globalNickname) stuffToUpdate.globalNickname = Encryption.encrypt(body.globalNickname);
@@ -194,58 +203,66 @@ export default class FetchPatch extends Route {
 
 			return failedToUpdateSelf.toJSON();
 		}
-		
+
 		if (body.newPassword) {
 			stuffToUpdate.password = await Bun.password.hash(body.newPassword);
-			
-			const settings = await this.App.Cassandra.Models.Settings.get({
-				userId: Encryption.encrypt(user.id)
-			}, {
-				fields: ["tokens"]
-			});
-			
+
+			const settings = await this.App.Cassandra.Models.Settings.get(
+				{
+					userId: Encryption.encrypt(user.id),
+				},
+				{
+					fields: ["tokens"],
+				},
+			);
+
 			if (!settings) {
 				set.status = 500;
-				
+
 				return "Internal Server Error :(";
 			}
 
 			const newToken = Token.generateToken(user.id);
-			
-			settings.tokens = [{
-				createdDate: new Date(),
-				flags: 0,
-				ip: Encryption.encrypt(ip),
-				token: Encryption.encrypt(newToken),
-				tokenId: Encryption.encryptedSnowflake()
-			}]
-			
+
+			settings.tokens = [
+				{
+					createdDate: new Date(),
+					flags: 0,
+					ip: Encryption.encrypt(ip),
+					token: Encryption.encrypt(newToken),
+					tokenId: Encryption.encryptedSnowflake(),
+				},
+			];
+
 			await this.App.Cassandra.Models.Settings.update({
 				userId: Encryption.encrypt(user.id),
-				tokens: settings.tokens
+				tokens: settings.tokens,
 			});
-			
+
 			stuffToUpdate.token = newToken;
 		}
 
 		if (body.bio) {
 			await this.App.Cassandra.Models.Settings.update({
 				userId: Encryption.encrypt(user.id),
-				bio: Encryption.encrypt(body.bio)
+				bio: Encryption.encrypt(body.bio),
 			});
 		}
 
 		if (body.email) {
-			const foundUser = await this.fetchUser({
-				email: Encryption.encrypt(body.email)
-			}, ["email"]);
+			const foundUser = await this.fetchUser(
+				{
+					email: Encryption.encrypt(body.email),
+				},
+				["email"],
+			);
 
 			if (foundUser.length > 0) {
 				failedToUpdateSelf.addError({
 					email: {
 						code: "InvalidEmail",
-						message: "The email provided was invalid, or already in use."
-					}
+						message: "The email provided was invalid, or already in use.",
+					},
 				});
 			} else {
 				stuffToUpdate.email = Encryption.encrypt(body.email);
@@ -262,21 +279,21 @@ export default class FetchPatch extends Route {
 
 		if (Object.keys(stuffToUpdate).length === 0 && !body.bio) {
 			set.status = 400;
-			
+
 			failedToUpdateSelf.addError({
 				user: {
 					code: "NothingToUpdate",
-					message: "You didn't provide anything to update"
-				}
+					message: "You didn't provide anything to update",
+				},
 			});
-			
+
 			return failedToUpdateSelf.toJSON();
 		}
 
 		if (Object.keys(stuffToUpdate).length > 0) {
 			await this.App.Cassandra.Models.User.update({
 				userId: Encryption.encrypt(user.id),
-				...stuffToUpdate
+				...stuffToUpdate,
 			});
 		}
 
@@ -284,31 +301,36 @@ export default class FetchPatch extends Route {
 		const fetched = await this.getFetch({
 			user,
 			query: body.bio ? { include: "bio" } : {},
-			set
+			set,
 		});
-		
+
 		if (typeof fetched === "string") return fetched;
-		
+
 		return {
 			...fetched,
-			token: stuffToUpdate.token
+			token: stuffToUpdate.token,
 		};
 	}
 
-	private async fetchUser(opts: {
-		email?: string,
-		userId?: string;
-		username?: string;
-	}, fields: string[]) {
+	private async fetchUser(
+		opts: {
+			email?: string;
+			userId?: string;
+			username?: string;
+		},
+		fields: string[],
+	) {
 		// eslint-disable-next-line unicorn/no-array-method-this-argument
 		const fetched = await this.App.Cassandra.Models.User.find(opts, {
-			fields: fields as any // ? Due to me changing something string[] won't work anymore, but this should be safe 
+			fields: fields as any, // ? Due to me changing something string[] won't work anymore, but this should be safe
 		});
 
-		return Encryption.completeDecryption(fetched.toArray().map((usr) => ({
-			...usr,
-			flags: usr.flags ? String(usr.flags) : "0",
-			publicFlags: usr.flags ? String(usr.publicFlags) : "0"
-		})));
+		return Encryption.completeDecryption(
+			fetched.toArray().map((usr) => ({
+				...usr,
+				flags: usr.flags ? String(usr.flags) : "0",
+				publicFlags: usr.flags ? String(usr.publicFlags) : "0",
+			})),
+		);
 	}
 }

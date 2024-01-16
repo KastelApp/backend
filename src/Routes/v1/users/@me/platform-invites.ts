@@ -22,7 +22,7 @@ export default class PlatformInvites extends Route {
 	public deleteInvite() {
 		return {};
 	}
-    
+
 	@Method("post")
 	@Description("Create a new invite for Kastel")
 	@ContentTypes("application/json")

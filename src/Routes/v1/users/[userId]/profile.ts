@@ -11,11 +11,11 @@ import type { CreateRoute } from "@/Utils/Classes/Routing/Route.ts";
 import Route from "@/Utils/Classes/Routing/Route.ts";
 
 // ? Why would we want to have a "profile" route instead of adding it to the normal user route
-// ? Great question, the reason is I want it to be the same as the @me route, since the profile meta data is sent in the 
+// ? Great question, the reason is I want it to be the same as the @me route, since the profile meta data is sent in the
 // ? Gateway payload for identify, I want to keep it the same as the @me route, so that way I can easily document it
 
 interface ProfileResponse {
-	connections: unknown[] // TODO: Add connections (Discord, Twitter (X), Github, Steam, Spotify (Not sure if we can do this one), Reddit, Youtube, Twitch)
+	connections: unknown[]; // TODO: Add connections (Discord, Twitter (X), Github, Steam, Spotify (Not sure if we can do this one), Reddit, Youtube, Twitch)
 	mutualFriends: string[];
 	mutualGuilds: string[];
 }
@@ -28,18 +28,15 @@ export default class Profile extends Route {
 	@Method("get")
 	@Description("Fetch a users profile")
 	@ContentTypes("any")
-	@Middleware(userMiddleware({
-		AccessType: "LoggedIn",
-		AllowedRequesters: ["User"]
-	}))
-	public async getProfile({
-		params,
-		set,
-		user
-	}: CreateRoute<"/users/:userId/profile", any, [UserMiddlewareType]>) {
-		
+	@Middleware(
+		userMiddleware({
+			AccessType: "LoggedIn",
+			AllowedRequesters: ["User"],
+		}),
+	)
+	public async getProfile({ params, set, user }: CreateRoute<"/users/:userId/profile", any, [UserMiddlewareType]>) {
 		const fetchedUser = await this.App.Cassandra.Models.User.get({
-			userId: Encryption.encrypt(params.userId)
+			userId: Encryption.encrypt(params.userId),
 		});
 
 		if (!fetchedUser) {
@@ -48,23 +45,23 @@ export default class Profile extends Route {
 			userNotFound.addError({
 				user: {
 					code: "InvalidUser",
-					message: "The requested user does not exist, or they have blocked you."
-				}
-			})
+					message: "The requested user does not exist, or they have blocked you.",
+				},
+			});
 
 			set.status = 404;
-			
-			return userNotFound.toJSON()
+
+			return userNotFound.toJSON();
 		}
-		
+
 		const mutualGuilds = user.guilds.filter((guild) => fetchedUser.guilds.includes(Encryption.encrypt(guild)));
-	
+
 		const response: ProfileResponse = {
 			connections: [],
 			mutualFriends: [],
-			mutualGuilds
-		}
-		
+			mutualGuilds,
+		};
+
 		return response;
 	}
 }

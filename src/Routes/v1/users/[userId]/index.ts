@@ -30,17 +30,15 @@ export default class Fetch extends Route {
 	@Method("get")
 	@Description("Fetch a user by their ID")
 	@ContentTypes("any")
-	@Middleware(userMiddleware({
-		AccessType: "LoggedIn",
-		AllowedRequesters: ["User"]
-	}))
-	public async getProfile({
-		params,
-		query,
-		set
-	}: CreateRoute<"/users/:userId", any, [UserMiddlewareType]>) {
+	@Middleware(
+		userMiddleware({
+			AccessType: "LoggedIn",
+			AllowedRequesters: ["User"],
+		}),
+	)
+	public async getProfile({ params, query, set }: CreateRoute<"/users/:userId", any, [UserMiddlewareType]>) {
 		const fetchedUser = await this.App.Cassandra.Models.User.get({
-			userId: Encryption.encrypt(params.userId)
+			userId: Encryption.encrypt(params.userId),
 		});
 
 		if (!fetchedUser) {
@@ -49,13 +47,13 @@ export default class Fetch extends Route {
 			userNotFound.addError({
 				user: {
 					code: "InvalidUser",
-					message: "The requested user does not exist, or they have blocked you."
-				}
-			})
+					message: "The requested user does not exist, or they have blocked you.",
+				},
+			});
 
 			set.status = 404;
-			
-			return userNotFound.toJSON()
+
+			return userNotFound.toJSON();
 		}
 
 		const flags = new FlagFields(fetchedUser.flags, fetchedUser?.publicFlags ?? 0);
@@ -73,11 +71,14 @@ export default class Fetch extends Route {
 		};
 
 		if (include.includes("bio")) {
-			const bio = await this.App.Cassandra.Models.Settings.get({
-				userId: Encryption.encrypt(params.userId)
-			}, {
-				fields: ["bio"]
-			});
+			const bio = await this.App.Cassandra.Models.Settings.get(
+				{
+					userId: Encryption.encrypt(params.userId),
+				},
+				{
+					fields: ["bio"],
+				},
+			);
 
 			userObject.bio = bio?.bio ?? null;
 		}

@@ -24,27 +24,29 @@ export default class Logout extends Route {
 		}),
 	)
 	public async deleteLogout({ user, set }: CreateRoute<"/logout", any, [UserMiddlewareType]>) {
+		const fetched = await this.App.Cassandra.Models.Settings.get(
+			{
+				userId: Encryption.encrypt(user.id),
+			},
+			{
+				fields: ["user_id", "tokens"],
+			},
+		);
 
-		const fetched = await this.App.Cassandra.Models.Settings.get({
-			userId: Encryption.encrypt(user.id),
-		}, {
-			fields: ["user_id", "tokens"]
-		});
-		
 		if (!fetched) {
 			set.status = 500;
-			
-			return "Internal Server Error :("
+
+			return "Internal Server Error :(";
 		}
-		
+
 		const newSettings = fetched;
-		
+
 		newSettings.tokens = newSettings.tokens.filter((token) => token.token !== Encryption.encrypt(user.token));
-		
+
 		await this.App.Cassandra.Models.Settings.update(newSettings);
-		
+
 		set.status = 204;
-		
+
 		// eslint-disable-next-line sonarjs/no-redundant-jump, no-useless-return
 		return;
 	}

@@ -1,4 +1,3 @@
-import Constants from "@/Constants.ts";
 import type { UserMiddlewareType } from "@/Middleware/User.ts";
 import userMiddleware from "@/Middleware/User.ts";
 import type { Infer } from "@/Types/BodyValidation.ts";
@@ -10,6 +9,7 @@ import Method from "@/Utils/Classes/Routing/Decorators/Method.ts";
 import Middleware from "@/Utils/Classes/Routing/Decorators/Middleware.ts";
 import type { CreateRoute } from "@/Utils/Classes/Routing/Route.ts";
 import Route from "@/Utils/Classes/Routing/Route.ts";
+import Constants from "@/Constants.ts";
 
 const postGuild = {
 	name: string().max(100),
@@ -20,7 +20,9 @@ const postGuild = {
 		description: string().max(256).optional().nullable(),
 		type: number(),
 		parentId: snowflake().optional().nullable(),
-	}).optional().max(Constants.settings.Max.ChannelCount),
+	})
+		.optional()
+		.max(Constants.settings.Max.ChannelCount),
 	roles: array({
 		id: snowflake().optional(),
 		name: string().max(32),
@@ -28,9 +30,11 @@ const postGuild = {
 		permissions: number(),
 		hoist: boolean().optional(),
 		position: number().min(0).max(100),
-	}).optional().max(Constants.settings.Max.RoleCount),
-	template: string().optional() // TODO: Create template stuff (basically like discords)
-}
+	})
+		.optional()
+		.max(Constants.settings.Max.RoleCount),
+	template: string().optional(), // TODO: Create template stuff (basically like discords)
+};
 
 export default class FetchGuilds extends Route {
 	public constructor(App: App) {
@@ -43,17 +47,17 @@ export default class FetchGuilds extends Route {
 	public getGuilds() {
 		return {};
 	}
-	
+
 	@Method("post")
 	@Description("Create a new guild")
 	@ContentTypes("application/json")
-	@Middleware(userMiddleware({
-		AccessType: "LoggedIn",
-		AllowedRequesters: "User"
-	}))
-	public postGuild({
-		body
-	}: CreateRoute<"/guilds", Infer<typeof postGuild>, [UserMiddlewareType]>) {
+	@Middleware(
+		userMiddleware({
+			AccessType: "LoggedIn",
+			AllowedRequesters: "User",
+		}),
+	)
+	public postGuild({ body }: CreateRoute<"/guilds", Infer<typeof postGuild>, [UserMiddlewareType]>) {
 		return body;
 	}
 }

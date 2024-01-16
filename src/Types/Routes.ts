@@ -33,7 +33,7 @@ export type Methods =
 
 type Requesters = "All" | "Bot" | "OAuth" | "User" | "Webhook";
 
-export type OAuth2Scopes = "user.guilds" | "user.identity.email" | "user.identity"
+export type OAuth2Scopes = "user.guilds" | "user.identity.email" | "user.identity";
 
 export interface UserMiddleware {
 	// The flags required to access the endpoint (Default: null)

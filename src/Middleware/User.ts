@@ -24,7 +24,7 @@ export interface UserMiddlewareType extends Record<string, any> {
 			privacy: number;
 			status: string | null;
 			theme: string;
-		},
+		};
 		token: string;
 		username: string;
 	};
@@ -321,7 +321,7 @@ const userMiddleware = (options: UserMiddleware) => {
 						privacy: usersSettings.privacy,
 						status: usersSettings.status,
 						theme: usersSettings.theme,
-					})
+					}),
 				},
 			};
 		}

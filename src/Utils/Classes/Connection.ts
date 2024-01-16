@@ -185,7 +185,7 @@ class Connection extends EventEmitter {
 			});
 
 			await this.Execute(`USE ${this.KeySpace};`);
-			
+
 			// await this.Execute("TRACING ON;")
 
 			this.emit("Connected");

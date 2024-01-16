@@ -17,35 +17,58 @@ interface AnyType {
 type Types = "array" | "boolean" | "number" | "snowflake" | "string";
 type Options = "none" | "notNullable" | "required" | "requiredNullable";
 
-type TypeDependentStuff<Type extends Types, Option extends Options, M extends BodyValidator = BodyValidator> = (Type extends "string" ? {
-	email(): CreateType<Type, Option, M>;
-	max(value: number): CreateType<Type, Option, M>;
-	min(value: number): CreateType<Type, Option, M>;
-} : Type extends "number" ? {
-	max(value: number): CreateType<Type, Option, M>;
-	min(value: number): CreateType<Type, Option, M>;
-} : Type extends "array" ? {
-	items: M[]
-	max(value: number): CreateType<Type, Option, M>;
-	min(value: number): CreateType<Type, Option, M>;
-} : {});
+type TypeDependentStuff<
+	Type extends Types,
+	Option extends Options,
+	M extends BodyValidator = BodyValidator,
+> = Type extends "string"
+	? {
+			email(): CreateType<Type, Option, M>;
+			max(value: number): CreateType<Type, Option, M>;
+			min(value: number): CreateType<Type, Option, M>;
+	  }
+	: Type extends "number"
+	? {
+			max(value: number): CreateType<Type, Option, M>;
+			min(value: number): CreateType<Type, Option, M>;
+	  }
+	: Type extends "array"
+	? {
+			items: M[];
+			max(value: number): CreateType<Type, Option, M>;
+			min(value: number): CreateType<Type, Option, M>;
+	  }
+	: {};
 
 // ? None = not required, can be null
 // ? requiredNullable = required, can be null
 // ? notNullable = not required, cannot be null
 // ? required = required, cannot be null
-type CreateType<Type extends Types, Option extends Options, M extends BodyValidator = BodyValidator> = TypeDependentStuff<Type, Option, M> & (Option extends "required" ? {
-	nullable(): CreateType<Type, "requiredNullable", M>;
-	optional(): CreateType<Type, "notNullable", M>;
-} : Option extends "requiredNullable" ? {
-	optional(): CreateType<Type, "none", M>;
-} : Option extends "notNullable" ? {
-	nullable(): CreateType<Type, "none", M>;
-} : Option extends "none" ? {} : never) & {
-	canbeNull: Option extends "none" ? true : Option extends "requiredNullable" ? true : false;
-	required: Option extends "required" ? true : Option extends "requiredNullable" ? true : false;
-	type: Type;
-};
+type CreateType<
+	Type extends Types,
+	Option extends Options,
+	M extends BodyValidator = BodyValidator,
+> = TypeDependentStuff<Type, Option, M> &
+	(Option extends "required"
+		? {
+				nullable(): CreateType<Type, "requiredNullable", M>;
+				optional(): CreateType<Type, "notNullable", M>;
+		  }
+		: Option extends "requiredNullable"
+		? {
+				optional(): CreateType<Type, "none", M>;
+		  }
+		: Option extends "notNullable"
+		? {
+				nullable(): CreateType<Type, "none", M>;
+		  }
+		: Option extends "none"
+		? {}
+		: never) & {
+		canbeNull: Option extends "none" ? true : Option extends "requiredNullable" ? true : false;
+		required: Option extends "required" ? true : Option extends "requiredNullable" ? true : false;
+		type: Type;
+	};
 
 interface TypeMapping {
 	array: unknown[]; // ! Only here for the Optionalize type, this will never be used
@@ -57,40 +80,54 @@ interface TypeMapping {
 }
 
 interface BodyValidator {
-	[key: string]: AnyType | BodyValidator | CreateType<Types, Options>
+	[key: string]: AnyType | BodyValidator | CreateType<Types, Options>;
 }
 
 type Optionalize<T extends AnyType> = T["required"] extends true
 	? T["canBeNull"] extends true
-	? TypeMapping[T["type"]] | null
-	: TypeMapping[T["type"]]
+		? TypeMapping[T["type"]] | null
+		: TypeMapping[T["type"]]
 	: T["canBeNull"] extends true
 	? TypeMapping[T["type"]] | null
 	: TypeMapping[T["type"]];
 
 type InferRaw<T> = T extends object
 	? {
-		[K in keyof T as T[K] extends AnyType
-		? T[K]["required"] extends false
-		? K
-		: never
-		: never]?: T[K] extends AnyType
-		// @ts-expect-error -- it exists, I tried making it understand that but typescript wants to whine about it
-		? T[K]["type"] extends "array" ? T[K]["items"] extends (infer U)[] ? InferRaw<U>[] : never  : Optionalize<T[K]>
-		: never;
-	} & {
-		[K in keyof T as T[K] extends AnyType ? (T[K]["required"] extends true ? K : never) : K]: T[K] extends AnyType
-		// @ts-expect-error -- it exists, I tried making it understand that but typescript wants to whine about it
-		? T[K]["type"] extends "array" ? T[K]["items"] extends (infer U)[] ? InferRaw<U>[] : never  : Optionalize<T[K]>
-		: InferRaw<T>;
-	}
+			[K in keyof T as T[K] extends AnyType
+				? T[K]["required"] extends false
+					? K
+					: never
+				: never]?: T[K] extends AnyType
+				? // @ts-expect-error -- it exists, I tried making it understand that but typescript wants to whine about it
+				  T[K]["type"] extends "array"
+					? T[K]["items"] extends (infer U)[]
+						? InferRaw<U>[]
+						: never
+					: Optionalize<T[K]>
+				: never;
+	  } & {
+			[K in keyof T as T[K] extends AnyType ? (T[K]["required"] extends true ? K : never) : K]: T[K] extends AnyType
+				? // @ts-expect-error -- it exists, I tried making it understand that but typescript wants to whine about it
+				  T[K]["type"] extends "array"
+					? T[K]["items"] extends (infer U)[]
+						? InferRaw<U>[]
+						: never
+					: Optionalize<T[K]>
+				: InferRaw<T>;
+	  }
 	: never;
 
 type Expand<T> = T extends unknown ? { [K in keyof T]: Expand<T[K]> } : T;
 
 export type Infer<T> = Expand<InferRaw<T>>;
 
-const none = <T extends Types, I extends BodyValidator = BodyValidator>(type: T, email = false, min = -1, max = -1, m?: I): CreateType<T, "none", I> => {
+const none = <T extends Types, I extends BodyValidator = BodyValidator>(
+	type: T,
+	email = false,
+	min = -1,
+	max = -1,
+	m?: I,
+): CreateType<T, "none", I> => {
 	return {
 		canBeNull: true,
 		required: false,
@@ -120,22 +157,22 @@ const none = <T extends Types, I extends BodyValidator = BodyValidator>(type: T,
 					if (min > -1 && value.length < min) return false;
 					if (max > -1 && value.length > max) return false;
 				}
-				
+
 				if (type === "array") {
 					if (!Array.isArray(value)) return false;
-					
+
 					if (min > -1 && value.length < min) return false;
 					if (max > -1 && value.length > max) return false;
-					
+
 					if (m) {
 						for (const item of value) {
 							for (const [key, data] of Object.entries(m)) {
 								// @ts-expect-error -- yeah yeah
-								if (!data.validate(item[key])) return false
+								if (!data.validate(item[key])) return false;
 							}
 						}
 					}
-					
+
 					return true;
 				}
 
@@ -154,7 +191,7 @@ const none = <T extends Types, I extends BodyValidator = BodyValidator>(type: T,
 		email: () => {
 			return none(type, true, min, max, m);
 		},
-		items: m
+		items: m,
 	} as unknown as CreateType<T, "none", I>;
 };
 
@@ -163,7 +200,7 @@ const requiredNullable = <T extends Types, I extends BodyValidator = BodyValidat
 	email = false,
 	min = -1,
 	max = -1,
-	m?: I
+	m?: I,
 ): CreateType<T, "requiredNullable", I> => {
 	return {
 		canBeNull: true,
@@ -200,22 +237,22 @@ const requiredNullable = <T extends Types, I extends BodyValidator = BodyValidat
 
 				if (type === "array") {
 					if (!Array.isArray(value)) return false;
-					
+
 					if (min > -1 && value.length < min) return false;
 					if (max > -1 && value.length > max) return false;
-					
+
 					if (m) {
 						for (const item of value) {
 							for (const [key, data] of Object.entries(m)) {
 								// @ts-expect-error -- yeah yeah
-								if (!data.validate(item[key])) return false
+								if (!data.validate(item[key])) return false;
 							}
 						}
 					}
-					
+
 					return true;
 				}
-				
+
 				return typeof value === type;
 			}
 
@@ -231,11 +268,17 @@ const requiredNullable = <T extends Types, I extends BodyValidator = BodyValidat
 		email: () => {
 			return requiredNullable(type, true, min, max, m);
 		},
-		items: m
+		items: m,
 	} as unknown as CreateType<T, "requiredNullable", I>;
 };
 
-const notRequired = <T extends Types, I extends BodyValidator = BodyValidator>(type: T, email = false, min = -1, max = -1, m?: I): CreateType<T, "notNullable", I> => {
+const notRequired = <T extends Types, I extends BodyValidator = BodyValidator>(
+	type: T,
+	email = false,
+	min = -1,
+	max = -1,
+	m?: I,
+): CreateType<T, "notNullable", I> => {
 	return {
 		canBeNull: false,
 		nullable: () => {
@@ -264,7 +307,6 @@ const notRequired = <T extends Types, I extends BodyValidator = BodyValidator>(t
 						return t(value, "email");
 					}
 
-
 					if (typeof value !== "string") return false;
 					if (min > -1 && value.length < min) return false;
 					if (max > -1 && value.length > max) return false;
@@ -272,22 +314,22 @@ const notRequired = <T extends Types, I extends BodyValidator = BodyValidator>(t
 
 				if (type === "array") {
 					if (!Array.isArray(value)) return false;
-					
+
 					if (min > -1 && value.length < min) return false;
 					if (max > -1 && value.length > max) return false;
-					
+
 					if (m) {
 						for (const item of value) {
 							for (const [key, data] of Object.entries(m)) {
 								// @ts-expect-error -- yeah yeah
-								if (!data.validate(item[key])) return false
+								if (!data.validate(item[key])) return false;
 							}
 						}
 					}
-					
+
 					return true;
 				}
-				
+
 				return typeof value === type;
 			}
 
@@ -303,11 +345,17 @@ const notRequired = <T extends Types, I extends BodyValidator = BodyValidator>(t
 		email: () => {
 			return notRequired(type, true, min, max, m);
 		},
-		items: m
+		items: m,
 	} as unknown as CreateType<T, "notNullable", I>;
 };
 
-const required = <T extends Types, I extends BodyValidator = BodyValidator>(type: T, email = false, min = -1, max = -1, m?: I): CreateType<T, "required", I> => {
+const required = <T extends Types, I extends BodyValidator = BodyValidator>(
+	type: T,
+	email = false,
+	min = -1,
+	max = -1,
+	m?: I,
+): CreateType<T, "required", I> => {
 	return {
 		canBeNull: false,
 		optional: () => {
@@ -346,22 +394,22 @@ const required = <T extends Types, I extends BodyValidator = BodyValidator>(type
 
 				if (type === "array") {
 					if (!Array.isArray(value)) return false;
-					
+
 					if (min > -1 && value.length < min) return false;
 					if (max > -1 && value.length > max) return false;
-					
+
 					if (m) {
 						for (const item of value) {
 							for (const [key, data] of Object.entries(m)) {
 								// @ts-expect-error -- yeah yeah
-								if (!data.validate(item[key])) return false
+								if (!data.validate(item[key])) return false;
 							}
 						}
 					}
-					
+
 					return true;
 				}
-				
+
 				return typeof value === type;
 			}
 
@@ -377,7 +425,7 @@ const required = <T extends Types, I extends BodyValidator = BodyValidator>(type
 		email: () => {
 			return required(type, true, min, max, m);
 		},
-		items: m
+		items: m,
 	} as unknown as CreateType<T, "required", I>;
 };
 

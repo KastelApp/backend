@@ -40,7 +40,7 @@ interface CreateRouteOptions<
 	app: App;
 	body: Body;
 	headers: Record<string, string | undefined>;
-	ip: string,
+	ip: string;
 	params: GetParams<Route> & ParamsArray<params>;
 	path: Route;
 	query: query;

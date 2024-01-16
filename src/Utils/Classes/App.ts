@@ -132,8 +132,10 @@ class App {
 
 	public async Init(): Promise<void> {
 		this.Logger.hex("#ca8911")(
-			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${relative.Version ? `v${relative.Version}` : "Unknown version"
-			} of Kastel's Backend. Bun version ${Bun.version
+			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${
+				relative.Version ? `v${relative.Version}` : "Unknown version"
+			} of Kastel's Backend. Bun version ${
+				Bun.version
 			}\nIf you would like to support this project please consider donating to https://opencollective.com/kastel\n`,
 		);
 
@@ -143,7 +145,8 @@ class App {
 
 		this.Router.on("reload", async ({ path, type, directory }) => {
 			this.Logger.verbose(
-				`Reloaded Routes due to a ${directory ? "directory" : "file"} (${path}) being ${type === "A" ? "Added" : type === "M" ? "Modified" : type === "D" ? "Removed" : "Unknown"
+				`Reloaded Routes due to a ${directory ? "directory" : "file"} (${path}) being ${
+					type === "A" ? "Added" : type === "M" ? "Modified" : type === "D" ? "Removed" : "Unknown"
 				}`,
 			);
 
@@ -244,7 +247,7 @@ class App {
 
 				return "Forbidden";
 			}
-			
+
 			const matched = this.Router.match(request);
 
 			if (!matched) {
@@ -280,10 +283,11 @@ class App {
 				error.addError({
 					methodNotAllowed: {
 						code: "MethodNotAllowed",
-						message: `Method "${request.method
-							}" is not allowed for "${path}", allowed methods are [${route.routeClass.__methods
-								.map((method) => method.method.toUpperCase())
-								.join(", ")}]`,
+						message: `Method "${
+							request.method
+						}" is not allowed for "${path}", allowed methods are [${route.routeClass.__methods
+							.map((method) => method.method.toUpperCase())
+							.join(", ")}]`,
 					},
 				});
 
@@ -315,8 +319,9 @@ class App {
 				error.addError({
 					contentType: {
 						code: "InvalidContentType",
-						message: `Invalid Content-Type header, Expected (${contentTypes.type.join(", ")}), Got (${headers["content-type"]
-							})`,
+						message: `Invalid Content-Type header, Expected (${contentTypes.type.join(", ")}), Got (${
+							headers["content-type"]
+						})`,
 					},
 				});
 
@@ -342,14 +347,14 @@ class App {
 						request,
 						set,
 						store,
-						ip
+						ip,
 					});
 
 					if (set.status !== 200) {
 						this.Logger.info(
 							`Request to "${route.route}" [${request.method}] finished with status ${set.status} from middleware ${middle.ware.name}`,
 						);
-						
+
 						return finished;
 					}
 
@@ -370,20 +375,20 @@ class App {
 				ip,
 				...finishedMiddlewares.reduce((a, b) => ({ ...a, ...b }), {}),
 			})) as Promise<unknown>;
-			
+
 			if (typeof requested === "object") {
 				// Go through requested, we want to alert the console when we detect an "email, phone number, password" field in the response
 				// There will be whitelisted paths, such as /auth/register, /users/@me etc
 				// If we detect one we warn it to the console then return a 500 error
 				const whitelistedPaths = ["/auth/register", "/users/@me"];
-				
+
 				const checked = this.checkObjectForBlacklistedFields(requested, ["email", "phoneNumber", "password"]);
-				
+
 				if (checked && !(whitelistedPaths.includes(path) || whitelistedPaths.includes(path.slice(3)))) {
 					set.status = 500;
-					
+
 					this.Logger.warn(`Blacklisted field detected in response for ${path}`);
-					
+
 					return "Internal Server Error :(";
 				}
 			}
@@ -397,24 +402,24 @@ class App {
 			this.Logger.info(`Listening on port ${config.Server.Port}`);
 		});
 	}
-	
+
 	public checkObjectForBlacklistedFields(object: unknown, blacklistedFields: string[]): boolean {
 		if (typeof object !== "object" || object === null || object instanceof Date) return false;
-		
+
 		if (Array.isArray(object)) {
 			for (const item of object) {
 				if (this.checkObjectForBlacklistedFields(item, blacklistedFields)) return true;
 			}
-			
+
 			return false;
 		}
-		
+
 		for (const [key, value] of Object.entries(object)) {
 			if (blacklistedFields.includes(key)) return true;
-			
+
 			if (this.checkObjectForBlacklistedFields(value, blacklistedFields)) return true;
 		}
-		
+
 		return false;
 	}
 
@@ -424,7 +429,7 @@ class App {
 		}
 
 		// this is a hack to make sure it doesn't cache the file
-		const routeClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof RouteBuilder; };
+		const routeClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof RouteBuilder };
 
 		if (!routeClass.default) {
 			this.Logger.warn(`Skipping ${path} as it does not have a default export`);
@@ -457,7 +462,7 @@ class App {
 		App.GitBranch = githubInfo.Branch;
 		App.GitCommit = githubInfo.Commit!;
 		this.Clean = githubInfo.Clean;
-		
+
 		const strings = [
 			"=".repeat(40),
 			"Kastel Debug Logs",
@@ -485,7 +490,8 @@ class App {
 			"Git Info:",
 			`Branch: ${App.GitBranch}`,
 			`Commit: ${githubInfo.CommitShort ?? githubInfo.Commit}`,
-			`Status: ${this.Clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
+			`Status: ${
+				this.Clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
 			}`,
 			this.Clean ? "" : "=".repeat(40),
 			`${this.Clean ? "" : "Changed Files:"}`,
@@ -525,7 +531,7 @@ class App {
 
 			process.exit(1);
 		}
-		
+
 		for (const file of status.files) {
 			App.GitFiles.push({
 				filePath: file.path,

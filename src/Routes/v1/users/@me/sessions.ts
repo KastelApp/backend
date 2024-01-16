@@ -17,24 +17,26 @@ export default class Sessions extends Route {
 	@Method("get")
 	@Description("Fetch the current sessions")
 	@ContentTypes("any")
-	@Middleware(userMiddleware({
-		AccessType: "LoggedIn",
-		AllowedRequesters: "User"
-	}))
-	public async getSessions({
-		user
-	}: CreateRoute<"/@me/sessions", any, [UserMiddlewareType]>) {
-		
-		const fetchedSessions = await this.App.Cassandra.Models.Settings.get({
-			userId: Encryption.encrypt(user.id)
-		}, {
-			fields: ["user_id", "tokens"]
-		});
-		
+	@Middleware(
+		userMiddleware({
+			AccessType: "LoggedIn",
+			AllowedRequesters: "User",
+		}),
+	)
+	public async getSessions({ user }: CreateRoute<"/@me/sessions", any, [UserMiddlewareType]>) {
+		const fetchedSessions = await this.App.Cassandra.Models.Settings.get(
+			{
+				userId: Encryption.encrypt(user.id),
+			},
+			{
+				fields: ["user_id", "tokens"],
+			},
+		);
+
 		if (!fetchedSessions) {
 			return [];
 		}
-		
+
 		return fetchedSessions.tokens.map((token) => ({
 			id: Encryption.decrypt(token.tokenId),
 			createdAt: token.createdDate.toISOString(),
