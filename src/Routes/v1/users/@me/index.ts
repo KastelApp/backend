@@ -13,6 +13,7 @@ import Method from "@/Utils/Classes/Routing/Decorators/Method.ts";
 import Middleware from "@/Utils/Classes/Routing/Decorators/Middleware.ts";
 import type { CreateRoute } from "@/Utils/Classes/Routing/Route.ts";
 import Route from "@/Utils/Classes/Routing/Route.ts";
+import Token from "@/Utils/Classes/Token.ts";
 
 interface User {
 	avatar: string | null;
@@ -64,7 +65,7 @@ export default class FetchPatch extends Route {
 			userId: Encryption.encrypt(user.id)
 		});
 
-		if (!fetchedUser) {
+		if (!fetchedUser) { // ! Shouldn't happen, but just so we can satisfy typescript
 			set.status = 500;
 
 			return "Internal Server Error :(";
@@ -117,7 +118,8 @@ export default class FetchPatch extends Route {
 	public async patchFetch({
 		body,
 		set,
-		user
+		user,
+		ip
 	}: CreateRoute<"/@me", Infer<typeof patchSelf>, [UserMiddlewareType]>) {
 
 		const failedToUpdateSelf = errorGen.FailedToPatchUser();
@@ -150,6 +152,7 @@ export default class FetchPatch extends Route {
 
 		const stuffToUpdate: Omit<Partial<Infer<typeof patchSelf>>, "bio" | "newPassword"> & {
 			flags?: string;
+			token?: string;
 		} = {};
 
 		if (body.username || body.tag) {
@@ -186,14 +189,43 @@ export default class FetchPatch extends Route {
 
 		if (body.globalNickname) stuffToUpdate.globalNickname = Encryption.encrypt(body.globalNickname);
 
-		if (body.newPassword) {
-			stuffToUpdate.password = await Bun.password.hash(body.newPassword);
-		}
-
 		if (failedToUpdateSelf.hasErrors()) {
 			set.status = 400;
 
 			return failedToUpdateSelf.toJSON();
+		}
+		
+		if (body.newPassword) {
+			stuffToUpdate.password = await Bun.password.hash(body.newPassword);
+			
+			const settings = await this.App.Cassandra.Models.Settings.get({
+				userId: Encryption.encrypt(user.id)
+			}, {
+				fields: ["tokens"]
+			});
+			
+			if (!settings) {
+				set.status = 500;
+				
+				return "Internal Server Error :(";
+			}
+
+			const newToken = Token.generateToken(user.id);
+			
+			settings.tokens = [{
+				createdDate: new Date(),
+				flags: 0,
+				ip: Encryption.encrypt(ip),
+				token: Encryption.encrypt(newToken),
+				tokenId: Encryption.encryptedSnowflake()
+			}]
+			
+			await this.App.Cassandra.Models.Settings.update({
+				userId: Encryption.encrypt(user.id),
+				tokens: settings.tokens
+			});
+			
+			stuffToUpdate.token = newToken;
 		}
 
 		if (body.bio) {
@@ -204,8 +236,6 @@ export default class FetchPatch extends Route {
 		}
 
 		if (body.email) {
-			stuffToUpdate.email = body.email;
-
 			const foundUser = await this.fetchUser({
 				email: Encryption.encrypt(body.email)
 			}, ["email"]);
@@ -230,18 +260,39 @@ export default class FetchPatch extends Route {
 			stuffToUpdate.phoneNumber = Encryption.encrypt(body.phoneNumber);
 		}
 
+		if (Object.keys(stuffToUpdate).length === 0 && !body.bio) {
+			set.status = 400;
+			
+			failedToUpdateSelf.addError({
+				user: {
+					code: "NothingToUpdate",
+					message: "You didn't provide anything to update"
+				}
+			});
+			
+			return failedToUpdateSelf.toJSON();
+		}
 
-		await this.App.Cassandra.Models.User.update({
-			userId: Encryption.encrypt(user.id),
-			...stuffToUpdate
-		});
+		if (Object.keys(stuffToUpdate).length > 0) {
+			await this.App.Cassandra.Models.User.update({
+				userId: Encryption.encrypt(user.id),
+				...stuffToUpdate
+			});
+		}
 
 		// @ts-expect-error -- We dont need to add the other stuff (since its not being used anyways)
-		return this.getFetch({
+		const fetched = await this.getFetch({
 			user,
 			query: body.bio ? { include: "bio" } : {},
 			set
 		});
+		
+		if (typeof fetched === "string") return fetched;
+		
+		return {
+			...fetched,
+			token: stuffToUpdate.token
+		};
 	}
 
 	private async fetchUser(opts: {
