@@ -1,4 +1,3 @@
-import Constants from "@/Constants.ts";
 import bodyValidator from "@/Middleware/BodyValidator.ts";
 import type { UserMiddlewareType } from "@/Middleware/User.ts";
 import userMiddleware from "@/Middleware/User.ts";
@@ -11,6 +10,7 @@ import Method from "@/Utils/Classes/Routing/Decorators/Method.ts";
 import Middleware from "@/Utils/Classes/Routing/Decorators/Middleware.ts";
 import type { CreateRoute } from "@/Utils/Classes/Routing/Route.ts";
 import Route from "@/Utils/Classes/Routing/Route.ts";
+import Constants from "@/Constants.ts";
 
 const postGuild = {
 	name: string().max(100),

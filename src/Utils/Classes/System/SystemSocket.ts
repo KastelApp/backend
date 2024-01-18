@@ -64,7 +64,7 @@ class SystemSocket {
 				`${this.App.config.ws.url}?v=${this.App.config.ws.version ?? 0}&p=${encodeURIComponent(this.App.config.ws.password)}&c=true&encoding=json`,
 				{},
 			);
-			
+
 			this.Ws.addEventListener("error", () => {
 				this.App.Logger.error("Failed to connect to System Socket / Recieved an Error");
 
@@ -93,7 +93,7 @@ class SystemSocket {
 					resolve();
 				}
 			});
-			
+
 			this.Ws.addEventListener("message", ({ data }) => {
 				const decoded = this.decode(data as Buffer);
 

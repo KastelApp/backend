@@ -1,53 +1,53 @@
 {
 	"$schema": "../Types/config.template.json",
-    "$comment": "Stuff like database logins will not be hot-reloadable. You will need to restart the server for them to take effect. Though stuff like \"features\" will be hot-reloadable.",
-    "encryption": {
-        "algorithm": "",
-        "initVector": "",
-        "securityKey": "",
-        "tokenKey": ""
-    },
-    "redis": {
-        "db": 1,
-        "port": 0,
-        "host": "",
-        "username": "",
-        "password": ""
-    },
-    "scyllaDB": {
-        "keyspace": "",
-        "username": "",
-        "password": "",
-        "nodes": [],
-        "durableWrites": true,
-        "networkTopologyStrategy": {}
-    },
-    "server": {
-        "bucketInterval": 0,
-        "bucketRnd": 0,
-        "cache": {
-            "clearInterval": 0,
-            "clearOnStart": true
-        },
-        "captchaEnabled": false,
-        "cloudflareAccessOnly": false,
-        "domain": "",
-        "features": ["DisableRegistration"],
-        "localIps": [],
-        "port": "62250",
-        "secure": true,
-        "sentry": {
-            "dsn": "",
-            "enabled": true,
-            "tracesSampleRate": 0.1
-        },
-        "strictRouting": true,
-        "turnstileSecret": "",
-        "workerId": 0
-    },
-    "ws": {
-        "version": 1,
-        "url": "",
-        "password": ""
-    }
+	"$comment": "Stuff like database logins will not be hot-reloadable. You will need to restart the server for them to take effect. Though stuff like \"features\" will be hot-reloadable.",
+	"encryption": {
+		"algorithm": "",
+		"initVector": "",
+		"securityKey": "",
+		"tokenKey": ""
+	},
+	"redis": {
+		"db": 1,
+		"port": 0,
+		"host": "",
+		"username": "",
+		"password": ""
+	},
+	"scyllaDB": {
+		"keyspace": "",
+		"username": "",
+		"password": "",
+		"nodes": [],
+		"durableWrites": true,
+		"networkTopologyStrategy": {}
+	},
+	"server": {
+		"bucketInterval": 0,
+		"bucketRnd": 0,
+		"cache": {
+			"clearInterval": 0,
+			"clearOnStart": true
+		},
+		"captchaEnabled": false,
+		"cloudflareAccessOnly": false,
+		"domain": "",
+		"features": ["DisableRegistration"],
+		"localIps": [],
+		"port": "62250",
+		"secure": true,
+		"sentry": {
+			"dsn": "",
+			"enabled": true,
+			"tracesSampleRate": 0.1
+		},
+		"strictRouting": true,
+		"turnstileSecret": "",
+		"workerId": 0
+	},
+	"ws": {
+		"version": 1,
+		"url": "",
+		"password": ""
+	}
 }

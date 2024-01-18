@@ -254,11 +254,5 @@
 		}
 	},
 	"type": "object",
-	"required": [
-		"encryption",
-		"redis",
-		"scyllaDB",
-		"server",
-		"ws"
-	]
+	"required": ["encryption", "redis", "scyllaDB", "server", "ws"]
 }

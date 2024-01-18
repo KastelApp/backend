@@ -1,6 +1,6 @@
 import process from "node:process";
 
-const processArgs = <T extends string>(allowedArgs: T[]): { invalid: (T | string)[]; valid: (T)[]; } => {
+const processArgs = <T extends string>(allowedArgs: T[]): { invalid: (T | string)[]; valid: T[] } => {
 	const valid: T[] = [];
 	const invalid: T[] = [];
 
@@ -54,10 +54,11 @@ const newprocessArgs = <T extends ProcessArg>(args: T[]) => {
 
 		if (currentArg) {
 			const nextArg = argv[i + 1];
-			
+
 			if (currentArg.type === "boolean") {
-				parsedArgs[currentArg.newName ?? currentArg.name] = nextArg?.startsWith("--") ? true : JSON.parse(nextArg ?? "false");
-				
+				parsedArgs[currentArg.newName ?? currentArg.name] = nextArg?.startsWith("--")
+					? true
+					: JSON.parse(nextArg ?? "false");
 			} else if (nextArg && !nextArg.startsWith("--")) {
 				if (currentArg.type === "number") {
 					parsedArgs[currentArg.newName ?? currentArg.name] = Number.parseFloat(nextArg);

@@ -116,8 +116,10 @@ class App {
 
 	public async Init(): Promise<void> {
 		this.Logger.hex("#ca8911")(
-			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${relative.Version ? `v${relative.Version}` : "Unknown version"
-			} of Kastel's Backend. Bun version ${Bun.version
+			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${
+				relative.Version ? `v${relative.Version}` : "Unknown version"
+			} of Kastel's Backend. Bun version ${
+				Bun.version
 			}\nIf you would like to support this project please consider donating to https://opencollective.com/kastel\n`,
 		);
 
@@ -126,10 +128,10 @@ class App {
 
 		if (!loaded) {
 			this.Logger.error("Initial config load failed");
-			
+
 			process.exit();
 		}
-				
+
 		this.Cache = new CacheManager({
 			AllowForDangerousCommands: true,
 			DB: this.config.redis.db,
@@ -145,7 +147,7 @@ class App {
 			this.config.scyllaDB.password,
 			this.config.scyllaDB.keyspace,
 			this.config.scyllaDB.networkTopologyStrategy,
-			this.config.scyllaDB.durableWrites
+			this.config.scyllaDB.durableWrites,
 		);
 
 		this.Turnstile = new Turnstile(this.config.server.captchaEnabled, this.config.server.turnstileSecret ?? "secret");
@@ -156,7 +158,8 @@ class App {
 
 		this.Router.on("reload", async ({ path, type, directory }) => {
 			this.Logger.verbose(
-				`Reloaded Routes due to a ${directory ? "directory" : "file"} (${path}) being ${type === "A" ? "Added" : type === "M" ? "Modified" : type === "D" ? "Removed" : "Unknown"
+				`Reloaded Routes due to a ${directory ? "directory" : "file"} (${path}) being ${
+					type === "A" ? "Added" : type === "M" ? "Modified" : type === "D" ? "Removed" : "Unknown"
 				}`,
 			);
 
@@ -277,10 +280,11 @@ class App {
 				error.addError({
 					methodNotAllowed: {
 						code: "MethodNotAllowed",
-						message: `Method "${request.method
-							}" is not allowed for "${path}", allowed methods are [${route.routeClass.__methods
-								.map((method) => method.method.toUpperCase())
-								.join(", ")}]`,
+						message: `Method "${
+							request.method
+						}" is not allowed for "${path}", allowed methods are [${route.routeClass.__methods
+							.map((method) => method.method.toUpperCase())
+							.join(", ")}]`,
 					},
 				});
 
@@ -312,8 +316,9 @@ class App {
 				error.addError({
 					contentType: {
 						code: "InvalidContentType",
-						message: `Invalid Content-Type header, Expected (${contentTypes.type.join(", ")}), Got (${headers["content-type"]
-							})`,
+						message: `Invalid Content-Type header, Expected (${contentTypes.type.join(", ")}), Got (${
+							headers["content-type"]
+						})`,
 					},
 				});
 
@@ -421,7 +426,7 @@ class App {
 		}
 
 		// this is a hack to make sure it doesn't cache the file
-		const routeClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof RouteBuilder; };
+		const routeClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof RouteBuilder };
 
 		if (!routeClass.default) {
 			this.Logger.warn(`Skipping ${path} as it does not have a default export`);
@@ -482,7 +487,8 @@ class App {
 			"Git Info:",
 			`Branch: ${App.GitBranch}`,
 			`Commit: ${githubInfo.CommitShort ?? githubInfo.Commit}`,
-			`Status: ${this.Clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
+			`Status: ${
+				this.Clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
 			}`,
 			this.Clean ? "" : "=".repeat(40),
 			`${this.Clean ? "" : "Changed Files:"}`,

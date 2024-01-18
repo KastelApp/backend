@@ -89,7 +89,9 @@ class Connection extends EventEmitter {
 
 		this.Client = new cassandra.Client({
 			contactPoints: nodes,
-			localDataCenter: networkTopologyStrategy ? Object.keys(networkTopologyStrategy)?.[0] ?? "datacenter1" : "datacenter1",
+			localDataCenter: networkTopologyStrategy
+				? Object.keys(networkTopologyStrategy)?.[0] ?? "datacenter1"
+				: "datacenter1",
 			credentials: {
 				username,
 				password,
