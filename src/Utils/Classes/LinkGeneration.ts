@@ -1,17 +1,5 @@
-/* !
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
- * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
- * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
- * Copyright(c) 2022-2023 DarkerInk
- * GPL 3.0 Licensed
- */
-
 import crypto from "node:crypto";
 import { Snowflake as SnowflakeBuilder, Base64 } from "@kastelll/util";
-import { encryption } from "../../Config.ts";
 import Constants from "../../Constants.ts";
 import App from "./App.ts";
 
@@ -24,7 +12,7 @@ class LinkGeneration {
 		const nonce = Base64.OldBase64(crypto.randomBytes(16).toString("base64"));
 		const snowflake = Base64.Encode(snowflakeId);
 
-		const hmac = crypto.createHmac("sha256", encryption.TokenKey);
+		const hmac = crypto.createHmac("sha256", App.config.encryption.tokenKey);
 
 		hmac.update(`${snowflake}.${currentDate}.${nonce}`);
 
@@ -56,7 +44,7 @@ class LinkGeneration {
 
 		App.StaticLogger.debug("Date good");
 
-		const hmac = crypto.createHmac("sha256", encryption.TokenKey);
+		const hmac = crypto.createHmac("sha256", App.config.encryption.tokenKey);
 
 		hmac.update(`${base64snowflake}.${base64createdDate}.${nonce}`);
 

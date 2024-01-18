@@ -1,7 +1,9 @@
+import Constants from "@/Constants.ts";
+import bodyValidator from "@/Middleware/BodyValidator.ts";
 import type { UserMiddlewareType } from "@/Middleware/User.ts";
 import userMiddleware from "@/Middleware/User.ts";
 import type { Infer } from "@/Types/BodyValidation.ts";
-import { array, boolean, number, snowflake, string } from "@/Types/BodyValidation.ts";
+import { array, boolean, enums, number, snowflake, string } from "@/Types/BodyValidation.ts";
 import type App from "@/Utils/Classes/App.ts";
 import ContentTypes from "@/Utils/Classes/Routing/Decorators/ContentTypes.ts";
 import Description from "@/Utils/Classes/Routing/Decorators/Description.ts";
@@ -9,7 +11,6 @@ import Method from "@/Utils/Classes/Routing/Decorators/Method.ts";
 import Middleware from "@/Utils/Classes/Routing/Decorators/Middleware.ts";
 import type { CreateRoute } from "@/Utils/Classes/Routing/Route.ts";
 import Route from "@/Utils/Classes/Routing/Route.ts";
-import Constants from "@/Constants.ts";
 
 const postGuild = {
 	name: string().max(100),
@@ -34,6 +35,11 @@ const postGuild = {
 		.optional()
 		.max(Constants.settings.Max.RoleCount),
 	template: string().optional(), // TODO: Create template stuff (basically like discords)
+	features: enums(
+		Object.values(Constants.guildFeatures)
+			.filter((flag) => flag.Settable)
+			.map((flag) => flag.Name),
+	).array(),
 };
 
 export default class FetchGuilds extends Route {
@@ -57,6 +63,7 @@ export default class FetchGuilds extends Route {
 			AllowedRequesters: "User",
 		}),
 	)
+	@Middleware(bodyValidator(postGuild))
 	public postGuild({ body }: CreateRoute<"/guilds", Infer<typeof postGuild>, [UserMiddlewareType]>) {
 		return body;
 	}

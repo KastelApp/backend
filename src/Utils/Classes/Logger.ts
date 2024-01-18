@@ -1,17 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-	writeFileSync,
-	mkdirSync,
-	existsSync,
-	readdirSync,
-	createWriteStream,
-	createReadStream,
-	rmSync,
-} from "node:fs";
+/* eslint-disable promise/prefer-await-to-callbacks */
+/* eslint-disable promise/prefer-await-to-then */
+import { createWriteStream, createReadStream } from "node:fs";
+import { writeFile, mkdir, exists, readdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { setInterval } from "node:timers";
 import { URL } from "node:url";
-import * as Sentry from "@sentry/node";
+import * as Sentry from "@sentry/bun";
 import * as ark from "archiver";
 import processArgs from "../ProcessArgs.ts";
 
@@ -127,7 +121,7 @@ class Logger {
 	}
 
 	private async init(): Promise<void> {
-		if (!existsSync(this.logDirectory)) mkdirSync(this.logDirectory);
+		if (!(await exists(this.logDirectory))) await mkdir(this.logDirectory);
 
 		const compressed = await this.compress();
 
@@ -137,18 +131,18 @@ class Logger {
 			this.supersecretdebug("No logs to compress");
 		}
 
-		if (!existsSync(this.latestLog)) {
+		if (!(await exists(this.latestLog))) {
 			this.supersecretdebug("Latest log does not exist, creating it");
 
-			writeFileSync(this.latestLog, "");
+			await writeFile(this.latestLog, "");
 
 			this.supersecretdebug("Created latest log");
 		}
 
-		if (!existsSync(this.errorLogs)) {
+		if (!(await exists(this.errorLogs))) {
 			this.supersecretdebug("Error log does not exist, creating it");
 
-			writeFileSync(this.errorLogs, "");
+			await writeFile(this.errorLogs, "");
 
 			this.supersecretdebug("Created error log");
 		}
@@ -175,14 +169,15 @@ class Logger {
 	}
 
 	private async compress(): Promise<boolean> {
+		this.compressing = true;
+
+		const files = await readdir(this.logDirectory);
+
+		const currentDate = new Date();
+
+		const logFiles = files.filter((file) => file.endsWith(".log"));
+
 		return new Promise((resolve) => {
-			this.compressing = true;
-
-			const files = readdirSync(this.logDirectory);
-
-			const currentDate = new Date();
-
-			const logFiles = files.filter((file) => file.endsWith(".log"));
 			const gzipFiles = files.filter(
 				(file) => file.startsWith(`${currentDate.toISOString().slice(0, 10)}-`) && file.endsWith(".log.zip"),
 			);
@@ -210,9 +205,9 @@ class Logger {
 				this.supersecretdebug(`Added ${file} to archive`);
 			}
 
-			archive.on("finish", () => {
+			archive.on("finish", async () => {
 				for (const file of logFiles) {
-					rmSync(join(this.logDirectory, file));
+					await rm(join(this.logDirectory, file)).catch(() => {});
 
 					this.supersecretdebug(`Deleted ${file}`);
 				}
@@ -245,10 +240,14 @@ class Logger {
 
 		if (message.file === "latest") {
 			this.supersecretdebug("Writing to latest log");
-			writeFileSync(this.latestLog, `${message.message.join("\n")}\n`, { flag: "a" });
+			writeFile(this.latestLog, `${message.message.join("\n")}\n`, { flag: "a" }).catch((error) =>
+				Sentry.captureException(error),
+			);
 		} else if (message.file === "error") {
 			this.supersecretdebug("Writing to crash log");
-			writeFileSync(this.errorLogs, `${message.message.join("\n")}\n`, { flag: "a" });
+			writeFile(this.errorLogs, `${message.message.join("\n")}\n`, { flag: "a" }).catch((error) =>
+				Sentry.captureException(error),
+			);
 		} else {
 			throw new Error(`Unknown file ${message.file}`);
 		}

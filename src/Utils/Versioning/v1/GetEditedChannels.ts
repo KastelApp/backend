@@ -1,4 +1,3 @@
-import deepEqual from "deep-equal";
 import type { Channel } from "../../Cql/Types";
 
 export const getEditedChannels = (before: Channel[], current: Channel[]) => {
@@ -13,7 +12,7 @@ export const getEditedChannels = (before: Channel[], current: Channel[]) => {
 			continue;
 		}
 
-		if (deepEqual(channel, beforeChannel)) continue;
+		if (Bun.deepEquals(channel, beforeChannel)) continue;
 
 		changedChannels.push(channel);
 	}

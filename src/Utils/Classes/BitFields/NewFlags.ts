@@ -1,14 +1,4 @@
 /* eslint-disable sonarjs/no-identical-functions */
-/* !
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
- * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
- * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
- * Copyright(c) 2022-2023 DarkerInk
- * GPL 3.0 Licensed
- */
 
 // TODO: Combine these two classes into one (idk why I didn't do that in the first place)
 

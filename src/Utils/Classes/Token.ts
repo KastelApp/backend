@@ -1,17 +1,6 @@
-/* !
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
- * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
- * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
- * Copyright(c) 2022-2023 DarkerInk
- * GPL 3.0 Licensed
- */
-
 import { Buffer } from "node:buffer";
 import crypto from "node:crypto";
-import { encryption } from "../../Config.ts";
+import App from "./App.ts";
 
 class Token {
 	public static generateToken(UserId: string): string {
@@ -20,7 +9,7 @@ class Token {
 
 		const stringDated = this.Encode(String(Date.now()) + nonce);
 
-		const hmac = crypto.createHmac("sha256", encryption.TokenKey);
+		const hmac = crypto.createHmac("sha256", App.config.encryption.tokenKey);
 
 		hmac.update(`${snowflakeBase64}.${stringDated}`);
 
@@ -32,7 +21,7 @@ class Token {
 
 		if (!snowflakeBase64 || !stringDated || !hmacSignature) return false;
 
-		const hmac = crypto.createHmac("sha256", encryption.TokenKey);
+		const hmac = crypto.createHmac("sha256", App.config.encryption.tokenKey);
 
 		hmac.update(`${snowflakeBase64}.${stringDated}`);
 

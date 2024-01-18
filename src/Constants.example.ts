@@ -1,16 +1,3 @@
-/* eslint-disable unicorn/prefer-math-trunc */
-/* eslint-disable sonarjs/no-identical-expressions */
-/* !
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
- * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
- * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
- * Copyright(c) 2022-2023 DarkerInk
- * GPL 3.0 Licensed
- */
-
 import process from "node:process";
 import { version } from "../package.json";
 
@@ -109,7 +96,7 @@ const allowedMentions: {
 allowedMentions.All = allowedMentions.Everyone | allowedMentions.Here | allowedMentions.Roles | allowedMentions.Users;
 
 const guildMemberFlags = {
-	Left: 1 << 0,
+	Left: Math.trunc(1),
 	In: 1 << 1,
 	Kicked: 1 << 2,
 	Banned: 1 << 3,
@@ -118,7 +105,7 @@ const guildMemberFlags = {
 };
 
 const channelTypes = {
-	GuildCategory: 1 << 0,
+	GuildCategory: Math.trunc(1),
 	GuildText: 1 << 1,
 	GuildNews: 1 << 2,
 	GuildRules: 1 << 3,
@@ -136,14 +123,14 @@ const presence = {
 };
 
 const messageFlags = {
-	System: 1 << 0,
+	System: Math.trunc(1),
 	Normal: 1 << 1,
 	Deleted: 1 << 3, // NOTE: this is only used when the message has the reported flag
 	Reported: 1 << 4, // Note: this is private to the users (they won't receive the flag)
 };
 
 const inviteFlags = {
-	Normal: 1 << 0, // invite for a guild channel
+	Normal: Math.trunc(1), // invite for a guild channel
 	GroupChat: 1 << 1, // invite for a gdm
 	FriendLink: 1 << 2, // This lets you "add" a friend rather then having them send you a friend request, this is an instant friend
 	Vanity: 1 << 3, // This is a vanity invite (like kastelapp.com/invite/kastel) Undeleatable 1 per guild
@@ -260,7 +247,7 @@ const snowflake = {
 };
 
 const permissionOverrideTypes = {
-	Role: 1 << 0,
+	Role: Math.trunc(1),
 	Member: 1 << 1,
 	Everyone: 1 << 2,
 };

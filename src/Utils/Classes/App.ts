@@ -5,12 +5,13 @@ import { URL } from "node:url";
 import { cors } from "@elysiajs/cors";
 import { serverTiming } from "@elysiajs/server-timing";
 import { Snowflake, Turnstile, CacheManager } from "@kastelll/util";
-import * as Sentry from "@sentry/node";
+import * as Sentry from "@sentry/bun";
 import { Elysia } from "elysia";
 import { type SimpleGit, simpleGit } from "simple-git";
-import { config } from "../../Config.ts";
+import type { MySchema } from "@/Types/JsonSchemaType.ts";
 import Constants, { relative } from "../../Constants.ts";
 import processArgs from "../ProcessArgs.ts";
+import ConfigManager from "./ConfigManager.ts";
 import Connection from "./Connection.ts";
 import errorGen from "./ErrorGen.ts";
 import FileSystemRouter from "./FileSystemRouter.ts";
@@ -23,8 +24,6 @@ import SystemInfo from "./SystemInfo.ts";
 
 type GitType = "Added" | "Copied" | "Deleted" | "Ignored" | "Modified" | "None" | "Renamed" | "Unmerged" | "Untracked";
 
-const supportedArgs = ["debug", "skip-online-check", "behind-proxy", "no-ip-checking"] as const;
-
 class App {
 	private RouteDirectory: string = join(new URL(".", import.meta.url).pathname, "../../Routes");
 
@@ -34,23 +33,25 @@ class App {
 
 	public static Snowflake: Snowflake = new Snowflake(Constants.snowflake);
 
-	public Cassandra: Connection;
+	public Cassandra!: Connection;
 
-	public Cache: CacheManager;
+	public Cache!: CacheManager;
 
-	public Turnstile: Turnstile;
+	public Turnstile!: Turnstile;
 
 	public IpUtils: IpUtils;
 
-	public SystemSocket: SystemSocket;
+	public SystemSocket!: SystemSocket;
 
 	public Sentry: typeof Sentry;
 
-	public Config: typeof config = config;
-
 	public Constants: typeof Constants = Constants;
 
-	public Logger: CustomLogger;
+	// public Logger: CustomLogger;
+
+	public get Logger(): CustomLogger {
+		return App.StaticLogger;
+	}
 
 	public static StaticLogger: CustomLogger = new CustomLogger();
 
@@ -90,37 +91,20 @@ class App {
 		" ": "None",
 	};
 
-	public Args = processArgs(supportedArgs).valid;
+	public Args = processArgs(["debug", "skip-online-check", "behind-proxy", "no-ip-checking"]).valid;
 
 	public Router: FileSystemRouter;
+
+	public static configManager: ConfigManager = new ConfigManager();
 
 	public constructor() {
 		this.ElysiaApp = new Elysia();
 
-		this.Cache = new CacheManager({
-			...config.Redis,
-			AllowForDangerousCommands: true,
-		});
-
-		this.Cassandra = new Connection(
-			config.ScyllaDB.Nodes,
-			config.ScyllaDB.Username,
-			config.ScyllaDB.Password,
-			config.ScyllaDB.Keyspace,
-			config.ScyllaDB.NetworkTopologyStrategy,
-			config.ScyllaDB.DurableWrites,
-			config.ScyllaDB.CassandraOptions,
-		);
-
-		this.Turnstile = new Turnstile(config.Server.CaptchaEnabled, config.Server.TurnstileSecret ?? "secret");
-
 		this.IpUtils = new IpUtils();
-
-		this.SystemSocket = new SystemSocket(this);
 
 		this.Sentry = Sentry;
 
-		this.Logger = new CustomLogger();
+		// this.Logger = new CustomLogger();
 
 		this.Router = new FileSystemRouter({
 			dir: this.RouteDirectory,
@@ -132,21 +116,47 @@ class App {
 
 	public async Init(): Promise<void> {
 		this.Logger.hex("#ca8911")(
-			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${
-				relative.Version ? `v${relative.Version}` : "Unknown version"
-			} of Kastel's Backend. Bun version ${
-				Bun.version
+			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${relative.Version ? `v${relative.Version}` : "Unknown version"
+			} of Kastel's Backend. Bun version ${Bun.version
 			}\nIf you would like to support this project please consider donating to https://opencollective.com/kastel\n`,
 		);
 
 		await this.SetupDebug(this.Args.includes("debug"));
+		const loaded = await App.configManager.load();
+
+		if (!loaded) {
+			this.Logger.error("Initial config load failed");
+			
+			process.exit();
+		}
+				
+		this.Cache = new CacheManager({
+			AllowForDangerousCommands: true,
+			DB: this.config.redis.db,
+			Host: this.config.redis.host,
+			Password: this.config.redis.password,
+			Port: this.config.redis.port,
+			Username: this.config.redis.username,
+		});
+
+		this.Cassandra = new Connection(
+			this.config.scyllaDB.nodes,
+			this.config.scyllaDB.username,
+			this.config.scyllaDB.password,
+			this.config.scyllaDB.keyspace,
+			this.config.scyllaDB.networkTopologyStrategy,
+			this.config.scyllaDB.durableWrites
+		);
+
+		this.Turnstile = new Turnstile(this.config.server.captchaEnabled, this.config.server.turnstileSecret ?? "secret");
+
+		this.SystemSocket = new SystemSocket(this);
 
 		// this.Repl.startRepl();
 
 		this.Router.on("reload", async ({ path, type, directory }) => {
 			this.Logger.verbose(
-				`Reloaded Routes due to a ${directory ? "directory" : "file"} (${path}) being ${
-					type === "A" ? "Added" : type === "M" ? "Modified" : type === "D" ? "Removed" : "Unknown"
+				`Reloaded Routes due to a ${directory ? "directory" : "file"} (${path}) being ${type === "A" ? "Added" : type === "M" ? "Modified" : type === "D" ? "Removed" : "Unknown"
 				}`,
 			);
 
@@ -194,22 +204,6 @@ class App {
 			this.Logger.info("Created ScyllaDB tables");
 		} else {
 			this.Logger.error("This shouldn't happen, please report this");
-		}
-
-		if (config.MailServer.Enabled) {
-			const support = config.MailServer.Users.find((user) => user.ShortCode === "Support");
-			const noReply = config.MailServer.Users.find((user) => user.ShortCode === "NoReply");
-
-			if (!support || !noReply) {
-				this.Logger.fatal("Missing Support or NoReply user in config");
-				this.Logger.fatal("Disable MailServer in config to ignore this error");
-
-				process.exit(0);
-			}
-
-			this.Logger.info("Mail Server connected!");
-		} else {
-			this.Logger.info("Mail Server disabled!");
 		}
 
 		this.ElysiaApp.use(cors())
@@ -283,11 +277,10 @@ class App {
 				error.addError({
 					methodNotAllowed: {
 						code: "MethodNotAllowed",
-						message: `Method "${
-							request.method
-						}" is not allowed for "${path}", allowed methods are [${route.routeClass.__methods
-							.map((method) => method.method.toUpperCase())
-							.join(", ")}]`,
+						message: `Method "${request.method
+							}" is not allowed for "${path}", allowed methods are [${route.routeClass.__methods
+								.map((method) => method.method.toUpperCase())
+								.join(", ")}]`,
 					},
 				});
 
@@ -319,9 +312,8 @@ class App {
 				error.addError({
 					contentType: {
 						code: "InvalidContentType",
-						message: `Invalid Content-Type header, Expected (${contentTypes.type.join(", ")}), Got (${
-							headers["content-type"]
-						})`,
+						message: `Invalid Content-Type header, Expected (${contentTypes.type.join(", ")}), Got (${headers["content-type"]
+							})`,
 					},
 				});
 
@@ -398,8 +390,8 @@ class App {
 			return requested;
 		});
 
-		this.ElysiaApp.listen(config.Server.Port, () => {
-			this.Logger.info(`Listening on port ${config.Server.Port}`);
+		this.ElysiaApp.listen(this.config.server.port, () => {
+			this.Logger.info(`Listening on port ${this.config.server.port}`);
 		});
 	}
 
@@ -429,7 +421,7 @@ class App {
 		}
 
 		// this is a hack to make sure it doesn't cache the file
-		const routeClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof RouteBuilder };
+		const routeClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof RouteBuilder; };
 
 		if (!routeClass.default) {
 			this.Logger.warn(`Skipping ${path} as it does not have a default export`);
@@ -490,8 +482,7 @@ class App {
 			"Git Info:",
 			`Branch: ${App.GitBranch}`,
 			`Commit: ${githubInfo.CommitShort ?? githubInfo.Commit}`,
-			`Status: ${
-				this.Clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
+			`Status: ${this.Clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
 			}`,
 			this.Clean ? "" : "=".repeat(40),
 			`${this.Clean ? "" : "Changed Files:"}`,
@@ -556,9 +547,9 @@ class App {
 			bucketNumber = BigInt(Date.now()) - App.Snowflake.Epoch;
 		}
 
-		let bucket = bucketNumber / BigInt(this.Config.Server.BucketInterval);
+		let bucket = bucketNumber / BigInt(this.config.server.bucketInterval);
 
-		bucket += BigInt(this.Config.Server.BucketRnd);
+		bucket += BigInt(this.config.server.bucketRnd);
 
 		return bucket.toString(16);
 	}
@@ -570,8 +561,8 @@ class App {
 		let startBucketNumber = Number.parseInt(startBucket, 16);
 		let endBucketNumber = Number.parseInt(endBucket, 16);
 
-		startBucketNumber -= this.Config.Server.BucketRnd;
-		endBucketNumber -= this.Config.Server.BucketRnd;
+		startBucketNumber -= this.config.server.bucketRnd;
+		endBucketNumber -= this.config.server.bucketRnd;
 
 		const bucketRange = endBucketNumber - startBucketNumber;
 
@@ -580,12 +571,20 @@ class App {
 		for (let int = 0; int <= bucketRange; int++) {
 			let currentBucket = startBucketNumber + int;
 
-			currentBucket += this.Config.Server.BucketRnd;
+			currentBucket += this.config.server.bucketRnd;
 
 			buckets.push(currentBucket.toString(16));
 		}
 
 		return buckets;
+	}
+
+	public get config() {
+		return App.configManager.config as MySchema;
+	}
+
+	public static get config() {
+		return App.configManager.config as MySchema;
 	}
 }
 

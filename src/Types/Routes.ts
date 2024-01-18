@@ -1,14 +1,3 @@
-/* !
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
- * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
- * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
- * Copyright(c) 2022-2023 DarkerInk
- * GPL 3.0 Licensed
- */
-
 import type { permissions, privateFlags } from "../Constants.ts";
 
 export type Methods =
@@ -66,16 +55,16 @@ export interface Captcha {
 type GetParam<T extends string> = T extends `${infer _}/${infer _2}:${infer Param}/${infer _3}`
 	? Record<Param, string>
 	: T extends `${infer _}:${infer Param}/${infer _2}`
-	? Record<Param, string>
-	: T extends `${infer _}/${infer _2}:${infer Param}`
-	? Record<Param, string>
-	: T extends `${infer _}:${infer Param}`
-	? Record<Param, string>
-	: {};
+		? Record<Param, string>
+		: T extends `${infer _}/${infer _2}:${infer Param}`
+			? Record<Param, string>
+			: T extends `${infer _}:${infer Param}`
+				? Record<Param, string>
+				: {};
 
 export type GetParams<T extends string> = GetParam<T> &
 	(T extends `${infer _}/${infer Rest}`
 		? GetParams<Rest>
 		: T extends `${infer _}:${infer Rest}`
-		? GetParams<Rest>
-		: {});
+			? GetParams<Rest>
+			: {});

@@ -1,22 +1,10 @@
-/* !
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
- * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
- * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
- * Copyright(c) 2022-2023 DarkerInk
- * GPL 3.0 Licensed
- */
-
 import crypto from "node:crypto";
 import { types } from "@kastelll/cassandra-driver";
-import { encryption as En } from "../../Config.ts";
 import App from "./App.ts";
 
-const algorithm = En.Algorithm;
-const initVector = En.InitVector;
-const securityKey = En.SecurityKey;
+const algorithm = App.config.encryption.algorithm;
+const initVector = App.config.encryption.initVector;
+const securityKey = App.config.encryption.securityKey;
 
 class Encryption {
 	public static encrypt(data: string): string {

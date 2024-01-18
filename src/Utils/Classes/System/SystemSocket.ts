@@ -2,7 +2,6 @@
 import type { Buffer } from "node:buffer";
 import zlib from "node:zlib";
 import { WebSocket } from "ws";
-import Config from "../../../Config.ts";
 import type { AuthedPayload, NormalPayload } from "../../../Types/Socket/MiscPayloads";
 import type App from "../App.ts";
 import { opCodes, systemOpCodes } from "../WsUtils.ts";
@@ -62,10 +61,10 @@ class SystemSocket {
 	public async Connect(): Promise<void> {
 		return new Promise<void>((resolve) => {
 			this.Ws = new WebSocket(
-				`${Config.ws.Url}?v=${Config.ws.version ?? 0}&p=${encodeURIComponent(Config.ws.Password)}&c=true&encoding=json`,
+				`${this.App.config.ws.url}?v=${this.App.config.ws.version ?? 0}&p=${encodeURIComponent(this.App.config.ws.password)}&c=true&encoding=json`,
 				{},
 			);
-
+			
 			this.Ws.addEventListener("error", () => {
 				this.App.Logger.error("Failed to connect to System Socket / Recieved an Error");
 
@@ -94,7 +93,7 @@ class SystemSocket {
 					resolve();
 				}
 			});
-
+			
 			this.Ws.addEventListener("message", ({ data }) => {
 				const decoded = this.decode(data as Buffer);
 
@@ -182,7 +181,6 @@ class SystemSocket {
 			this.HeartbeatInterval = null;
 		}
 
-		// @ts-expect-error -- It does exist, though bun doing the funky with the internal ws module
 		this.Ws?.removeAllListeners();
 
 		if (!Force && this.FailedConnectionAttempts > 1 && this.FailedConnectionAttempts % 15 === 0) {

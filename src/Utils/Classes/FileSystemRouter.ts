@@ -89,14 +89,14 @@ class FileSystemRouter {
 				event === "add"
 					? "A"
 					: event === "addDir"
-					? "A"
-					: event === "change"
-					? "M"
-					: event === "unlink"
-					? "D"
-					: event === "unlinkDir"
-					? "D"
-					: "A";
+						? "A"
+						: event === "change"
+							? "M"
+							: event === "unlink"
+								? "D"
+								: event === "unlinkDir"
+									? "D"
+									: "A";
 
 			this.emit("reload", { path, type, directory: event === "addDir" || event === "unlinkDir" });
 		});
@@ -141,9 +141,9 @@ class FileSystemRouter {
 				dirent.isDirectory()
 					? this.recursiveReadDir(`${dir}/${dirent.name}`, files)
 					: !dirent.name.startsWith(".") &&
-					  this.fileExtensions.includes(dirent.name.slice(dirent.name.lastIndexOf(".")))
-					? `${dir}/${dirent.name}`
-					: [],
+						  this.fileExtensions.includes(dirent.name.slice(dirent.name.lastIndexOf(".")))
+						? `${dir}/${dirent.name}`
+						: [],
 			);
 	}
 

@@ -47,3 +47,8 @@ old/
 
 # Where responses are stored
 openSpecStorage/
+
+
+src/configs/*
+
+!src/configs/example.json

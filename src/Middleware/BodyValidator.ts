@@ -11,6 +11,7 @@ const validate = (
 		code: "invalid" | "missing";
 		expected?: string;
 		key: string;
+		msg?: string | null;
 		received?: string;
 	}[],
 	body: Record<string, unknown>,
@@ -29,16 +30,16 @@ const validate = (
 					fullKey ? `${fullKey}.${key}` : key,
 				),
 			);
-		} else if (typeof validator === "object" && "validate" in validator) {
-			// @ts-expect-error -- cat
-			const valid = validator.validate(body[key]);
+		} else if ("validate" in validator) {
+			const validated = validator.validate(body[key]);
 
-			if (!valid) {
+			if (!validated.valid) {
 				if (validator.required && body[key] === undefined) {
 					newErrors.push({
 						code: "missing",
 						key: fullKey ? `${fullKey}.${key}` : key,
 						expected: validator.type,
+						msg: validated.error ? validated.error.replace("{key}", fullKey ? `${fullKey}.${key}` : key) : null,
 					});
 				} else {
 					newErrors.push({
@@ -46,6 +47,7 @@ const validate = (
 						key: fullKey ? `${fullKey}.${key}` : key,
 						expected: validator.type,
 						received: body[key] === null ? "null" : typeof body[key],
+						msg: validated.error ? validated.error.replace("{key}", fullKey ? `${fullKey}.${key}` : key) : null,
 					});
 				}
 			}
@@ -68,8 +70,9 @@ const bodyValidator = (options: BodyValidator) => {
 				error.addError({
 					[err.key]: {
 						code: err.code === "invalid" ? "InvalidType" : "MissingField",
-						message:
-							err.code === "invalid"
+						message: err.msg
+							? err.msg
+							: err.code === "invalid"
 								? `${err.key} was invalid, expected type was ${err.expected}, received type was ${err.received}`
 								: `${err.key} was missing, expected type was ${err.expected}`,
 					},
