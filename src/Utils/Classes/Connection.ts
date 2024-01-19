@@ -23,6 +23,7 @@ import type {
 	VerificationLink,
 	Webhook,
 } from "../Cql/Types";
+import type PlatformInvite from "../Cql/Types/PlatformInvite.ts";
 
 interface Connection {
 	emit(event: "Error", error: unknown): boolean;
@@ -62,6 +63,7 @@ class Connection extends EventEmitter {
 		Invite: cassandra.mapping.ModelMapper<Invite>;
 		Message: cassandra.mapping.ModelMapper<Message>;
 		PermissionOverride: cassandra.mapping.ModelMapper<PermissionOverride>;
+		PlatformInvite: cassandra.mapping.ModelMapper<PlatformInvite>,
 		Role: cassandra.mapping.ModelMapper<Role>;
 		Settings: cassandra.mapping.ModelMapper<Settings>;
 		User: cassandra.mapping.ModelMapper<User>;
@@ -127,6 +129,7 @@ class Connection extends EventEmitter {
 				User: this.GenerateMappingOptions("users"),
 				VerificationLink: this.GenerateMappingOptions("verifcationlink"),
 				Webhook: this.GenerateMappingOptions("webhooks"),
+				PaltformInvite: this.GenerateMappingOptions("platform_invite"),
 			},
 		} as const;
 
@@ -151,6 +154,7 @@ class Connection extends EventEmitter {
 			User: this.Mapper.forModel<User>("User"),
 			VerificationLink: this.Mapper.forModel<VerificationLink>("VerificationLink"),
 			Webhook: this.Mapper.forModel<Webhook>("Webhook"),
+			PlatformInvite: this.Mapper.forModel<PlatformInvite>("PlatformInvite"),
 		};
 	}
 

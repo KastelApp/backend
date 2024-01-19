@@ -11,9 +11,9 @@ export default class PlatformInvites extends Route {
 
 	@Method("get")
 	@Description("Fetch the invites for Kastel")
-	@ContentTypes("application/json")
+	@ContentTypes("any")
 	public getInvites() {
-		return {};
+		return [];
 	}
 
 	@Method("delete")

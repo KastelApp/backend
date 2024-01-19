@@ -160,6 +160,7 @@ export default class Login extends Route {
 				tokens: [],
 				userId: Encryption.encrypt(fetchedUser.userId),
 				guildOrder: [],
+				allowedInvites: 0, // ? You get 0 invites on creation
 			};
 		}
 

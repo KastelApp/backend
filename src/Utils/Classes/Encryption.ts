@@ -2,9 +2,9 @@ import crypto from "node:crypto";
 import { types } from "@kastelll/cassandra-driver";
 import App from "./App.ts";
 
-const algorithm = App.config.encryption.algorithm;
-const initVector = App.config.encryption.initVector;
-const securityKey = App.config.encryption.securityKey;
+const algorithm = App?.config?.encryption?.algorithm;
+const initVector = App?.config?.encryption?.initVector;
+const securityKey = App?.config?.encryption?.securityKey;
 
 class Encryption {
 	public static encrypt(data: string): string {

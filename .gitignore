@@ -44,6 +44,7 @@ dtests/
 # Old Stuff
 oldApiRoutes/
 old/
+dev.md
 
 # Where responses are stored
 openSpecStorage/

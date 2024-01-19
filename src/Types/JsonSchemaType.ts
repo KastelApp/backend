@@ -6,7 +6,8 @@ export type Features =
 	| "DisableGuildCreation"
 	| "DisableLogin"
 	| "DisablePasswordReset"
-	| "DisableRegistration";
+	| "DisableRegistration"
+	| "InviteBasedRegistration";
 
 export interface MySchema {
 	encryption: Encryption;

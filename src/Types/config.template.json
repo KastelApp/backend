@@ -25,7 +25,8 @@
 				"DisableGuildCreation",
 				"DisableLogin",
 				"DisablePasswordReset",
-				"DisableRegistration"
+				"DisableRegistration",
+				"InviteBasedRegistration"
 			],
 			"type": "string"
 		},
