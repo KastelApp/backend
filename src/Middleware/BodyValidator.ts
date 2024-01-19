@@ -38,25 +38,27 @@ const validate = (
 			if (!validated.valid) {
 				if (validated.multiErrors) {
 					for (const error of validated.multiErrors) {
-						
 						if (error.multiErrors) {
 							for (const secondError of error.multiErrors) {
 								newErrors.push({
 									code: "invalid",
-									key: fullKey ? `${fullKey}.${key}[${error.pos}].${error.key}${secondError.pos === -1 ? "" : `[${secondError.pos}]`}.${secondError.key}` : `${key}[${error.pos}].${error.key}${secondError.pos === -1 ? "" : `[${secondError.pos}]`}.${secondError.key}`,
+									key: fullKey
+										? `${fullKey}.${key}[${error.pos}].${error.key}${secondError.pos === -1 ? "" : `[${secondError.pos}]`}.${secondError.key}`
+										: `${key}[${error.pos}].${error.key}${secondError.pos === -1 ? "" : `[${secondError.pos}]`}.${secondError.key}`,
 									expected: validator.type,
-									msg: secondError.error
-								})
+									msg: secondError.error,
+								});
 							}
 						} else {
 							newErrors.push({
 								code: "invalid",
-								key: fullKey ? `${fullKey}.${key}${error.pos === -1 ? "" : `[${error.pos}]`}.${error.key}` : `${key}${error.pos === -1 ? "" : `[${error.pos}]`}.${error.key}`,
+								key: fullKey
+									? `${fullKey}.${key}${error.pos === -1 ? "" : `[${error.pos}]`}.${error.key}`
+									: `${key}${error.pos === -1 ? "" : `[${error.pos}]`}.${error.key}`,
 								expected: validator.type,
-								msg: error.error
-							})
+								msg: error.error,
+							});
 						}
-						
 					}
 				} else if (validator.required && body[key] === undefined) {
 					newErrors.push({

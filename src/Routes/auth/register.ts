@@ -13,16 +13,16 @@ import Middleware from "@/Utils/Classes/Routing/Decorators/Middleware.ts";
 import type { CreateRoute } from "@/Utils/Classes/Routing/Route.ts";
 import Route from "@/Utils/Classes/Routing/Route.ts";
 import Token from "@/Utils/Classes/Token.ts";
+import tagGenerator from "@/Utils/TagGenerator.ts";
 import type Settings from "@/Utils/Cql/Types/Settings.ts";
 import type Users from "@/Utils/Cql/Types/User.ts";
-import tagGenerator from "@/Utils/TagGenerator.ts";
 
 const postRequestBody = {
 	email: string().email(),
 	password: string().min(4).max(72),
 	username: string().min(3).max(32),
 	invite: string().optional(),
-	platformInvite: string().optional()
+	platformInvite: string().optional(),
 };
 
 export default class Register extends Route {
@@ -43,40 +43,45 @@ export default class Register extends Route {
 	)
 	@Middleware(bodyValidator(postRequestBody))
 	public async postRegister({ body, set, request }: CreateRoute<"/", Infer<typeof postRequestBody>>) {
-		
 		const failed = errorGen.FailedToRegister();
-		
+
 		if (this.App.config.server.features.includes("InviteBasedRegistration") && !body.platformInvite) {
 			failed.addError({
 				platformInvite: {
 					code: "MissingInvite",
-					message: "This Kastel instance requires an invite to register."
-				}
-			})
-			
+					message: "This Kastel instance requires an invite to register.",
+				},
+			});
+
 			set.status = 400;
-			
-			return failed.toJSON()
+
+			return failed.toJSON();
 		}
-		
+
 		const foundUser = await this.fetchUser({ email: Encryption.encrypt(body.email) }, ["email"]);
-		const foundPlatformInvite = body.platformInvite ? await this.App.Cassandra.Models.PlatformInvite.get({ code: Encryption.encrypt(body.platformInvite) }) : null
+		const foundPlatformInvite = body.platformInvite
+			? await this.App.Cassandra.Models.PlatformInvite.get({ code: Encryption.encrypt(body.platformInvite) })
+			: null;
 		const foundUsers = await this.fetchUser({ username: Encryption.encrypt(body.username) }, ["tag"]);
 		const tag = tagGenerator(foundUsers.map((usr) => usr.tag));
 
-		if (!foundPlatformInvite && this.App.config.server.features.includes("InviteBasedRegistration") || foundPlatformInvite?.usedById || (foundPlatformInvite?.expiresAt?.getTime() ?? 0) < Date.now()) {
+		if (
+			(!foundPlatformInvite && this.App.config.server.features.includes("InviteBasedRegistration")) ||
+			foundPlatformInvite?.usedById ||
+			(foundPlatformInvite?.expiresAt?.getTime() ?? 0) < Date.now()
+		) {
 			failed.addError({
 				platformInvite: {
 					code: "InvalidInvite",
-					message: "The platform invite provided was invalid."
-				}
-			})
-			
-			set.status = 400
-			
-			return failed.toJSON() // ? This is the only place this happens, we don't want to leak if the email is already taken, or if that max usernames has been reached
+					message: "The platform invite provided was invalid.",
+				},
+			});
+
+			set.status = 400;
+
+			return failed.toJSON(); // ? This is the only place this happens, we don't want to leak if the email is already taken, or if that max usernames has been reached
 		}
-		
+
 		if (foundUser.length > 0) {
 			failed.addError({
 				email: {
@@ -140,16 +145,16 @@ export default class Register extends Route {
 			],
 			userId: userObject.userId,
 			guildOrder: [],
-			allowedInvites: 0 // ? You get 0 invites on creation
+			allowedInvites: 0, // ? You get 0 invites on creation
 		};
 
 		if (foundPlatformInvite) {
 			await this.App.Cassandra.Models.PlatformInvite.update({
 				code: Encryption.encrypt(body.platformInvite as string),
 				usedById: userObject.userId,
-			})
+			});
 		}
-		
+
 		await Promise.all([
 			this.App.Cassandra.Models.User.insert(userObject),
 			this.App.Cassandra.Models.Settings.insert(settignsObject),

@@ -262,7 +262,6 @@ for (const [name, route] of Object.entries(router.routes)) {
 			errors: errorArgs,
 		};
 	});
-	
 
 	dd.push({
 		types: returnTypes,
@@ -270,15 +269,25 @@ for (const [name, route] of Object.entries(router.routes)) {
 	});
 }
 
-const unFinishedRoutes = dd.map((y) => ({
-	types: y.types.filter((x) => x.errors.length === 0 && Object.values(x.returnType).length === 0 && x.type === "NonPromise" && x.description === "Change this Description when working on this route"),
-	path: y.name
-})).filter((x) => x.types.length > 0);
+const unFinishedRoutes = dd
+	.map((y) => ({
+		types: y.types.filter(
+			(x) =>
+				x.errors.length === 0 &&
+				Object.values(x.returnType).length === 0 &&
+				x.type === "NonPromise" &&
+				x.description === "Change this Description when working on this route",
+		),
+		path: y.name,
+	}))
+	.filter((x) => x.types.length > 0);
 
 dd.push({
 	name: "Routes that are not finished yet",
-	routes: unFinishedRoutes.flatMap((route) => route.types.map((x) => ({ name: x.name, method: x.method, path: route.path })))
-})
+	routes: unFinishedRoutes.flatMap((route) =>
+		route.types.map((x) => ({ name: x.name, method: x.method, path: route.path })),
+	),
+});
 
 await Bun.write("./openSpecStorage/raw.json", JSON.stringify(dd.reverse(), null, 4));
 

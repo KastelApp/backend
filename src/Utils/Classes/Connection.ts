@@ -63,7 +63,7 @@ class Connection extends EventEmitter {
 		Invite: cassandra.mapping.ModelMapper<Invite>;
 		Message: cassandra.mapping.ModelMapper<Message>;
 		PermissionOverride: cassandra.mapping.ModelMapper<PermissionOverride>;
-		PlatformInvite: cassandra.mapping.ModelMapper<PlatformInvite>,
+		PlatformInvite: cassandra.mapping.ModelMapper<PlatformInvite>;
 		Role: cassandra.mapping.ModelMapper<Role>;
 		Settings: cassandra.mapping.ModelMapper<Settings>;
 		User: cassandra.mapping.ModelMapper<User>;
