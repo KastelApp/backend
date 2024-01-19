@@ -16,6 +16,7 @@ import Route from "@/Utils/Classes/Routing/Route.ts";
 import Token from "@/Utils/Classes/Token.ts";
 
 interface User {
+	allowedInvites?: number;
 	avatar: string | null;
 	bio?: string | null;
 	email: string;
@@ -93,18 +94,8 @@ export default class FetchPatch extends Route {
 			mfaVerified: flags.has("TwoFaVerified"),
 		};
 
-		if (include.includes("bio")) {
-			const bio = await this.App.Cassandra.Models.Settings.get(
-				{
-					userId: Encryption.encrypt(user.id),
-				},
-				{
-					fields: ["bio"],
-				},
-			);
-
-			userObject.bio = bio?.bio ?? null;
-		}
+		if (include.includes("bio")) userObject.bio = user.settings?.bio ?? null;
+		if (include.includes("invites")) userObject.allowedInvites = user.settings?.allowedInvites ?? null;
 
 		return Encryption.completeDecryption(userObject);
 	}

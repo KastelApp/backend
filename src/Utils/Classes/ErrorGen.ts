@@ -145,6 +145,12 @@ const errorGen = {
 	MethodNotAllowed: () => {
 		return new HTTPErrors(4_023);
 	},
+	/**
+	 * Couldn't delete an invite
+	 */
+	FailedToDeleteInvite: () => {
+		return new HTTPErrors(4_024);
+	},
 	/*
 	 * Used when the resource is unavailable (503 error)
 	 */

@@ -129,7 +129,7 @@ class Connection extends EventEmitter {
 				User: this.GenerateMappingOptions("users"),
 				VerificationLink: this.GenerateMappingOptions("verifcationlink"),
 				Webhook: this.GenerateMappingOptions("webhooks"),
-				PaltformInvite: this.GenerateMappingOptions("platform_invite"),
+				PlatformInvite: this.GenerateMappingOptions("platform_invite"),
 			},
 		} as const;
 
@@ -191,8 +191,6 @@ class Connection extends EventEmitter {
 			});
 
 			await this.Execute(`USE ${this.KeySpace};`);
-
-			// await this.Execute("TRACING ON;")
 
 			this.emit("Connected");
 		} catch (error) {

@@ -13,9 +13,9 @@ import Middleware from "@/Utils/Classes/Routing/Decorators/Middleware.ts";
 import type { CreateRoute } from "@/Utils/Classes/Routing/Route.ts";
 import Route from "@/Utils/Classes/Routing/Route.ts";
 import Token from "@/Utils/Classes/Token.ts";
-import tagGenerator from "@/Utils/TagGenerator.ts";
 import type Settings from "@/Utils/Cql/Types/Settings.ts";
 import type Users from "@/Utils/Cql/Types/User.ts";
+import tagGenerator from "@/Utils/TagGenerator.ts";
 
 const postRequestBody = {
 	email: string().email(),
@@ -152,6 +152,7 @@ export default class Register extends Route {
 			await this.App.Cassandra.Models.PlatformInvite.update({
 				code: Encryption.encrypt(body.platformInvite as string),
 				usedById: userObject.userId,
+				usedAt: new Date(),
 			});
 		}
 

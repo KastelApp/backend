@@ -15,6 +15,7 @@ export interface UserMiddlewareType extends Record<string, any> {
 		password: string;
 		// bio", "guild_order", "language", "privacy", "theme", "status
 		settings: {
+			allowedInvites: number,
 			bio: string | null;
 			guildOrder: {
 				guildId: string;
@@ -113,7 +114,7 @@ const userMiddleware = (options: UserMiddleware) => {
 					userId: Encryption.encrypt(decodedToken.Snowflake),
 				},
 				{
-					fields: ["tokens", "max_file_upload_size", "bio", "guild_order", "language", "privacy", "theme", "status"],
+					fields: ["tokens", "max_file_upload_size", "bio", "guild_order", "language", "privacy", "theme", "status", "allowed_invites"],
 				},
 			);
 
@@ -321,6 +322,7 @@ const userMiddleware = (options: UserMiddleware) => {
 						privacy: usersSettings.privacy,
 						status: usersSettings.status,
 						theme: usersSettings.theme,
+						allowedInvites: usersSettings.allowedInvites ?? 0,
 					}),
 				},
 			};

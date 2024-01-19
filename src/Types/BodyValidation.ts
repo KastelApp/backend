@@ -148,9 +148,9 @@ type InfererRawRaw<T extends object, K extends keyof T> = T[K] extends AnyType
 					? {
 							// @ts-expect-error -- ^
 							[key: string]: InferRaw<T[K]["items"]>;
-							// @ts-expect-error -- ^
 						}
-					: InferRaw<T[K]["items"]>
+					: // @ts-expect-error -- ^
+						InferRaw<T[K]["items"]>
 				: Optionalize<T[K]>
 	: never;
 
