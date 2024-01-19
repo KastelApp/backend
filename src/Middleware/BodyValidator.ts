@@ -37,7 +37,6 @@ const validate = (
 
 			if (!validated.valid) {
 				if (validated.multiErrors) {
-					console.log("owo we got company")
 					for (const error of validated.multiErrors) {
 						
 						if (error.multiErrors) {
