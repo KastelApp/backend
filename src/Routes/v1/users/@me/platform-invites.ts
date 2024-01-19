@@ -15,12 +15,12 @@ import Route from "@/Utils/Classes/Routing/Route.ts";
 import inviteGenerator from "@/Utils/InviteGenerator.ts";
 
 const createInviteBody = {
-	expiresAt: string().optional()
-}
+	expiresAt: string().optional(),
+};
 
 const deleteInviteBody = {
-	code: string()
-}
+	code: string(),
+};
 
 export default class PlatformInvites extends Route {
 	public constructor(App: App) {
@@ -36,19 +36,19 @@ export default class PlatformInvites extends Route {
 			AllowedRequesters: ["User"],
 		}),
 	)
-	public async getInvites({
-		user,
-	}: CreateRoute<"/platform-invites", any, [UserMiddlewareType]>) {
-		const invites = (await this.App.Cassandra.Models.PlatformInvite.find({
-			creatorId: Encryption.encrypt(user.id)
-		})).toArray()
-		
+	public async getInvites({ user }: CreateRoute<"/platform-invites", any, [UserMiddlewareType]>) {
+		const invites = (
+			await this.App.Cassandra.Models.PlatformInvite.find({
+				creatorId: Encryption.encrypt(user.id),
+			})
+		).toArray();
+
 		return invites.map((inv) => ({
 			code: Encryption.decrypt(inv.code),
 			usedAt: inv.usedAt ?? null,
 			usedBy: inv.usedById ? Encryption.decrypt(inv.usedById) : null,
 			expiresAt: inv.expiresAt ?? null,
-		}))
+		}));
 	}
 
 	@Method("delete")
@@ -64,54 +64,53 @@ export default class PlatformInvites extends Route {
 	public async deleteInvite({
 		user,
 		body,
-		set
+		set,
 	}: CreateRoute<"/platform-invites", Infer<typeof deleteInviteBody>, [UserMiddlewareType]>) {
-		
 		const foundInvite = await this.App.Cassandra.Models.PlatformInvite.get({
-			code: Encryption.encrypt(body.code)
-		})
-		
-		const failed = errorGen.FailedToDeleteInvite()
-		
+			code: Encryption.encrypt(body.code),
+		});
+
+		const failed = errorGen.FailedToDeleteInvite();
+
 		if (!foundInvite) {
 			const missingInvite = errorGen.InvalidInvite();
-			
+
 			missingInvite.addError({
 				code: {
 					code: "InvalidInvite",
-					message: "The invite provided is invalid"
-				}
-			})
-			
+					message: "The invite provided is invalid",
+				},
+			});
+
 			set.status = 404;
-			
+
 			return missingInvite.toJSON();
 		}
-		
+
 		if (Encryption.decrypt(foundInvite.creatorId) !== user.id) {
 			failed.addError({
 				code: {
 					code: "InvalidInvite",
-					message: "The invite provided is invalid"
-				}
-			})
-			
+					message: "The invite provided is invalid",
+				},
+			});
+
 			set.status = 404;
-			
+
 			return failed.toJSON();
 		}
-		
+
 		await this.App.Cassandra.Models.PlatformInvite.remove({
-			code: Encryption.encrypt(body.code)
+			code: Encryption.encrypt(body.code),
 		});
-		
+
 		await this.App.Cassandra.Models.Settings.update({
 			userId: Encryption.encrypt(user.id),
-			allowedInvites: user.settings.allowedInvites + 1
-		})
+			allowedInvites: user.settings.allowedInvites + 1,
+		});
 
 		set.status = 204;
-		
+
 		// eslint-disable-next-line no-useless-return, sonarjs/no-redundant-jump
 		return;
 	}
@@ -129,63 +128,60 @@ export default class PlatformInvites extends Route {
 	public async createInvite({
 		body,
 		user,
-		set
+		set,
 	}: CreateRoute<"/platform-invites", Infer<typeof createInviteBody>, [UserMiddlewareType]>) {
-		
-		const error = errorGen.FailedToCreateInvite()
-		
+		const error = errorGen.FailedToCreateInvite();
+
 		if (user.settings.allowedInvites <= 0) {
 			if (user.settings.allowedInvites < 0) this.App.Logger.error("User has negative allowed invites");
-			
+
 			error.addError({
 				uses: {
 					code: "MaxInvitesReached",
-					message: "You have reached the maximum amount of invites you can create"
-				}
-			})
-			
+					message: "You have reached the maximum amount of invites you can create",
+				},
+			});
+
 			set.status = 400;
-			
+
 			return error.toJSON();
 		}
-		
-		const invite = [inviteGenerator(), inviteGenerator()].join("-")
+
+		const invite = [inviteGenerator(), inviteGenerator()].join("-");
 		// ? expires default 24 hours, max is 7 days
-		const expiresAt = body.expiresAt ? new Date(body.expiresAt) : new Date(Date.now() + 1_000 * 60 * 60 * 24)
-		
+		const expiresAt = body.expiresAt ? new Date(body.expiresAt) : new Date(Date.now() + 1_000 * 60 * 60 * 24);
+
 		if (expiresAt.getTime() > Date.now() + 1_000 * 60 * 60 * 24 * 7) {
 			error.addError({
 				expiresAt: {
 					code: "InvalidDate",
-					message: "The date provided is too far in the future"
-				}
-			})
-			
+					message: "The date provided is too far in the future",
+				},
+			});
+
 			set.status = 400;
-			
+
 			return error.toJSON();
 		}
-		
+
 		await this.App.Cassandra.Models.Settings.update({
 			userId: Encryption.encrypt(user.id),
-			allowedInvites: user.settings.allowedInvites - 1
-		})
-		
+			allowedInvites: user.settings.allowedInvites - 1,
+		});
+
 		await this.App.Cassandra.Models.PlatformInvite.insert({
 			code: Encryption.encrypt(invite),
 			creatorId: Encryption.encrypt(user.id),
 			expiresAt,
 			usedAt: null,
-			usedById: null
+			usedById: null,
 		});
-		
-		
-		
+
 		return {
 			code: invite,
 			expiresAt,
 			usedAt: null,
-			usedBy: null
-		}
+			usedBy: null,
+		};
 	}
 }

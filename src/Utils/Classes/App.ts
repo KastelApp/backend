@@ -209,9 +209,11 @@ class App {
 			this.Logger.error("This shouldn't happen, please report this");
 		}
 
-		this.ElysiaApp.use(cors({
-			methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-		}))
+		this.ElysiaApp.use(
+			cors({
+				methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+			}),
+		)
 			.use(serverTiming())
 			.onError(({ code, request, path, error }) => {
 				this.Logger.error(`Error ${code} on route ${path} [${request.method}]`);
@@ -297,14 +299,14 @@ class App {
 			const contentTypes = route.routeClass.__contentTypes?.find(
 				(contentType) => contentType.name === foundMethod.name,
 			);
-			
+
 			// @ts-expect-error -- I know what I'm doing
-			if (route.routeClass[foundMethod.name] === undefined)  {
+			if (route.routeClass[foundMethod.name] === undefined) {
 				this.Logger.error(`Could not find function for ${request.method} ${path} but it was successfully matched`);
 
 				return "Internal Server Error :(";
 			}
-			
+
 			// @ts-expect-error -- I know what I'm doing
 			const routeClassFunction = route.routeClass[foundMethod.name].bind(route.routeClass);
 			const finishedMiddlewares = [];
