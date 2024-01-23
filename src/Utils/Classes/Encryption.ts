@@ -105,6 +105,7 @@ class Encryption {
 		}
 
 		if (typeof items !== "object" || items === null) return items;
+		if (["number", "boolean"].includes(typeof items)) return items;
 
 		if (!Array.isArray(items)) {
 			const newObject: any = {};
@@ -128,7 +129,7 @@ class Encryption {
 	}
 
 	public static encryptedSnowflake() {
-		return Encryption.encrypt(App.Snowflake.Generate());
+		return Encryption.encrypt(App.snowflake.Generate());
 	}
 }
 

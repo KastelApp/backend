@@ -220,18 +220,34 @@
 		},
 		"Ws": {
 			"properties": {
-				"password": {
-					"type": "string"
+				"port": {
+					"type": ["string", "number"]
 				},
-				"url": {
-					"type": "string"
+				"maxConnections": {
+					"type": ["string", "number"]
 				},
-				"version": {
-					"type": "number"
+				"maxConnectionsPerMinute": {
+					"type": ["string", "number"]
+				},
+				"heartbeatInterval": {
+					"type": ["string", "number"]
+				},
+				"closedInterval": {
+					"type": ["string", "number"]
+				},
+				"unauthedTimeout": {
+					"type": ["string", "number"]
 				}
 			},
 			"type": "object",
-			"required": ["password", "url", "version"]
+			"required": [
+				"port",
+				"maxConnections",
+				"maxConnectionsPerMinute",
+				"heartbeatInterval",
+				"closedInterval",
+				"unauthedTimeout"
+			]
 		}
 	},
 	"properties": {

@@ -3,7 +3,7 @@ import type { UserMiddlewareType } from "@/Middleware/User.ts";
 import userMiddleware from "@/Middleware/User.ts";
 import type { Infer } from "@/Types/BodyValidation.ts";
 import { string } from "@/Types/BodyValidation.ts";
-import type App from "@/Utils/Classes/App.ts";
+import type API from "@/Utils/Classes/API.ts";
 import FlagFields from "@/Utils/Classes/BitFields/Flags.ts";
 import Encryption from "@/Utils/Classes/Encryption.ts";
 import errorGen from "@/Utils/Classes/ErrorGen.ts";
@@ -45,7 +45,7 @@ const patchSelf = {
 };
 
 export default class FetchPatch extends Route {
-	public constructor(App: App) {
+	public constructor(App: API) {
 		super(App);
 	}
 
@@ -64,7 +64,7 @@ export default class FetchPatch extends Route {
 		query,
 		set,
 	}: CreateRoute<"/@me", any, [UserMiddlewareType], any, { include?: string }>) {
-		const fetchedUser = await this.App.Cassandra.Models.User.get({
+		const fetchedUser = await this.App.cassandra.Models.User.get({
 			userId: Encryption.encrypt(user.id),
 		});
 
@@ -198,7 +198,7 @@ export default class FetchPatch extends Route {
 		if (body.newPassword) {
 			stuffToUpdate.password = await Bun.password.hash(body.newPassword);
 
-			const settings = await this.App.Cassandra.Models.Settings.get(
+			const settings = await this.App.cassandra.Models.Settings.get(
 				{
 					userId: Encryption.encrypt(user.id),
 				},
@@ -225,7 +225,7 @@ export default class FetchPatch extends Route {
 				},
 			];
 
-			await this.App.Cassandra.Models.Settings.update({
+			await this.App.cassandra.Models.Settings.update({
 				userId: Encryption.encrypt(user.id),
 				tokens: settings.tokens,
 			});
@@ -234,7 +234,7 @@ export default class FetchPatch extends Route {
 		}
 
 		if (body.bio) {
-			await this.App.Cassandra.Models.Settings.update({
+			await this.App.cassandra.Models.Settings.update({
 				userId: Encryption.encrypt(user.id),
 				bio: Encryption.encrypt(body.bio),
 			});
@@ -282,7 +282,7 @@ export default class FetchPatch extends Route {
 		}
 
 		if (Object.keys(stuffToUpdate).length > 0) {
-			await this.App.Cassandra.Models.User.update({
+			await this.App.cassandra.Models.User.update({
 				userId: Encryption.encrypt(user.id),
 				...stuffToUpdate,
 			});
@@ -312,7 +312,7 @@ export default class FetchPatch extends Route {
 		fields: string[],
 	) {
 		// eslint-disable-next-line unicorn/no-array-method-this-argument
-		const fetched = await this.App.Cassandra.Models.User.find(opts, {
+		const fetched = await this.App.cassandra.Models.User.find(opts, {
 			fields: fields as any, // ? Due to me changing something string[] won't work anymore, but this should be safe
 		});
 

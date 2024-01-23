@@ -1,6 +1,6 @@
 import type { UserMiddlewareType } from "@/Middleware/User.ts";
 import userMiddleware from "@/Middleware/User.ts";
-import type App from "@/Utils/Classes/App.ts";
+import type API from "@/Utils/Classes/API.ts";
 import FlagFields from "@/Utils/Classes/BitFields/Flags.ts";
 import Encryption from "@/Utils/Classes/Encryption.ts";
 import errorGen from "@/Utils/Classes/ErrorGen.ts";
@@ -23,7 +23,7 @@ interface User {
 }
 
 export default class Fetch extends Route {
-	public constructor(App: App) {
+	public constructor(App: API) {
 		super(App);
 	}
 
@@ -37,7 +37,7 @@ export default class Fetch extends Route {
 		}),
 	)
 	public async getProfile({ params, query, set }: CreateRoute<"/users/:userId", any, [UserMiddlewareType]>) {
-		const fetchedUser = await this.App.Cassandra.Models.User.get({
+		const fetchedUser = await this.App.cassandra.Models.User.get({
 			userId: Encryption.encrypt(params.userId),
 		});
 
@@ -71,7 +71,7 @@ export default class Fetch extends Route {
 		};
 
 		if (include.includes("bio")) {
-			const bio = await this.App.Cassandra.Models.Settings.get(
+			const bio = await this.App.cassandra.Models.Settings.get(
 				{
 					userId: Encryption.encrypt(params.userId),
 				},

@@ -3,7 +3,7 @@ import type { UserMiddlewareType } from "@/Middleware/User.ts";
 import userMiddleware from "@/Middleware/User.ts";
 import type { Infer } from "@/Types/BodyValidation.ts";
 import { array, number, snowflake, string } from "@/Types/BodyValidation.ts";
-import type App from "@/Utils/Classes/App.ts";
+import type API from "@/Utils/Classes/API.ts";
 import Encryption from "@/Utils/Classes/Encryption.ts";
 import errorGen from "@/Utils/Classes/ErrorGen.ts";
 import ContentTypes from "@/Utils/Classes/Routing/Decorators/ContentTypes.ts";
@@ -27,7 +27,7 @@ const patchSettings = {
 };
 
 export default class UserSettings extends Route {
-	public constructor(App: App) {
+	public constructor(App: API) {
 		super(App);
 	}
 
@@ -124,7 +124,7 @@ export default class UserSettings extends Route {
 			return failedToUpdateSettigns;
 		}
 
-		await this.App.Cassandra.Models.Settings.update({
+		await this.App.cassandra.Models.Settings.update({
 			userId: Encryption.encrypt(user.id),
 			...data,
 		});

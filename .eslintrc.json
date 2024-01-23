@@ -35,6 +35,7 @@
 		],
 		"prefer-arrow/prefer-arrow-functions": "error",
 		"object-curly-spacing": ["error", "always"],
-		"no-warning-comments": "off"
+		"no-warning-comments": "off",
+		"unicorn/prefer-math-trunc": "off"
 	}
 }

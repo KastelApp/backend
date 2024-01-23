@@ -1,7 +1,6 @@
 import { EventEmitter } from "node:events";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { URL } from "node:url";
 import cassandra, { mapping, type ClientOptions } from "@kastelll/cassandra-driver";
 import type {
 	Ban,
@@ -33,7 +32,7 @@ interface Connection {
 }
 
 class Connection extends EventEmitter {
-	private readonly TableDirectory: string = path.join(new URL(".", import.meta.url).pathname, "../Cql/Tables");
+	private readonly TableDirectory: string = path.join(import.meta.dirname, "../Cql/Tables");
 
 	public Client: cassandra.Client;
 

@@ -1,6 +1,6 @@
 import type { UserMiddlewareType } from "@/Middleware/User.ts";
 import userMiddleware from "@/Middleware/User.ts";
-import type App from "@/Utils/Classes/App.ts";
+import type API from "@/Utils/Classes/API.ts";
 import Encryption from "@/Utils/Classes/Encryption.ts";
 import ContentTypes from "@/Utils/Classes/Routing/Decorators/ContentTypes.ts";
 import Description from "@/Utils/Classes/Routing/Decorators/Description.ts";
@@ -10,7 +10,7 @@ import type { CreateRoute } from "@/Utils/Classes/Routing/Route.ts";
 import Route from "@/Utils/Classes/Routing/Route.ts";
 
 export default class Logout extends Route {
-	public constructor(App: App) {
+	public constructor(App: API) {
 		super(App);
 	}
 
@@ -24,7 +24,7 @@ export default class Logout extends Route {
 		}),
 	)
 	public async deleteLogout({ user, set }: CreateRoute<"/logout", any, [UserMiddlewareType]>) {
-		const fetched = await this.App.Cassandra.Models.Settings.get(
+		const fetched = await this.App.cassandra.Models.Settings.get(
 			{
 				userId: Encryption.encrypt(user.id),
 			},
@@ -43,7 +43,7 @@ export default class Logout extends Route {
 
 		newSettings.tokens = newSettings.tokens.filter((token) => token.token !== Encryption.encrypt(user.token));
 
-		await this.App.Cassandra.Models.Settings.update(newSettings);
+		await this.App.cassandra.Models.Settings.update(newSettings);
 
 		set.status = 204;
 

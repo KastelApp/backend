@@ -4,10 +4,10 @@ import App from "./App.ts";
 
 class Token {
 	public static generateToken(UserId: string): string {
-		const snowflakeBase64 = this.Encode(UserId);
+		const snowflakeBase64 = this.encode(UserId);
 		const nonce = crypto.randomBytes(16).toString("base64url");
 
-		const stringDated = this.Encode(String(Date.now()) + nonce);
+		const stringDated = this.encode(String(Date.now()) + nonce);
 
 		const hmac = crypto.createHmac("sha256", App.config.encryption.tokenKey);
 
@@ -16,7 +16,7 @@ class Token {
 		return `${snowflakeBase64}.${stringDated}.${hmac.digest("base64url")}`;
 	}
 
-	public static ValidateToken(Token: string): boolean {
+	public static validateToken(Token: string): boolean {
 		const [snowflakeBase64, stringDated, hmacSignature] = Token.split(".");
 
 		if (!snowflakeBase64 || !stringDated || !hmacSignature) return false;
@@ -28,7 +28,7 @@ class Token {
 		return hmac.digest("base64url") === hmacSignature;
 	}
 
-	public static DecodeToken(Token: string): {
+	public static decodeToken(Token: string): {
 		Snowflake: string;
 		Timestamp: number;
 	} {
@@ -43,7 +43,7 @@ class Token {
 		return { Snowflake: snowflake, Timestamp: Number.parseInt(decodedTimestamp, 10) };
 	}
 
-	private static Encode(item: string) {
+	private static encode(item: string) {
 		return Buffer.from(item, "utf8").toString("base64url");
 	}
 }

@@ -3,7 +3,7 @@ import type { UserMiddlewareType } from "@/Middleware/User.ts";
 import userMiddleware from "@/Middleware/User.ts";
 import type { Infer } from "@/Types/BodyValidation.ts";
 import { string } from "@/Types/BodyValidation.ts";
-import type App from "@/Utils/Classes/App.ts";
+import type API from "@/Utils/Classes/API.ts";
 import Encryption from "@/Utils/Classes/Encryption.ts";
 import errorGen from "@/Utils/Classes/ErrorGen.ts";
 import ContentTypes from "@/Utils/Classes/Routing/Decorators/ContentTypes.ts";
@@ -23,7 +23,7 @@ const deleteInviteBody = {
 };
 
 export default class PlatformInvites extends Route {
-	public constructor(App: App) {
+	public constructor(App: API) {
 		super(App);
 	}
 
@@ -38,14 +38,14 @@ export default class PlatformInvites extends Route {
 	)
 	public async getInvites({ user }: CreateRoute<"/platform-invites", any, [UserMiddlewareType]>) {
 		const invites = (
-			await this.App.Cassandra.Models.PlatformInvite.find({
+			await this.App.cassandra.Models.PlatformInvite.find({
 				creatorId: Encryption.encrypt(user.id),
 			})
 		).toArray();
 
 		return invites.map((inv) => ({
 			code: Encryption.decrypt(inv.code),
-			usedAt: inv.usedAt ?? null,
+			usedAt: inv.usedAt?.toISOString() ?? null,
 			usedBy: inv.usedById ? Encryption.decrypt(inv.usedById) : null,
 			expiresAt: inv.expiresAt ?? null,
 		}));
@@ -66,7 +66,7 @@ export default class PlatformInvites extends Route {
 		body,
 		set,
 	}: CreateRoute<"/platform-invites", Infer<typeof deleteInviteBody>, [UserMiddlewareType]>) {
-		const foundInvite = await this.App.Cassandra.Models.PlatformInvite.get({
+		const foundInvite = await this.App.cassandra.Models.PlatformInvite.get({
 			code: Encryption.encrypt(body.code),
 		});
 
@@ -100,11 +100,11 @@ export default class PlatformInvites extends Route {
 			return failed.toJSON();
 		}
 
-		await this.App.Cassandra.Models.PlatformInvite.remove({
+		await this.App.cassandra.Models.PlatformInvite.remove({
 			code: Encryption.encrypt(body.code),
 		});
 
-		await this.App.Cassandra.Models.Settings.update({
+		await this.App.cassandra.Models.Settings.update({
 			userId: Encryption.encrypt(user.id),
 			allowedInvites: user.settings.allowedInvites + 1,
 		});
@@ -133,7 +133,7 @@ export default class PlatformInvites extends Route {
 		const error = errorGen.FailedToCreateInvite();
 
 		if (user.settings.allowedInvites <= 0) {
-			if (user.settings.allowedInvites < 0) this.App.Logger.error("User has negative allowed invites");
+			if (user.settings.allowedInvites < 0) this.App.logger.error("User has negative allowed invites");
 
 			error.addError({
 				uses: {
@@ -164,12 +164,12 @@ export default class PlatformInvites extends Route {
 			return error.toJSON();
 		}
 
-		await this.App.Cassandra.Models.Settings.update({
+		await this.App.cassandra.Models.Settings.update({
 			userId: Encryption.encrypt(user.id),
 			allowedInvites: user.settings.allowedInvites - 1,
 		});
 
-		await this.App.Cassandra.Models.PlatformInvite.insert({
+		await this.App.cassandra.Models.PlatformInvite.insert({
 			code: Encryption.encrypt(invite),
 			creatorId: Encryption.encrypt(user.id),
 			expiresAt,
@@ -179,7 +179,7 @@ export default class PlatformInvites extends Route {
 
 		return {
 			code: invite,
-			expiresAt,
+			expiresAt: expiresAt.toISOString(),
 			usedAt: null,
 			usedBy: null,
 		};

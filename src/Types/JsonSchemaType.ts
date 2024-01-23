@@ -1,4 +1,3 @@
-// ? EXPORTED FROM https://transform.tools/json-schema-to-typescript
 export type ShortCode = "NoReply" | "Support";
 export type Features =
 	| "DisableChannelCreation"
@@ -17,28 +16,24 @@ export interface MySchema {
 	server: Server;
 	ws: Ws;
 }
-
 export interface Encryption {
 	algorithm: string;
 	initVector: string;
 	securityKey: string;
 	tokenKey: string;
 }
-
 export interface MailServer {
-	enabled?: boolean;
-	users?: [User, User];
+	enabled: boolean;
+	users: [User, User];
 }
-
 export interface User {
-	host: string;
-	password: string;
-	port: number;
-	secure: boolean;
-	shortCode: ShortCode;
-	user: string;
+	host?: string;
+	password?: string;
+	port?: number;
+	secure?: boolean;
+	shortCode?: ShortCode;
+	user?: string;
 }
-
 export interface Redis {
 	db: number;
 	host: string;
@@ -46,8 +41,8 @@ export interface Redis {
 	port: number;
 	username: string;
 }
-
 export interface ScyllaDB {
+	[k: string]: unknown;
 	durableWrites: boolean;
 	keyspace: string;
 	networkTopologyStrategy: {
@@ -57,11 +52,11 @@ export interface ScyllaDB {
 	password: string;
 	username: string;
 }
-
 export interface Server {
+	[k: string]: unknown;
 	bucketInterval: number;
 	bucketRnd: number;
-	cache: {
+	cache?: {
 		clearInterval: number;
 		clearOnStart: boolean;
 	};
@@ -73,17 +68,19 @@ export interface Server {
 	port: number | string;
 	secure: boolean;
 	sentry: {
-		dsn: string;
-		enabled: boolean;
-		tracesSampleRate: number;
+		dsn?: string;
+		enabled?: boolean;
+		tracesSampleRate?: number;
 	};
 	strictRouting: boolean;
 	turnstileSecret: string;
 	workerId: number;
 }
-
 export interface Ws {
-	password: string;
-	url: string;
-	version: number;
+	closedInterval: number | string;
+	heartbeatInterval: number | string;
+	maxConnections: number | string;
+	maxConnectionsPerMinute: number | string;
+	port: number | string;
+	unauthedTimeout: number | string;
 }

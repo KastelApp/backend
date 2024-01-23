@@ -1,7 +1,6 @@
 // TODO: Finish the OpenSpec file, this is a WIP
 
 import { join } from "node:path";
-import { URL } from "node:url";
 import type { Type } from "ts-morph";
 import { ModuleKind, ModuleResolutionKind, NewLineKind, Project, ScriptTarget, TypeFlags, ts } from "ts-morph";
 import { ModuleDetectionKind } from "typescript";
@@ -9,7 +8,7 @@ import FileSystemRouter from "./Utils/Classes/FileSystemRouter.ts";
 import Route from "./Utils/Classes/Routing/Route.ts";
 
 const router = new FileSystemRouter({
-	dir: join(new URL(".", import.meta.url).pathname, "./Routes"),
+	dir: join(import.meta.dirname, "./Routes"),
 	style: "nextjs",
 	watch: false,
 });

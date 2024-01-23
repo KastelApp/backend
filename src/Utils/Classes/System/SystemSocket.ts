@@ -26,13 +26,13 @@ class SystemSocket {
 
 	public Events: Events;
 
-	public App: App;
+	public App: API;
 
 	private Resolved: boolean;
 
 	private Interval: number;
 
-	public constructor(App: App) {
+	public constructor(App: API) {
 		this.App = App;
 
 		this.Ws = null;
@@ -66,7 +66,7 @@ class SystemSocket {
 			);
 
 			this.Ws.addEventListener("error", () => {
-				this.App.Logger.error("Failed to connect to System Socket / Recieved an Error");
+				this.App.logger.error("Failed to connect to System Socket / Recieved an Error");
 
 				this.HandleDisconnect();
 
@@ -80,11 +80,11 @@ class SystemSocket {
 			});
 
 			this.Ws.addEventListener("open", () => {
-				this.App.Logger.info("Connected to System Socket");
+				this.App.logger.info("Connected to System Socket");
 			});
 
 			this.Ws.addEventListener("close", ({ code, reason }) => {
-				this.App.Logger.warn("Disconnected from System Socket", reason?.toString(), code);
+				this.App.logger.warn("Disconnected from System Socket", reason?.toString(), code);
 
 				this.HandleDisconnect();
 
@@ -100,7 +100,7 @@ class SystemSocket {
 				if (decoded?.S) this.Sequence = decoded.S;
 
 				if (decoded?.Authed === true) {
-					this.App.Logger.info("Authed to System Socket");
+					this.App.logger.info("Authed to System Socket");
 
 					this.FailedConnectionAttempts = 0; // Reset the failed connection attempts (Since we are now connected)
 
@@ -111,9 +111,9 @@ class SystemSocket {
 					this.ApproximateMembers = authPayload.ApproximateMembers;
 
 					if (typeof authPayload.Misc.HeartbeatInterval === "number") {
-						this.App.Logger.debug("Starting Heartbeat Interval");
+						this.App.logger.debug("Starting Heartbeat Interval");
 						this.HeartbeatInterval = setInterval(() => {
-							this.App.Logger.debug("Sending Heartbeat");
+							this.App.logger.debug("Sending Heartbeat");
 							this.Ws?.send(
 								JSON.stringify({
 									Op: opCodes.HeartBeat,
@@ -124,7 +124,7 @@ class SystemSocket {
 							);
 							this.LastHeartbeat = Date.now();
 
-							this.App.Logger.debug("Heartbeat Sent");
+							this.App.logger.debug("Heartbeat Sent");
 						}, authPayload.Misc.HeartbeatInterval - 2_000);
 					}
 
@@ -137,16 +137,16 @@ class SystemSocket {
 				if (decoded?.Op) {
 					const normalPayload = decoded as NormalPayload;
 
-					this.App.Logger.debug(`Received Payload: ${JSON.stringify(normalPayload)}`);
+					this.App.logger.debug(`Received Payload: ${JSON.stringify(normalPayload)}`);
 
 					switch (normalPayload.Op) {
 						case opCodes.HeartBeatAck:
 							this.LastHeartbeatAck = Date.now();
-							this.App.Logger.debug("Heartbeat Acknowledged");
+							this.App.logger.debug("Heartbeat Acknowledged");
 							break;
 
 						case Object.values(systemOpCodes).find((op) => op === normalPayload.Op):
-							this.App.Logger.debug(
+							this.App.logger.debug(
 								`Received Event: ${Object.keys(systemOpCodes).find(
 									(op) => systemOpCodes[op as keyof typeof systemOpCodes] === normalPayload.Op,
 								)}`,
@@ -186,7 +186,7 @@ class SystemSocket {
 		if (!Force && this.FailedConnectionAttempts > 1 && this.FailedConnectionAttempts % 15 === 0) {
 			this.Interval += 30_000;
 
-			this.App.Logger.error(
+			this.App.logger.error(
 				`Failed to connect to System Socket 15 times, increasing the interval to ${this.Interval / 1_000} seconds`,
 			);
 		}
@@ -194,7 +194,7 @@ class SystemSocket {
 		this.FailedConnectionAttempts++;
 		this.Ws = null;
 
-		this.App.Logger.debug(`Attempting to reconnect to System Socket, attempt ${this.FailedConnectionAttempts}`);
+		this.App.logger.debug(`Attempting to reconnect to System Socket, attempt ${this.FailedConnectionAttempts}`);
 
 		setTimeout(async () => {
 			await this.Connect();

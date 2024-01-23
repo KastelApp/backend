@@ -31,18 +31,18 @@ class LinkGeneration {
 		const decodedSnowflake = Base64.Decode(base64snowflake);
 		const createdDate = Base64.Decode(base64createdDate);
 
-		App.StaticLogger.debug("Snowflake", decodedSnowflake);
+		App.staticLogger.debug("Snowflake", decodedSnowflake);
 
 		if (!snowflake.Validate(decodedSnowflake)) return false;
 
-		App.StaticLogger.debug("Snowflake good");
+		App.staticLogger.debug("Snowflake good");
 
 		const createdDateParsed = new Date(createdDate);
 
 		// the max age of these will be around 2 weeks (MAX) so just hard code the check here
 		if (createdDateParsed.getTime() + 1_209_600_000 < Date.now()) return false;
 
-		App.StaticLogger.debug("Date good");
+		App.staticLogger.debug("Date good");
 
 		const hmac = crypto.createHmac("sha256", App.config.encryption.tokenKey);
 
@@ -50,16 +50,16 @@ class LinkGeneration {
 
 		const newsecret = Base64.OldBase64(hmac.digest("base64"));
 
-		App.StaticLogger.debug("New Secret", newsecret);
-		App.StaticLogger.debug("Old Secret", secret);
+		App.staticLogger.debug("New Secret", newsecret);
+		App.staticLogger.debug("Old Secret", secret);
 
 		if (newsecret !== secret) return false;
 
-		App.StaticLogger.debug("New vs Old = Yes");
+		App.staticLogger.debug("New vs Old = Yes");
 
 		if (link !== Base64.Encode(`${base64snowflake}.${base64createdDate}.${nonce}.${secret}`)) return false;
 
-		App.StaticLogger.debug("Verified Link");
+		App.staticLogger.debug("Verified Link");
 
 		return true;
 	}

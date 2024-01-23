@@ -2,7 +2,7 @@
 	"name": "kastel",
 	"description": "A Chatting app like Discord or Guilded.",
 	"version": "0.1.0",
-	"main": "dist/index.js",
+	"main": "src/index.ts",
 	"dependencies": {
 		"@elysiajs/cors": "^0.8.0",
 		"@elysiajs/server-timing": "^0.8.0",
@@ -45,7 +45,9 @@
 		"start": "bun run src/index.ts",
 		"lint": "prettier --check . && eslint src --ext .js,.ts --format=pretty",
 		"format": "prettier --write . && eslint src --ext .js,.ts --fix --format=pretty",
-		"prepare": "husky install"
+		"prepare": "husky install",
+		"api": "bun run src/api.ts",
+		"ws": "bun run src/websocket.ts"
 	},
 	"keywords": [
 		"chatting"

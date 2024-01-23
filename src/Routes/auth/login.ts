@@ -21,7 +21,7 @@ const postLoginBody = {
 };
 
 export default class Login extends Route {
-	public constructor(App: App) {
+	public constructor(App: API) {
 		super(App);
 	}
 
@@ -135,7 +135,7 @@ export default class Login extends Route {
 
 		const newToken = Token.generateToken(fetchedUser.userId);
 
-		let tokens = await this.App.Cassandra.Models.Settings.get(
+		let tokens = await this.App.cassandra.Models.Settings.get(
 			{
 				userId: Encryption.encrypt(fetchedUser.userId),
 			},
@@ -150,10 +150,10 @@ export default class Login extends Route {
 			tokens = {
 				bio: null,
 				language: "en-US",
-				maxFileUploadSize: this.App.Constants.settings.Max.MaxFileSize,
-				maxGuilds: this.App.Constants.settings.Max.GuildCount,
+				maxFileUploadSize: this.App.constants.settings.Max.MaxFileSize,
+				maxGuilds: this.App.constants.settings.Max.GuildCount,
 				mentions: [],
-				presence: this.App.Constants.presence.Online,
+				presence: this.App.constants.presence.Online,
 				privacy: 0,
 				status: null,
 				theme: "dark",
@@ -164,10 +164,10 @@ export default class Login extends Route {
 			};
 		}
 
-		const sessionId = App.Snowflake.Generate();
+		const sessionId = App.snowflake.Generate();
 
 		tokens.tokens.push({
-			createdDate: new Date(App.Snowflake.TimeStamp(sessionId)),
+			createdDate: new Date(App.snowflake.TimeStamp(sessionId)),
 			flags: 0,
 			ip,
 			token: Encryption.encrypt(newToken),
@@ -175,9 +175,9 @@ export default class Login extends Route {
 		});
 
 		if (wasNull) {
-			await this.App.Cassandra.Models.Settings.insert(tokens);
+			await this.App.cassandra.Models.Settings.insert(tokens);
 		} else {
-			await this.App.Cassandra.Models.Settings.update(tokens);
+			await this.App.cassandra.Models.Settings.update(tokens);
 		}
 
 		this.App.SystemSocket.Events.NewSession({
@@ -191,7 +191,7 @@ export default class Login extends Route {
 	}
 
 	private async fetchUser(email: string) {
-		const fetched = await this.App.Cassandra.Models.User.get(
+		const fetched = await this.App.cassandra.Models.User.get(
 			{
 				email: Encryption.encrypt(email),
 			},

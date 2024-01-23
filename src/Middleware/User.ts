@@ -13,7 +13,6 @@ export interface UserMiddlewareType extends Record<string, any> {
 		guilds: string[];
 		id: string;
 		password: string;
-		// bio", "guild_order", "language", "privacy", "theme", "status
 		settings: {
 			allowedInvites: number;
 			bio: string | null;
@@ -43,7 +42,7 @@ const userMiddleware = (options: UserMiddleware) => {
 		const unAuthorizedError = errorGen.UnAuthorized();
 
 		if ((isBot && options.AllowedRequesters === "User") || (!isBot && options.AllowedRequesters === "Bot")) {
-			app.Logger.debug(`Unexpected User Type ${isBot ? "Is Bot" : "Isn't Bot"}`);
+			app.logger.debug(`Unexpected User Type ${isBot ? "Is Bot" : "Isn't Bot"}`);
 
 			unAuthorizedError.addError({
 				user: {
@@ -60,7 +59,7 @@ const userMiddleware = (options: UserMiddleware) => {
 		authHeader = authHeader?.split(" ").length === 2 ? authHeader.split(" ")[1] : authHeader;
 
 		if (options.AccessType === "LoggedIn" && !authHeader) {
-			app.Logger.debug("User isn't logged in though it is expected");
+			app.logger.debug("User isn't logged in though it is expected");
 
 			unAuthorizedError.addError({
 				user: {
@@ -75,7 +74,7 @@ const userMiddleware = (options: UserMiddleware) => {
 		}
 
 		if (options.AccessType === "LoggedOut" && authHeader) {
-			app.Logger.debug("User is logged in though its not expected");
+			app.logger.debug("User is logged in though its not expected");
 
 			unAuthorizedError.addError({
 				user: {
@@ -90,10 +89,10 @@ const userMiddleware = (options: UserMiddleware) => {
 		}
 
 		if (options.AccessType === "LoggedIn" && authHeader) {
-			const vaildatedToken = Token.ValidateToken(authHeader);
+			const vaildatedToken = Token.validateToken(authHeader);
 
 			if (!vaildatedToken) {
-				app.Logger.debug("Token couldn't be validated");
+				app.logger.debug("Token couldn't be validated");
 
 				unAuthorizedError.addError({
 					user: {
@@ -107,9 +106,9 @@ const userMiddleware = (options: UserMiddleware) => {
 				return unAuthorizedError.toJSON();
 			}
 
-			const decodedToken = Token.DecodeToken(authHeader);
+			const decodedToken = Token.decodeToken(authHeader);
 
-			const usersSettings = await app.Cassandra.Models.Settings.get(
+			const usersSettings = await app.cassandra.Models.Settings.get(
 				{
 					userId: Encryption.encrypt(decodedToken.Snowflake),
 				},
@@ -128,7 +127,7 @@ const userMiddleware = (options: UserMiddleware) => {
 				},
 			);
 
-			const userData = await app.Cassandra.Models.User.get(
+			const userData = await app.cassandra.Models.User.get(
 				{
 					userId: Encryption.encrypt(decodedToken.Snowflake),
 				},
@@ -138,8 +137,8 @@ const userMiddleware = (options: UserMiddleware) => {
 			);
 
 			if (!usersSettings || !userData) {
-				app.Logger.debug("User settings wasn't found", decodedToken.Snowflake);
-				app.Logger.debug(userData ?? "null", usersSettings ?? "null");
+				app.logger.debug("User settings wasn't found", decodedToken.Snowflake);
+				app.logger.debug(userData ?? "null", usersSettings ?? "null");
 
 				unAuthorizedError.addError({
 					user: {
@@ -161,7 +160,7 @@ const userMiddleware = (options: UserMiddleware) => {
 			}
 
 			if (!usersSettings?.tokens?.some((Token) => Token.token === Encryption.encrypt(authHeader as string))) {
-				app.Logger.debug("Token not found in the user settings");
+				app.logger.debug("Token not found in the user settings");
 
 				unAuthorizedError.addError({
 					user: {
@@ -183,7 +182,7 @@ const userMiddleware = (options: UserMiddleware) => {
 				userFlags.PrivateFlags.has("WaitingOnDisableDataUpdate") ||
 				userFlags.PrivateFlags.has("WaitingOnAccountDeletion")
 			) {
-				app.Logger.debug("Account Is Deleted or about to be deleted");
+				app.logger.debug("Account Is Deleted or about to be deleted");
 
 				accountNotAvailableError.addError({
 					email: {
@@ -198,7 +197,7 @@ const userMiddleware = (options: UserMiddleware) => {
 			}
 
 			if (userFlags.PrivateFlags.has("Terminated") || userFlags.PrivateFlags.has("Disabled")) {
-				app.Logger.debug("Account Is Disabled or Terminated");
+				app.logger.debug("Account Is Disabled or Terminated");
 
 				accountNotAvailableError.addError({
 					email: {
@@ -216,7 +215,7 @@ const userMiddleware = (options: UserMiddleware) => {
 				(isBot && (!userFlags.PrivateFlags.has("Bot") || !userFlags.PrivateFlags.has("VerifiedBot"))) ||
 				(!isBot && (userFlags.PrivateFlags.has("Bot") || userFlags.PrivateFlags.has("VerifiedBot")))
 			) {
-				app.Logger.debug(
+				app.logger.debug(
 					"The user has a (or is missing) a flag its not meant to (bot) and is using an invalid header tbh idk how to log this well",
 					isBot,
 					(!isBot && userFlags.PrivateFlags.has("Bot")) || userFlags.PrivateFlags.has("VerifiedBot"),
@@ -239,7 +238,7 @@ const userMiddleware = (options: UserMiddleware) => {
 				options.AllowedRequesters.includes("User") &&
 				(userFlags.PrivateFlags.has("Bot") || userFlags.PrivateFlags.has("VerifiedBot"))
 			) {
-				app.Logger.debug("User only endpoint though user is a bot");
+				app.logger.debug("User only endpoint though user is a bot");
 
 				unAuthorizedError.addError({
 					user: {
@@ -257,7 +256,7 @@ const userMiddleware = (options: UserMiddleware) => {
 				options.AllowedRequesters.includes("Bot") &&
 				!(userFlags.PrivateFlags.has("Bot") || userFlags.PrivateFlags.has("VerifiedBot"))
 			) {
-				app.Logger.debug("Bot only endpoint though user is not a bot");
+				app.logger.debug("Bot only endpoint though user is not a bot");
 
 				unAuthorizedError.addError({
 					user: {
@@ -274,7 +273,7 @@ const userMiddleware = (options: UserMiddleware) => {
 			if (options.Flags && options.Flags.length > 0) {
 				for (const flag of options.Flags) {
 					if (!userFlags.PrivateFlags.has(flag)) {
-						app.Logger.debug(`User is missing the ${flag} flag`);
+						app.logger.debug(`User is missing the ${flag} flag`);
 
 						unAuthorizedError.addError({
 							user: {
@@ -293,12 +292,12 @@ const userMiddleware = (options: UserMiddleware) => {
 			if (options.DisallowedFlags && options.DisallowedFlags.length > 0) {
 				for (const flag of options.DisallowedFlags) {
 					if (userFlags.PrivateFlags.has(flag)) {
-						app.Logger.debug(`User has the ${flag} flag`);
+						app.logger.debug(`User has the ${flag} flag`);
 
 						unAuthorizedError.addError({
 							user: {
 								code: "LostInTheMaze",
-								message: "You seemed to have gotten lost in the maze.. Are you sure it was meant for you?",
+								message: "You seemed to have gotten lost in the maze.. Are you sure it was meant for you?", // yes this is a joke for Discord's staff only endpoints
 							},
 						});
 

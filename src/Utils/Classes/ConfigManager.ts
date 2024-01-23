@@ -108,7 +108,7 @@ export default class ConfigManager {
 
 			await fs.writeFile(pth, JSON.stringify(parsed, null, 4), { encoding: "utf8" });
 
-			App.StaticLogger.info(`Created config file: ${pth}`);
+			App.staticLogger.info(`Created config file: ${pth}`);
 		} else if (!fileExists) {
 			if (path) {
 				throw new Error(`Config file: ${pth} does not exist!`);
@@ -135,10 +135,10 @@ export default class ConfigManager {
 					const compared = this.compare(this.oldConfig, this.config);
 
 					if (compared.length > 0) {
-						App.StaticLogger.info(`Config file has changed, reloading... Keys changed: (${compared.join(", ")})`);
+						App.staticLogger.info(`Config file has changed, reloading... Keys changed: (${compared.join(", ")})`);
 						console.log(this.getKeysOfPathInAKebabCase(this.config));
 					} else {
-						App.StaticLogger.info("Config file has changed, reloading... No keys changed");
+						App.staticLogger.info("Config file has changed, reloading... No keys changed");
 					}
 				});
 			}
@@ -147,14 +147,14 @@ export default class ConfigManager {
 				this.oldConfig = this.config ?? parsed;
 				this.config = parsed;
 			} else {
-				App.StaticLogger.warn(
+				App.staticLogger.warn(
 					`Config file is invalid, please fix it before continuing (${this.args.watch ? "The file is being watched" : "Please restart the process once you fix the issue, or use --watch to automatically reload the config"})`,
 				);
 			}
 
 			return result.valid ? parsed : null;
 		} catch {
-			App.StaticLogger.warn(
+			App.staticLogger.warn(
 				`Config file is invalid, please fix it before continuing (${this.args.watch ? "The file is being watched" : "Please restart the process once you fix the issue, or use --watch to automatically reload the config"})`,
 			);
 

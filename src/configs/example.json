@@ -46,8 +46,11 @@
 		"workerId": 0
 	},
 	"ws": {
-		"version": 1,
-		"url": "",
-		"password": ""
+		"maxConnections": 200,
+		"port": "62240",
+		"closedInterval": "1000",
+		"heartbeatInterval": "1000",
+		"maxConnectionsPerMinute": "15",
+		"unauthedTimeout": "1000"
 	}
 }

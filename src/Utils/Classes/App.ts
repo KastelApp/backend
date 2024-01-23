@@ -1,85 +1,53 @@
 /* eslint-disable id-length */
-import { join } from "node:path";
 import process from "node:process";
-import { URL } from "node:url";
-import { cors } from "@elysiajs/cors";
-import { serverTiming } from "@elysiajs/server-timing";
-import { Snowflake, Turnstile, CacheManager } from "@kastelll/util";
+import { Snowflake, CacheManager } from "@kastelll/util";
 import * as Sentry from "@sentry/bun";
-import { Elysia } from "elysia";
 import { type SimpleGit, simpleGit } from "simple-git";
 import type { MySchema } from "@/Types/JsonSchemaType.ts";
 import Constants, { relative } from "../../Constants.ts";
 import processArgs from "../ProcessArgs.ts";
 import ConfigManager from "./ConfigManager.ts";
 import Connection from "./Connection.ts";
-import errorGen from "./ErrorGen.ts";
-import FileSystemRouter from "./FileSystemRouter.ts";
 import { IpUtils } from "./IpUtils.ts";
 import CustomLogger from "./Logger.ts";
-import type { ContentTypes } from "./Routing/Route.ts";
-import RouteBuilder from "./Routing/Route.ts";
-import SystemSocket from "./System/SystemSocket.ts";
+import Question from "./Question.ts";
 import SystemInfo from "./SystemInfo.ts";
 
 type GitType = "Added" | "Copied" | "Deleted" | "Ignored" | "Modified" | "None" | "Renamed" | "Unmerged" | "Untracked";
 
 class App {
-	private RouteDirectory: string = join(new URL(".", import.meta.url).pathname, "../../Routes");
+	public ready: boolean = false;
 
-	public ElysiaApp: Elysia;
+	public static snowflake: Snowflake = new Snowflake(Constants.snowflake);
 
-	public Ready: boolean = false;
+	public cassandra!: Connection;
 
-	public static Snowflake: Snowflake = new Snowflake(Constants.snowflake);
+	public cache!: CacheManager;
 
-	public Cassandra!: Connection;
+	public ipUtils: IpUtils;
 
-	public Cache!: CacheManager;
+	public sentry: typeof Sentry;
 
-	public Turnstile!: Turnstile;
+	public constants: typeof Constants = Constants;
 
-	public IpUtils: IpUtils;
+	public static staticLogger: CustomLogger = new CustomLogger();
 
-	public SystemSocket!: SystemSocket;
+	private clean: boolean = false;
 
-	public Sentry: typeof Sentry;
+	public internetAccess: boolean = false;
 
-	public Constants: typeof Constants = Constants;
+	public static git: SimpleGit = simpleGit();
 
-	// public Logger: CustomLogger;
-
-	public get Logger(): CustomLogger {
-		return App.StaticLogger;
-	}
-
-	public static StaticLogger: CustomLogger = new CustomLogger();
-
-	public RouteCache: Map<
-		string,
-		{
-			path: string;
-			route: string;
-			routeClass: RouteBuilder;
-		}
-	> = new Map();
-
-	private Clean: boolean = false;
-
-	public InternetAccess: boolean = false;
-
-	public static Git: SimpleGit = simpleGit();
-
-	public static GitFiles: {
+	public static gitFiles: {
 		filePath: string;
 		type: GitType;
 	}[] = [];
 
-	public static GitBranch: string = "Unknown";
+	public static gitBranch: string = "Unknown";
 
-	public static GitCommit: string = "Unknown";
+	public static gitCommit: string = "Unknown";
 
-	public static TypeIndex = {
+	public static typeIndex = {
 		A: "Added",
 		D: "Deleted",
 		M: "Modified",
@@ -91,48 +59,43 @@ class App {
 		" ": "None",
 	};
 
-	public Args = processArgs(["debug", "skip-online-check", "behind-proxy", "no-ip-checking"]).valid;
-
-	public Router: FileSystemRouter;
+	public args = processArgs(["debug", "skip-online-check", "behind-proxy", "no-ip-checking"]).valid;
 
 	public static configManager: ConfigManager = new ConfigManager();
 
-	public constructor() {
-		this.ElysiaApp = new Elysia();
+	public static questionier: Question = new Question();
 
-		this.IpUtils = new IpUtils();
+	public constructor(public who: string) {
+		this.ipUtils = new IpUtils();
 
-		this.Sentry = Sentry;
+		this.sentry = Sentry;
+
+		this.logger.who = who;
 
 		// this.Logger = new CustomLogger();
-
-		this.Router = new FileSystemRouter({
-			dir: this.RouteDirectory,
-			style: "nextjs",
-			watch: true,
-			allowIndex: false,
-		});
 	}
 
-	public async Init(): Promise<void> {
-		this.Logger.hex("#ca8911")(
+	public logo() {
+		this.logger.hex("#ca8911")(
 			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${
 				relative.Version ? `v${relative.Version}` : "Unknown version"
 			} of Kastel's Backend. Bun version ${
 				Bun.version
 			}\nIf you would like to support this project please consider donating to https://opencollective.com/kastel\n`,
 		);
+	}
 
-		await this.SetupDebug(this.Args.includes("debug"));
+	public async init(): Promise<void> {
+		await this.setupDebug(this.args.includes("debug"));
 		const loaded = await App.configManager.load();
 
 		if (!loaded) {
-			this.Logger.error("Initial config load failed");
+			this.logger.error("Initial config load failed");
 
 			process.exit();
 		}
 
-		this.Cache = new CacheManager({
+		this.cache = new CacheManager({
 			AllowForDangerousCommands: true,
 			DB: this.config.redis.db,
 			Host: this.config.redis.host,
@@ -141,7 +104,7 @@ class App {
 			Username: this.config.redis.username,
 		});
 
-		this.Cassandra = new Connection(
+		this.cassandra = new Connection(
 			this.config.scyllaDB.nodes,
 			this.config.scyllaDB.username,
 			this.config.scyllaDB.password,
@@ -150,266 +113,38 @@ class App {
 			this.config.scyllaDB.durableWrites,
 		);
 
-		this.Turnstile = new Turnstile(this.config.server.captchaEnabled, this.config.server.turnstileSecret ?? "secret");
-
-		this.SystemSocket = new SystemSocket(this);
-
 		// this.Repl.startRepl();
 
-		this.Router.on("reload", async ({ path, type, directory }) => {
-			this.Logger.verbose(
-				`Reloaded Routes due to a ${directory ? "directory" : "file"} (${path}) being ${
-					type === "A" ? "Added" : type === "M" ? "Modified" : type === "D" ? "Removed" : "Unknown"
-				}`,
-			);
-
-			if (!directory && type !== "D") {
-				const loaded = await this.LoadRoute(
-					path,
-					Object.keys(this.Router.routes).find((route) => this.Router.routes[route] === path) ?? "",
-				);
-
-				if (!loaded) {
-					this.Logger.warn(`Failed to load ${path}`);
-
-					return;
-				}
-
-				this.Logger.info(`Loaded ${loaded.route}`);
-			}
-		});
-
-		this.Cache.on("Connected", () => this.Logger.info("Connected to Redis"));
-		this.Cache.on("Error", (err) => {
-			this.Logger.fatal(err);
+		this.cache.on("Connected", () => this.logger.info("Connected to Redis"));
+		this.cache.on("Error", (err) => {
+			this.logger.fatal(err);
 
 			process.exit(1);
 		});
-		this.Cache.on("MissedPing", () => this.Logger.warn("Missed Redis ping"));
-		this.Cassandra.on("Connected", () => this.Logger.info("Connected to ScyllaDB"));
-		this.Cassandra.on("Error", (err) => {
-			this.Logger.fatal(err);
+		this.cache.on("MissedPing", () => this.logger.warn("Missed Redis ping"));
+		this.cassandra.on("Connected", () => this.logger.info("Connected to ScyllaDB"));
+		this.cassandra.on("Error", (err) => {
+			// @ts-expect-error -- its fine
+			this.logger.fatal(`${err.name}: ${err.message} ${err.query}\n${err.stack.replace("Error: \n", "")}`);
 
 			process.exit(1);
 		});
 
-		this.Logger.info("Connecting to ScyllaDB");
-		this.Logger.warn("IT IS NOT FROZEN, ScyllaDB may take a while to connect");
+		this.logger.info("Connecting to ScyllaDB");
+		this.logger.warn("IT IS NOT FROZEN, ScyllaDB may take a while to connect");
 
-		await Promise.all([this.SystemSocket.Connect(), this.Cassandra.Connect(), this.Cache.connect()]);
+		await Promise.all([this.cassandra.Connect(), this.cache.connect()]);
 
-		this.Logger.info("Creating ScyllaDB Tables.. This may take a while..");
-		this.Logger.warn("IT IS NOT FROZEN, ScyllaDB may take a while to create the tables");
+		this.logger.info("Creating ScyllaDB Tables.. This may take a while..");
+		this.logger.warn("IT IS NOT FROZEN, ScyllaDB may take a while to create the tables");
 
-		const tablesCreated = await this.Cassandra.CreateTables();
+		const tablesCreated = await this.cassandra.CreateTables();
 
 		if (tablesCreated) {
-			this.Logger.info("Created ScyllaDB tables");
+			this.logger.info("Created ScyllaDB tables");
 		} else {
-			this.Logger.error("This shouldn't happen, please report this");
+			this.logger.error("This shouldn't happen, please report this");
 		}
-
-		this.ElysiaApp.use(
-			cors({
-				methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-			}),
-		)
-			.use(serverTiming())
-			.onError(({ code, request, path, error }) => {
-				this.Logger.error(`Error ${code} on route ${path} [${request.method}]`);
-
-				console.log(error);
-
-				return "Internal Server Error :(";
-			});
-
-		for (const [name, route] of Object.entries(this.Router.routes)) {
-			const loaded = await this.LoadRoute(route, name);
-
-			if (!loaded) {
-				this.Logger.warn(`Failed to load ${name}`);
-
-				continue;
-			}
-
-			this.Logger.info(`Loaded ${loaded.route}`);
-		}
-
-		this.Logger.info(`Loaded ${Object.keys(this.Router.routes).length} routes`);
-
-		this.ElysiaApp.all("*", async ({ body, headers, path, query, request, set, store }) => {
-			const ip = IpUtils.getIp(request, this.ElysiaApp.server) ?? "";
-			const isLocalIp = IpUtils.isLocalIp(ip);
-
-			if (isLocalIp && process.env.NODE_ENV !== "development") {
-				this.Logger.warn(`Local IP ${ip} tried to access ${path}`);
-
-				set.status = 403;
-
-				return "Forbidden";
-			}
-
-			const matched = this.Router.match(request);
-
-			if (!matched) {
-				const error = errorGen.NotFound();
-
-				error.addError({
-					notFound: {
-						code: "NotFound",
-						message: `Could not find route for ${request.method} ${path}`,
-					},
-				});
-
-				return error.toJSON();
-			}
-
-			const route = this.RouteCache.get(matched.filePath);
-
-			if (!route) {
-				this.Logger.error(`Could not find route for ${request.method} ${path} but it was successfully matched`);
-
-				return "Internal Server Error :(";
-			}
-
-			this.Logger.info(`Request to "${route.route}" [${request.method}]`);
-
-			const foundMethod = route.routeClass.__methods?.find(
-				(method) => method.method === request.method.toLowerCase(),
-			) ?? { name: "Request", method: "get" };
-
-			if (!foundMethod) {
-				const error = errorGen.MethodNotAllowed();
-
-				error.addError({
-					methodNotAllowed: {
-						code: "MethodNotAllowed",
-						message: `Method "${
-							request.method
-						}" is not allowed for "${path}", allowed methods are [${route.routeClass.__methods
-							.map((method) => method.method.toUpperCase())
-							.join(", ")}]`,
-					},
-				});
-
-				return error.toJSON();
-			}
-
-			const middleware = route.routeClass.__middlewares?.filter((middleware) => middleware.name === foundMethod.name);
-			const contentTypes = route.routeClass.__contentTypes?.find(
-				(contentType) => contentType.name === foundMethod.name,
-			);
-
-			// @ts-expect-error -- I know what I'm doing
-			if (route.routeClass[foundMethod.name] === undefined) {
-				this.Logger.error(`Could not find function for ${request.method} ${path} but it was successfully matched`);
-
-				return "Internal Server Error :(";
-			}
-
-			// @ts-expect-error -- I know what I'm doing
-			const routeClassFunction = route.routeClass[foundMethod.name].bind(route.routeClass);
-			const finishedMiddlewares = [];
-
-			if (!routeClassFunction) {
-				this.Logger.error(`Could not find function for ${request.method} ${path} but it was successfully matched`);
-
-				return "Internal Server Error :(";
-			}
-
-			if (
-				contentTypes &&
-				contentTypes.type.length > 0 &&
-				!contentTypes.type.includes((headers["content-type"] ?? "text/plain") as ContentTypes) &&
-				!contentTypes.type.includes("any")
-			) {
-				const error = errorGen.InvalidContentType();
-
-				error.addError({
-					contentType: {
-						code: "InvalidContentType",
-						message: `Invalid Content-Type header, Expected (${contentTypes.type.join(", ")}), Got (${
-							headers["content-type"]
-						})`,
-					},
-				});
-
-				set.status = 400;
-				set.headers["Content-Type"] = "application/json";
-
-				this.Logger.info(
-					`Request to "${route.route}" [${request.method}] finished with status ${set.status} from invalid content type`,
-				);
-
-				return error.toJSON();
-			}
-
-			if (middleware && middleware.length > 0) {
-				for (const middle of middleware) {
-					const finished = await middle.ware({
-						app: this,
-						body: body as {},
-						headers,
-						params: matched.params,
-						path,
-						query,
-						request,
-						set,
-						store,
-						ip,
-					});
-
-					if (set.status !== 200) {
-						this.Logger.info(
-							`Request to "${route.route}" [${request.method}] finished with status ${set.status} from middleware ${middle.ware.name}`,
-						);
-
-						return finished;
-					}
-
-					finishedMiddlewares.push(finished);
-				}
-			}
-
-			const requested = (await routeClassFunction({
-				app: this,
-				body: body as {},
-				headers,
-				params: matched.params,
-				path,
-				query,
-				request,
-				set,
-				store,
-				ip,
-				...finishedMiddlewares.reduce((a, b) => ({ ...a, ...b }), {}),
-			})) as Promise<unknown>;
-
-			if (typeof requested === "object") {
-				// Go through requested, we want to alert the console when we detect an "email, phone number, password" field in the response
-				// There will be whitelisted paths, such as /auth/register, /users/@me etc
-				// If we detect one we warn it to the console then return a 500 error
-				const whitelistedPaths = ["/auth/register", "/users/@me"];
-
-				const checked = this.checkObjectForBlacklistedFields(requested, ["email", "phoneNumber", "password"]);
-
-				if (checked && !(whitelistedPaths.includes(path) || whitelistedPaths.includes(path.slice(3)))) {
-					set.status = 500;
-
-					this.Logger.warn(`Blacklisted field detected in response for ${path}`);
-
-					return "Internal Server Error :(";
-				}
-			}
-
-			this.Logger.info(`Request to "${route.route}" [${request.method}] finished with status ${set.status}`);
-
-			return requested;
-		});
-
-		this.ElysiaApp.listen(this.config.server.port, () => {
-			this.Logger.info(`Listening on port ${this.config.server.port}`);
-		});
 	}
 
 	public checkObjectForBlacklistedFields(object: unknown, blacklistedFields: string[]): boolean {
@@ -432,51 +167,20 @@ class App {
 		return false;
 	}
 
-	private async LoadRoute(path: string, route: string) {
-		if (this.RouteCache.has(path)) {
-			this.RouteCache.delete(path);
-		}
-
-		// this is a hack to make sure it doesn't cache the file
-		const routeClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof RouteBuilder };
-
-		if (!routeClass.default) {
-			this.Logger.warn(`Skipping ${path} as it does not have a default export`);
-
-			return;
-		}
-
-		const routeInstance = new routeClass.default(this);
-
-		if (!(routeInstance instanceof RouteBuilder)) {
-			this.Logger.warn(`Skipping ${path} as it does not extend Route`);
-
-			return;
-		}
-
-		this.RouteCache.set(path, {
-			path,
-			route,
-			routeClass: routeInstance,
-		});
-
-		return this.RouteCache.get(path);
-	}
-
-	private async SetupDebug(Log: boolean) {
+	private async setupDebug(Log: boolean) {
 		const systemClass = new SystemInfo();
 		const system = await systemClass.Info();
-		const githubInfo = await App.GithubInfo();
+		const githubInfo = await App.githubInfo();
 
-		App.GitBranch = githubInfo.Branch;
-		App.GitCommit = githubInfo.Commit!;
-		this.Clean = githubInfo.Clean;
+		App.gitBranch = githubInfo.Branch;
+		App.gitCommit = githubInfo.Commit!;
+		this.clean = githubInfo.Clean;
 
 		const strings = [
 			"=".repeat(40),
 			"Kastel Debug Logs",
 			"=".repeat(40),
-			`Backend Version: ${this.Constants.relative.Version}`,
+			`Backend Version: ${this.constants.relative.Version}`,
 			`Bun Version: ${Bun.version}`,
 			"=".repeat(40),
 			"System Info:",
@@ -497,16 +201,16 @@ class App {
 			`Uptime: ${system.process.uptime}`,
 			"=".repeat(40),
 			"Git Info:",
-			`Branch: ${App.GitBranch}`,
+			`Branch: ${App.gitBranch}`,
 			`Commit: ${githubInfo.CommitShort ?? githubInfo.Commit}`,
 			`Status: ${
-				this.Clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
+				this.clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
 			}`,
-			this.Clean ? "" : "=".repeat(40),
-			`${this.Clean ? "" : "Changed Files:"}`,
+			this.clean ? "" : "=".repeat(40),
+			`${this.clean ? "" : "Changed Files:"}`,
 		];
 
-		for (const file of App.GitFiles) {
+		for (const file of App.gitFiles) {
 			// if the directory is "node_modules", ".bun", ".git", ".yarn" we want to ignore it
 
 			if (["node_modules", ".bun", ".git", ".yarn"].includes(file.filePath.split("/")[0] ?? "")) {
@@ -520,31 +224,31 @@ class App {
 
 		if (Log) {
 			for (const string of strings) {
-				this.Logger.importantDebug(string);
+				this.logger.importantDebug(string);
 			}
 		}
 	}
 
-	public static async GithubInfo(): Promise<{
+	public static async githubInfo(): Promise<{
 		Branch: string;
 		Clean: boolean;
 		Commit: string | undefined;
 		CommitShort: string | undefined;
 	}> {
-		const branch = await App.Git.branch();
-		const commit = await App.Git.log();
-		const status = await App.Git.status();
+		const branch = await App.git.branch();
+		const commit = await App.git.log();
+		const status = await App.git.status();
 
 		if (!commit.latest?.hash) {
-			App.StaticLogger.fatal("Could not get Commit Info, are you sure you pulled the repo correctly?");
+			App.staticLogger.fatal("Could not get Commit Info, are you sure you pulled the repo correctly?");
 
 			process.exit(1);
 		}
 
 		for (const file of status.files) {
-			App.GitFiles.push({
+			App.gitFiles.push({
 				filePath: file.path,
-				type: this.TypeIndex[file.working_dir as keyof typeof this.TypeIndex] as GitType,
+				type: this.typeIndex[file.working_dir as keyof typeof this.typeIndex] as GitType,
 			});
 		}
 
@@ -556,13 +260,13 @@ class App {
 		};
 	}
 
-	public GetBucket(Snowflake?: string): string {
+	public getBucket(Snowflake?: string): string {
 		let bucketNumber;
 
 		if (Snowflake) {
-			bucketNumber = BigInt(App.Snowflake.TimeStamp(Snowflake)) - App.Snowflake.Epoch;
+			bucketNumber = BigInt(App.snowflake.TimeStamp(Snowflake)) - App.snowflake.Epoch;
 		} else {
-			bucketNumber = BigInt(Date.now()) - App.Snowflake.Epoch;
+			bucketNumber = BigInt(Date.now()) - App.snowflake.Epoch;
 		}
 
 		let bucket = bucketNumber / BigInt(this.config.server.bucketInterval);
@@ -572,9 +276,9 @@ class App {
 		return bucket.toString(16);
 	}
 
-	public GetBuckets(StartId: string, EndId?: string) {
-		const startBucket = this.GetBucket(StartId);
-		const endBucket = this.GetBucket(EndId);
+	public getBuckets(StartId: string, EndId?: string) {
+		const startBucket = this.getBucket(StartId);
+		const endBucket = this.getBucket(EndId);
 
 		let startBucketNumber = Number.parseInt(startBucket, 16);
 		let endBucketNumber = Number.parseInt(endBucket, 16);
@@ -603,6 +307,22 @@ class App {
 
 	public static get config() {
 		return App.configManager.config as MySchema;
+	}
+
+	public get logger(): CustomLogger {
+		return App.staticLogger;
+	}
+
+	public static get logger(): CustomLogger {
+		return App.staticLogger;
+	}
+
+	public get snowflake(): Snowflake {
+		return App.snowflake;
+	}
+
+	public get questionier(): Question {
+		return App.questionier;
 	}
 }
 

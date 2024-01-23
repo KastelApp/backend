@@ -2,7 +2,7 @@ import type { CookieOptions } from "elysia";
 import type { Prettify } from "elysia/types";
 import type { HTTPStatusName } from "elysia/utils";
 import type { GetParams } from "@/Types/Routes.ts";
-import type App from "../App.ts";
+import type API from "../API.ts";
 
 type Method = "all" | "delete" | "get" | "head" | "options" | "patch" | "post" | "put";
 
@@ -37,7 +37,7 @@ interface CreateRouteOptions<
 	params extends string[] = [],
 	query extends Record<string, string | undefined> = Record<string, string | undefined>,
 > {
-	app: App;
+	app: API;
 	body: Body;
 	headers: Record<string, string | undefined>;
 	ip: string;
@@ -89,11 +89,11 @@ type CreateRoute<
 > = CreateRouteOptions<Route, Body, params, query> & MiddlewareArray<MiddlewareSettings>;
 
 class Route {
-	public readonly App: App;
+	public readonly App: API;
 
 	public KillSwitched: boolean; // KillSwitched routes will be populated in the routes, though when someone tries to use it, we'll return a 503 error (default is false)
 
-	public constructor(App: App) {
+	public constructor(App: API) {
 		this.App = App;
 
 		this.KillSwitched = false;

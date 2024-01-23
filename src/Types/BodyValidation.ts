@@ -30,7 +30,7 @@ interface AnyType {
 	};
 }
 
-type Types = "array" | "boolean" | "enum" | "number" | "object" | "snowflake" | "string";
+type Types = "any" | "array" | "boolean" | "enum" | "number" | "object" | "snowflake" | "string";
 type Options = "none" | "notNullable" | "required" | "requiredNullable";
 type Enumms = boolean | number | string;
 type ObjectOptions = "keyof" | "obj";
@@ -68,7 +68,11 @@ type TypeDependentStuff<
 							items: M;
 							otype: OType;
 						}
-					: {};
+					: Type extends "any"
+						? {
+								array(): CreateType<Type, Option, M, E, true>;
+							}
+						: {};
 
 // ? None = not required, can be null
 // ? requiredNullable = required, can be null
@@ -105,7 +109,9 @@ type CreateType<
 	};
 
 interface TypeMapping {
-	array: unknown[]; // ! Only here for the Optionalize type, this will never be used
+	any: any;
+	array: unknown[];
+	// ! Only here for the Optionalize type, this will never be used
 	boolean: boolean;
 	enum: string;
 	null: null;
@@ -129,30 +135,48 @@ type Optionalize<T extends AnyType> = T["required"] extends true
 
 type InfererRawRaw<T extends object, K extends keyof T> = T[K] extends AnyType
 	? T[K]["type"] extends "array"
-		? // @ts-expect-error -- it exists, I tried making it understand that but typescript wants to whine about it
-			T[K]["items"] extends (infer U)[]
-			? T[K]["canbeNull"] extends true
-				? InferRaw<U>[] | null
-				: InferRaw<U>[]
-			: never
+		? RawArrayType<T, K>
 		: T[K]["type"] extends "enum"
-			? // @ts-expect-error -- ^
-				T[K]["isarray"] extends true
-				? // @ts-expect-error -- ^
-					T[K]["values"]
-				: // @ts-expect-error -- ^
-					T[K]["values"][number]
-			: T[K]["type"] extends "object"
-				? // @ts-expect-error -- ^
-					T[K]["otype"] extends "keyof"
-					? {
-							// @ts-expect-error -- ^
-							[key: string]: InferRaw<T[K]["items"]>;
-						}
-					: // @ts-expect-error -- ^
-						InferRaw<T[K]["items"]>
-				: Optionalize<T[K]>
+			? RawEnumType<T, K>
+			: T[K]["type"] extends "any"
+				? RawAnyType<T, K>
+				: T[K]["type"] extends "object"
+					? RawObjectType<T, K>
+					: Optionalize<T[K]>
+	: InferRaw<T[K]>;
+
+// @ts-expect-error -- it exists, I tried making it understand that but typescript wants to whine about it
+type RawArrayType<T extends object, K extends keyof T> = T[K]["items"] extends (infer U)[]
+	? // @ts-expect-error -- ^
+		T[K]["canbeNull"] extends true
+		? InferRaw<U>[] | null
+		: InferRaw<U>[]
 	: never;
+
+// @ts-expect-error -- ^
+type RawEnumType<T extends object, K extends keyof T> = T[K]["isarray"] extends true
+	? // @ts-expect-error -- ^
+		T[K]["values"]
+	: // @ts-expect-error -- ^
+		T[K]["values"][number];
+
+// @ts-expect-error -- ^
+type RawAnyType<T extends object, K extends keyof T> = T[K]["isarray"] extends true
+	? // @ts-expect-error -- ^
+		T[K]["canbeNull"] extends true
+		? unknown[] | null
+		: unknown[]
+	: // @ts-expect-error -- ^
+		T[K]["canbeNull"] extends true
+		? unknown | null
+		: unknown;
+
+// @ts-expect-error -- ^
+type RawObjectType<T extends object, K extends keyof T> = T[K]["otype"] extends "keyof"
+	? // @ts-expect-error -- ^
+		{ [key: string]: InferRaw<T[K]["items"]> }
+	: // @ts-expect-error -- ^
+		InferRaw<T[K]["items"]>;
 
 type InferRaw<T> = T extends object
 	? {
@@ -205,9 +229,11 @@ const validate =
 
 		// if value exists and is not undefined, check if it is the correct type
 		if (value !== undefined) {
+			if (type === "any") return { valid: true, error: null };
+
 			if (type === "snowflake")
 				return {
-					valid: typeof value === "string" && App.Snowflake.Validate(value),
+					valid: typeof value === "string" && App.snowflake.Validate(value),
 					error: "{key} is not a valid snowflake.",
 				};
 
@@ -294,8 +320,6 @@ const validate =
 						for (const [key, data] of Object.entries(items)) {
 							// @ts-expect-error -- yeah yeah
 							const validated = data.validate(item[key]);
-
-							console.log(key, validated);
 
 							if (!validated.valid)
 								errors.push({
@@ -497,6 +521,7 @@ const string = () => createdType("string", "required");
 const number = () => createdType("number", "required");
 const boolean = () => createdType("boolean", "required");
 const snowflake = () => createdType("snowflake", "required");
+const any = () => createdType("any", "required");
 const array = <T extends BodyValidator>(opt: T) => createdType("array", "required", false, -1, -1, opt);
 const enums = <E extends Enumms>(values: E[]) => createdType("enum", "required", false, -1, -1, undefined, values);
 // O = keyof | obj
@@ -514,6 +539,7 @@ export {
 	enums,
 	createdType,
 	object,
+	any,
 	type CreateType,
 	type AnyType,
 	type Types,

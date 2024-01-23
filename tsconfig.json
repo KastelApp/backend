@@ -41,6 +41,6 @@
 		},
 		"jsx": "react"
 	},
-	"include": ["src/**/*", "scripts/**/*", "old/Routes"],
+	"include": ["src/**/*", "scripts/**/*", "tests/**/*", "simple/**/*"],
 	"exclude": [".github"]
 }

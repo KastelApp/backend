@@ -1,6 +1,6 @@
 import type { UserMiddlewareType } from "@/Middleware/User.ts";
 import userMiddleware from "@/Middleware/User.ts";
-import type App from "@/Utils/Classes/App.ts";
+import type API from "@/Utils/Classes/API.ts";
 import Encryption from "@/Utils/Classes/Encryption.ts";
 import errorGen from "@/Utils/Classes/ErrorGen.ts";
 import ContentTypes from "@/Utils/Classes/Routing/Decorators/ContentTypes.ts";
@@ -21,7 +21,7 @@ interface ProfileResponse {
 }
 
 export default class Profile extends Route {
-	public constructor(App: App) {
+	public constructor(App: API) {
 		super(App);
 	}
 
@@ -35,7 +35,7 @@ export default class Profile extends Route {
 		}),
 	)
 	public async getProfile({ params, set, user }: CreateRoute<"/users/:userId/profile", any, [UserMiddlewareType]>) {
-		const fetchedUser = await this.App.Cassandra.Models.User.get({
+		const fetchedUser = await this.App.cassandra.Models.User.get({
 			userId: Encryption.encrypt(params.userId),
 		});
 

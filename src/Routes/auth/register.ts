@@ -2,7 +2,7 @@ import bodyValidator from "@/Middleware/BodyValidator.ts";
 import userMiddleware from "@/Middleware/User.ts";
 import type { Infer } from "@/Types/BodyValidation.ts";
 import { string } from "@/Types/BodyValidation.ts";
-import type App from "@/Utils/Classes/App.ts";
+import type API from "@/Utils/Classes/API.ts";
 import Encryption from "@/Utils/Classes/Encryption.ts";
 import errorGen from "@/Utils/Classes/ErrorGen.ts";
 import IpUtils from "@/Utils/Classes/IpUtils.ts";
@@ -13,9 +13,9 @@ import Middleware from "@/Utils/Classes/Routing/Decorators/Middleware.ts";
 import type { CreateRoute } from "@/Utils/Classes/Routing/Route.ts";
 import Route from "@/Utils/Classes/Routing/Route.ts";
 import Token from "@/Utils/Classes/Token.ts";
-import tagGenerator from "@/Utils/TagGenerator.ts";
 import type Settings from "@/Utils/Cql/Types/Settings.ts";
 import type Users from "@/Utils/Cql/Types/User.ts";
+import tagGenerator from "@/Utils/TagGenerator.ts";
 
 const postRequestBody = {
 	email: string().email(),
@@ -28,7 +28,7 @@ const postRequestBody = {
 export default class Register extends Route {
 	public maxUsernames = 6_000; // You can create 9999 users with the same username, but on registration, it will be limited to 6000
 
-	public constructor(App: App) {
+	public constructor(App: API) {
 		super(App);
 	}
 
@@ -60,7 +60,7 @@ export default class Register extends Route {
 
 		const foundUser = await this.fetchUser({ email: Encryption.encrypt(body.email) }, ["email"]);
 		const foundPlatformInvite = body.platformInvite
-			? await this.App.Cassandra.Models.PlatformInvite.get({ code: Encryption.encrypt(body.platformInvite) })
+			? await this.App.cassandra.Models.PlatformInvite.get({ code: Encryption.encrypt(body.platformInvite) })
 			: null;
 		const foundUsers = await this.fetchUser({ username: Encryption.encrypt(body.username) }, ["tag"]);
 		const tag = tagGenerator(foundUsers.map((usr) => usr.tag));
@@ -127,10 +127,10 @@ export default class Register extends Route {
 		const settignsObject: Settings = {
 			bio: null,
 			language: "en-US",
-			maxFileUploadSize: this.App.Constants.settings.Max.MaxFileSize,
-			maxGuilds: this.App.Constants.settings.Max.GuildCount,
+			maxFileUploadSize: this.App.constants.settings.Max.MaxFileSize,
+			maxGuilds: this.App.constants.settings.Max.GuildCount,
 			mentions: [],
-			presence: this.App.Constants.presence.Online,
+			presence: this.App.constants.presence.Online,
 			privacy: 0,
 			status: null,
 			theme: "dark",
@@ -138,7 +138,7 @@ export default class Register extends Route {
 				{
 					createdDate: new Date(),
 					flags: 0,
-					ip: IpUtils.getIp(request, this.App.ElysiaApp.server) ?? "",
+					ip: IpUtils.getIp(request, this.App.elysiaApp.server) ?? "",
 					token: Encryption.encrypt(token),
 					tokenId: Encryption.encryptedSnowflake(),
 				},
@@ -149,7 +149,7 @@ export default class Register extends Route {
 		};
 
 		if (foundPlatformInvite) {
-			await this.App.Cassandra.Models.PlatformInvite.update({
+			await this.App.cassandra.Models.PlatformInvite.update({
 				code: Encryption.encrypt(body.platformInvite as string),
 				usedById: userObject.userId,
 				usedAt: new Date(),
@@ -157,8 +157,8 @@ export default class Register extends Route {
 		}
 
 		await Promise.all([
-			this.App.Cassandra.Models.User.insert(userObject),
-			this.App.Cassandra.Models.Settings.insert(settignsObject),
+			this.App.cassandra.Models.User.insert(userObject),
+			this.App.cassandra.Models.Settings.insert(settignsObject),
 		]);
 
 		return {
@@ -182,7 +182,7 @@ export default class Register extends Route {
 		fields: string[],
 	) {
 		// eslint-disable-next-line unicorn/no-array-method-this-argument
-		const fetched = await this.App.Cassandra.Models.User.find(opts, {
+		const fetched = await this.App.cassandra.Models.User.find(opts, {
 			fields: fields as any, // ? Due to me changing something string[] won't work anymore, but this should be safe
 		});
 

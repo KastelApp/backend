@@ -4,9 +4,9 @@ import { createWriteStream, createReadStream } from "node:fs";
 import { writeFile, mkdir, exists, readdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { setInterval } from "node:timers";
-import { URL } from "node:url";
 import * as Sentry from "@sentry/bun";
 import * as ark from "archiver";
+import { isMainThread } from "bun";
 import processArgs from "../ProcessArgs.ts";
 
 type Logtypes = "debug" | "error" | "fatal" | "importantDebug" | "info" | "timer" | "trace" | "verbose" | "warn";
@@ -32,13 +32,13 @@ class Logger {
 		type: Logtypes;
 	}[]; // when we are compressing logs we haven't saved yet need to be kept here.
 
-	private readonly writingQueue: {
+	public readonly writingQueue: {
 		file: "error" | "latest";
 		message: string[];
 	}[];
 
 	// we allow for hex colors to be used (we will convert them to ansi colors)
-	private readonly colorTypes: {
+	public colorTypes: {
 		[key in Logtypes]: string;
 	};
 
@@ -60,8 +60,9 @@ class Logger {
 			LogDirectory?: string;
 			console?: boolean;
 		} = {},
+		public who: string = "",
 	) {
-		this.logDirectory = options.LogDirectory ?? join(new URL(".", import.meta.url).pathname, "..", "..", "..", "logs");
+		this.logDirectory = options.LogDirectory ?? join(import.meta.dirname, "..", "..", "..", "logs");
 
 		this.latestLog = join(this.logDirectory, "latest.log");
 
@@ -121,6 +122,8 @@ class Logger {
 	}
 
 	private async init(): Promise<void> {
+		if (!isMainThread) return;
+
 		if (!(await exists(this.logDirectory))) await mkdir(this.logDirectory);
 
 		const compressed = await this.compress();
@@ -169,6 +172,8 @@ class Logger {
 	}
 
 	private async compress(): Promise<boolean> {
+		if (!isMainThread) return false;
+
 		this.compressing = true;
 
 		const files = await readdir(this.logDirectory);
@@ -238,6 +243,15 @@ class Logger {
 
 		if (!message) return true;
 
+		if (!isMainThread) {
+			postMessage({
+				type: "log",
+				data: message,
+			});
+
+			return true;
+		}
+
 		if (message.file === "latest") {
 			this.supersecretdebug("Writing to latest log");
 			writeFile(this.latestLog, `${message.message.join("\n")}\n`, { flag: "a" }).catch((error) =>
@@ -255,13 +269,17 @@ class Logger {
 		return true;
 	}
 
-	private addLog(options: {
+	/**
+	 * @description Do not use this function, internal use only (exposed for parent thread)
+	 */
+	public addLog(options: {
 		console?: boolean;
 		date: Date;
 		file: "error" | "latest";
 		message: any[];
 		toShow?: string;
 		type: Logtypes;
+		who?: string;
 	}) {
 		if (this.compressing) {
 			this.backlog.push({
@@ -275,7 +293,9 @@ class Logger {
 			return;
 		}
 
-		const message = `[${options.date.toLocaleTimeString()}] [${
+		const newWho = options.who ?? this.who;
+
+		const message = `[${options.date.toLocaleTimeString()}]${newWho.length > 0 ? ` [${newWho}]` : ""} [${
 			options.toShow ? options.toShow.toUpperCase() : options.type.toUpperCase()
 		}]:`;
 

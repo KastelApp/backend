@@ -1,11 +1,11 @@
-import type App from "@/Utils/Classes/App.ts";
+import type API from "@/Utils/Classes/API.ts";
 import ContentTypes from "@/Utils/Classes/Routing/Decorators/ContentTypes.ts";
 import Description from "@/Utils/Classes/Routing/Decorators/Description.ts";
 import Method from "@/Utils/Classes/Routing/Decorators/Method.ts";
 import Route from "@/Utils/Classes/Routing/Route.ts";
 
 export default class FetchCreateRemoveBan extends Route {
-	public constructor(App: App) {
+	public constructor(App: API) {
 		super(App);
 	}
 

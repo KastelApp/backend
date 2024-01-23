@@ -63,20 +63,21 @@ export const fixChannelPositions = (channel: Channel, existingChannels: Channel[
 			...sortedExistingChannels,
 			{
 				...channel,
-				Position: lastPosition + 1,
+				position: lastPosition + 1,
 			},
 		].sort((a, b) => a.position - b.position);
 	} else {
 		const channelsUnderNewChannelPosition = sortedExistingChannels.filter((filteredChannel) => {
 			return (
-				filteredChannel.position >= channel.position && (ignoreParent ? true : filteredChannel.parentId.length === 0)
+				filteredChannel.position >= channel.position &&
+				(ignoreParent ? true : filteredChannel.parentId ? filteredChannel.parentId.length === 0 : true)
 			);
 		});
 
 		const updatedChannels = channelsUnderNewChannelPosition.map((mappedChannel) => {
 			return {
 				...mappedChannel,
-				Position: mappedChannel.position + 1,
+				position: mappedChannel.position + 1,
 			};
 		});
 
@@ -89,8 +90,37 @@ export const fixChannelPositions = (channel: Channel, existingChannels: Channel[
 			...updatedChannels,
 			{
 				...channel,
-				Position: channel.position,
+				position: channel.position,
 			},
 		].sort((a, b) => a.position - b.position);
 	}
+};
+
+export const fixChannelPositionsWithoutNewChannel = (channels: Channel[]): Channel[] => {
+	const positionMap: { [parentId: string]: number } = {};
+
+	channels.sort((a, b) => a.position - b.position);
+
+	return channels.map((channel) => {
+		if (channel.parentId) {
+			if (positionMap[channel.parentId]) {
+				positionMap[channel.parentId]++;
+			} else {
+				positionMap[channel.parentId] = 0;
+			}
+
+			channel.position = positionMap[channel.parentId] ?? 0;
+		} else {
+			const rootKey = "root";
+			if (positionMap[rootKey]) {
+				positionMap[rootKey]++;
+			} else {
+				positionMap[rootKey] = 0;
+			}
+
+			channel.position = positionMap[rootKey];
+		}
+
+		return channel;
+	});
 };
