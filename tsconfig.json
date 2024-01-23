@@ -37,10 +37,10 @@
 		"moduleDetection": "force",
 		"noErrorTruncation": true, // darkerink: this is just so I can see the full types
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
 		},
-		"jsx": "react"
+		"jsx": "react",
 	},
 	"include": ["src/**/*", "scripts/**/*", "tests/**/*", "simple/**/*"],
-	"exclude": [".github"]
+	"exclude": [".github"],
 }

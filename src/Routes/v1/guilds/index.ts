@@ -1,3 +1,4 @@
+import Constants from "@/Constants.ts";
 import bodyValidator from "@/Middleware/BodyValidator.ts";
 import type { UserMiddlewareType } from "@/Middleware/User.ts";
 import userMiddleware from "@/Middleware/User.ts";
@@ -14,11 +15,10 @@ import Method from "@/Utils/Classes/Routing/Decorators/Method.ts";
 import Middleware from "@/Utils/Classes/Routing/Decorators/Middleware.ts";
 import type { CreateRoute } from "@/Utils/Classes/Routing/Route.ts";
 import Route from "@/Utils/Classes/Routing/Route.ts";
-import { fixChannelPositionsWithoutNewChannel } from "@/Utils/Versioning/v1/FixChannelPositions.ts";
-import Constants from "@/Constants.ts";
 import type { bigintPair } from "@/Utils/Cql/Types/PermissionsOverides.ts";
 import type Roles from "@/Utils/Cql/Types/Role.ts";
 import type { Channel, Guild, GuildMember, PermissionOverride } from "@/Utils/Cql/Types/index.ts";
+import { fixChannelPositionsWithoutNewChannel } from "@/Utils/Versioning/v1/FixChannelPositions.ts";
 
 const permissionOverrideType = (value: any): value is [[string, string]] => {
 	return (
