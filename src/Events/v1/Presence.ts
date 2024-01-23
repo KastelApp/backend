@@ -4,6 +4,7 @@ import Description from "@/Utils/Classes/Events/Decorators/Description.ts";
 import OpCode from "@/Utils/Classes/Events/Decorators/OpCode.ts";
 import Validator from "@/Utils/Classes/Events/Decorators/Validator.ts";
 import Event from "@/Utils/Classes/Events/Event.ts";
+import { opCodes } from "@/Utils/Classes/Events/OpCodes.ts";
 import type User from "@/Utils/Classes/Events/User.ts";
 import type WebSocket from "@/Utils/Classes/WebSocket.ts";
 
@@ -19,7 +20,7 @@ export default class Presence extends Event {
 	}
 
 	@Description("Change your presence")
-	@OpCode(1)
+	@OpCode(opCodes.presenceUpdate)
 	@AuthRequired()
 	@Validator(presenceData)
 	public async presence(user: User, data: Infer<typeof presenceData>) {}

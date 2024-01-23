@@ -35,7 +35,7 @@ export default class IdentifyAndHeartbeat extends Event {
 
 	@Description("Heartbeat to keep the connection alive")
 	@OpCode(opCodes.identify)
-	@AuthRequired()
+	@AuthRequired(false)
 	@Validator(identifyData)
 	public async identify(user: User, data: Infer<typeof identifyData>) {}
 }
