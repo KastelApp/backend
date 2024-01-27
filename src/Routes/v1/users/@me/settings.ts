@@ -14,7 +14,7 @@ import type { CreateRoute } from "@/Utils/Classes/Routing/Route.ts";
 import Route from "@/Utils/Classes/Routing/Route.ts";
 
 const patchSettings = {
-	status: string().optional().nullable().max(128),
+	customStatus: string().optional().nullable().max(128),
 	theme: string().optional().max(5).min(4), // dark, light, auto
 	language: string().optional().max(5).min(2), // en-US
 	guildOrder: array({
@@ -94,8 +94,8 @@ export default class UserSettings extends Route {
 			data.language = body.language;
 		}
 
-		if (body.status) {
-			data.status = Encryption.encrypt(body.status);
+		if (body.customStatus) {
+			data.customStatus = Encryption.encrypt(body.customStatus);
 		}
 
 		if (body.bio) {
@@ -124,7 +124,7 @@ export default class UserSettings extends Route {
 			return failedToUpdateSettigns;
 		}
 
-		await this.App.cassandra.Models.Settings.update({
+		await this.App.cassandra.models.Settings.update({
 			userId: Encryption.encrypt(user.id),
 			...data,
 		});
@@ -134,7 +134,7 @@ export default class UserSettings extends Route {
 			guildOrder: fixedGuilds ?? user.settings.guildOrder,
 			language: body.language ?? user.settings.language,
 			privacy: user.settings.privacy,
-			status: body.status ?? user.settings.status,
+			customStatus: body.customStatus ?? user.settings.customStatus,
 			theme: body.theme ?? user.settings.theme,
 		};
 	}

@@ -13,7 +13,7 @@ export default class Index extends Route {
 	@Description("Get the features of the API")
 	@ContentTypes("any")
 	public Request() {
-		const apiVersions = Object.keys(this.App.Router.routes)
+		const apiVersions = Object.keys(this.App.router.routes)
 			.map((route) => {
 				const rr = route.split("/")[1]?.trim() ?? "NA";
 

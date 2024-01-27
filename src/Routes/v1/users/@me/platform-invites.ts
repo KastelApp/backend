@@ -38,7 +38,7 @@ export default class PlatformInvites extends Route {
 	)
 	public async getInvites({ user }: CreateRoute<"/platform-invites", any, [UserMiddlewareType]>) {
 		const invites = (
-			await this.App.cassandra.Models.PlatformInvite.find({
+			await this.App.cassandra.models.PlatformInvite.find({
 				creatorId: Encryption.encrypt(user.id),
 			})
 		).toArray();
@@ -66,7 +66,7 @@ export default class PlatformInvites extends Route {
 		body,
 		set,
 	}: CreateRoute<"/platform-invites", Infer<typeof deleteInviteBody>, [UserMiddlewareType]>) {
-		const foundInvite = await this.App.cassandra.Models.PlatformInvite.get({
+		const foundInvite = await this.App.cassandra.models.PlatformInvite.get({
 			code: Encryption.encrypt(body.code),
 		});
 
@@ -100,11 +100,11 @@ export default class PlatformInvites extends Route {
 			return failed.toJSON();
 		}
 
-		await this.App.cassandra.Models.PlatformInvite.remove({
+		await this.App.cassandra.models.PlatformInvite.remove({
 			code: Encryption.encrypt(body.code),
 		});
 
-		await this.App.cassandra.Models.Settings.update({
+		await this.App.cassandra.models.Settings.update({
 			userId: Encryption.encrypt(user.id),
 			allowedInvites: user.settings.allowedInvites + 1,
 		});
@@ -164,12 +164,12 @@ export default class PlatformInvites extends Route {
 			return error.toJSON();
 		}
 
-		await this.App.cassandra.Models.Settings.update({
+		await this.App.cassandra.models.Settings.update({
 			userId: Encryption.encrypt(user.id),
 			allowedInvites: user.settings.allowedInvites - 1,
 		});
 
-		await this.App.cassandra.Models.PlatformInvite.insert({
+		await this.App.cassandra.models.PlatformInvite.insert({
 			code: Encryption.encrypt(invite),
 			creatorId: Encryption.encrypt(user.id),
 			expiresAt,

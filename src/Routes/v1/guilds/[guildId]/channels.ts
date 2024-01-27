@@ -11,7 +11,7 @@ export default class FetchCreateChannels extends Route {
 
 	@Method("get")
 	@Description("Change this Description when working on this route")
-	@ContentTypes("application/json")
+	@ContentTypes("any")
 	public getChannels() {
 		return {};
 	}

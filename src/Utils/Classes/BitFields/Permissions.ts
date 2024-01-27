@@ -90,9 +90,9 @@ class Permissions {
 			if (groupBits) {
 				if (BigInt(groupBits[1]) === -1n) continue;
 
-				// @ts-expect-error -- unsure how to fix this sorry
 				this.bits[this.bits.indexOf(groupBits)] = [
 					groupBits[0],
+					// @ts-expect-error -- unsure how to fix this sorry
 					BigInt(groupBits[1]) | permissions[group].subPermissions[perm],
 				];
 			} else {
@@ -126,9 +126,9 @@ class Permissions {
 				// @ts-expect-error -- unsure how to fix this sorry
 				this.bits[this.bits.indexOf(groupBits)] = [groupBits[0], permissions[group].subPermissions[perm]];
 			} else {
-				// @ts-expect-error -- unsure how to fix this sorry
 				this.bits[this.bits.indexOf(groupBits)] = [
 					groupBits[0],
+					// @ts-expect-error -- unsure how to fix this sorry
 					BigInt(groupBits[1]) ^ permissions[group].subPermissions[perm],
 				];
 			}
@@ -216,3 +216,7 @@ class Permissions {
 }
 
 export default Permissions;
+
+export {
+	type PermissionKey
+}

@@ -63,8 +63,8 @@ export default class FetchPatch extends Route {
 		user,
 		query,
 		set,
-	}: CreateRoute<"/@me", any, [UserMiddlewareType], any, { include?: string }>) {
-		const fetchedUser = await this.App.cassandra.Models.User.get({
+	}: CreateRoute<"/@me", any, [UserMiddlewareType], any, { include?: string; }>) {
+		const fetchedUser = await this.App.cassandra.models.User.get({
 			userId: Encryption.encrypt(user.id),
 		});
 
@@ -198,7 +198,7 @@ export default class FetchPatch extends Route {
 		if (body.newPassword) {
 			stuffToUpdate.password = await Bun.password.hash(body.newPassword);
 
-			const settings = await this.App.cassandra.Models.Settings.get(
+			const settings = await this.App.cassandra.models.Settings.get(
 				{
 					userId: Encryption.encrypt(user.id),
 				},
@@ -225,7 +225,7 @@ export default class FetchPatch extends Route {
 				},
 			];
 
-			await this.App.cassandra.Models.Settings.update({
+			await this.App.cassandra.models.Settings.update({
 				userId: Encryption.encrypt(user.id),
 				tokens: settings.tokens,
 			});
@@ -234,10 +234,12 @@ export default class FetchPatch extends Route {
 		}
 
 		if (body.bio) {
-			await this.App.cassandra.Models.Settings.update({
+			await this.App.cassandra.models.Settings.update({
 				userId: Encryption.encrypt(user.id),
 				bio: Encryption.encrypt(body.bio),
 			});
+			
+			user.settings.bio = body.bio;
 		}
 
 		if (body.email) {
@@ -282,7 +284,7 @@ export default class FetchPatch extends Route {
 		}
 
 		if (Object.keys(stuffToUpdate).length > 0) {
-			await this.App.cassandra.Models.User.update({
+			await this.App.cassandra.models.User.update({
 				userId: Encryption.encrypt(user.id),
 				...stuffToUpdate,
 			});
@@ -312,7 +314,7 @@ export default class FetchPatch extends Route {
 		fields: string[],
 	) {
 		// eslint-disable-next-line unicorn/no-array-method-this-argument
-		const fetched = await this.App.cassandra.Models.User.find(opts, {
+		const fetched = await this.App.cassandra.models.User.find(opts, {
 			fields: fields as any, // ? Due to me changing something string[] won't work anymore, but this should be safe
 		});
 

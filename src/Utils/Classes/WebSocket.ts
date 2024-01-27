@@ -1,10 +1,17 @@
 import { join } from "node:path";
+import { URL } from "node:url";
 import { isMainThread, type Server } from "bun";
+import { validate } from "@/Middleware/BodyValidator.ts";
 import App from "./App.ts";
+import { errorCodes } from "./Events/Errors.ts";
 import EventBuilder from "./Events/Event.ts";
+import { opCodes } from "./Events/OpCodes.ts";
 import type { WsOptions } from "./Events/User.ts";
 import User from "./Events/User.ts";
 import FileSystemRouter from "./FileSystemRouter.ts";
+import type { GetChannelTypes , channels } from "./Shared/RabbitMQ.ts";
+
+declare const self: Worker;
 
 class WebSocket extends App {
 	private eventDirectory: string = join(import.meta.dirname, "../../Events");
@@ -16,13 +23,16 @@ class WebSocket extends App {
 	public router: FileSystemRouter;
 
 	public eventCache: Map<
-		number,
+		string,
 		{
 			eventClass: EventBuilder;
 			file: string;
 			opCode: number;
+			version: number;
 		}
 	> = new Map();
+
+	public clients: Map<string, User> = new Map(); // sessionId -> User
 
 	public constructor() {
 		super("WSS");
@@ -38,37 +48,177 @@ class WebSocket extends App {
 			watch: true,
 			allowIndex: false,
 		});
+
+		self.onmessage = (event: MessageEvent) => {
+			if (!this.isRabbitMessage(event.data)) return;
+
+			console.log("received", event.data);
+		};
 	}
 
 	public override async init(): Promise<void> {
 		await super.init();
 
+		this.router.on("reload", async ({ path, type, directory }) => {
+			this.logger.verbose(
+				`Reloaded Events due to a ${directory ? "directory" : "file"} (${path}) being ${type === "A" ? "Added" : type === "M" ? "Modified" : type === "D" ? "Removed" : "Unknown"
+				}`,
+			);
+
+			if (!directory && type !== "D") {
+				const loaded = await this.loadEvents(
+					path
+				);
+
+				if (!loaded) {
+					this.logger.warn(`Failed to load event ${path}`);
+
+					return;
+				}
+
+				this.logger.info(`Re-loaded Event ${loaded}`);
+			}
+		});
+
 		this.mainSocket = Bun.serve<WsOptions>({
 			port: this.config.ws.port,
 			websocket: {
 				message: (ws, message) => {
-					console.log(message, ws.data.user);
+					const parsed = JSON.parse(message.toString());
+
+					if (!this.isCorrectPayload(parsed)) {
+						ws.data.user.close(errorCodes.invalidPayload);
+
+						return;
+					}
+
+					const foundEvent = this.eventCache.get(`${parsed.op}-${ws.data.user.version ?? 0}`);
+
+					if (!foundEvent) {
+						ws.data.user.close(errorCodes.invalidOpCode);
+
+						return;
+					}
+
+					const foundOp = foundEvent.eventClass.__opcodes.find((op) => op.code === parsed.op);
+
+					if (!foundOp) {
+						ws.data.user.close(errorCodes.invalidOpCode); // ! more of an internal server error but meh
+
+						return;
+					}
+
+					// @ts-expect-error -- its fine :3
+					const event = foundEvent.eventClass[foundOp.name].bind(foundEvent.eventClass) as (user: User, data: unknown, ws: WebSocket) => Promise<void> | void;
+
+					if (!event) {
+						ws.data.user.close(errorCodes.internalServerError);
+
+						return;
+					}
+
+					const bodyValidator = foundEvent.eventClass?.__validator?.find((validator) => validator.name === foundOp.name);
+					const authRequired = foundEvent.eventClass?.__authRequired?.find((auth) => auth.name === foundOp.name);
+
+					if (authRequired?.auth === true && !ws.data.user.token) {
+						ws.data.user.close(errorCodes.unauthorized);
+
+						return;
+					} else if (authRequired?.auth === false && ws.data.user.token) {
+						ws.data.user.close(errorCodes.alreadyAuthorized); // ? mainly for identify 
+
+						return;
+					}
+
+					if (bodyValidator) {
+						const validated = validate([], parsed.data as Record<string, unknown>, bodyValidator.body);
+
+						if (validated.length > 0) {
+							ws.data.user.close(errorCodes.invalidPayload);
+
+							return;
+						}
+					}
+
+					void event(ws.data.user, parsed.data, this);
 				},
 				open: (ws) => {
 					const newUser = new User(this).setWs(ws);
 
-					console.log(newUser);
-
 					ws.data.user = newUser;
+
+					const params = new URL(ws.data.url).searchParams;
+
+					const version = params.get("version");
+					const encoding = params.get("encoding");
+
+					if (version) newUser.version = Number(version);
+
+					if (encoding) {
+						if (encoding === "json") newUser.encoding = encoding;
+						else {
+							newUser.close(errorCodes.unknownError);
+
+							return;
+						}
+					}
+
+					newUser.ip = ws.data.ip;
+
+					this.clients.set(newUser.sessionId, newUser);
+
+					newUser.send({
+						op: opCodes.hello,
+						data: {
+							heartbeatInterval: newUser.heartbeatInterval,
+							sessionId: newUser.sessionId
+						}
+					});
+				},
+				close: (ws, code) => {
+					if (ws.data.user.expectingClose) {
+						if (!ws.data.user.resumeable) {
+							this.clients.delete(ws.data.user.sessionId);
+						}
+					} else {
+						ws.data.user.closedAt = Date.now();
+
+						// if code was 4090, then it was a client close but they want to stay resumable
+						if (code === 4_090) {
+							ws.data.user.expectingClose = true;
+							ws.data.user.resumeable = true;
+						}
+					}
 				},
 			},
 			hostname: "0.0.0.0",
 			fetch: (request, server) => {
-				console.log(request);
+				if (this.clients.size >= Number(this.config.ws.maxConnections)) {
+					return new Response("Too many connections");
+				}
 
-				server.upgrade<WsOptions>(request, {
+				const ip = server.requestIP(request)?.address ?? "";
+
+				const requestsByIp = Array.from(this.clients.values()).filter((user) => user.ip === ip && ip !== "");
+
+				if (requestsByIp.length >= Number(this.config.ws.maxConnectionsPerIp)) {
+					return new Response("Too many connections from your IP");
+				}
+
+				const upgraded = server.upgrade<WsOptions>(request, {
 					data: {
 						headers: request.headers,
-						sessionId: "",
 						url: request.url,
 						user: null!,
+						ip,
 					},
 				});
+
+				if (!upgraded) {
+					return new Response("Could not upgrade you, sorry");
+				}
+
+				return new Response();
 			},
 		});
 
@@ -81,16 +231,66 @@ class WebSocket extends App {
 				continue;
 			}
 
-			this.logger.info(`Loaded ${loaded}`);
+			this.logger.info(`Loaded Event ${loaded}`);
 		}
 
 		if (isMainThread) this.logger.info(`Listening on port ${this.config.ws.port}`);
 		else postMessage({ type: "ready", data: { port: this.config.ws.port } });
+
+		this.handleHeartbeats();
+		this.handleClosedConnects();
+		this.handleUnauthedUsers();
+	}
+
+	private handleHeartbeats() {
+		setInterval(() => {
+			for (const user of this.clients.values()) {
+				if (user.lastHeartbeat === 0) continue;
+
+				if (user.lastHeartbeat + user.heartbeatInterval + Number(this.config.ws.intervals.heartbeat.leeway) < Date.now()) {
+					user.close(errorCodes.heartbeatTimeout);
+				}
+			}
+		}, Number(this.config.ws.intervals.heartbeat.interval));
+	}
+
+	private handleClosedConnects() {
+		setInterval(async () => {
+			for (const user of this.clients.values()) {
+				if (user.closedAt === 0) continue;
+
+				if (!user.resumeable) {
+					this.clients.delete(user.sessionId);
+
+					if (user.settings.status === "online") await user.setStatus("offline"); 
+					
+					continue;
+				}
+
+				if (user.closedAt + Number(this.config.ws.intervals.closeTimeout.leeway) < Date.now()) {
+					this.clients.delete(user.sessionId);
+					
+					if (user.settings.status !== "offline") await user.setStatus("offline");
+				}
+			}
+		}, Number(this.config.ws.intervals.closeTimeout.interval));
+	}
+
+	private handleUnauthedUsers() {
+		setInterval(() => {
+			for (const user of this.clients.values()) {
+				if (user.token) continue;
+
+				if (user.openedAt + Number(this.config.ws.intervals.closeTimeout.leeway) < Date.now()) {
+					user.close(errorCodes.unauthorized);
+				}
+			}
+		}, Number(this.config.ws.intervals.closeTimeout.interval));
 	}
 
 	private async loadEvents(path: string) {
 		// this is a hack to make sure it doesn't cache the file
-		const eventClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof EventBuilder };
+		const eventClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof EventBuilder; };
 
 		if (!eventClass.default) {
 			this.logger.warn(`Skipping ${path} as it does not have a default export`);
@@ -106,11 +306,32 @@ class WebSocket extends App {
 			return null;
 		}
 
-		console.log(routeInstance.__opcodes);
+		const version = this.getVersion(path);
+
+		for (const op of routeInstance.__opcodes) {
+			const hash = `${op.code}-${version ?? "0"}`;
+
+			this.eventCache.set(hash, {
+				eventClass: routeInstance,
+				file: path,
+				opCode: op.code,
+				version: version ?? 0,
+			});
+		}
+
+		return path.split("/").pop()!.split(".").shift();
+	}
+
+	public getVersion(path: string) {
+		const matched = /\/v(?<version>\d+)\//.exec(path);
+
+		if (!matched) return null;
+
+		return Number(matched[1]);
 	}
 
 	public getSessionId() {
-		return App.snowflake.Generate();
+		return App.snowflake.generate();
 	}
 
 	public getHeartbeatInterval() {
@@ -120,6 +341,44 @@ class WebSocket extends App {
 		const interval = Math.floor(Math.random() * (maxInterval - minimumInterval + 1) + minimumInterval);
 
 		return Math.round(interval);
+	}
+
+	public isRabbitMessage(data: unknown): data is { data: unknown, topic: GetChannelTypes<typeof channels>, workerId: number; } {
+		if (typeof data !== "object" || !data) {
+			this.logger.warn("data is not an object");
+
+			return false;
+		}
+
+		if (!("workerId" in data)) {
+			this.logger.warn("workerId is not in data");
+
+			return false;
+		}
+
+		if (!("topic" in data)) {
+			this.logger.warn("topic is not in data");
+
+			return false;
+		}
+
+		return "data" in data;
+	}
+
+	public isCorrectPayload(data: unknown): data is { data: unknown, op: number; } {
+		if (typeof data !== "object" || !data) {
+			this.logger.warn("data is not an object");
+
+			return false;
+		}
+
+		if (!("op" in data)) {
+			this.logger.warn("op is not in data");
+
+			return false;
+		}
+
+		return "data" in data;
 	}
 }
 

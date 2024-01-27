@@ -1,3 +1,4 @@
+import { statusTypes } from "@/Constants.ts";
 import bodyValidator from "@/Middleware/BodyValidator.ts";
 import userMiddleware from "@/Middleware/User.ts";
 import type { Infer } from "@/Types/BodyValidation.ts";
@@ -60,16 +61,12 @@ export default class Register extends Route {
 
 		const foundUser = await this.fetchUser({ email: Encryption.encrypt(body.email) }, ["email"]);
 		const foundPlatformInvite = body.platformInvite
-			? await this.App.cassandra.Models.PlatformInvite.get({ code: Encryption.encrypt(body.platformInvite) })
+			? await this.App.cassandra.models.PlatformInvite.get({ code: Encryption.encrypt(body.platformInvite) })
 			: null;
 		const foundUsers = await this.fetchUser({ username: Encryption.encrypt(body.username) }, ["tag"]);
 		const tag = tagGenerator(foundUsers.map((usr) => usr.tag));
 
-		if (
-			(!foundPlatformInvite && this.App.config.server.features.includes("InviteBasedRegistration")) ||
-			foundPlatformInvite?.usedById ||
-			(foundPlatformInvite?.expiresAt?.getTime() ?? 0) < Date.now()
-		) {
+		if (!foundPlatformInvite && this.App.config.server.features.includes("InviteBasedRegistration") || foundPlatformInvite && !foundPlatformInvite.usedById && (foundPlatformInvite.expiresAt?.getTime() ?? 0) < Date.now()) {
 			failed.addError({
 				platformInvite: {
 					code: "InvalidInvite",
@@ -80,6 +77,7 @@ export default class Register extends Route {
 			set.status = 400;
 
 			return failed.toJSON(); // ? This is the only place this happens, we don't want to leak if the email is already taken, or if that max usernames has been reached
+
 		}
 
 		if (foundUser.length > 0) {
@@ -130,10 +128,10 @@ export default class Register extends Route {
 			maxFileUploadSize: this.App.constants.settings.Max.MaxFileSize,
 			maxGuilds: this.App.constants.settings.Max.GuildCount,
 			mentions: [],
-			presence: this.App.constants.presence.Online,
 			privacy: 0,
-			status: null,
+			status: statusTypes.offline | statusTypes.online,
 			theme: "dark",
+			customStatus: null,
 			tokens: [
 				{
 					createdDate: new Date(),
@@ -149,7 +147,7 @@ export default class Register extends Route {
 		};
 
 		if (foundPlatformInvite) {
-			await this.App.cassandra.Models.PlatformInvite.update({
+			await this.App.cassandra.models.PlatformInvite.update({
 				code: Encryption.encrypt(body.platformInvite as string),
 				usedById: userObject.userId,
 				usedAt: new Date(),
@@ -157,8 +155,8 @@ export default class Register extends Route {
 		}
 
 		await Promise.all([
-			this.App.cassandra.Models.User.insert(userObject),
-			this.App.cassandra.Models.Settings.insert(settignsObject),
+			this.App.cassandra.models.User.insert(userObject),
+			this.App.cassandra.models.Settings.insert(settignsObject),
 		]);
 
 		return {
@@ -182,7 +180,7 @@ export default class Register extends Route {
 		fields: string[],
 	) {
 		// eslint-disable-next-line unicorn/no-array-method-this-argument
-		const fetched = await this.App.cassandra.Models.User.find(opts, {
+		const fetched = await this.App.cassandra.models.User.find(opts, {
 			fields: fields as any, // ? Due to me changing something string[] won't work anymore, but this should be safe
 		});
 

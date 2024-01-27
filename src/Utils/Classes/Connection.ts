@@ -34,21 +34,21 @@ interface Connection {
 class Connection extends EventEmitter {
 	private readonly TableDirectory: string = path.join(import.meta.dirname, "../Cql/Tables");
 
-	public Client: cassandra.Client;
+	public client: cassandra.Client;
 
-	public KeySpace: string;
+	public keySpace: string;
 
-	private Connected: boolean;
+	private connected: boolean;
 
-	private readonly MappingOptions: mapping.MappingOptions;
+	private readonly mappingOptions: mapping.MappingOptions;
 
-	public Mapper: mapping.Mapper;
+	public mapper: mapping.Mapper;
 
-	private readonly NetworkTopologyStrategy: {
+	private readonly networkTopologyStrategy: {
 		[DataCenter: string]: number;
 	};
 
-	public Models: {
+	public models: {
 		Ban: cassandra.mapping.ModelMapper<Ban>;
 		Bot: cassandra.mapping.ModelMapper<Bot>;
 		Channel: cassandra.mapping.ModelMapper<Channel>;
@@ -70,10 +70,10 @@ class Connection extends EventEmitter {
 		Webhook: cassandra.mapping.ModelMapper<Webhook>;
 	};
 
-	public UnderScoreCqlToPascalCaseMappings: mapping.UnderscoreCqlToCamelCaseMappings =
+	public underscoreCqlToCamelCaseMappings: mapping.UnderscoreCqlToCamelCaseMappings =
 		new mapping.UnderscoreCqlToCamelCaseMappings(true);
 
-	public DurableWrites: boolean;
+	public durableWrites: boolean;
 
 	public constructor(
 		nodes: string[],
@@ -88,7 +88,7 @@ class Connection extends EventEmitter {
 	) {
 		super();
 
-		this.Client = new cassandra.Client({
+		this.client = new cassandra.Client({
 			contactPoints: nodes,
 			localDataCenter: networkTopologyStrategy
 				? Object.keys(networkTopologyStrategy)?.[0] ?? "datacenter1"
@@ -100,82 +100,82 @@ class Connection extends EventEmitter {
 			...options,
 		});
 
-		this.KeySpace = keyspace;
+		this.keySpace = keyspace;
 
-		this.Connected = false;
+		this.connected = false;
 
-		this.NetworkTopologyStrategy = networkTopologyStrategy;
+		this.networkTopologyStrategy = networkTopologyStrategy;
 
-		this.DurableWrites = durableWrites;
+		this.durableWrites = durableWrites;
 
-		this.MappingOptions = {
+		this.mappingOptions = {
 			models: {
-				Ban: this.GenerateMappingOptions("bans"),
-				Bot: this.GenerateMappingOptions("bot"),
-				Channel: this.GenerateMappingOptions("channels"),
-				Dm: this.GenerateMappingOptions("dm"),
-				Emoji: this.GenerateMappingOptions("emojis"),
-				File: this.GenerateMappingOptions("files"),
-				Friend: this.GenerateMappingOptions("friends"),
-				Gift: this.GenerateMappingOptions("gifts"),
-				Guild: this.GenerateMappingOptions("guilds"),
-				GuildMember: this.GenerateMappingOptions("guild_members"),
-				Invite: this.GenerateMappingOptions("invites"),
-				Message: this.GenerateMappingOptions("messages"),
-				PermissionOverride: this.GenerateMappingOptions("permissionsoverides"),
-				Role: this.GenerateMappingOptions("roles"),
-				Settings: this.GenerateMappingOptions("settings"),
-				User: this.GenerateMappingOptions("users"),
-				VerificationLink: this.GenerateMappingOptions("verifcationlink"),
-				Webhook: this.GenerateMappingOptions("webhooks"),
-				PlatformInvite: this.GenerateMappingOptions("platform_invite"),
+				Ban: this.generateMappingOptions("bans"),
+				Bot: this.generateMappingOptions("bot"),
+				Channel: this.generateMappingOptions("channels"),
+				Dm: this.generateMappingOptions("dm"),
+				Emoji: this.generateMappingOptions("emojis"),
+				File: this.generateMappingOptions("files"),
+				Friend: this.generateMappingOptions("friends"),
+				Gift: this.generateMappingOptions("gifts"),
+				Guild: this.generateMappingOptions("guilds"),
+				GuildMember: this.generateMappingOptions("guild_members"),
+				Invite: this.generateMappingOptions("invites"),
+				Message: this.generateMappingOptions("messages"),
+				PermissionOverride: this.generateMappingOptions("permissionsoverides"),
+				Role: this.generateMappingOptions("roles"),
+				Settings: this.generateMappingOptions("settings"),
+				User: this.generateMappingOptions("users"),
+				VerificationLink: this.generateMappingOptions("verifcationlink"),
+				Webhook: this.generateMappingOptions("webhooks"),
+				PlatformInvite: this.generateMappingOptions("platform_invite"),
 			},
 		} as const;
 
-		this.Mapper = new mapping.Mapper(this.Client, this.MappingOptions);
+		this.mapper = new mapping.Mapper(this.client, this.mappingOptions);
 
-		this.Models = {
-			Ban: this.Mapper.forModel<Ban>("Ban"),
-			Bot: this.Mapper.forModel<Bot>("Bot"),
-			Channel: this.Mapper.forModel<Channel>("Channel"),
-			Dm: this.Mapper.forModel<Dm>("Dm"),
-			Emoji: this.Mapper.forModel<Emoji>("Emoji"),
-			File: this.Mapper.forModel<File>("File"),
-			Friend: this.Mapper.forModel<Friend>("Friend"),
-			Gift: this.Mapper.forModel<Gift>("Gift"),
-			Guild: this.Mapper.forModel<Guild>("Guild"),
-			GuildMember: this.Mapper.forModel<GuildMember>("GuildMember"),
-			Invite: this.Mapper.forModel<Invite>("Invite"),
-			Message: this.Mapper.forModel<Message>("Message"),
-			PermissionOverride: this.Mapper.forModel<PermissionOverride>("PermissionOverride"),
-			Role: this.Mapper.forModel<Role>("Role"),
-			Settings: this.Mapper.forModel<Settings>("Settings"),
-			User: this.Mapper.forModel<User>("User"),
-			VerificationLink: this.Mapper.forModel<VerificationLink>("VerificationLink"),
-			Webhook: this.Mapper.forModel<Webhook>("Webhook"),
-			PlatformInvite: this.Mapper.forModel<PlatformInvite>("PlatformInvite"),
+		this.models = {
+			Ban: this.mapper.forModel<Ban>("Ban"),
+			Bot: this.mapper.forModel<Bot>("Bot"),
+			Channel: this.mapper.forModel<Channel>("Channel"),
+			Dm: this.mapper.forModel<Dm>("Dm"),
+			Emoji: this.mapper.forModel<Emoji>("Emoji"),
+			File: this.mapper.forModel<File>("File"),
+			Friend: this.mapper.forModel<Friend>("Friend"),
+			Gift: this.mapper.forModel<Gift>("Gift"),
+			Guild: this.mapper.forModel<Guild>("Guild"),
+			GuildMember: this.mapper.forModel<GuildMember>("GuildMember"),
+			Invite: this.mapper.forModel<Invite>("Invite"),
+			Message: this.mapper.forModel<Message>("Message"),
+			PermissionOverride: this.mapper.forModel<PermissionOverride>("PermissionOverride"),
+			Role: this.mapper.forModel<Role>("Role"),
+			Settings: this.mapper.forModel<Settings>("Settings"),
+			User: this.mapper.forModel<User>("User"),
+			VerificationLink: this.mapper.forModel<VerificationLink>("VerificationLink"),
+			Webhook: this.mapper.forModel<Webhook>("Webhook"),
+			PlatformInvite: this.mapper.forModel<PlatformInvite>("PlatformInvite"),
 		};
 	}
 
-	private GenerateMappingOptions(TableName: string): cassandra.mapping.ModelOptions {
+	private generateMappingOptions(TableName: string): cassandra.mapping.ModelOptions {
 		return {
 			tables: [TableName],
-			mappings: this.UnderScoreCqlToPascalCaseMappings,
-			keyspace: this.KeySpace,
+			mappings: this.underscoreCqlToCamelCaseMappings,
+			keyspace: this.keySpace,
 		};
 	}
 
-	public async Connect() {
+	public async connect() {
 		try {
-			await this.Client.connect();
+			await this.client.connect();
 
-			this.Connected = true;
+			this.connected = true;
 
-			let createKeySpace = `CREATE KEYSPACE IF NOT EXISTS ${this.KeySpace}`;
+			let createKeySpace = `CREATE KEYSPACE IF NOT EXISTS ${this.keySpace}`;
 
-			if (this.NetworkTopologyStrategy && Object.keys(this.NetworkTopologyStrategy).length > 0) {
+			if (this.networkTopologyStrategy && Object.keys(this.networkTopologyStrategy).length > 0) {
 				createKeySpace += ` WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy' ${Object.entries(
-					this.NetworkTopologyStrategy,
+					this.networkTopologyStrategy,
 				)
 					.map(([DataCenter, ReplicationFactor]) => `, '${DataCenter}' : ${ReplicationFactor}`)
 					.join(", ")} }`;
@@ -183,13 +183,13 @@ class Connection extends EventEmitter {
 				createKeySpace += " WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }";
 			}
 
-			createKeySpace += ` AND DURABLE_WRITES = ${this.DurableWrites};`;
+			createKeySpace += ` AND DURABLE_WRITES = ${this.durableWrites};`;
 
-			await this.Execute(createKeySpace).catch((error) => {
+			await this.execute(createKeySpace).catch((error) => {
 				this.emit("Error", error);
 			});
 
-			await this.Execute(`USE ${this.KeySpace};`);
+			await this.execute(`USE ${this.keySpace};`);
 
 			this.emit("Connected");
 		} catch (error) {
@@ -197,11 +197,11 @@ class Connection extends EventEmitter {
 		}
 	}
 
-	public async Shutdown() {
+	public async shutdown() {
 		try {
-			await this.Client.shutdown();
+			await this.client.shutdown();
 
-			this.Connected = false;
+			this.connected = false;
 
 			this.emit("Close");
 		} catch (error) {
@@ -209,11 +209,11 @@ class Connection extends EventEmitter {
 		}
 	}
 
-	public async Execute(query: string, params?: any[]) {
-		if (!this.Connected) throw new Error("Not connected to cassandra");
+	public async execute(query: string, params?: any[]) {
+		if (!this.connected) throw new Error("Not connected to cassandra");
 
 		try {
-			return await this.Client.execute(query, params, { prepare: true });
+			return await this.client.execute(query, params, { prepare: true });
 		} catch (error) {
 			this.emit("Error", error);
 
@@ -221,11 +221,11 @@ class Connection extends EventEmitter {
 		}
 	}
 
-	public async ExecuteWithKeyspace(query: string, params?: any[]) {
-		if (!this.Connected) throw new Error("Not connected to cassandra");
+	public async executeWithKeyspace(query: string, params?: any[]) {
+		if (!this.connected) throw new Error("Not connected to cassandra");
 
 		try {
-			return await this.Client.execute(query, params, { prepare: true, keyspace: this.KeySpace });
+			return await this.client.execute(query, params, { prepare: true, keyspace: this.keySpace });
 		} catch (error) {
 			this.emit("Error", error);
 
@@ -233,13 +233,13 @@ class Connection extends EventEmitter {
 		}
 	}
 
-	private async WalkDirectory(dir: string): Promise<string[]> {
+	private async walkDirectory(dir: string): Promise<string[]> {
 		const paths = await fs.readdir(dir, { withFileTypes: true });
 		const files: string[] = [];
 
 		for (const filePath of paths) {
 			if (filePath.isDirectory()) {
-				const subFiles = await this.WalkDirectory(path.join(dir, filePath.name));
+				const subFiles = await this.walkDirectory(path.join(dir, filePath.name));
 				files.push(...subFiles);
 			} else {
 				files.push(path.join(dir, filePath.name));
@@ -249,8 +249,8 @@ class Connection extends EventEmitter {
 		return files;
 	}
 
-	public async CreateTables() {
-		const files = await this.WalkDirectory(this.TableDirectory);
+	public async createTables() {
+		const files = await this.walkDirectory(this.TableDirectory);
 
 		for (const file of files) {
 			const query = await fs.readFile(file, "utf8");
@@ -259,20 +259,20 @@ class Connection extends EventEmitter {
 
 			// When theres a '' in the array it means theres a newline that used to be there so for example
 			/*
-                [
-                    'CREATE TABLE IF NOT EXISTS verifcationlink (',
-                    '\tcode text PRIMARY KEY,',
-                    '\tuser_id bigint,',
-                    '\tcreated_date int,',
-                    '\texpire_date int,',
-                    '\tip text,',
-                    '\tflags int,',
-                    ');',
-                    '',
-                    'CREATE INDEX IF NOT EXISTS verifcationlink_code_index ON verifcationlink (code, ip, flags);',
-                    ''
-                ]
-            */
+				[
+					'CREATE TABLE IF NOT EXISTS verifcationlink (',
+					'\tcode text PRIMARY KEY,',
+					'\tuser_id bigint,',
+					'\tcreated_date int,',
+					'\texpire_date int,',
+					'\tip text,',
+					'\tflags int,',
+					');',
+					'',
+					'CREATE INDEX IF NOT EXISTS verifcationlink_code_index ON verifcationlink (code, ip, flags);',
+					''
+				]
+			*/
 			// that means we need to make a new array with the CREATE TABLE... and then the CREATE INDEX... and then execute those one by one
 			// There definetly is a better way to do this but I'm too lazy to figure it out
 
@@ -300,7 +300,7 @@ class Connection extends EventEmitter {
 				if (joined.length < 1) continue;
 
 				try {
-					await this.Execute(query.join("\n"));
+					await this.execute(query.join("\n"));
 				} catch {
 					this.emit("Error", `Failed to execute query ${joined}`);
 				}

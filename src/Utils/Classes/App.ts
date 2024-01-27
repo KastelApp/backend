@@ -1,16 +1,19 @@
 /* eslint-disable id-length */
 import process from "node:process";
-import { Snowflake, CacheManager } from "@kastelll/util";
+import { CacheManager } from "@kastelll/util";
 import * as Sentry from "@sentry/bun";
 import { type SimpleGit, simpleGit } from "simple-git";
 import type { MySchema } from "@/Types/JsonSchemaType.ts";
-import Constants, { relative } from "../../Constants.ts";
+import Constants, { relative, statusTypes } from "../../Constants.ts";
 import processArgs from "../ProcessArgs.ts";
 import ConfigManager from "./ConfigManager.ts";
 import Connection from "./Connection.ts";
+import Encryption from "./Encryption.ts";
 import { IpUtils } from "./IpUtils.ts";
 import CustomLogger from "./Logger.ts";
 import Question from "./Question.ts";
+import type { GetChannelTypes, channels } from "./Shared/RabbitMQ.ts";
+import Snowflake from "./Snowflake.ts";
 import SystemInfo from "./SystemInfo.ts";
 
 type GitType = "Added" | "Copied" | "Deleted" | "Ignored" | "Modified" | "None" | "Renamed" | "Unmerged" | "Untracked";
@@ -18,7 +21,7 @@ type GitType = "Added" | "Copied" | "Deleted" | "Ignored" | "Modified" | "None" 
 class App {
 	public ready: boolean = false;
 
-	public static snowflake: Snowflake = new Snowflake(Constants.snowflake);
+	public static snowflake: Snowflake = new Snowflake(Constants.snowflake.Epoch, Constants.snowflake.WorkerId, Constants.snowflake.ProcessId, Constants.snowflake.TimeShift, Constants.snowflake.WorkerIdBytes, Constants.snowflake.ProcessIdBytes);
 
 	public cassandra!: Connection;
 
@@ -71,16 +74,12 @@ class App {
 		this.sentry = Sentry;
 
 		this.logger.who = who;
-
-		// this.Logger = new CustomLogger();
 	}
 
 	public logo() {
 		this.logger.hex("#ca8911")(
-			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${
-				relative.Version ? `v${relative.Version}` : "Unknown version"
-			} of Kastel's Backend. Bun version ${
-				Bun.version
+			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${relative.Version ? `v${relative.Version}` : "Unknown version"
+			} of Kastel's Backend. Bun version ${Bun.version
 			}\nIf you would like to support this project please consider donating to https://opencollective.com/kastel\n`,
 		);
 	}
@@ -94,6 +93,8 @@ class App {
 
 			process.exit();
 		}
+
+		Encryption.setConfig(this.config.encryption);
 
 		this.cache = new CacheManager({
 			AllowForDangerousCommands: true,
@@ -113,8 +114,6 @@ class App {
 			this.config.scyllaDB.durableWrites,
 		);
 
-		// this.Repl.startRepl();
-
 		this.cache.on("Connected", () => this.logger.info("Connected to Redis"));
 		this.cache.on("Error", (err) => {
 			this.logger.fatal(err);
@@ -133,12 +132,12 @@ class App {
 		this.logger.info("Connecting to ScyllaDB");
 		this.logger.warn("IT IS NOT FROZEN, ScyllaDB may take a while to connect");
 
-		await Promise.all([this.cassandra.Connect(), this.cache.connect()]);
+		await Promise.all([this.cassandra.connect(), this.cache.connect()]);
 
 		this.logger.info("Creating ScyllaDB Tables.. This may take a while..");
 		this.logger.warn("IT IS NOT FROZEN, ScyllaDB may take a while to create the tables");
 
-		const tablesCreated = await this.cassandra.CreateTables();
+		const tablesCreated = await this.cassandra.createTables();
 
 		if (tablesCreated) {
 			this.logger.info("Created ScyllaDB tables");
@@ -203,8 +202,7 @@ class App {
 			"Git Info:",
 			`Branch: ${App.gitBranch}`,
 			`Commit: ${githubInfo.CommitShort ?? githubInfo.Commit}`,
-			`Status: ${
-				this.clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
+			`Status: ${this.clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
 			}`,
 			this.clean ? "" : "=".repeat(40),
 			`${this.clean ? "" : "Changed Files:"}`,
@@ -264,9 +262,9 @@ class App {
 		let bucketNumber;
 
 		if (Snowflake) {
-			bucketNumber = BigInt(App.snowflake.TimeStamp(Snowflake)) - App.snowflake.Epoch;
+			bucketNumber = BigInt(App.snowflake.timeStamp(Snowflake)) - App.snowflake.epoch;
 		} else {
-			bucketNumber = BigInt(Date.now()) - App.snowflake.Epoch;
+			bucketNumber = BigInt(Date.now()) - App.snowflake.epoch;
 		}
 
 		let bucket = bucketNumber / BigInt(this.config.server.bucketInterval);
@@ -299,6 +297,60 @@ class App {
 		}
 
 		return buckets;
+	}
+
+	public rabbitMQForwarder(topic: GetChannelTypes<typeof channels>, data: unknown) {
+		postMessage({
+			type: "rabbitMQ",
+			data: {
+				topic,
+				data,
+			},
+		});
+	}
+
+	/**
+	 * basically can handle bigints turning them into strings
+	 */
+	public jsonStringify(data: unknown) {
+		return JSON.stringify(Encryption.completeDecryption(data), (_, value) => {
+			if (typeof value === "bigint") {
+				return value.toString();
+			}
+
+			return value;
+		});
+	}
+	
+	public get status() {
+		return {
+			has: (type: keyof typeof statusTypes, int: number) => {
+				const foundInt = statusTypes[type];
+				
+				return (int & foundInt) === foundInt;
+			},
+			remove: (type: keyof typeof statusTypes, int: number) => {
+				const foundInt = statusTypes[type];
+				
+				return int & ~foundInt;
+			},
+			add: (type: keyof typeof statusTypes, int: number) => {
+				const foundInt = statusTypes[type];
+				
+				return int | foundInt;
+			},
+			isOffline: (int: number) => {
+				return this.status.has("offline", int);
+			},
+			get: (int: number) => {
+				if (this.status.has("offline", int)) return "offline";
+				if (this.status.has("dnd", int)) return "dnd";
+				if (this.status.has("idle", int)) return "idle";
+				if (this.status.has("invisible", int)) return "invisible";
+				
+				return "online";
+			}
+		}
 	}
 
 	public get config() {

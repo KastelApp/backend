@@ -7,7 +7,7 @@ import App from "./App.ts";
 
 declare const self: Worker;
 
-const isQuestion = (data: unknown): data is { nonce: string; response: unknown } => {
+const isQuestion = (data: unknown): data is { nonce: string; response: unknown; } => {
 	if (typeof data !== "object") return false;
 
 	if (data === null) return false;
@@ -20,7 +20,7 @@ const isQuestion = (data: unknown): data is { nonce: string; response: unknown }
 };
 
 class Question {
-	private questions: Map<string, { answer: unknown; answered: boolean; nonce: string }> = new Map();
+	private questions: Map<string, { answer: unknown; answered: boolean; nonce: string; }> = new Map();
 
 	public constructor() {
 		if (!isMainThread) return;
@@ -41,7 +41,7 @@ class Question {
 	public async ask<T = unknown>(question: string): Promise<T> {
 		if (!isMainThread) return null as unknown as T;
 
-		const nonce = App.snowflake.Generate();
+		const nonce = App.snowflake.generate();
 
 		this.questions.set(nonce, { answer: null, answered: false, nonce });
 

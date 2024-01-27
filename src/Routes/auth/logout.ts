@@ -24,7 +24,7 @@ export default class Logout extends Route {
 		}),
 	)
 	public async deleteLogout({ user, set }: CreateRoute<"/logout", any, [UserMiddlewareType]>) {
-		const fetched = await this.App.cassandra.Models.Settings.get(
+		const fetched = await this.App.cassandra.models.Settings.get(
 			{
 				userId: Encryption.encrypt(user.id),
 			},
@@ -43,7 +43,7 @@ export default class Logout extends Route {
 
 		newSettings.tokens = newSettings.tokens.filter((token) => token.token !== Encryption.encrypt(user.token));
 
-		await this.App.cassandra.Models.Settings.update(newSettings);
+		await this.App.cassandra.models.Settings.update(newSettings);
 
 		set.status = 204;
 

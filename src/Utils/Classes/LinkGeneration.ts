@@ -3,6 +3,8 @@ import { Snowflake as SnowflakeBuilder, Base64 } from "@kastelll/util";
 import Constants from "../../Constants.ts";
 import App from "./App.ts";
 
+// todo: refactor this
+
 const snowflake = new SnowflakeBuilder(Constants.snowflake);
 
 class LinkGeneration {
@@ -33,7 +35,7 @@ class LinkGeneration {
 
 		App.staticLogger.debug("Snowflake", decodedSnowflake);
 
-		if (!snowflake.Validate(decodedSnowflake)) return false;
+		if (!snowflake.validate(decodedSnowflake)) return false;
 
 		App.staticLogger.debug("Snowflake good");
 
@@ -73,7 +75,7 @@ class LinkGeneration {
 
 		const decodedSnowflake = Base64.Decode(base64snowflake);
 
-		if (!snowflake.Validate(decodedSnowflake)) return null;
+		if (!snowflake.validate(decodedSnowflake)) return null;
 
 		return decodedSnowflake;
 	}

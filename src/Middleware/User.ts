@@ -16,13 +16,14 @@ export interface UserMiddlewareType extends Record<string, any> {
 		settings: {
 			allowedInvites: number;
 			bio: string | null;
+			customStatus: string | null,
 			guildOrder: {
 				guildId: string;
 				position: number;
 			}[];
 			language: string;
 			privacy: number;
-			status: string | null;
+			status: "dnd" | "idle" | "invisible" | "offline" | "online";
 			theme: string;
 		};
 		token: string;
@@ -108,7 +109,7 @@ const userMiddleware = (options: UserMiddleware) => {
 
 			const decodedToken = Token.decodeToken(authHeader);
 
-			const usersSettings = await app.cassandra.Models.Settings.get(
+			const usersSettings = await app.cassandra.models.Settings.get(
 				{
 					userId: Encryption.encrypt(decodedToken.Snowflake),
 				},
@@ -123,11 +124,12 @@ const userMiddleware = (options: UserMiddleware) => {
 						"theme",
 						"status",
 						"allowed_invites",
+						"custom_status"
 					],
 				},
 			);
 
-			const userData = await app.cassandra.Models.User.get(
+			const userData = await app.cassandra.models.User.get(
 				{
 					userId: Encryption.encrypt(decodedToken.Snowflake),
 				},
@@ -332,6 +334,7 @@ const userMiddleware = (options: UserMiddleware) => {
 						status: usersSettings.status,
 						theme: usersSettings.theme,
 						allowedInvites: usersSettings.allowedInvites ?? 0,
+						customStatus: usersSettings.customStatus
 					}),
 				},
 			};

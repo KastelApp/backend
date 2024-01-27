@@ -24,7 +24,7 @@ export default class Sessions extends Route {
 		}),
 	)
 	public async getSessions({ user }: CreateRoute<"/@me/sessions", any, [UserMiddlewareType]>) {
-		const fetchedSessions = await this.App.cassandra.Models.Settings.get(
+		const fetchedSessions = await this.App.cassandra.models.Settings.get(
 			{
 				userId: Encryption.encrypt(user.id),
 			},

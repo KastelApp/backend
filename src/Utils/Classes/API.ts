@@ -41,8 +41,6 @@ class API extends App {
 
 		this.sentry = Sentry;
 
-		// this.Logger = new CustomLogger();
-
 		this.router = new FileSystemRouter({
 			dir: this.routeDirectory,
 			style: "nextjs",
@@ -58,8 +56,7 @@ class API extends App {
 
 		this.router.on("reload", async ({ path, type, directory }) => {
 			this.logger.verbose(
-				`Reloaded Routes due to a ${directory ? "directory" : "file"} (${path}) being ${
-					type === "A" ? "Added" : type === "M" ? "Modified" : type === "D" ? "Removed" : "Unknown"
+				`Reloaded Routes due to a ${directory ? "directory" : "file"} (${path}) being ${type === "A" ? "Added" : type === "M" ? "Modified" : type === "D" ? "Removed" : "Unknown"
 				}`,
 			);
 
@@ -70,12 +67,12 @@ class API extends App {
 				);
 
 				if (!loaded) {
-					this.logger.warn(`Failed to load ${path}`);
+					this.logger.warn(`Failed to load route ${path}`);
 
 					return;
 				}
 
-				this.logger.info(`Loaded ${loaded.route}`);
+				this.logger.info(`Re-loaded Route ${loaded.route}`);
 			}
 		});
 
@@ -103,7 +100,7 @@ class API extends App {
 				continue;
 			}
 
-			this.logger.info(`Loaded ${loaded.route}`);
+			this.logger.info(`Loaded Route ${loaded.route}`);
 		}
 
 		this.logger.info(`Loaded ${Object.keys(this.router.routes).length} routes`);
@@ -111,7 +108,7 @@ class API extends App {
 		this.elysiaApp.all("*", async ({ body, headers, path, query, request, set, store }) => {
 			const ip = IpUtils.getIp(request, this.elysiaApp.server) ?? "";
 			const isLocalIp = IpUtils.isLocalIp(ip);
-			const snf = this.snowflake.Generate();
+			const snf = this.snowflake.generate();
 
 			set.headers["x-request-id"] = snf;
 
@@ -158,11 +155,10 @@ class API extends App {
 				error.addError({
 					methodNotAllowed: {
 						code: "MethodNotAllowed",
-						message: `Method "${
-							request.method
-						}" is not allowed for "${path}", allowed methods are [${route.routeClass.__methods
-							.map((method) => method.method.toUpperCase())
-							.join(", ")}]`,
+						message: `Method "${request.method
+							}" is not allowed for "${path}", allowed methods are [${route.routeClass.__methods
+								.map((method) => method.method.toUpperCase())
+								.join(", ")}]`,
 					},
 				});
 
@@ -202,9 +198,8 @@ class API extends App {
 				error.addError({
 					contentType: {
 						code: "InvalidContentType",
-						message: `Invalid Content-Type header, Expected (${contentTypes.type.join(", ")}), Got (${
-							headers["content-type"]
-						})`,
+						message: `Invalid Content-Type header, Expected (${contentTypes.type.join(", ")}), Got (${headers["content-type"]
+							})`,
 					},
 				});
 
@@ -300,7 +295,7 @@ class API extends App {
 		}
 
 		// this is a hack to make sure it doesn't cache the file
-		const routeClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof RouteBuilder };
+		const routeClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof RouteBuilder; };
 
 		if (!routeClass.default) {
 			this.logger.warn(`Skipping ${path} as it does not have a default export`);

@@ -229,25 +229,79 @@
 				"maxConnectionsPerMinute": {
 					"type": ["string", "number"]
 				},
-				"heartbeatInterval": {
+				"maxConnectionsPerIp": {
 					"type": ["string", "number"]
 				},
-				"closedInterval": {
-					"type": ["string", "number"]
-				},
-				"unauthedTimeout": {
-					"type": ["string", "number"]
+				"intervals": {
+					"type": "object",
+					"properties": {
+						"unAuthedTimeout": {
+							"type": "object",
+							"properties": {
+								"interval": {
+									"type": ["string", "number"]
+								},
+								"leeway": {
+									"type": ["string", "number"]
+								}
+							}
+						},
+						"closeTimeout": {
+							"type": "object",
+							"properties": {
+								"interval": {
+									"type": ["string", "number"]
+								},
+								"leeway": {
+									"type": ["string", "number"]
+								}
+							}
+						},
+						"heartbeat": {
+							"type": "object",
+							"properties": {
+								"interval": {
+									"type": ["string", "number"]
+								},
+								"leeway": {
+									"type": ["string", "number"]
+								}
+							}
+						}
+					},
+					"required": ["unAuthedTimeout", "closeTimeout", "heartbeat"]
 				}
-			},
+			}
+			,
 			"type": "object",
 			"required": [
 				"port",
 				"maxConnections",
 				"maxConnectionsPerMinute",
-				"heartbeatInterval",
-				"closedInterval",
-				"unauthedTimeout"
+				"maxConnectionsPerIp",
+				"intervals"
 			]
+		},
+		"RabbitMQ": {
+			"properties": {
+				"host": {
+					"type": "string"
+				},
+				"password": {
+					"type": "string"
+				},
+				"port": {
+					"type": ["string", "number"]
+				},
+				"username": {
+					"type": "string"
+				},
+				"vhost": {
+					"type": "string"
+				}
+			},
+			"type": "object",
+			"required": ["host", "password", "port", "username", "vhost"]
 		}
 	},
 	"properties": {
@@ -268,8 +322,11 @@
 		},
 		"ws": {
 			"$ref": "#/definitions/Ws"
+		},
+		"rabbitMQ": {
+			"$ref": "#/definitions/RabbitMQ"
 		}
 	},
 	"type": "object",
-	"required": ["encryption", "redis", "scyllaDB", "server", "ws"]
+	"required": ["encryption", "redis", "scyllaDB", "server", "ws", "rabbitMQ"]
 }

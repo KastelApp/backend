@@ -46,11 +46,30 @@
 		"workerId": 0
 	},
 	"ws": {
-		"maxConnections": 200,
+		"maxConnections": "10000",
 		"port": "62240",
-		"closedInterval": "1000",
-		"heartbeatInterval": "1000",
-		"maxConnectionsPerMinute": "15",
-		"unauthedTimeout": "1000"
+		"maxConnectionsPerMinute": "5",
+		"maxConnectionsPerIp": "10000",
+		"intervals": {
+			"closeTimeout": {
+				"interval": "1000",
+				"leeway": "15000"
+			},
+			"heartbeat": {
+				"interval": "1000",
+				"leeway": "5000"
+			},
+			"unAuthedTimeout": {
+				"interval": "1000",
+				"leeway": "25000"
+			}
+		}
+	},
+	"rabbitMQ": {
+		"host": "",
+		"port": 0,
+		"username": "",
+		"password": "",
+		"vhost": ""
 	}
 }

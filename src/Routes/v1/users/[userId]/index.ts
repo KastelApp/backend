@@ -37,7 +37,7 @@ export default class Fetch extends Route {
 		}),
 	)
 	public async getProfile({ params, query, set }: CreateRoute<"/users/:userId", any, [UserMiddlewareType]>) {
-		const fetchedUser = await this.App.cassandra.Models.User.get({
+		const fetchedUser = await this.App.cassandra.models.User.get({
 			userId: Encryption.encrypt(params.userId),
 		});
 
@@ -71,7 +71,7 @@ export default class Fetch extends Route {
 		};
 
 		if (include.includes("bio")) {
-			const bio = await this.App.cassandra.Models.Settings.get(
+			const bio = await this.App.cassandra.models.Settings.get(
 				{
 					userId: Encryption.encrypt(params.userId),
 				},

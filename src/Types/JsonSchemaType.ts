@@ -11,6 +11,7 @@ export type Features =
 export interface MySchema {
 	encryption: Encryption;
 	mailServer?: MailServer;
+	rabbitMQ: RabbitMQ;
 	redis: Redis;
 	scyllaDB: ScyllaDB;
 	server: Server;
@@ -76,11 +77,28 @@ export interface Server {
 	turnstileSecret: string;
 	workerId: number;
 }
+
+interface Interval {
+	interval: number | string;
+	leeway: number | string;
+}
+
 export interface Ws {
-	closedInterval: number | string;
-	heartbeatInterval: number | string;
+	intervals: {
+		closeTimeout: Interval;
+		heartbeat: Interval;
+		unAuthedTimeout: Interval;
+	},
 	maxConnections: number | string;
+	maxConnectionsPerIp: number | string;
 	maxConnectionsPerMinute: number | string;
 	port: number | string;
-	unauthedTimeout: number | string;
+}
+
+export interface RabbitMQ {
+	host: string;
+	password: string;
+	port: number | string;
+	username: string;
+	vhost: string;
 }

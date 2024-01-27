@@ -2,14 +2,20 @@ import crypto from "node:crypto";
 import { types } from "@kastelll/cassandra-driver";
 import App from "./App.ts";
 
-const algorithm = App?.config?.encryption?.algorithm;
-const initVector = App?.config?.encryption?.initVector;
-const securityKey = App?.config?.encryption?.securityKey;
-
 class Encryption {
+	public static config = {
+		algorithm: "",
+		initVector: "",
+		securityKey: "",
+	};
+
+	public static setConfig(config: typeof Encryption["config"]) {
+		Encryption.config = config;
+	}
+
 	public static encrypt(data: string): string {
 		try {
-			const cipher = crypto.createCipheriv(algorithm, securityKey, initVector);
+			const cipher = crypto.createCipheriv(this.config.algorithm, this.config.securityKey, this.config.initVector);
 
 			const dd = {
 				data,
@@ -23,7 +29,7 @@ class Encryption {
 
 	public static decrypt(data: string, raw = false): string {
 		try {
-			const decipher = crypto.createDecipheriv(algorithm, securityKey, initVector);
+			const decipher = crypto.createDecipheriv(this.config.algorithm, this.config.securityKey, this.config.initVector);
 			const decrypted = decipher.update(data, "hex", "utf8") + decipher.final("utf8");
 			const cleaned = Encryption.cleanData(decrypted);
 
@@ -129,7 +135,7 @@ class Encryption {
 	}
 
 	public static encryptedSnowflake() {
-		return Encryption.encrypt(App.snowflake.Generate());
+		return Encryption.encrypt(App.snowflake.generate());
 	}
 }
 

@@ -3,6 +3,14 @@ import API from "./Utils/Classes/API.ts";
 
 const api = new API();
 
+declare const self: Worker;
+
+self.onmessage = (event: MessageEvent) => {
+    if (event.data.type === "config") {
+        postMessage({ type: "config", data: api.config });
+    }
+}
+
 try {
 	api.logo();
 

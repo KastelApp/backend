@@ -1,124 +1,114 @@
-import {
-	permissions as PermissionConstants,
-	guildMemberFlags as GuildMemberFlagsConstant,
-} from "../../../Constants.ts";
-import { FlagUtils } from "../../Classes/BitFields/NewFlags.ts";
+import GuildMemberFlags from "@/Utils/Classes/BitFields/GuildMember.ts";
+import type { PermissionKey } from "@/Utils/Classes/BitFields/Permissions.ts";
+import Permissions from "@/Utils/Classes/BitFields/Permissions.ts";
 
 class PermissionHandler {
-	public GuildMemberFlags: FlagUtils<typeof GuildMemberFlagsConstant>;
+	public guildMemberFlags: GuildMemberFlags;
 
-	public MemberRoles: {
-		Id: string;
-		Permissions: bigint;
-		Position: number;
+	public memberRoles: {
+		id: string;
+		permissions: Permissions;
+		position: number;
 	}[];
 
-	public Channels: {
-		Id: string;
-		Overrides: {
-			Allow: bigint;
-			Deny: bigint;
+	public channels: {
+		id: string;
+		overrides: {
+			allow: Permissions;
+			deny: Permissions;
 			// Role / Member Id
-			Id: string;
-			Type: "Member" | "Role";
+			id: string;
+			type: "Member" | "Role";
 		}[];
 	}[];
 
-	public GuildMemberId: string;
+	public guildMemberId: string;
 
 	public constructor(
-		GuildMemberId: string,
-		GuildMemberFlags: bigint | number | string,
-		MemberRoles: { Id: string; Permissions: bigint | number | string; Position: number }[],
-		Channels?: {
-			Id: string;
-			Overrides: {
-				Allow: bigint | number | string;
-				Deny: bigint | number | string;
-				Id: string;
-				Type: "Member" | "Role";
+		guildMemberId: string,
+		guildMemberFlags: bigint | number | string,
+		memberRoles: { id: string; permissions: [bigint | string, bigint | string][]; position: number; }[],
+		channels?: {
+			id: string;
+			overrides: {
+				allow: [bigint | string, bigint | string][];
+				deny: [bigint | string, bigint | string][];
+				id: string;
+				type: "Member" | "Role";
 			}[];
 		}[],
 	) {
-		this.GuildMemberId = GuildMemberId;
+		this.guildMemberId = guildMemberId;
 
-		this.GuildMemberFlags = new FlagUtils<typeof GuildMemberFlagsConstant>(GuildMemberFlags, GuildMemberFlagsConstant);
+		this.guildMemberFlags = new GuildMemberFlags(guildMemberFlags);
 
-		this.MemberRoles = MemberRoles.map((Role) => {
-			return {
-				Id: Role.Id,
-				Permissions: BigInt(Role.Permissions),
-				Position: Role.Position,
-			};
-		});
+		this.memberRoles = memberRoles.map((Role) => ({
+			id: Role.id,
+			permissions: new Permissions(Role.permissions),
+			position: Role.position,
+		}));
 
-		this.Channels =
-			Channels?.map((Channel) => {
-				return {
-					Id: Channel.Id,
-					Overrides: Channel.Overrides.map((Override) => {
-						return {
-							Allow: BigInt(Override.Allow),
-							Deny: BigInt(Override.Deny),
-							Id: Override.Id,
-							Type: Override.Type,
-						};
-					}),
-				};
-			}) ?? [];
+		this.channels = channels?.map((Channel) => ({
+			id: Channel.id,
+			overrides: Channel.overrides.map((Override) => ({
+				allow: new Permissions(Override.allow),
+				deny: new Permissions(Override.deny),
+				id: Override.id,
+				type: Override.type,
+			})),
+		})) ?? [];
 	}
 
-	public HasAnyRole(Permission: bigint | number | keyof typeof PermissionConstants, dupe?: boolean) {
-		const foundPermission = typeof Permission === "string" ? PermissionConstants[Permission] : BigInt(Permission);
+	/**
+	 *? Checks if you have permission on any role, also takes in account position (i.e if you have a role with the permission, but a role above that role denies it, then you don't have the permission)
+	 */
+	public hasAnyRole(permission: PermissionKey[], dupe?: boolean): boolean {
+		// ? If you are the owner or co-owner, you have all permissions
+		if (this.guildMemberFlags.has("Owner") || this.guildMemberFlags.has("CoOwner")) return true;
 
-		if (this.GuildMemberFlags.has("Owner") || this.GuildMemberFlags.has("CoOwner")) return true;
+		const roles = this.memberRoles
+			.filter((Role) => Role.permissions.has(permission))
+			.sort((a, b) => b.position - a.position);
 
-		if (!dupe && this.HasAnyRole("Administrator", true)) return true;
+		if (dupe) return roles.length > 0;
 
-		return this.MemberRoles.some((Role) => {
-			return (Role.Permissions & foundPermission) === foundPermission;
-		});
+		return roles.length > 0 && roles[0]!.permissions.has(permission);
 	}
 
-	public CanManageRole(Role: { Permissions: bigint | number | keyof typeof PermissionConstants; Position: number }) {
-		if (!this.HasAnyRole("ManageRoles")) return false;
-		if (this.GuildMemberFlags.has("Owner") || this.GuildMemberFlags.has("CoOwner")) return true;
+	/**
+	 *? If you are able to manage a specific role (mainly checks the position of the role) 
+	 */
+	public canManageRole(role: { id: string; permissions: [bigint | string, bigint | string][]; position: number; }): boolean {
+		if (this.guildMemberFlags.has("Owner") || this.guildMemberFlags.has("CoOwner")) return true;
 
-		const highestRole = this.MemberRoles.sort((a, b) => b.Position - a.Position)[0];
+		const membersHighestRole = this.memberRoles.sort((a, b) => b.position - a.position)[0];
 
-		return !(!highestRole?.Position || highestRole.Position <= Role.Position);
+		if (!membersHighestRole) return false;
+
+		return membersHighestRole.position > role.position;
 	}
 
-	public HasChannelPermission(channelId: string, permission: keyof typeof PermissionConstants): boolean {
-		const channel = this.Channels.find((channel) => channel.Id === channelId);
+	/**
+	 *? Checks if you have permissiosn to a specific channel
+	 */
+	public hasChannelPermission(channelId: string, permission: PermissionKey[]): boolean {
+		if (this.guildMemberFlags.has("Owner") || this.guildMemberFlags.has("CoOwner")) return true;
+
+		const channel = this.channels.find((Channel) => Channel.id === channelId);
 
 		if (!channel) return false;
 
-		if (this.HasAnyRole("Administrator")) return true;
+		const overrides = channel.overrides.filter((Override) => Override.id === this.guildMemberId || this.memberRoles.some((Role) => Role.id === Override.id));
 
-		const userOverride = channel.Overrides.find(
-			(override) => override.Type === "Member" && override.Id === this.GuildMemberId,
-		);
-		if (userOverride) {
-			if ((BigInt(userOverride.Allow) & PermissionConstants[permission]) === PermissionConstants[permission])
-				return true;
-			if ((BigInt(userOverride.Deny) & PermissionConstants[permission]) === PermissionConstants[permission])
-				return false;
-		}
+		if (overrides.length === 0) return false;
 
-		for (const role of this.MemberRoles) {
-			const roleOverride = channel.Overrides.find((override) => override.Type === "Role" && override.Id === role.Id);
+		const allow = overrides.some((Override) => Override.allow.has(permission));
 
-			if (roleOverride) {
-				if ((BigInt(roleOverride.Allow) & PermissionConstants[permission]) === PermissionConstants[permission])
-					return true;
-				if ((BigInt(roleOverride.Deny) & PermissionConstants[permission]) === PermissionConstants[permission])
-					return false;
-			}
-		}
+		const deny = overrides.some((Override) => Override.deny.has(permission));
 
-		return this.HasAnyRole(permission);
+		return allow && !deny;
 	}
+
 }
 
 export default PermissionHandler;

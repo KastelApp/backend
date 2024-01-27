@@ -29,6 +29,7 @@ export const headersToCheck: IPHeaders[] = [
 	"true-client-ip", // Akamai and Cloudflare
 	"cf-pseudo-ipv4", // Cloudflare
 ];
+
 class IpUtils {
 	public static isLocalIp(ip: string): boolean {
 		return ip === "::1" || ip === "127.0.0.1" || ip === "localhost";

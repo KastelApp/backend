@@ -1,4 +1,5 @@
 import type { ServerWebSocket } from "bun";
+import { statusTypes } from "@/Constants.ts";
 import FlagFields from "../BitFields/Flags.ts";
 import Encryption from "../Encryption.ts";
 import Token from "../Token.ts";
@@ -7,7 +8,7 @@ import { errorCodes } from "./Errors.ts";
 
 interface WsOptions {
 	headers: Request["headers"];
-	sessionId: string;
+	ip: string;
 	url: string;
 	user: User;
 }
@@ -32,23 +33,26 @@ class User {
 	public settings!: {
 		allowedInvites: number;
 		bio: string | null;
+		customStatus: string | null,
 		guildOrder: {
 			guildId: string;
 			position: number;
 		}[];
 		language: string;
 		privacy: number;
-		status: string | null;
+		status: "dnd" | "idle" | "invisible" | "offline" | "online";
 		theme: string;
 	};
 
 	public token!: string;
 
 	public username!: string;
-
+	
 	#events: Map<string, Set<Function>> = new Map();
 
-	public closedAt: number | null = null;
+	public closedAt: number = 0;
+
+	public openedAt: number = Date.now();
 
 	public resumeable: boolean = false;
 
@@ -59,6 +63,22 @@ class User {
 	public lastHeartbeat: number = 0;
 
 	public lastHeartbeatAck: number = 0;
+
+	public version: number = 0;
+
+	public encoding: string = "json";
+
+	public expectingClose: boolean = false;
+
+	public ip!: string;
+
+	public metadata!: {  // ? Meta data is just for statistics
+		client?: string;
+		device: "browser" | "desktop" | "mobile";
+		os: string;
+	};
+
+	public sequence: number = -1; // ? -1 due to the hello packet
 
 	public constructor(App: WebSocket) {
 		this.#App = App;
@@ -110,6 +130,16 @@ class User {
 		return this;
 	}
 
+	public publish(topic: string, data: { data: any, event?: string, op: number; }) {
+		if (!this.App.topics.has(topic)) return this;
+
+		for (const user of this.App.topics.get(topic)!) {
+			user.send(JSON.stringify(data));
+		}
+
+		return this;
+	}
+
 	public getTopics(nonSubscribed: boolean = false) {
 		return nonSubscribed
 			? Array.from(this.App.topics.keys())
@@ -121,7 +151,7 @@ class User {
 	}
 
 	public close(
-		code?: number | { code?: number; reason?: string; reconnect?: boolean },
+		code?: number | { code?: number; reason?: string; reconnect?: boolean; },
 		reason?: string,
 		reconnect?: boolean,
 	) {
@@ -131,9 +161,11 @@ class User {
 			typeof code === "number" ? reconnect : code?.reconnect ?? errorCodes.unknownError.reconnect
 		)!;
 
+		this.expectingClose = true;
+
 		this.rawSocket.close(realCode, realReason);
 
-		this.emit("close");
+		this.emit("close"); // ? unsure if I want to keep this
 
 		this.closedAt = Date.now();
 		this.resumeable = realReconnect;
@@ -141,18 +173,26 @@ class User {
 		return this;
 	}
 
-	public async authenticate(token: string) {
+	public send(data: any, seq = true) {
+		this.rawSocket.send(typeof data === "string" ? data : this.#App.jsonStringify(data));
+
+		if (seq) this.sequence++;
+
+		return this;
+	}
+
+	public async authenticate(token: string): Promise<boolean> {
 		const validatedToken = Token.validateToken(token);
 
 		if (!validatedToken) {
 			this.close(errorCodes.invalidToken);
 
-			return;
+			return false;
 		}
 
 		const decodedToken = Token.decodeToken(token);
 
-		const usersSettings = await this.App.cassandra.Models.Settings.get(
+		const usersSettings = await this.App.cassandra.models.Settings.get(
 			{
 				userId: Encryption.encrypt(decodedToken.Snowflake),
 			},
@@ -167,11 +207,12 @@ class User {
 					"theme",
 					"status",
 					"allowed_invites",
+					"custom_status"
 				],
 			},
 		);
 
-		const userData = await this.App.cassandra.Models.User.get(
+		const userData = await this.App.cassandra.models.User.get(
 			{
 				userId: Encryption.encrypt(decodedToken.Snowflake),
 			},
@@ -187,18 +228,18 @@ class User {
 			if ((userData && !usersSettings) || (!userData && usersSettings)) {
 				this.close(errorCodes.internalServerError);
 
-				return;
+				return false;
 			}
 
 			this.close(errorCodes.invalidToken);
 
-			return;
+			return false;
 		}
 
 		if (!usersSettings.tokens.some((usrToken) => usrToken.token === Encryption.encrypt(token))) {
 			this.close(errorCodes.invalidToken);
 
-			return;
+			return false;
 		}
 
 		const userFlags = new FlagFields(userData.flags, userData.publicFlags);
@@ -212,7 +253,7 @@ class User {
 		) {
 			this.close(errorCodes.accountUnAvailable);
 
-			return;
+			return false;
 		}
 
 		const completeDecrypted = Encryption.completeDecryption({
@@ -226,7 +267,7 @@ class User {
 		this.flagsUtil = userFlags;
 		this.email = completeDecrypted.email;
 		this.id = completeDecrypted.userId;
-		this.guilds = completeDecrypted.guilds;
+		this.guilds = completeDecrypted.guilds ?? [];
 		this.username = completeDecrypted.username;
 		this.password = completeDecrypted.password!;
 		this.settings = Encryption.completeDecryption({
@@ -235,9 +276,44 @@ class User {
 			guildOrder: usersSettings.guildOrder ?? [],
 			language: usersSettings.language,
 			privacy: usersSettings.privacy,
-			status: usersSettings.status,
+			status: this.App.status.get(usersSettings.status),
 			theme: usersSettings.theme,
+			customStatus: usersSettings.customStatus
 		});
+
+		return true;
+	}
+
+	public translation() { // This is a "translation" layer for the API's middleware, basically just returns what the user middleware would
+		return {
+			bot: this.bot,
+			email: this.email,
+			flagsUtil: this.flagsUtil,
+			guilds: this.guilds,
+			id: this.id,
+			password: this.password,
+			settings: this.settings,
+			token: this.token,
+			username: this.username
+		};
+	}
+	
+	public async setStatus(status: "dnd" | "idle" | "invisible" | "offline" | "online") {
+		let stat = statusTypes[this.settings.status]; // old status
+		
+		if (status === "offline") stat |= statusTypes.offline;
+		else stat &= ~statusTypes.offline;
+		
+		if (stat === 0) stat = statusTypes[status]
+
+		this.settings.status = this.App.status.get(stat);
+		
+		await this.App.cassandra.models.Settings.update({
+			userId: Encryption.encrypt(this.id),
+			status: statusTypes[status]
+		});
+		
+		return this;
 	}
 }
 

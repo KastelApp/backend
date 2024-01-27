@@ -12,7 +12,8 @@ const opCodes = {
 	requestGuildMembers: 6,
 	resume: 7,
 	heartbeatAck: 8,
-};
+    hello: 9,
+} as const;
 
 const userSendCodes = [
 	// ? these are the codes the client can send

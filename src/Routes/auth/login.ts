@@ -1,8 +1,9 @@
+import { statusTypes } from "@/Constants.ts";
 import bodyValidator from "@/Middleware/BodyValidator.ts";
 import userMiddleware from "@/Middleware/User.ts";
 import type { Infer } from "@/Types/BodyValidation.ts";
 import { string } from "@/Types/BodyValidation.ts";
-import App from "@/Utils/Classes/App.ts";
+import type API from "@/Utils/Classes/API.ts";
 import FlagFields from "@/Utils/Classes/BitFields/Flags.ts";
 import Encryption from "@/Utils/Classes/Encryption.ts";
 import errorGen from "@/Utils/Classes/ErrorGen.ts";
@@ -135,7 +136,7 @@ export default class Login extends Route {
 
 		const newToken = Token.generateToken(fetchedUser.userId);
 
-		let tokens = await this.App.cassandra.Models.Settings.get(
+		let tokens = await this.App.cassandra.models.Settings.get(
 			{
 				userId: Encryption.encrypt(fetchedUser.userId),
 			},
@@ -153,9 +154,9 @@ export default class Login extends Route {
 				maxFileUploadSize: this.App.constants.settings.Max.MaxFileSize,
 				maxGuilds: this.App.constants.settings.Max.GuildCount,
 				mentions: [],
-				presence: this.App.constants.presence.Online,
 				privacy: 0,
-				status: null,
+				status: statusTypes.offline | statusTypes.online,
+				customStatus: null,
 				theme: "dark",
 				tokens: [],
 				userId: Encryption.encrypt(fetchedUser.userId),
@@ -164,10 +165,10 @@ export default class Login extends Route {
 			};
 		}
 
-		const sessionId = App.snowflake.Generate();
+		const sessionId = this.App.snowflake.generate();
 
 		tokens.tokens.push({
-			createdDate: new Date(App.snowflake.TimeStamp(sessionId)),
+			createdDate: new Date(this.App.snowflake.timeStamp(sessionId)),
 			flags: 0,
 			ip,
 			token: Encryption.encrypt(newToken),
@@ -175,15 +176,15 @@ export default class Login extends Route {
 		});
 
 		if (wasNull) {
-			await this.App.cassandra.Models.Settings.insert(tokens);
+			await this.App.cassandra.models.Settings.insert(tokens);
 		} else {
-			await this.App.cassandra.Models.Settings.update(tokens);
+			await this.App.cassandra.models.Settings.update(tokens);
 		}
-
-		this.App.SystemSocket.Events.NewSession({
-			SessionId: sessionId,
-			UserId: fetchedUser.userId,
-		});
+		
+		this.App.rabbitMQForwarder("sessions.create", {
+			sessionId,
+			userId: fetchedUser.userId,
+		})
 
 		return {
 			token: newToken,
@@ -191,7 +192,7 @@ export default class Login extends Route {
 	}
 
 	private async fetchUser(email: string) {
-		const fetched = await this.App.cassandra.Models.User.get(
+		const fetched = await this.App.cassandra.models.User.get(
 			{
 				email: Encryption.encrypt(email),
 			},

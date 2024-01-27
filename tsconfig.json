@@ -39,7 +39,7 @@
 		"paths": {
 			"@/*": ["./src/*"],
 		},
-		"jsx": "react",
+		"jsx": "react-jsx",
 	},
 	"include": ["src/**/*", "scripts/**/*", "tests/**/*", "simple/**/*"],
 	"exclude": [".github"],

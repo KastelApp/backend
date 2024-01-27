@@ -96,26 +96,26 @@ export const fixChannelPositions = (channel: Channel, existingChannels: Channel[
 	}
 };
 
-export const fixChannelPositionsWithoutNewChannel = (channels: Channel[]): Channel[] => {
+export const fixChannelPositionsWithoutNewChannel = (channels: Channel[]): Channel[] =>  {
 	const positionMap: { [parentId: string]: number } = {};
 
 	channels.sort((a, b) => a.position - b.position);
 
 	return channels.map((channel) => {
 		if (channel.parentId) {
-			if (positionMap[channel.parentId]) {
-				positionMap[channel.parentId]++;
-			} else {
+			if (positionMap[channel.parentId] === undefined) {
 				positionMap[channel.parentId] = 0;
+			} else {
+				positionMap[channel.parentId]++;
 			}
 
 			channel.position = positionMap[channel.parentId] ?? 0;
 		} else {
 			const rootKey = "root";
-			if (positionMap[rootKey]) {
-				positionMap[rootKey]++;
-			} else {
+			if (positionMap[rootKey] === undefined) {
 				positionMap[rootKey] = 0;
+			} else {
+				positionMap[rootKey]++;
 			}
 
 			channel.position = positionMap[rootKey];

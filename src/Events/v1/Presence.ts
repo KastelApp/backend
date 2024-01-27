@@ -23,5 +23,7 @@ export default class Presence extends Event {
 	@OpCode(opCodes.presenceUpdate)
 	@AuthRequired()
 	@Validator(presenceData)
-	public async presence(user: User, data: Infer<typeof presenceData>) {}
+	public async presence(user: User, data: Infer<typeof presenceData>) {
+		console.log(data);
+	}
 }

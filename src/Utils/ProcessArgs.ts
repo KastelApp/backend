@@ -47,7 +47,7 @@ const newprocessArgs = <T extends ProcessArg>(args: T[]) => {
 	const parsedArgs: Record<string, string[] | boolean | number | string> = {};
 
 	const argv = process.argv.slice(2);
-
+	
 	for (let i = 0; i < argv.length; i++) {
 		const arg = argv[i];
 		const currentArg = args.find((a) => `--${a.name}` === arg);
@@ -56,9 +56,9 @@ const newprocessArgs = <T extends ProcessArg>(args: T[]) => {
 			const nextArg = argv[i + 1];
 
 			if (currentArg.type === "boolean") {
-				parsedArgs[currentArg.newName ?? currentArg.name] = nextArg?.startsWith("--")
+				parsedArgs[currentArg.newName ?? currentArg.name] = nextArg ? nextArg?.startsWith("--")
 					? true
-					: JSON.parse(nextArg ?? "false");
+					: JSON.parse(nextArg ?? "false") : true;
 			} else if (nextArg && !nextArg.startsWith("--")) {
 				if (currentArg.type === "number") {
 					parsedArgs[currentArg.newName ?? currentArg.name] = Number.parseFloat(nextArg);
