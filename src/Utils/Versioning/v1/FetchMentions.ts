@@ -2,35 +2,34 @@
 // roles are <@&id>
 // users are <@!?id>
 
-export const FetchMentions = (
+export const fetchMentions = (
 	content: string,
 ): {
-	Channels: string[];
-	Roles: string[];
-	Users: string[];
+	channels: string[];
+	roles: string[];
+	users: string[];
 } => {
-	// eslint-disable-next-line prefer-named-capture-group
-	const Regex = /<#(\d+)>|<@&(\d+)>|<@!?(\d+)>/g;
+	const regex = /<#(?<channels>\d+)>|<@&(?<roles>\d+)>|<@!?(?<users>\d+)>/g;
 
-	const Channels: string[] = [];
-	const Roles: string[] = [];
-	const Users: string[] = [];
+	const channels: string[] = [];
+	const roles: string[] = [];
+	const users: string[] = [];
 
-	let Match: RegExpExecArray | null;
+	let match: RegExpExecArray | null;
 
-	while ((Match = Regex.exec(content)) !== null) {
-		if (Match[1]) {
-			Channels.push(Match[1]);
-		} else if (Match[2]) {
-			Roles.push(Match[2]);
-		} else if (Match[3]) {
-			Users.push(Match[3]);
+	while ((match = regex.exec(content)) !== null) {
+		if (match[1]) {
+			channels.push(match[1]);
+		} else if (match[2]) {
+			roles.push(match[2]);
+		} else if (match[3]) {
+			users.push(match[3]);
 		}
 	}
 
 	return {
-		Channels: [...new Set(Channels)],
-		Roles: [...new Set(Roles)],
-		Users: [...new Set(Users)],
+		channels: [...new Set(channels)],
+		roles: [...new Set(roles)],
+		users: [...new Set(users)],
 	};
 };

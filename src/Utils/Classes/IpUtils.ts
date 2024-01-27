@@ -1,57 +1,60 @@
-/* !
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
- * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
- * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
- * Copyright(c) 2022-2023 DarkerInk
- * GPL 3.0 Licensed
- */
+import type { Server } from "bun";
 
-import type { Request } from "express";
-import { Server } from "../../Config.ts";
+export type IPHeaders =
+	| "appengine-user-ip"
+	| "cf-connecting-ip"
+	| "cf-pseudo-ipv4"
+	| "fastly-client-ip"
+	| "forwarded-for"
+	| "forwarded"
+	| "true-client-ip"
+	| "x-client-ip"
+	| "x-cluster-client-ip"
+	| "x-forwarded"
+	| "x-forwarded"
+	| "x-real-ip"
+	| (string & {});
+
+export const headersToCheck: IPHeaders[] = [
+	"x-real-ip", // Nginx proxy/FastCGI
+	"x-client-ip", // Apache https://httpd.apache.org/docs/2.4/mod/mod_remoteip.html#page-header
+	"cf-connecting-ip", // Cloudflare
+	"fastly-client-ip", // Fastly
+	"x-cluster-client-ip", // GCP
+	"x-forwarded", // General Forwarded
+	"forwarded-for", // RFC 7239
+	"forwarded", // RFC 7239
+	"x-forwarded", // RFC 7239
+	"appengine-user-ip", // GCP
+	"true-client-ip", // Akamai and Cloudflare
+	"cf-pseudo-ipv4", // Cloudflare
+];
 
 class IpUtils {
-	public static GetIp(req: Request): string {
-		const normalIps = req.headers["cf-connecting-ip"] ?? req.headers["x-forwarded-for"] ?? req.socket.remoteAddress;
-
-		let Ip = req.headers["cf-true-ip"] ?? normalIps;
-
-		if (typeof Ip === "string") {
-			Ip = Ip.split(",")[0];
-		}
-
-		return (Ip as string)?.replace("::ffff:", "") ?? "127.0.0.1";
-	}
-
-	public static IsLocalIp(ip: string): boolean {
+	public static isLocalIp(ip: string): boolean {
 		return ip === "::1" || ip === "127.0.0.1" || ip === "localhost";
 	}
 
-	public static async isCloudflareIp(ip: string | undefined): Promise<boolean> {
-		try {
-			if (!ip) return false;
+	public static getIp(req: Request, server: Server | null) {
+		const rqIp = server?.requestIP(req)?.address;
 
-			// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires -- Require & Imports work together due to Bun.
-			const whois = require("whois-json");
+		if (req.headers.get("x-forwarded-for")) return req.headers.get("x-forwarded-for")?.split(",")[0];
 
-			const results = await whois(ip.replace("::ffff:", ""));
+		let clientIp: string | null | undefined = null;
 
-			return (
-				(results && results.orgName === "Cloudflare, Inc.") ||
-				results.orgName === "CLOUDFLARENET" ||
-				results.orgName?.toLowerCase()?.includes("cloudflare") ||
-				results.netname?.toLowerCase()?.includes("cloudflare") ||
-				false
-			);
-		} catch {
-			if (Server.CloudflareAccessOnly) {
-				throw new Error("CloudflareAccessOnly is enabled but the whois-json package is not installed");
-			}
+		for (const header of headersToCheck) {
+			clientIp = req.headers.get(header);
+
+			if (clientIp) break;
 		}
 
-		return false;
+		if (!clientIp) {
+			if (rqIp) return rqIp;
+
+			return null;
+		}
+
+		return clientIp;
 	}
 }
 

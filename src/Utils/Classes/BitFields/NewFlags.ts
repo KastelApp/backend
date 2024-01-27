@@ -1,14 +1,6 @@
 /* eslint-disable sonarjs/no-identical-functions */
-/* !
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
- * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
- * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
- * Copyright(c) 2022-2023 DarkerInk
- * GPL 3.0 Licensed
- */
+
+// TODO: Combine these two classes into one (idk why I didn't do that in the first place)
 
 class FlagUtilsBInt<
 	T extends {
@@ -37,27 +29,29 @@ class FlagUtilsBInt<
 	}
 
 	public has(bit: bigint | number | keyof (typeof this)["Flags"]) {
-		const Bits = typeof bit === "string" ? this.Flags[bit] ?? 0n : BigInt(bit as number);
+		const bits = typeof bit === "string" ? this.Flags[bit] ?? 0n : BigInt(bit as number);
 
-		return (this.bits & Bits) === Bits;
+		if (bits === 0n) return false; // No bit is able to be 0
+
+		return (this.bits & bits) === bits;
 	}
 
 	public add(bit: bigint | number | keyof (typeof this)["Flags"]): this {
-		const Bits = typeof bit === "string" ? this.Flags[bit] ?? 0n : BigInt(bit as number);
+		const bits = typeof bit === "string" ? this.Flags[bit] ?? 0n : BigInt(bit as number);
 
-		if (this.has(Bits)) return this;
+		if (this.has(bits)) return this;
 
-		this.bits |= Bits;
+		this.bits |= bits;
 
 		return this;
 	}
 
 	public remove(bit: bigint | number | keyof (typeof this)["Flags"]): this {
-		const Bits = typeof bit === "string" ? this.Flags[bit] ?? 0n : BigInt(bit as number);
+		const bits = typeof bit === "string" ? this.Flags[bit] ?? 0n : BigInt(bit as number);
 
-		if (!this.has(Bits)) return this;
+		if (!this.has(bits)) return this;
 
-		this.bits ^= Bits;
+		this.bits ^= bits;
 
 		return this;
 	}
@@ -139,27 +133,29 @@ class FlagUtils<
 	}
 
 	public has(bit: bigint | number | keyof (typeof this)["Flags"]) {
-		const Bits = typeof bit === "string" ? this.Flags[bit] ?? 0 : Number(bit);
+		const bits = typeof bit === "string" ? this.Flags[bit] ?? 0 : Number(bit);
 
-		return (this.bits & Bits) === Bits;
+		if (bits === 0) return false; // No bit is able to be 0
+
+		return (this.bits & bits) === bits;
 	}
 
 	public add(bit: bigint | number | keyof (typeof this)["Flags"]): this {
-		const Bits = typeof bit === "string" ? this.Flags[bit] ?? 0 : Number(bit);
+		const bits = typeof bit === "string" ? this.Flags[bit] ?? 0 : Number(bit);
 
-		if (this.has(Bits)) return this;
+		if (this.has(bits)) return this;
 
-		this.bits |= Bits;
+		this.bits |= bits;
 
 		return this;
 	}
 
 	public remove(bit: bigint | number | keyof (typeof this)["Flags"]): this {
-		const Bits = typeof bit === "string" ? this.Flags[bit] ?? 0 : Number(bit);
+		const bits = typeof bit === "string" ? this.Flags[bit] ?? 0 : Number(bit);
 
-		if (!this.has(Bits)) return this;
+		if (!this.has(bits)) return this;
 
-		this.bits ^= Bits;
+		this.bits ^= bits;
 
 		return this;
 	}

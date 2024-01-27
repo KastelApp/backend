@@ -1,19 +1,6 @@
-/* eslint-disable unicorn/prefer-math-trunc */
-/* eslint-disable sonarjs/no-identical-expressions */
-/* !
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
- * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
- * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
- * Copyright(c) 2022-2023 DarkerInk
- * GPL 3.0 Licensed
- */
+import { version } from "../package.json";
 
-import process from "node:process";
-
-const Settings = {
+const settings = {
 	Max: {
 		GuildCount: 50,
 		ChannelCount: 250,
@@ -56,43 +43,50 @@ const Settings = {
 
 // Note: You should NOT change these at all unless you know what you are doing
 // The frontend depends on these
-const GuildFeatures = [
+const guildFeatures = [
 	{
-		Name: "Partnered",
-		Deprecated: false, // deprecated means it will be removed in the future
-		Default: false, // If guilds are given this by default on guild creation
-		Settable: false, // if a user can set it themselves
-		NewDefault: false, // If its a "new default" this means if we lets say fetch a guild we need to add this
+		name: "Partnered",
+		deprecated: false, // deprecated means it will be removed in the future
+		default: false, // If guilds are given this by default on guild creation
+		settable: false, // if a user can set it themselves
+		newDefault: false, // If its a "new default" this means if we lets say fetch a guild we need to add this
 	},
 	{
-		Name: "Verified", // Ran by an official company / person
-		Deprecated: false,
-		Enabled: false,
-		Settable: false,
-		NewDefault: false,
+		name: "Verified", // Ran by an official company / person
+		deprecated: false,
+		enabled: false,
+		settable: false,
+		newDefault: false,
 	},
 	{
-		Name: "Official", // Ran by Kastel themselves (Think the Kastel Developers guild)
-		Deprecated: false,
-		Enabled: false,
-		Settable: false,
-		NewDefault: false,
+		name: "Official", // Ran by Kastel themselves (Think the Kastel Developers guild)
+		deprecated: false,
+		enabled: false,
+		settable: false,
+		newDefault: false,
 	},
 	{
-		Name: "Maintenance", // Disallows anyone without ManageGuild to view the guild / access it
-		Deprecated: false,
-		Enabled: true,
-		Settable: true,
+		name: "Maintenance", // Disallows anyone without ManageGuild to view the guild / access it
+		deprecated: false,
+		enabled: true,
+		settable: true,
 	},
 	{
-		Name: "InternalStaffGuild", // Staff only, for internal use (This is where Community Announcements will be made and some other stuff)
-		Deprecated: false,
-		Enabled: false,
-		Settable: false,
-	},
-] as const;
+		name: "InternalStaffGuild", // Staff only, for internal use (This is where Community Announcements will be made and some other stuff)
+		deprecated: false,
+		enabled: false,
+		settable: false,
+	}
+] as const satisfies {
+	default?: boolean;
+	deprecated: boolean;
+	enabled?: boolean;
+	name: string;
+	newDefault?: boolean;
+	settable?: boolean;
+}[];
 
-const AllowedMentions: {
+const allowedMentions: {
 	All?: number;
 	Everyone: number;
 	Here: number;
@@ -105,9 +99,9 @@ const AllowedMentions: {
 	Users: 1 << 8,
 };
 
-AllowedMentions.All = AllowedMentions.Everyone | AllowedMentions.Here | AllowedMentions.Roles | AllowedMentions.Users;
+allowedMentions.All = allowedMentions.Everyone | allowedMentions.Here | allowedMentions.Roles | allowedMentions.Users;
 
-const GuildMemberFlags = {
+const guildMemberFlags = {
 	Left: 1 << 0,
 	In: 1 << 1,
 	Kicked: 1 << 2,
@@ -116,7 +110,7 @@ const GuildMemberFlags = {
 	CoOwner: 1 << 5,
 };
 
-const ChannelTypes = {
+const channelTypes = {
 	GuildCategory: 1 << 0,
 	GuildText: 1 << 1,
 	GuildNews: 1 << 2,
@@ -127,29 +121,37 @@ const ChannelTypes = {
 	GroupChat: 1 << 11,
 };
 
-const Presence = {
-	Online: 1 << 0,
-	Idle: 1 << 1,
-	Dnd: 1 << 2,
-	Offline: 1 << 3,
+const presenceTypes = {
+	custom: 0,
+	playing: 1,
+	watching: 2,
+	listening: 3,
+	streaming: 4
 };
 
-const MessageFlags = {
+const statusTypes = { // ? can only have one at a time besides if you are offline, so if you are offline you can have 1 << 1 | 1 << 2 which means, you are offline but your are idle
+	offline: 1 << 0,
+	online: 1 << 1,
+	idle: 1 << 2,
+	dnd: 1 << 3,
+	invisible: 1 << 4,
+}
+
+const messageFlags = {
 	System: 1 << 0,
 	Normal: 1 << 1,
-	Reply: 1 << 2,
 	Deleted: 1 << 3, // NOTE: this is only used when the message has the reported flag
 	Reported: 1 << 4, // Note: this is private to the users (they won't receive the flag)
 };
 
-const InviteFlags = {
+const inviteFlags = {
 	Normal: 1 << 0, // invite for a guild channel
 	GroupChat: 1 << 1, // invite for a gdm
 	FriendLink: 1 << 2, // This lets you "add" a friend rather then having them send you a friend request, this is an instant friend
 	Vanity: 1 << 3, // This is a vanity invite (like kastelapp.com/invite/kastel) Undeleatable 1 per guild
 };
 
-const PublicFlags = {
+const publicFlags = {
 	StaffBadge: 1n << 0n,
 	GhostBadge: 1n << 1n,
 	SponsorBadge: 1n << 2n,
@@ -163,7 +165,7 @@ const PublicFlags = {
 	MajorBugHunterBadge: 1n << 10n,
 };
 
-const PrivateFlags = {
+const privateFlags = {
 	Ghost: 1n << 0n,
 	System: 1n << 1n,
 	Staff: 1n << 2n,
@@ -192,122 +194,194 @@ const PrivateFlags = {
 	IncreasedMessageLength8k: 1n << 30n,
 };
 
-const MixedPermissions = {
-	ManageMessages: 1n << 9n,
-	SendMessages: 1n << 10n,
-	ReadMessages: 1n << 11n,
-	CreateInvites: 1n << 14n,
-	BypassSlowmode: 1n << 16n,
-	ManageWebhooks: 1n << 19n,
+const permissions = {
+	Administrator: {
+		int: 1n << 0n,
+		group: "role", // ? Groups = role, channel, both. role = Permissions only supported for a role (and not a channel permission override) channel = Permissions only supported for a channel (and not a role) both = Permissions supported for both
+		subPermissions: {} // ? It has them all already
+	},
+	Guild: {
+		int: 1n << 1n,
+		group: "role",
+		subPermissions: {
+			ServerName: 1n << 0n,
+			ServerDescription: 1n << 1n,
+			ServerIcon: 1n << 2n,
+			MaintenanceToggle: 1n << 3n,
+			AddBots: 1n << 4n,
+			ViewAuditLog: 1n << 5n,
+			ManageVanity: 1n << 6n,
+		}
+	},
+	Roles: {
+		int: 1n << 2n,
+		group: "role",
+		subPermissions: {
+			RoleName: 1n << 0n,
+			RoleColor: 1n << 1n,
+			RolePosition: 1n << 2n,
+			RolePermissions: 1n << 3n,
+			GrantOtherRoles: 1n << 4n, // ? If you can give other users roles
+		}
+	},
+	Channels: {
+		int: 1n << 3n,
+		group: "both",
+		subPermissions: {
+			ChannelName: 1n << 0n,
+			ChannelPosition: 1n << 1n,
+			ChannelTopic: 1n << 2n,
+			ChannelSlowmode: 1n << 3n, // ? This doesn't count for the per role slowmode, rather for global
+			ChannelAgeRestriction: 1n << 4n,
+			ChannelInvites: 1n << 5n, // ? If you can view / delete invites
+			ChannelWebhooks: 1n << 6n, // ? If you can view / delete webhooks
+			ChannelParent: 1n << 7n, // ? lets you manage the parent of the channel
+			ChannelPermissionOverrides: 1n << 8n, // ? lets you manage permission overrides
+			DeleteChannel: 1n << 9n, // ? If you can delete channels (or the channel (permission override))
+			ViewChannels: 1n << 10n,
+			ViewMessageHistory: 1n << 11n,
+			SendMessages: 1n << 12n,
+			EmbedLinks: 1n << 13n,
+			AttachFiles: 1n << 14n,
+			AddReactions: 1n << 15n,
+			UseExternalEmojis: 1n << 17n,
+			UseChatFormatting: 1n << 18n, // ? i.e markdown, and default emojis
+			ManageMessages: 1n << 19n,
+			BypassSlowmode: 1n << 20n,
+		}
+	},
+	Members: {
+		int: 1n << 4n,
+		group: "role",
+		subPermissions: {
+			MemberNickname: 1n << 0n,
+			MemberRoles: 1n << 1n,
+			MemberDeafen: 1n << 5n,
+			MemberMove: 1n << 6n,
+			MemberVoice: 1n << 7n,
+		}
+	},
+	Emojis: {
+		int: 1n << 5n,
+		group: "role",
+		subPermissions: {
+			EmojiName: 1n << 0n,
+			EmojiImage: 1n << 1n,
+			UploadEmoji: 1n << 2n,
+			DeleteEmoji: 1n << 3n,
+		}
+	},
+	Moderation: {
+		int: 1n << 6n,
+		group: "role",
+		subPermissions: {
+			BanMembers: 1n << 0n,
+			UnbanMembers: 1n << 1n,
+			ViewBans: 1n << 2n,
+			KickMembers: 1n << 3n,
+			TimeoutMembers: 1n << 4n,
+		}
+	},
+	ManageNicknames: {
+		int: 1n << 7n,
+		group: "role",
+		subPermissions: {
+			Nickname: 1n << 0n, // ? you can change your own nickname
+			ChangeNickname: 1n << 1n, // ? you can change other peoples nicknames
+		}
+	},
+	ManageInvites: {
+		int: 1n << 8n,
+		group: "role",
+		subPermissions: {
+			CreateInvite: 1n << 0n,
+			DeleteInvite: 1n << 1n,
+			ViewInvites: 1n << 2n,
+		}
+	}
+} satisfies {
+	[key: string]: {
+		group: "both" | "channel" | "role";
+		int: bigint;
+		subPermissions: {
+			[key: string]: bigint;
+		};
+	};
 };
 
-const RolePermissions = {
-	Administrator: 1n << 0n,
-	ManageGuild: 1n << 1n,
-	ManageRoles: 1n << 2n,
-	ManageChannels: 1n << 3n,
-	ManageMembers: 1n << 4n,
-	ManageEmojis: 1n << 5n,
-	ManageBans: 1n << 6n,
-	ManageNicknames: 1n << 7n,
-	ManageInvites: 1n << 8n,
-	KickMembers: 1n << 12n,
-	BanMembers: 1n << 13n,
-	ChangeNickname: 1n << 18n,
-	ViewAuditLog: 1n << 20n,
-	AddBots: 1n << 21n,
-	ViewChannels: 1n << 22n,
+const relationshipFlags = {
+	None: 0,
+	Blocked: 1,
+	FriendRequest: 2,
+	Friend: 3,
+	MutualFriend: 4,
 };
 
-const ChannelPermissions = {
-	ViewChannel: 1n << 15n,
-	ManageChannel: 1n << 17n,
+const auditLogActions = {};
+
+const relative = {
+	Version: version,
 };
 
-const Permissions = {
-	...MixedPermissions,
-	...RolePermissions,
-	...ChannelPermissions,
+const verificationFlags = {
+	VerifyEmail: 1,
+	ForgotPassword: 2,
+	ChangeEmail: 3,
 };
 
-const RelationshipFlags = {
-	None: 1 << 0,
-	Blocked: 1 << 1,
-	FriendRequest: 1 << 2,
-	Friend: 1 << 3,
-	Denied: 1 << 4,
-	MutualFriend: 1 << 5,
+const snowflake = {
+	Epoch: 1_701_410_400_000n,
+	TimeShift: 22n,
+	WorkerIdBytes: 17n,
+	ProcessIdBytes: 12n,
+	WorkerId: 1n,
+	ProcessId: 1n,
 };
 
-const AuditLogActions = {};
-
-const Relative = {
-	Version: "0.0.1",
-};
-
-const VerificationFlags = {
-	VerifyEmail: 1 << 0,
-	ForgotPassword: 1 << 1,
-	ChangeEmail: 1 << 2,
-};
-
-const Snowflake = {
-	Epoch: 1_641_016_800_000n,
-	SequenceBytes: 6,
-	WorkerIdBytes: 12,
-	ProcessIdBytes: 1,
-	WorkerId: 5,
-	ProcessId: process.pid,
-};
-
-const PermissionOverrideTypes = {
+const permissionOverrideTypes = {
 	Role: 1 << 0,
 	Member: 1 << 1,
 	Everyone: 1 << 2,
 };
 
 export default {
-	Settings,
-	AllowedMentions,
-	ChannelTypes,
-	Presence,
-	PrivateFlags,
-	Permissions,
-	RelationshipFlags,
-	AuditLogActions,
-	Relative,
-	GuildMemberFlags,
-	MessageFlags,
-	MixedPermissions,
-	RolePermissions,
-	ChannelPermissions,
-	VerificationFlags,
-	Snowflake,
-	PublicFlags,
-	GuildFeatures,
-	PermissionOverrideTypes,
-	InviteFlags,
+	settings,
+	allowedMentions,
+	channelTypes,
+	presenceTypes,
+	privateFlags,
+	permissions,
+	relationshipFlags,
+	auditLogActions,
+	relative,
+	guildMemberFlags,
+	messageFlags,
+	verificationFlags,
+	snowflake,
+	publicFlags,
+	guildFeatures,
+	permissionOverrideTypes,
+	inviteFlags,
+	statusTypes
 };
 
 export {
-	Settings,
-	AllowedMentions,
-	ChannelTypes,
-	Presence,
-	PrivateFlags,
-	Permissions,
-	RelationshipFlags,
-	AuditLogActions,
-	Relative,
-	GuildMemberFlags,
-	MessageFlags,
-	MixedPermissions,
-	RolePermissions,
-	ChannelPermissions,
-	VerificationFlags,
-	Snowflake,
-	PublicFlags,
-	GuildFeatures,
-	PermissionOverrideTypes,
-	InviteFlags,
+	settings,
+	allowedMentions,
+	channelTypes,
+	presenceTypes,
+	privateFlags,
+	permissions,
+	relationshipFlags,
+	auditLogActions,
+	relative,
+	guildMemberFlags,
+	messageFlags,
+	verificationFlags,
+	snowflake,
+	publicFlags,
+	guildFeatures,
+	permissionOverrideTypes,
+	inviteFlags,
+	statusTypes
 };

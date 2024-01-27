@@ -8,42 +8,40 @@ type OperatingSystemRaw = "aix" | "android" | "darwin" | "freebsd" | "linux" | "
 type CPUArchitectureRaw = "arm" | "arm64" | "ia32" | "mips" | "mipsel" | "ppc" | "ppc64" | "s390" | "s390x" | "x64";
 type CpuArchitecture = "Arm" | "Arm64" | "IA32" | "Mips" | "Mipsel" | "PPC" | "PPC64" | "S390" | "S390X" | "X64";
 interface SystemInfoOutput {
-	Cpu: {
-		Cores: number;
-		Type: string;
-		Usage: number;
+	_raw: {
+		cpu: {
+			coreCount: number;
+			cpuType: string;
+		};
+		internetAccess: boolean;
+		operatingSystem: {
+			arch: CPUArchitectureRaw;
+			platform: OperatingSystemRaw;
+			release: string;
+		};
+		ram: {
+			available: number;
+			total: number;
+		};
 	};
-	InternetAccess: boolean;
-	OperatingSystem: {
-		Arch: CpuArchitecture;
-		Platform: Platform;
-		Release: string;
+	cpu: {
+		cores: number;
+		type: string;
 	};
-	Process: {
-		Uptime: string;
-		Version: string;
+	internetAccess: boolean;
+	operatingSystem: {
+		arch: CpuArchitecture;
+		platform: Platform;
+		release: string;
 	};
-	Ram: {
+	process: {
+		uptime: string;
+		version: string;
+	};
+	ram: {
 		Available: string;
 		Total: string;
 		Usage: string;
-	};
-	_Raw: {
-		Cpu: {
-			CoreCount: number;
-			CpuType: string;
-			Usage: number;
-		};
-		InternetAccess: boolean;
-		OperatingSystem: {
-			Arch: CPUArchitectureRaw;
-			Platform: OperatingSystemRaw;
-			Release: string;
-		};
-		Ram: {
-			Available: number;
-			Total: number;
-		};
 	};
 }
 
@@ -74,129 +72,122 @@ class SystemInfo {
 		Unknown: "Unknown",
 	};
 
-	public CpuInfo() {
-		const OsCpus = os.cpus();
-		const SingleCpu = OsCpus[0];
+	public cpuInfo() {
+		const osCpus = os.cpus();
+		const singleCpu = osCpus[0];
 
-		if (!SingleCpu) throw new Error("Whar? Unable to get CPU info");
-
-		const Total = Object.values(SingleCpu.times).reduce((acc, tv) => acc + tv, 0);
-
-		const Usage = process.cpuUsage();
-		const CurrentCPUUsage = (Usage.user + Usage.system) * 1_000;
+		if (!singleCpu) throw new Error("Whar? Unable to get CPU info");
 
 		return {
-			CoreCount: OsCpus.length,
-			CpuType: SingleCpu.model,
-			Usage: (CurrentCPUUsage / Total) * 100,
+			coreCount: osCpus.length,
+			cpuType: singleCpu.model,
 		};
 	}
 
-	public MemoryInfo() {
+	public memoryInfo() {
 		return {
-			Total: os.totalmem(),
-			Available: os.freemem(),
+			total: os.totalmem(),
+			available: os.freemem(),
 		};
 	}
 
-	public OperatingSystemInfo(): {
-		Arch: CPUArchitectureRaw;
-		Platform: OperatingSystemRaw;
-		Release: string;
+	public operatingSystemInfo(): {
+		arch: CPUArchitectureRaw;
+		platform: OperatingSystemRaw;
+		release: string;
 	} {
 		return {
-			Platform: os.platform() as OperatingSystemRaw,
-			Release: os.release(),
-			Arch: os.arch() as CPUArchitectureRaw,
+			platform: os.platform() as OperatingSystemRaw,
+			release: os.release(),
+			arch: os.arch() as CPUArchitectureRaw,
 		};
 	}
 
 	public FormatBytes(bytes: number) {
-		const Sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+		const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
 
 		if (bytes <= 0) return "0 Byte";
 
-		const ByteCount = Math.floor(Math.log(bytes) / Math.log(1_024));
+		const byteCount = Math.floor(Math.log(bytes) / Math.log(1_024));
 
-		return `${Math.round(bytes / 1_024 ** ByteCount)} ${Sizes[ByteCount]}`;
+		return `${Math.round(bytes / 1_024 ** byteCount)} ${sizes[byteCount]}`;
 	}
 
 	public FormatSeconds(seconds: number) {
-		const Ms = seconds * 1_000;
-		const Day = Math.floor(Ms / 86_400_000);
-		const Hour = Math.floor((Ms % 86_400_000) / 3_600_000);
-		const Minute = Math.floor((Ms % 3_600_000) / 60_000);
-		const Secs = Math.floor((Ms % 60_000) / 1_000);
-		const MsRemainder = Ms % 1_000;
+		const ms = seconds * 1_000;
+		const day = Math.floor(ms / 86_400_000);
+		const hour = Math.floor((ms % 86_400_000) / 3_600_000);
+		const minute = Math.floor((ms % 3_600_000) / 60_000);
+		const secs = Math.floor((ms % 60_000) / 1_000);
+		const msRemainder = ms % 1_000;
 
-		const Parts = [];
+		const parts = [];
 
-		if (Day > 0) Parts.push(`${Day}d`);
-		if (Hour > 0) Parts.push(`${Hour}h`);
-		if (Minute > 0) Parts.push(`${Minute}m`);
-		if (Secs > 0) Parts.push(`${Secs}s`);
-		if (MsRemainder > 0) Parts.push(`${MsRemainder}ms`);
+		if (day > 0) parts.push(`${day}d`);
+		if (hour > 0) parts.push(`${hour}h`);
+		if (minute > 0) parts.push(`${minute}m`);
+		if (secs > 0) parts.push(`${secs}s`);
+		if (msRemainder > 0) parts.push(`${msRemainder}ms`);
 
-		return Parts.join(" ");
+		return parts.join(" ");
 	}
 
-	public async InternetAccess(): Promise<boolean> {
+	public async internetAccess(): Promise<boolean> {
 		return new Promise((resolve) => {
-			const ResolveTimeout = setTimeout(() => {
+			const resolveTimeout = setTimeout(() => {
 				resolve(false);
 			}, 5_000);
 
 			https
 				.get("https://1.1.1.1", (res) => {
 					resolve(res.statusCode === 200);
-					clearTimeout(ResolveTimeout);
+					clearTimeout(resolveTimeout);
 				})
 				.on("error", () => {
 					resolve(false);
-					clearTimeout(ResolveTimeout);
+					clearTimeout(resolveTimeout);
 				});
 		});
 	}
 
-	public ProcessInfo() {
+	public processInfo() {
 		return {
-			Uptime: this.FormatSeconds(process.uptime()),
-			Version: process.version,
+			uptime: this.FormatSeconds(process.uptime()),
+			version: process.version,
 		};
 	}
 
 	public async Info(SkipOnlineCheck?: boolean): Promise<SystemInfoOutput> {
-		const CpuInfo = this.CpuInfo();
-		const MemoryInfo = this.MemoryInfo();
-		const ProcessInfo = this.ProcessInfo();
-		const OperatingSystemInfo = this.OperatingSystemInfo();
-		const InternetAccess = SkipOnlineCheck ? await this.InternetAccess() : true;
+		const cpuInfo = this.cpuInfo();
+		const memoryInfo = this.memoryInfo();
+		const processInfo = this.processInfo();
+		const operatingSystemInfo = this.operatingSystemInfo();
+		const internetAccess = SkipOnlineCheck ? await this.internetAccess() : true;
 
 		return {
-			Cpu: {
-				Cores: CpuInfo.CoreCount,
-				Type: CpuInfo.CpuType.replaceAll(/\s+/g, " ").trim(),
-				Usage: CpuInfo.Usage,
+			cpu: {
+				cores: cpuInfo.coreCount,
+				type: cpuInfo.cpuType.replaceAll(/\s+/g, " ").trim(),
 			},
-			Ram: {
-				Total: this.FormatBytes(MemoryInfo.Total),
-				Usage: this.FormatBytes(MemoryInfo.Total - MemoryInfo.Available),
-				Available: this.FormatBytes(MemoryInfo.Available),
+			ram: {
+				Total: this.FormatBytes(memoryInfo.total),
+				Usage: this.FormatBytes(memoryInfo.total - memoryInfo.available),
+				Available: this.FormatBytes(memoryInfo.available),
 			},
-			Process: ProcessInfo,
-			OperatingSystem: {
-				Platform: (this.PlatformTypes[OperatingSystemInfo.Platform as keyof typeof this.PlatformTypes] ??
+			process: processInfo,
+			operatingSystem: {
+				platform: (this.PlatformTypes[operatingSystemInfo.platform as keyof typeof this.PlatformTypes] ??
 					"Unknown") as Platform,
-				Release: OperatingSystemInfo.Release,
-				Arch: (this.CPUArchitectureTypes[OperatingSystemInfo.Arch as keyof typeof this.CPUArchitectureTypes] ??
+				release: operatingSystemInfo.release,
+				arch: (this.CPUArchitectureTypes[operatingSystemInfo.arch as keyof typeof this.CPUArchitectureTypes] ??
 					"Unknown") as CpuArchitecture,
 			},
-			InternetAccess,
-			_Raw: {
-				Cpu: CpuInfo,
-				Ram: MemoryInfo,
-				OperatingSystem: OperatingSystemInfo,
-				InternetAccess,
+			internetAccess,
+			_raw: {
+				cpu: cpuInfo,
+				ram: memoryInfo,
+				operatingSystem: operatingSystemInfo,
+				internetAccess,
 			},
 		};
 	}

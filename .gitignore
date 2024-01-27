@@ -44,3 +44,12 @@ dtests/
 # Old Stuff
 oldApiRoutes/
 old/
+dev.md
+
+# Where responses are stored
+openSpecStorage/
+
+
+src/configs/*
+
+!src/configs/example.json

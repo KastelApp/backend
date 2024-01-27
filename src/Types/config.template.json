@@ -1,0 +1,332 @@
+{
+	"definitions": {
+		"Encryption": {
+			"properties": {
+				"algorithm": {
+					"type": "string"
+				},
+				"initVector": {
+					"type": "string"
+				},
+				"securityKey": {
+					"type": "string"
+				},
+				"tokenKey": {
+					"type": "string"
+				}
+			},
+			"type": "object",
+			"required": ["algorithm", "initVector", "securityKey", "tokenKey"]
+		},
+		"Features": {
+			"enum": [
+				"DisableChannelCreation",
+				"DisableEmailVerification",
+				"DisableGuildCreation",
+				"DisableLogin",
+				"DisablePasswordReset",
+				"DisableRegistration",
+				"InviteBasedRegistration"
+			],
+			"type": "string"
+		},
+		"MailServer": {
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
+				"users": {
+					"items": [
+						{
+							"$ref": "#/definitions/User"
+						},
+						{
+							"$ref": "#/definitions/User"
+						}
+					],
+					"maxItems": 2,
+					"minItems": 2,
+					"type": "array"
+				}
+			},
+			"type": "object",
+			"required": ["enabled", "users"]
+		},
+		"Redis": {
+			"properties": {
+				"db": {
+					"type": "number"
+				},
+				"host": {
+					"type": "string"
+				},
+				"password": {
+					"type": "string"
+				},
+				"port": {
+					"type": "number"
+				},
+				"username": {
+					"type": "string"
+				}
+			},
+			"type": "object",
+			"required": ["db", "host", "password", "port", "username"]
+		},
+		"ScyllaDB": {
+			"properties": {
+				"durableWrites": {
+					"type": "boolean"
+				},
+				"keyspace": {
+					"type": "string"
+				},
+				"networkTopologyStrategy": {
+					"additionalProperties": {
+						"type": "number"
+					},
+					"type": "object"
+				},
+				"nodes": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"password": {
+					"type": "string"
+				},
+				"username": {
+					"type": "string"
+				}
+			},
+			"type": "object",
+			"required": ["durableWrites", "keyspace", "networkTopologyStrategy", "nodes", "password", "username"]
+		},
+		"Server": {
+			"properties": {
+				"bucketInterval": {
+					"type": "number"
+				},
+				"bucketRnd": {
+					"type": "number"
+				},
+				"cache": {
+					"properties": {
+						"clearInterval": {
+							"type": "number"
+						},
+						"clearOnStart": {
+							"type": "boolean"
+						}
+					},
+					"type": "object",
+					"required": ["clearInterval", "clearOnStart"]
+				},
+				"captchaEnabled": {
+					"type": "boolean"
+				},
+				"cloudflareAccessOnly": {
+					"type": "boolean"
+				},
+				"domain": {
+					"type": "string"
+				},
+				"features": {
+					"items": {
+						"$ref": "#/definitions/Features"
+					},
+					"type": "array"
+				},
+				"localIps": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"port": {
+					"type": ["string", "number"]
+				},
+				"secure": {
+					"type": "boolean"
+				},
+				"sentry": {
+					"properties": {
+						"dsn": {
+							"type": "string"
+						},
+						"enabled": {
+							"type": "boolean"
+						},
+						"tracesSampleRate": {
+							"type": "number"
+						}
+					},
+					"type": "object"
+				},
+				"strictRouting": {
+					"type": "boolean"
+				},
+				"turnstileSecret": {
+					"type": "string"
+				},
+				"workerId": {
+					"type": "number"
+				}
+			},
+			"type": "object",
+			"required": [
+				"bucketInterval",
+				"bucketRnd",
+				"captchaEnabled",
+				"cloudflareAccessOnly",
+				"domain",
+				"features",
+				"localIps",
+				"port",
+				"secure",
+				"sentry",
+				"strictRouting",
+				"turnstileSecret",
+				"workerId"
+			]
+		},
+		"ShortCode": {
+			"enum": ["NoReply", "Support"],
+			"type": "string"
+		},
+		"User": {
+			"properties": {
+				"host": {
+					"type": "string"
+				},
+				"password": {
+					"type": "string"
+				},
+				"port": {
+					"type": "number"
+				},
+				"secure": {
+					"type": "boolean"
+				},
+				"shortCode": {
+					"$ref": "#/definitions/ShortCode"
+				},
+				"user": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"Ws": {
+			"properties": {
+				"port": {
+					"type": ["string", "number"]
+				},
+				"maxConnections": {
+					"type": ["string", "number"]
+				},
+				"maxConnectionsPerMinute": {
+					"type": ["string", "number"]
+				},
+				"maxConnectionsPerIp": {
+					"type": ["string", "number"]
+				},
+				"intervals": {
+					"type": "object",
+					"properties": {
+						"unAuthedTimeout": {
+							"type": "object",
+							"properties": {
+								"interval": {
+									"type": ["string", "number"]
+								},
+								"leeway": {
+									"type": ["string", "number"]
+								}
+							}
+						},
+						"closeTimeout": {
+							"type": "object",
+							"properties": {
+								"interval": {
+									"type": ["string", "number"]
+								},
+								"leeway": {
+									"type": ["string", "number"]
+								}
+							}
+						},
+						"heartbeat": {
+							"type": "object",
+							"properties": {
+								"interval": {
+									"type": ["string", "number"]
+								},
+								"leeway": {
+									"type": ["string", "number"]
+								}
+							}
+						}
+					},
+					"required": ["unAuthedTimeout", "closeTimeout", "heartbeat"]
+				}
+			}
+			,
+			"type": "object",
+			"required": [
+				"port",
+				"maxConnections",
+				"maxConnectionsPerMinute",
+				"maxConnectionsPerIp",
+				"intervals"
+			]
+		},
+		"RabbitMQ": {
+			"properties": {
+				"host": {
+					"type": "string"
+				},
+				"password": {
+					"type": "string"
+				},
+				"port": {
+					"type": ["string", "number"]
+				},
+				"username": {
+					"type": "string"
+				},
+				"vhost": {
+					"type": "string"
+				}
+			},
+			"type": "object",
+			"required": ["host", "password", "port", "username", "vhost"]
+		}
+	},
+	"properties": {
+		"encryption": {
+			"$ref": "#/definitions/Encryption"
+		},
+		"mailServer": {
+			"$ref": "#/definitions/MailServer"
+		},
+		"redis": {
+			"$ref": "#/definitions/Redis"
+		},
+		"scyllaDB": {
+			"$ref": "#/definitions/ScyllaDB"
+		},
+		"server": {
+			"$ref": "#/definitions/Server"
+		},
+		"ws": {
+			"$ref": "#/definitions/Ws"
+		},
+		"rabbitMQ": {
+			"$ref": "#/definitions/RabbitMQ"
+		}
+	},
+	"type": "object",
+	"required": ["encryption", "redis", "scyllaDB", "server", "ws", "rabbitMQ"]
+}

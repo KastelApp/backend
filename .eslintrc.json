@@ -18,14 +18,24 @@
 			{
 				"selector": "variable",
 				"types": ["function"],
-				"format": ["PascalCase"]
+				"format": ["camelCase"]
 			},
 			{
 				"selector": "variable",
+				"format": ["camelCase"]
+			},
+			{
+				"selector": "class",
 				"format": ["PascalCase"]
+			},
+			{
+				"selector": "interface",
+				"format": ["PascalCase", "camelCase"]
 			}
 		],
 		"prefer-arrow/prefer-arrow-functions": "error",
-		"object-curly-spacing": ["error", "always"]
+		"object-curly-spacing": ["error", "always"],
+		"no-warning-comments": "off",
+		"unicorn/prefer-math-trunc": "off"
 	}
 }

@@ -1,320 +1,347 @@
-/* !
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
- * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
- * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
- * Copyright(c) 2022-2023 DarkerInk
- * GPL 3.0 Licensed
- */
+import type { UserMiddleware } from "@/Types/Routes.ts";
+import FlagFields from "@/Utils/Classes/BitFields/Flags.ts";
+import Encryption from "@/Utils/Classes/Encryption.ts";
+import errorGen from "@/Utils/Classes/ErrorGen.ts";
+import type { CreateMiddleware, CreateRoute } from "@/Utils/Classes/Routing/Route.ts";
+import Token from "@/Utils/Classes/Token.ts";
 
-import type { NextFunction, Request, Response } from "express";
-import type { ExpressUser } from "../Types";
-import type { UserMiddleware } from "../Types/Routes.ts";
-import App from "../Utils/Classes/App.ts";
-import FlagFields from "../Utils/Classes/BitFields/Flags.ts";
-import Encryption from "../Utils/Classes/Encryption.ts";
-import ErrorGen from "../Utils/Classes/ErrorGen.ts";
-import Token from "../Utils/Classes/Token.ts";
+export interface UserMiddlewareType extends Record<string, any> {
+	user: {
+		bot: boolean;
+		email: string;
+		flagsUtil: FlagFields;
+		guilds: string[];
+		id: string;
+		password: string;
+		settings: {
+			allowedInvites: number;
+			bio: string | null;
+			customStatus: string | null,
+			guildOrder: {
+				guildId: string;
+				position: number;
+			}[];
+			language: string;
+			privacy: number;
+			status: "dnd" | "idle" | "invisible" | "offline" | "online";
+			theme: string;
+		};
+		token: string;
+		username: string;
+	};
+}
 
-/**
- * The Middleware on each and every request (well it should be on it)
- * Manages everything user related to what type of user can access (bot or normal user)
- * and what flags are needed/allowed to access the endpoint, As well as if they need to be
- * logged in or not
- */
+const userMiddleware = (options: UserMiddleware) => {
+	return async ({
+		headers,
+		set,
+		app,
+	}: CreateRoute<string, {}>): Promise<CreateMiddleware<Record<string, unknown> | UserMiddlewareType | string>> => {
+		let authHeader = headers.authorization;
+		const isBot = headers.authorization?.toLowerCase()?.startsWith("bot ") ?? false;
 
-const User = (options: UserMiddleware) => {
-	return async (Req: Request, Res: Response, next: NextFunction) => {
-		let AuthHeader = Req.headers.authorization;
-		const AuthIsBot = Req.headers.authorization?.toLowerCase()?.startsWith("bot ") ?? false;
+		const unAuthorizedError = errorGen.UnAuthorized();
 
-		const UnAuthorized = ErrorGen.UnAuthorized();
+		if ((isBot && options.AllowedRequesters === "User") || (!isBot && options.AllowedRequesters === "Bot")) {
+			app.logger.debug(`Unexpected User Type ${isBot ? "Is Bot" : "Isn't Bot"}`);
 
-		if ((AuthIsBot && options.AllowedRequesters === "User") || (!AuthIsBot && options.AllowedRequesters === "Bot")) {
-			App.StaticLogger.debug(`Unexpected User Type ${AuthIsBot ? "Is Bot" : "Isn't Bot"}`);
-
-			UnAuthorized.AddError({
-				User: {
-					Code: "InvalidUserType",
-					Message: "You are not allowed to access this endpoint.",
+			unAuthorizedError.addError({
+				user: {
+					code: "InvalidUserType",
+					message: "You are not allowed to access this endpoint.",
 				},
 			});
 
-			Res.status(401).json(UnAuthorized.toJSON());
+			set.status = 401;
 
-			return;
+			return unAuthorizedError.toJSON();
 		}
 
-		AuthHeader = AuthHeader?.split(" ").length === 2 ? AuthHeader.split(" ")[1] : AuthHeader;
+		authHeader = authHeader?.split(" ").length === 2 ? authHeader.split(" ")[1] : authHeader;
 
-		if (options.AccessType === "LoggedIn" && !AuthHeader) {
-			App.StaticLogger.debug("User isn't logged in though it is expected");
+		if (options.AccessType === "LoggedIn" && !authHeader) {
+			app.logger.debug("User isn't logged in though it is expected");
 
-			UnAuthorized.AddError({
-				User: {
-					Code: "NotLoggedIn",
-					Message: "You need to be logged in to access this endpoint",
+			unAuthorizedError.addError({
+				user: {
+					code: "NotLoggedIn",
+					message: "You need to be logged in to access this endpoint",
 				},
 			});
 
-			Res.status(401).json(UnAuthorized.toJSON());
+			set.status = 401;
 
-			return;
+			return unAuthorizedError.toJSON();
 		}
 
-		if (options.AccessType === "LoggedOut" && AuthHeader) {
-			App.StaticLogger.debug("User is logged in though its not expected");
+		if (options.AccessType === "LoggedOut" && authHeader) {
+			app.logger.debug("User is logged in though its not expected");
 
-			UnAuthorized.AddError({
-				User: {
-					Code: "LoggedIn",
-					Message: "You are not allowed to access this endpoint.",
+			unAuthorizedError.addError({
+				user: {
+					code: "LoggedIn",
+					message: "You are not allowed to access this endpoint.",
 				},
 			});
 
-			Res.status(401).json(UnAuthorized.toJSON());
+			set.status = 401;
 
-			return;
+			return unAuthorizedError.toJSON();
 		}
 
-		if (options.AccessType === "LoggedIn" && AuthHeader) {
-			const VaildatedToken = Token.ValidateToken(AuthHeader);
+		if (options.AccessType === "LoggedIn" && authHeader) {
+			const vaildatedToken = Token.validateToken(authHeader);
 
-			if (!VaildatedToken) {
-				App.StaticLogger.debug("Token couldn't be validated");
+			if (!vaildatedToken) {
+				app.logger.debug("Token couldn't be validated");
 
-				UnAuthorized.AddError({
-					User: {
-						Code: "InvalidToken",
-						Message: "Unauthorized",
+				unAuthorizedError.addError({
+					user: {
+						code: "InvalidToken",
+						message: "The token provided was invalid",
 					},
 				});
 
-				Res.status(401).json(UnAuthorized.toJSON());
+				set.status = 401;
 
-				return;
+				return unAuthorizedError.toJSON();
 			}
 
-			const DecodedToken = Token.DecodeToken(AuthHeader);
+			const decodedToken = Token.decodeToken(authHeader);
 
-			const UsersSettings = await options.App.Cassandra.Models.Settings.get(
+			const usersSettings = await app.cassandra.models.Settings.get(
 				{
-					UserId: Encryption.Encrypt(DecodedToken.Snowflake),
+					userId: Encryption.encrypt(decodedToken.Snowflake),
 				},
 				{
-					fields: ["tokens"],
+					fields: [
+						"tokens",
+						"max_file_upload_size",
+						"bio",
+						"guild_order",
+						"language",
+						"privacy",
+						"theme",
+						"status",
+						"allowed_invites",
+						"custom_status"
+					],
 				},
 			);
 
-			const UserData = await options.App.Cassandra.Models.User.get(
+			const userData = await app.cassandra.models.User.get(
 				{
-					UserId: Encryption.Encrypt(DecodedToken.Snowflake),
+					userId: Encryption.encrypt(decodedToken.Snowflake),
 				},
 				{
-					fields: ["email", "user_id", "flags", "password", "public_flags", "guilds"],
+					fields: ["email", "user_id", "flags", "password", "public_flags", "guilds", "username"],
 				},
 			);
 
-			if (!UsersSettings || !UserData) {
-				App.StaticLogger.debug("User settings wasn't found", DecodedToken.Snowflake);
-				App.StaticLogger.debug(UserData, UsersSettings);
+			if (!usersSettings || !userData) {
+				app.logger.debug("User settings wasn't found", decodedToken.Snowflake);
+				app.logger.debug(userData ?? "null", usersSettings ?? "null");
 
-				UnAuthorized.AddError({
-					User: {
-						Code: "InvalidToken",
-						Message: "Unauthorized",
+				unAuthorizedError.addError({
+					user: {
+						code: "InvalidToken",
+						message: "The token provided was invalid",
 					},
 				});
 
-				if (UsersSettings || UserData) {
+				if ((userData && !usersSettings) || (!userData && usersSettings)) {
 					// darkerink: just in case there is one but not the other (has happened in very rare cases) contacting support will be the only way to fix this (for now);
-					Res.status(500).send("Internal Server Error :(");
+					set.status = 500;
+
+					return "Internal Server Error :(";
 				} else {
-					Res.status(401).json(UnAuthorized.toJSON());
+					set.status = 401;
+
+					return unAuthorizedError.toJSON();
 				}
-
-				return;
 			}
 
-			if (!UsersSettings?.Tokens?.some((Token) => Token.Token === Encryption.Encrypt(AuthHeader as string))) {
-				App.StaticLogger.debug("Token not found in the user settings");
+			if (!usersSettings?.tokens?.some((Token) => Token.token === Encryption.encrypt(authHeader as string))) {
+				app.logger.debug("Token not found in the user settings");
 
-				UnAuthorized.AddError({
-					User: {
-						Code: "InvalidToken",
-						Message: "Unauthorized",
+				unAuthorizedError.addError({
+					user: {
+						code: "InvalidToken",
+						message: "The token provided was invalid",
 					},
 				});
 
-				Res.status(401).json(UnAuthorized.toJSON());
+				set.status = 401;
 
-				return;
+				return unAuthorizedError.toJSON();
 			}
 
-			const UserFlags = new FlagFields(UserData.Flags, UserData.PublicFlags);
+			const userFlags = new FlagFields(userData.flags, userData.publicFlags);
+			const accountNotAvailableError = errorGen.AccountNotAvailable();
 
 			if (
-				UserFlags.PrivateFlags.has("AccountDeleted") ||
-				UserFlags.PrivateFlags.has("WaitingOnDisableDataUpdate") ||
-				UserFlags.PrivateFlags.has("WaitingOnAccountDeletion")
+				userFlags.PrivateFlags.has("AccountDeleted") ||
+				userFlags.PrivateFlags.has("WaitingOnDisableDataUpdate") ||
+				userFlags.PrivateFlags.has("WaitingOnAccountDeletion")
 			) {
-				const Error = ErrorGen.AccountNotAvailable();
+				app.logger.debug("Account Is Deleted or about to be deleted");
 
-				App.StaticLogger.debug("Account Is Deleted or about to be deleted");
-
-				Error.AddError({
-					Email: {
-						Code: "AccountDeleted",
-						Message: "The Account has been deleted",
+				accountNotAvailableError.addError({
+					email: {
+						code: "AccountDeleted",
+						message: "The Account has been deleted",
 					},
 				});
 
-				Res.send(Error.toJSON());
+				set.status = 401;
 
-				return;
+				return accountNotAvailableError.toJSON();
 			}
 
-			if (UserFlags.PrivateFlags.has("Terminated") || UserFlags.PrivateFlags.has("Disabled")) {
-				const Error = ErrorGen.AccountNotAvailable();
+			if (userFlags.PrivateFlags.has("Terminated") || userFlags.PrivateFlags.has("Disabled")) {
+				app.logger.debug("Account Is Disabled or Terminated");
 
-				App.StaticLogger.debug("Account Is Disabled or Terminated");
-
-				Error.AddError({
-					Email: {
-						Code: "AccountDisabled",
-						Message: "The Account has been disabled",
+				accountNotAvailableError.addError({
+					email: {
+						code: "AccountDisabled",
+						message: "The Account has been disabled",
 					},
 				});
 
-				Res.send(Error.toJSON());
+				set.status = 401;
 
-				return;
+				return accountNotAvailableError.toJSON();
 			}
 
 			if (
-				(AuthIsBot && (!UserFlags.PrivateFlags.has("Bot") || !UserFlags.PrivateFlags.has("VerifiedBot"))) ||
-				(!AuthIsBot && (UserFlags.PrivateFlags.has("Bot") || UserFlags.PrivateFlags.has("VerifiedBot")))
+				(isBot && (!userFlags.PrivateFlags.has("Bot") || !userFlags.PrivateFlags.has("VerifiedBot"))) ||
+				(!isBot && (userFlags.PrivateFlags.has("Bot") || userFlags.PrivateFlags.has("VerifiedBot")))
 			) {
-				App.StaticLogger.debug(
+				app.logger.debug(
 					"The user has a (or is missing) a flag its not meant to (bot) and is using an invalid header tbh idk how to log this well",
-					AuthIsBot,
-					(!AuthIsBot && UserFlags.PrivateFlags.has("Bot")) || UserFlags.PrivateFlags.has("VerifiedBot"),
-					(AuthIsBot && !UserFlags.PrivateFlags.has("Bot")) || !UserFlags.PrivateFlags.has("VerifiedBot"),
+					isBot,
+					(!isBot && userFlags.PrivateFlags.has("Bot")) || userFlags.PrivateFlags.has("VerifiedBot"),
+					(isBot && !userFlags.PrivateFlags.has("Bot")) || !userFlags.PrivateFlags.has("VerifiedBot"),
 				);
 
-				UnAuthorized.AddError({
-					User: {
-						Code: "InvalidUserType",
-						Message: "You are not allowed to access this endpoint.",
+				unAuthorizedError.addError({
+					user: {
+						code: "InvalidUserType",
+						message: "You are not allowed to access this endpoint.",
 					},
 				});
 
-				Res.status(401).json(UnAuthorized.toJSON());
+				set.status = 401;
 
-				return;
+				return unAuthorizedError.toJSON();
 			}
 
 			if (
-				options.AllowedRequesters === "User" &&
-				(UserFlags.PrivateFlags.has("Bot") || UserFlags.PrivateFlags.has("VerifiedBot"))
+				options.AllowedRequesters.includes("User") &&
+				(userFlags.PrivateFlags.has("Bot") || userFlags.PrivateFlags.has("VerifiedBot"))
 			) {
-				App.StaticLogger.debug("User only endpoint though user is a bot");
+				app.logger.debug("User only endpoint though user is a bot");
 
-				UnAuthorized.AddError({
-					User: {
-						Code: "InvalidToken",
-						Message: "Unauthorized",
+				unAuthorizedError.addError({
+					user: {
+						code: "InvalidToken",
+						message: "You are not allowed to access this endpoint.",
 					},
 				});
 
-				Res.status(401).json(UnAuthorized.toJSON());
+				set.status = 401;
 
-				return;
+				return unAuthorizedError.toJSON();
 			}
 
 			if (
-				options.AllowedRequesters === "Bot" &&
-				!(UserFlags.PrivateFlags.has("Bot") || UserFlags.PrivateFlags.has("VerifiedBot"))
+				options.AllowedRequesters.includes("Bot") &&
+				!(userFlags.PrivateFlags.has("Bot") || userFlags.PrivateFlags.has("VerifiedBot"))
 			) {
-				App.StaticLogger.debug("Bot only endpoint though user is not a bot");
+				app.logger.debug("Bot only endpoint though user is not a bot");
 
-				UnAuthorized.AddError({
-					User: {
-						Code: "InvalidToken",
-						Message: "Unauthorized",
+				unAuthorizedError.addError({
+					user: {
+						code: "InvalidToken",
+						message: "You are not allowed to access this endpoint.",
 					},
 				});
 
-				Res.status(401).json(UnAuthorized.toJSON());
+				set.status = 401;
 
-				return;
+				return unAuthorizedError.toJSON();
 			}
 
 			if (options.Flags && options.Flags.length > 0) {
-				for (const Flag of options.Flags) {
-					if (!UserFlags.PrivateFlags.has(Flag)) {
-						App.StaticLogger.debug(`User is missing the ${Flag} flag`);
+				for (const flag of options.Flags) {
+					if (!userFlags.PrivateFlags.has(flag)) {
+						app.logger.debug(`User is missing the ${flag} flag`);
 
-						UnAuthorized.AddError({
-							User: {
-								Code: "InvalidToken",
-								Message: "Unauthorized",
+						unAuthorizedError.addError({
+							user: {
+								code: "LostInTheMaze",
+								message: "You seemed to have gotten lost in the maze.. Are you sure it was meant for you?",
 							},
 						});
 
-						Res.status(401).json(UnAuthorized.toJSON());
+						set.status = 401;
 
-						return;
+						return unAuthorizedError.toJSON();
 					}
 				}
 			}
 
 			if (options.DisallowedFlags && options.DisallowedFlags.length > 0) {
-				for (const Flag of options.DisallowedFlags) {
-					if (UserFlags.PrivateFlags.has(Flag)) {
-						App.StaticLogger.debug(`User has the ${Flag} flag`);
+				for (const flag of options.DisallowedFlags) {
+					if (userFlags.PrivateFlags.has(flag)) {
+						app.logger.debug(`User has the ${flag} flag`);
 
-						UnAuthorized.AddError({
-							User: {
-								Code: "InvalidToken",
-								Message: "Unauthorized",
+						unAuthorizedError.addError({
+							user: {
+								code: "LostInTheMaze",
+								message: "You seemed to have gotten lost in the maze.. Are you sure it was meant for you?", // yes this is a joke for Discord's staff only endpoints
 							},
 						});
 
-						Res.status(401).json(UnAuthorized.toJSON());
+						set.status = 401;
 
-						return;
+						return unAuthorizedError.toJSON();
 					}
 				}
 			}
 
-			const CompleteDecrypted: { Email: string; Flags: string; Guilds: string[]; Password: string; UserId: string } =
-				Encryption.CompleteDecryption({
-					...UserData,
-					Flags: UserData.Flags.toString(),
-				});
+			const completeDecrypted = Encryption.completeDecryption({
+				...userData,
+				flags: userData.flags.toString(),
+				publicFlags: userData.publicFlags.toString(),
+			});
 
-			Req.user = {
-				Token: AuthHeader,
-				Bot: UserFlags.PrivateFlags.has("Bot") || UserFlags.PrivateFlags.has("VerifiedBot"),
-				FlagsUtil: UserFlags,
-				Email: CompleteDecrypted.Email,
-				Id: CompleteDecrypted.UserId,
-				Password: CompleteDecrypted.Password,
-				Guilds: CompleteDecrypted.Guilds ?? [],
-			} as ExpressUser;
-
-			next();
-
-			return;
+			return {
+				user: {
+					token: authHeader,
+					bot: userFlags.PrivateFlags.has("Bot") || userFlags.PrivateFlags.has("VerifiedBot"),
+					flagsUtil: userFlags,
+					email: completeDecrypted.email,
+					id: completeDecrypted.userId,
+					password: completeDecrypted.password,
+					guilds: completeDecrypted.guilds ?? [],
+					username: completeDecrypted.username,
+					settings: Encryption.completeDecryption({
+						bio: usersSettings.bio,
+						guildOrder: usersSettings.guildOrder ?? [],
+						language: usersSettings.language,
+						privacy: usersSettings.privacy,
+						status: usersSettings.status,
+						theme: usersSettings.theme,
+						allowedInvites: usersSettings.allowedInvites ?? 0,
+						customStatus: usersSettings.customStatus
+					}),
+				},
+			};
 		}
 
-		next();
+		return "";
 	};
 };
 
-export default User;
-
-export { User };
+export default userMiddleware;

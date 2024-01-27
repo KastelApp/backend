@@ -1,22 +1,21 @@
-import deepEqual from "deep-equal";
 import type { Channel } from "../../Cql/Types";
 
-export const GetEditedChannels = (Before: Channel[], Current: Channel[]) => {
-	const ChangedChannels = [];
+export const getEditedChannels = (before: Channel[], current: Channel[]) => {
+	const changedChannels = [];
 
-	for (const Channel of Current) {
-		const BeforeChannel = Before.find((BeforeChannel) => BeforeChannel.ChannelId === Channel.ChannelId);
+	for (const channel of current) {
+		const beforeChannel = before.find((BeforeChannel) => BeforeChannel.channelId === channel.channelId);
 
-		if (!BeforeChannel) {
-			ChangedChannels.push(Channel);
+		if (!beforeChannel) {
+			changedChannels.push(channel);
 
 			continue;
 		}
 
-		if (deepEqual(Channel, BeforeChannel)) continue;
+		if (Bun.deepEquals(channel, beforeChannel)) continue;
 
-		ChangedChannels.push(Channel);
+		changedChannels.push(channel);
 	}
 
-	return ChangedChannels;
+	return changedChannels;
 };

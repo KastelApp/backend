@@ -1,16 +1,4 @@
-/* !
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
- * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
- * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
- * Copyright(c) 2022-2023 DarkerInk
- * GPL 3.0 Licensed
- */
-
-import type { Permissions, PrivateFlags } from "../Constants.ts";
-import type App from "../Utils/Classes/App.ts";
+import type { permissions, privateFlags } from "../Constants.ts";
 
 export type Methods =
 	| "ALL"
@@ -32,26 +20,25 @@ export type Methods =
 	| "PUT"
 	| "put";
 
+type Requesters = "All" | "Bot" | "OAuth" | "User" | "Webhook";
+
+export type OAuth2Scopes = "user.guilds" | "user.identity.email" | "user.identity";
+
 export interface UserMiddleware {
 	// The flags required to access the endpoint (Default: null)
 	// If you need to be logged in to access the endpoint
 	AccessType: "All" | "LoggedIn" | "LoggedOut";
-	AllowedRequesters: "All" | "Bot" | "User";
+	AllowedRequesters: Requesters | Requesters[];
 	// The flags that are not allowed to access the endpoint (Default: null)
-	App: App;
-	DisallowedFlags?: (keyof typeof PrivateFlags)[];
+	DisallowedFlags?: (keyof typeof privateFlags)[];
 	// The type of user that can access the endpoint (Default: 'All')
-	Flags?: (keyof typeof PrivateFlags)[];
+	Flags?: (keyof typeof privateFlags)[];
+	OAuth2Scopes?: OAuth2Scopes[];
 }
 
 export interface GuildMiddleware {
-	App: App;
-	PermissionsRequired?: (keyof typeof Permissions | "Owner")[];
+	PermissionsRequired?: (keyof typeof permissions | "Owner")[];
 	Required: boolean;
-}
-
-export interface TwofaMiddleware {
-	App: App;
 }
 
 export interface Captcha {
@@ -65,6 +52,19 @@ export interface Captcha {
 	ExpectedCData?: string;
 }
 
-export interface RatelimitConfig {
-	App: App;
-}
+type GetParam<T extends string> = T extends `${infer _}/${infer _2}:${infer Param}/${infer _3}`
+	? Record<Param, string>
+	: T extends `${infer _}:${infer Param}/${infer _2}`
+		? Record<Param, string>
+		: T extends `${infer _}/${infer _2}:${infer Param}`
+			? Record<Param, string>
+			: T extends `${infer _}:${infer Param}`
+				? Record<Param, string>
+				: {};
+
+export type GetParams<T extends string> = GetParam<T> &
+	(T extends `${infer _}/${infer Rest}`
+		? GetParams<Rest>
+		: T extends `${infer _}:${infer Rest}`
+			? GetParams<Rest>
+			: {});

@@ -1,26 +1,21 @@
-/* !
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
- * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
- * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
- * Copyright(c) 2022-2023 DarkerInk
- * GPL 3.0 Licensed
- */
-
 import crypto from "node:crypto";
 import { types } from "@kastelll/cassandra-driver";
-import { Encryption as En } from "../../Config.ts";
-
-const algorithm = En.Algorithm;
-const initVector = En.InitVector;
-const securityKey = En.SecurityKey;
+import App from "./App.ts";
 
 class Encryption {
-	public static Encrypt(data: string): string {
+	public static config = {
+		algorithm: "",
+		initVector: "",
+		securityKey: "",
+	};
+
+	public static setConfig(config: typeof Encryption["config"]) {
+		Encryption.config = config;
+	}
+
+	public static encrypt(data: string): string {
 		try {
-			const cipher = crypto.createCipheriv(algorithm, securityKey, initVector);
+			const cipher = crypto.createCipheriv(this.config.algorithm, this.config.securityKey, this.config.initVector);
 
 			const dd = {
 				data,
@@ -32,9 +27,9 @@ class Encryption {
 		}
 	}
 
-	public static Decrypt<T = any>(data: string, raw = false): T {
+	public static decrypt(data: string, raw = false): string {
 		try {
-			const decipher = crypto.createDecipheriv(algorithm, securityKey, initVector);
+			const decipher = crypto.createDecipheriv(this.config.algorithm, this.config.securityKey, this.config.initVector);
 			const decrypted = decipher.update(data, "hex", "utf8") + decipher.final("utf8");
 			const cleaned = Encryption.cleanData(decrypted);
 
@@ -48,7 +43,7 @@ class Encryption {
 
 	public static isEncrypted(item: string): boolean {
 		try {
-			Encryption.Decrypt(item);
+			Encryption.decrypt(item);
 
 			return true;
 		} catch {
@@ -78,9 +73,9 @@ class Encryption {
 		}
 	}
 
-	public static CompleteDecryption<T = any>(items: T, raw = false): T {
+	public static completeDecryption<T = any>(items: T, raw = false): T {
 		if (typeof items === "string") {
-			if (Encryption.isEncrypted(items)) return Encryption.Decrypt(items, raw);
+			if (Encryption.isEncrypted(items)) return Encryption.decrypt(items, raw) as T;
 
 			return items;
 		}
@@ -94,28 +89,29 @@ class Encryption {
 				if (value instanceof Date || value === null || value instanceof types.Long) {
 					newObject[key] = value;
 				} else if (typeof value === "object") {
-					newObject[key] = this.CompleteDecryption(value);
+					newObject[key] = this.completeDecryption(value);
 				} else {
-					newObject[key] = Encryption.isEncrypted(value) ? Encryption.Decrypt(value, raw) : value;
+					newObject[key] = Encryption.isEncrypted(value) ? Encryption.decrypt(value, raw) : value;
 				}
 			}
 
 			return newObject;
 		} else if (Array.isArray(items)) {
-			return items.map((value) => this.CompleteDecryption(value)) as T;
+			return items.map((value) => this.completeDecryption(value)) as T;
 		}
 
 		return items;
 	}
 
-	public static CompleteEncryption<T = any>(items: T): T {
+	public static completeEncryption<T = any>(items: T): T {
 		if (typeof items === "string") {
 			if (Encryption.isEncrypted(items)) return items;
 
-			return Encryption.Encrypt(items) as T;
+			return Encryption.encrypt(items) as T;
 		}
 
 		if (typeof items !== "object" || items === null) return items;
+		if (["number", "boolean"].includes(typeof items)) return items;
 
 		if (!Array.isArray(items)) {
 			const newObject: any = {};
@@ -124,18 +120,22 @@ class Encryption {
 				if (value instanceof Date || value === null || value instanceof types.Long) {
 					newObject[key] = value;
 				} else if (typeof value === "object") {
-					newObject[key] = this.CompleteEncryption(value);
+					newObject[key] = this.completeEncryption(value);
 				} else {
-					newObject[key] = Encryption.isEncrypted(value) ? value : Encryption.Encrypt(value);
+					newObject[key] = Encryption.isEncrypted(value) ? value : Encryption.encrypt(value);
 				}
 			}
 
 			return newObject;
 		} else if (Array.isArray(items)) {
-			return items.map((value) => this.CompleteEncryption(value)) as T;
+			return items.map((value) => this.completeEncryption(value)) as T;
 		}
 
 		return items;
+	}
+
+	public static encryptedSnowflake() {
+		return Encryption.encrypt(App.snowflake.generate());
 	}
 }
 

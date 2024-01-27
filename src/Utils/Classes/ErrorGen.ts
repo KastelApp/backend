@@ -1,6 +1,6 @@
 import { HTTPErrors } from "@kastelll/util";
 
-const ErrorGen = {
+const errorGen = {
 	/*
 	 * When the content type does not match the allowed content types for example the routes content type is "application/json" but the request content type is "text/html"
 	 */
@@ -140,6 +140,18 @@ const ErrorGen = {
 		return new HTTPErrors(4_022);
 	},
 	/*
+	 * The method provided was not allowed
+	 */
+	MethodNotAllowed: () => {
+		return new HTTPErrors(4_023);
+	},
+	/**
+	 * Couldn't delete an invite
+	 */
+	FailedToDeleteInvite: () => {
+		return new HTTPErrors(4_024);
+	},
+	/*
 	 * Used when the resource is unavailable (503 error)
 	 */
 	ServiceUnavailable: () => {
@@ -147,6 +159,6 @@ const ErrorGen = {
 	},
 };
 
-export default ErrorGen;
+export default errorGen;
 
-export { ErrorGen };
+export { errorGen as ErrorGen };

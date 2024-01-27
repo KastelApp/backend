@@ -1,7 +1,6 @@
 import { EventEmitter } from "node:events";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { URL } from "node:url";
 import cassandra, { mapping, type ClientOptions } from "@kastelll/cassandra-driver";
 import type {
 	Ban,
@@ -23,6 +22,7 @@ import type {
 	VerificationLink,
 	Webhook,
 } from "../Cql/Types";
+import type PlatformInvite from "../Cql/Types/PlatformInvite.ts";
 
 interface Connection {
 	emit(event: "Error", error: unknown): boolean;
@@ -32,23 +32,23 @@ interface Connection {
 }
 
 class Connection extends EventEmitter {
-	private readonly TableDirectory: string = path.join(new URL(".", import.meta.url).pathname, "../Cql/Tables");
+	private readonly TableDirectory: string = path.join(import.meta.dirname, "../Cql/Tables");
 
-	public Client: cassandra.Client;
+	public client: cassandra.Client;
 
-	public KeySpace: string;
+	public keySpace: string;
 
-	private Connected: boolean;
+	private connected: boolean;
 
-	private readonly MappingOptions: mapping.MappingOptions;
+	private readonly mappingOptions: mapping.MappingOptions;
 
-	public Mapper: mapping.Mapper;
+	public mapper: mapping.Mapper;
 
-	private readonly NetworkTopologyStrategy: {
+	private readonly networkTopologyStrategy: {
 		[DataCenter: string]: number;
 	};
 
-	public Models: {
+	public models: {
 		Ban: cassandra.mapping.ModelMapper<Ban>;
 		Bot: cassandra.mapping.ModelMapper<Bot>;
 		Channel: cassandra.mapping.ModelMapper<Channel>;
@@ -62,6 +62,7 @@ class Connection extends EventEmitter {
 		Invite: cassandra.mapping.ModelMapper<Invite>;
 		Message: cassandra.mapping.ModelMapper<Message>;
 		PermissionOverride: cassandra.mapping.ModelMapper<PermissionOverride>;
+		PlatformInvite: cassandra.mapping.ModelMapper<PlatformInvite>;
 		Role: cassandra.mapping.ModelMapper<Role>;
 		Settings: cassandra.mapping.ModelMapper<Settings>;
 		User: cassandra.mapping.ModelMapper<User>;
@@ -69,10 +70,10 @@ class Connection extends EventEmitter {
 		Webhook: cassandra.mapping.ModelMapper<Webhook>;
 	};
 
-	public UnderScoreCqlToPascalCaseMappings: mapping.UnderscoreCqlToPascalCaseMappings =
-		new mapping.UnderscoreCqlToPascalCaseMappings(true);
+	public underscoreCqlToCamelCaseMappings: mapping.UnderscoreCqlToCamelCaseMappings =
+		new mapping.UnderscoreCqlToCamelCaseMappings(true);
 
-	public DurableWrites: boolean;
+	public durableWrites: boolean;
 
 	public constructor(
 		nodes: string[],
@@ -87,9 +88,11 @@ class Connection extends EventEmitter {
 	) {
 		super();
 
-		this.Client = new cassandra.Client({
+		this.client = new cassandra.Client({
 			contactPoints: nodes,
-			localDataCenter: Object.keys(networkTopologyStrategy)?.[0] ?? "datacenter1",
+			localDataCenter: networkTopologyStrategy
+				? Object.keys(networkTopologyStrategy)?.[0] ?? "datacenter1"
+				: "datacenter1",
 			credentials: {
 				username,
 				password,
@@ -97,94 +100,96 @@ class Connection extends EventEmitter {
 			...options,
 		});
 
-		this.KeySpace = keyspace;
+		this.keySpace = keyspace;
 
-		this.Connected = false;
+		this.connected = false;
 
-		this.NetworkTopologyStrategy = networkTopologyStrategy;
+		this.networkTopologyStrategy = networkTopologyStrategy;
 
-		this.DurableWrites = durableWrites;
+		this.durableWrites = durableWrites;
 
-		this.MappingOptions = {
+		this.mappingOptions = {
 			models: {
-				Ban: this.GenerateMappingOptions("bans"),
-				Bot: this.GenerateMappingOptions("bot"),
-				Channel: this.GenerateMappingOptions("channels"),
-				Dm: this.GenerateMappingOptions("dm"),
-				Emoji: this.GenerateMappingOptions("emojis"),
-				File: this.GenerateMappingOptions("files"),
-				Friend: this.GenerateMappingOptions("friends"),
-				Gift: this.GenerateMappingOptions("gifts"),
-				Guild: this.GenerateMappingOptions("guilds"),
-				GuildMember: this.GenerateMappingOptions("guild_members"),
-				Invite: this.GenerateMappingOptions("invites"),
-				Message: this.GenerateMappingOptions("messages"),
-				PermissionOverride: this.GenerateMappingOptions("permissionsoverides"),
-				Role: this.GenerateMappingOptions("roles"),
-				Settings: this.GenerateMappingOptions("settings"),
-				User: this.GenerateMappingOptions("users"),
-				VerificationLink: this.GenerateMappingOptions("verifcationlink"),
-				Webhook: this.GenerateMappingOptions("webhooks"),
+				Ban: this.generateMappingOptions("bans"),
+				Bot: this.generateMappingOptions("bot"),
+				Channel: this.generateMappingOptions("channels"),
+				Dm: this.generateMappingOptions("dm"),
+				Emoji: this.generateMappingOptions("emojis"),
+				File: this.generateMappingOptions("files"),
+				Friend: this.generateMappingOptions("friends"),
+				Gift: this.generateMappingOptions("gifts"),
+				Guild: this.generateMappingOptions("guilds"),
+				GuildMember: this.generateMappingOptions("guild_members"),
+				Invite: this.generateMappingOptions("invites"),
+				Message: this.generateMappingOptions("messages"),
+				PermissionOverride: this.generateMappingOptions("permissionsoverides"),
+				Role: this.generateMappingOptions("roles"),
+				Settings: this.generateMappingOptions("settings"),
+				User: this.generateMappingOptions("users"),
+				VerificationLink: this.generateMappingOptions("verifcationlink"),
+				Webhook: this.generateMappingOptions("webhooks"),
+				PlatformInvite: this.generateMappingOptions("platform_invite"),
 			},
 		} as const;
 
-		this.Mapper = new mapping.Mapper(this.Client, this.MappingOptions);
+		this.mapper = new mapping.Mapper(this.client, this.mappingOptions);
 
-		this.Models = {
-			Ban: this.Mapper.forModel<Ban>("Ban"),
-			Bot: this.Mapper.forModel<Bot>("Bot"),
-			Channel: this.Mapper.forModel<Channel>("Channel"),
-			Dm: this.Mapper.forModel<Dm>("Dm"),
-			Emoji: this.Mapper.forModel<Emoji>("Emoji"),
-			File: this.Mapper.forModel<File>("File"),
-			Friend: this.Mapper.forModel<Friend>("Friend"),
-			Gift: this.Mapper.forModel<Gift>("Gift"),
-			Guild: this.Mapper.forModel<Guild>("Guild"),
-			GuildMember: this.Mapper.forModel<GuildMember>("GuildMember"),
-			Invite: this.Mapper.forModel<Invite>("Invite"),
-			Message: this.Mapper.forModel<Message>("Message"),
-			PermissionOverride: this.Mapper.forModel<PermissionOverride>("PermissionOverride"),
-			Role: this.Mapper.forModel<Role>("Role"),
-			Settings: this.Mapper.forModel<Settings>("Settings"),
-			User: this.Mapper.forModel<User>("User"),
-			VerificationLink: this.Mapper.forModel<VerificationLink>("VerificationLink"),
-			Webhook: this.Mapper.forModel<Webhook>("Webhook"),
+		this.models = {
+			Ban: this.mapper.forModel<Ban>("Ban"),
+			Bot: this.mapper.forModel<Bot>("Bot"),
+			Channel: this.mapper.forModel<Channel>("Channel"),
+			Dm: this.mapper.forModel<Dm>("Dm"),
+			Emoji: this.mapper.forModel<Emoji>("Emoji"),
+			File: this.mapper.forModel<File>("File"),
+			Friend: this.mapper.forModel<Friend>("Friend"),
+			Gift: this.mapper.forModel<Gift>("Gift"),
+			Guild: this.mapper.forModel<Guild>("Guild"),
+			GuildMember: this.mapper.forModel<GuildMember>("GuildMember"),
+			Invite: this.mapper.forModel<Invite>("Invite"),
+			Message: this.mapper.forModel<Message>("Message"),
+			PermissionOverride: this.mapper.forModel<PermissionOverride>("PermissionOverride"),
+			Role: this.mapper.forModel<Role>("Role"),
+			Settings: this.mapper.forModel<Settings>("Settings"),
+			User: this.mapper.forModel<User>("User"),
+			VerificationLink: this.mapper.forModel<VerificationLink>("VerificationLink"),
+			Webhook: this.mapper.forModel<Webhook>("Webhook"),
+			PlatformInvite: this.mapper.forModel<PlatformInvite>("PlatformInvite"),
 		};
 	}
 
-	private GenerateMappingOptions(TableName: string): cassandra.mapping.ModelOptions {
+	private generateMappingOptions(TableName: string): cassandra.mapping.ModelOptions {
 		return {
 			tables: [TableName],
-			mappings: this.UnderScoreCqlToPascalCaseMappings,
-			keyspace: this.KeySpace,
+			mappings: this.underscoreCqlToCamelCaseMappings,
+			keyspace: this.keySpace,
 		};
 	}
 
-	public async Connect() {
+	public async connect() {
 		try {
-			await this.Client.connect();
+			await this.client.connect();
 
-			this.Connected = true;
+			this.connected = true;
 
-			let CreateKeySpace = `CREATE KEYSPACE IF NOT EXISTS ${this.KeySpace}`;
+			let createKeySpace = `CREATE KEYSPACE IF NOT EXISTS ${this.keySpace}`;
 
-			if (this.NetworkTopologyStrategy && Object.keys(this.NetworkTopologyStrategy).length > 0) {
-				CreateKeySpace += ` WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy' ${Object.entries(
-					this.NetworkTopologyStrategy,
+			if (this.networkTopologyStrategy && Object.keys(this.networkTopologyStrategy).length > 0) {
+				createKeySpace += ` WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy' ${Object.entries(
+					this.networkTopologyStrategy,
 				)
 					.map(([DataCenter, ReplicationFactor]) => `, '${DataCenter}' : ${ReplicationFactor}`)
 					.join(", ")} }`;
 			} else {
-				CreateKeySpace += " WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }";
+				createKeySpace += " WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }";
 			}
 
-			CreateKeySpace += ` AND DURABLE_WRITES = ${this.DurableWrites};`;
+			createKeySpace += ` AND DURABLE_WRITES = ${this.durableWrites};`;
 
-			await this.Execute(CreateKeySpace).catch((error) => {
+			await this.execute(createKeySpace).catch((error) => {
 				this.emit("Error", error);
 			});
 
-			await this.Execute(`USE ${this.KeySpace};`);
+			await this.execute(`USE ${this.keySpace};`);
 
 			this.emit("Connected");
 		} catch (error) {
@@ -192,11 +197,11 @@ class Connection extends EventEmitter {
 		}
 	}
 
-	public async Shutdown() {
+	public async shutdown() {
 		try {
-			await this.Client.shutdown();
+			await this.client.shutdown();
 
-			this.Connected = false;
+			this.connected = false;
 
 			this.emit("Close");
 		} catch (error) {
@@ -204,11 +209,11 @@ class Connection extends EventEmitter {
 		}
 	}
 
-	public async Execute(query: string, params?: any[]) {
-		if (!this.Connected) throw new Error("Not connected to cassandra");
+	public async execute(query: string, params?: any[]) {
+		if (!this.connected) throw new Error("Not connected to cassandra");
 
 		try {
-			return await this.Client.execute(query, params, { prepare: true });
+			return await this.client.execute(query, params, { prepare: true });
 		} catch (error) {
 			this.emit("Error", error);
 
@@ -216,11 +221,11 @@ class Connection extends EventEmitter {
 		}
 	}
 
-	public async ExecuteWithKeyspace(query: string, params?: any[]) {
-		if (!this.Connected) throw new Error("Not connected to cassandra");
+	public async executeWithKeyspace(query: string, params?: any[]) {
+		if (!this.connected) throw new Error("Not connected to cassandra");
 
 		try {
-			return await this.Client.execute(query, params, { prepare: true, keyspace: this.KeySpace });
+			return await this.client.execute(query, params, { prepare: true, keyspace: this.keySpace });
 		} catch (error) {
 			this.emit("Error", error);
 
@@ -228,76 +233,76 @@ class Connection extends EventEmitter {
 		}
 	}
 
-	private async WalkDirectory(dir: string): Promise<string[]> {
-		const Paths = await fs.readdir(dir, { withFileTypes: true });
-		const Files: string[] = [];
+	private async walkDirectory(dir: string): Promise<string[]> {
+		const paths = await fs.readdir(dir, { withFileTypes: true });
+		const files: string[] = [];
 
-		for (const Path of Paths) {
-			if (Path.isDirectory()) {
-				const SubFiles = await this.WalkDirectory(path.join(dir, Path.name));
-				Files.push(...SubFiles);
+		for (const filePath of paths) {
+			if (filePath.isDirectory()) {
+				const subFiles = await this.walkDirectory(path.join(dir, filePath.name));
+				files.push(...subFiles);
 			} else {
-				Files.push(path.join(dir, Path.name));
+				files.push(path.join(dir, filePath.name));
 			}
 		}
 
-		return Files;
+		return files;
 	}
 
-	public async CreateTables() {
-		const Files = await this.WalkDirectory(this.TableDirectory);
+	public async createTables() {
+		const files = await this.walkDirectory(this.TableDirectory);
 
-		for (const File of Files) {
-			const Query = await fs.readFile(File, "utf8");
+		for (const file of files) {
+			const query = await fs.readFile(file, "utf8");
 
-			const SplitQuery = Query.split("\n");
+			const splitQuery = query.split("\n");
 
 			// When theres a '' in the array it means theres a newline that used to be there so for example
 			/*
-                [
-                    'CREATE TABLE IF NOT EXISTS verifcationlink (',
-                    '\tcode text PRIMARY KEY,',
-                    '\tuser_id bigint,',
-                    '\tcreated_date int,',
-                    '\texpire_date int,',
-                    '\tip text,',
-                    '\tflags int,',
-                    ');',
-                    '',
-                    'CREATE INDEX IF NOT EXISTS verifcationlink_code_index ON verifcationlink (code, ip, flags);',
-                    ''
-                ]
-            */
+				[
+					'CREATE TABLE IF NOT EXISTS verifcationlink (',
+					'\tcode text PRIMARY KEY,',
+					'\tuser_id bigint,',
+					'\tcreated_date int,',
+					'\texpire_date int,',
+					'\tip text,',
+					'\tflags int,',
+					');',
+					'',
+					'CREATE INDEX IF NOT EXISTS verifcationlink_code_index ON verifcationlink (code, ip, flags);',
+					''
+				]
+			*/
 			// that means we need to make a new array with the CREATE TABLE... and then the CREATE INDEX... and then execute those one by one
 			// There definetly is a better way to do this but I'm too lazy to figure it out
 
-			const NewSplitQuery: string[][] = [];
+			const newSplitQuery: string[][] = [];
 
-			let CurrentQuery: string[] = [];
+			let currentQuery: string[] = [];
 
-			for (const Line of SplitQuery) {
-				if (Line === "") {
-					NewSplitQuery.push(CurrentQuery);
+			for (const line of splitQuery) {
+				if (line === "") {
+					newSplitQuery.push(currentQuery);
 
-					CurrentQuery = [];
+					currentQuery = [];
 				} else {
-					CurrentQuery.push(Line);
+					currentQuery.push(line);
 				}
 			}
 
-			if (CurrentQuery.length > 0) {
-				NewSplitQuery.push(CurrentQuery);
+			if (currentQuery.length > 0) {
+				newSplitQuery.push(currentQuery);
 			}
 
-			for (const Query of NewSplitQuery) {
-				const Joined = Query.join("\n");
+			for (const query of newSplitQuery) {
+				const joined = query.join("\n");
 
-				if (Joined.length < 1) continue;
+				if (joined.length < 1) continue;
 
 				try {
-					await this.Execute(Query.join("\n"));
+					await this.execute(query.join("\n"));
 				} catch {
-					this.emit("Error", `Failed to execute query ${Joined}`);
+					this.emit("Error", `Failed to execute query ${joined}`);
 				}
 			}
 		}

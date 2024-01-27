@@ -1,89 +1,56 @@
 /* eslint-disable id-length */
-import { readdir } from "node:fs/promises";
-import { join } from "node:path";
 import process from "node:process";
-import { URL } from "node:url";
-import { Snowflake, Turnstile, CacheManager } from "@kastelll/util";
-import * as Sentry from "@sentry/node";
-import bodyParser from "body-parser";
-import cors from "cors";
-import type { NextFunction, Request, Response } from "express";
-import express from "express";
+import { CacheManager } from "@kastelll/util";
+import * as Sentry from "@sentry/bun";
 import { type SimpleGit, simpleGit } from "simple-git";
-import { Config } from "../../Config.ts";
-import Constants, { Relative } from "../../Constants.ts";
-import type { ExpressMethodCap } from "../../Types/index.ts";
-import ProcessArgs from "../ProcessArgs.ts";
+import type { MySchema } from "@/Types/JsonSchemaType.ts";
+import Constants, { relative, statusTypes } from "../../Constants.ts";
+import processArgs from "../ProcessArgs.ts";
+import ConfigManager from "./ConfigManager.ts";
 import Connection from "./Connection.ts";
-import Emails from "./Emails.ts";
-import ErrorGen from "./ErrorGen.ts";
+import Encryption from "./Encryption.ts";
 import { IpUtils } from "./IpUtils.ts";
 import CustomLogger from "./Logger.ts";
-import Repl from "./Repl.ts";
-import type { ContentTypes, ExpressMethod } from "./Route.ts";
-import RouteBuilder from "./Route.ts";
-import SystemSocket from "./System/SystemSocket.ts";
+import Question from "./Question.ts";
+import type { GetChannelTypes, channels } from "./Shared/RabbitMQ.ts";
+import Snowflake from "./Snowflake.ts";
 import SystemInfo from "./SystemInfo.ts";
 
 type GitType = "Added" | "Copied" | "Deleted" | "Ignored" | "Modified" | "None" | "Renamed" | "Unmerged" | "Untracked";
 
-const SupportedArgs = ["debug", "skip-online-check", "behind-proxy", "no-ip-checking"] as const;
-
 class App {
-	private RouteDirectory: string = join(new URL(".", import.meta.url).pathname, "../../Routes");
+	public ready: boolean = false;
 
-	public ExpressApp: express.Application;
+	public static snowflake: Snowflake = new Snowflake(Constants.snowflake.Epoch, Constants.snowflake.WorkerId, Constants.snowflake.ProcessId, Constants.snowflake.TimeShift, Constants.snowflake.WorkerIdBytes, Constants.snowflake.ProcessIdBytes);
 
-	public Ready: boolean = false;
+	public cassandra!: Connection;
 
-	public Snowflake: Snowflake;
+	public cache!: CacheManager;
 
-	public Cassandra: Connection;
+	public ipUtils: IpUtils;
 
-	public Cache: CacheManager;
+	public sentry: typeof Sentry;
 
-	public Turnstile: Turnstile;
+	public constants: typeof Constants = Constants;
 
-	public Support: Emails | null = null;
+	public static staticLogger: CustomLogger = new CustomLogger();
 
-	public NoReply: Emails | null = null;
+	private clean: boolean = false;
 
-	public IpUtils: IpUtils;
+	public internetAccess: boolean = false;
 
-	public SystemSocket: SystemSocket;
+	public static git: SimpleGit = simpleGit();
 
-	public Sentry: typeof Sentry;
-
-	public Config: typeof Config = Config;
-
-	public Constants: typeof Constants = Constants;
-
-	public Logger: CustomLogger;
-
-	public static StaticLogger: CustomLogger = new CustomLogger();
-
-	public Routes: {
-		default: RouteBuilder;
-		directory: string;
-		route: string;
-	}[] = [];
-
-	private Clean: boolean = false;
-
-	public InternetAccess: boolean = false;
-
-	public Git: SimpleGit = simpleGit();
-
-	private GitFiles: {
+	public static gitFiles: {
 		filePath: string;
 		type: GitType;
 	}[] = [];
 
-	public GitBranch: string = "Unknown";
+	public static gitBranch: string = "Unknown";
 
-	public GitCommit: string = "Unknown";
+	public static gitCommit: string = "Unknown";
 
-	private TypeIndex = {
+	public static typeIndex = {
 		A: "Added",
 		D: "Deleted",
 		M: "Modified",
@@ -95,614 +62,319 @@ class App {
 		" ": "None",
 	};
 
-	public Repl: Repl;
+	public args = processArgs(["debug", "skip-online-check", "behind-proxy", "no-ip-checking"]).valid;
 
-	public Args: typeof SupportedArgs = ProcessArgs(SupportedArgs as unknown as string[])
-		.Valid as unknown as typeof SupportedArgs;
+	public static configManager: ConfigManager = new ConfigManager();
 
-	public constructor() {
-		this.ExpressApp = express();
+	public static questionier: Question = new Question();
 
-		this.Snowflake = new Snowflake(Constants.Snowflake);
+	public constructor(public who: string) {
+		this.ipUtils = new IpUtils();
 
-		this.Cache = new CacheManager({
-			...Config.Redis,
-			AllowForDangerousCommands: true,
-		});
+		this.sentry = Sentry;
 
-		this.Cassandra = new Connection(
-			Config.ScyllaDB.Nodes,
-			Config.ScyllaDB.Username,
-			Config.ScyllaDB.Password,
-			Config.ScyllaDB.Keyspace,
-			Config.ScyllaDB.NetworkTopologyStrategy,
-			Config.ScyllaDB.DurableWrites,
-			Config.ScyllaDB.CassandraOptions,
-		);
-
-		this.Turnstile = new Turnstile(Config.Server.CaptchaEnabled, Config.Server.TurnstileSecret ?? "secret");
-
-		this.IpUtils = new IpUtils();
-
-		this.SystemSocket = new SystemSocket(this);
-
-		this.Sentry = Sentry;
-
-		this.Logger = new CustomLogger();
-
-		this.Repl = new Repl(CustomLogger.colorize("#E6AF2E", "> "), [
-			{
-				name: "disable",
-				description: "Disable something (Route, User, etc)",
-				args: [],
-				flags: [
-					{
-						name: "route",
-						description: "The route to disable",
-						shortName: "r",
-						value: "string",
-						maxLength: 1e3,
-						minLength: 1,
-						optional: true,
-					},
-					{
-						name: "user",
-						description: "The user to disable",
-						shortName: "u",
-						value: "string",
-						maxLength: 1e3,
-						minLength: 1,
-						optional: true,
-					},
-				],
-				cb: () => {},
-			},
-			{
-				name: "version",
-				description: "Get the version of the backend",
-				args: [],
-				flags: [],
-				cb: () => {
-					console.log(
-						`You're running version ${
-							Relative.Version ? `v${Relative.Version}` : "Unknown version"
-						} of Kastel's Backend. Bun version ${Bun.version}`,
-					);
-				},
-			},
-			{
-				name: "close",
-				description: "Close the REPL (Note: you will need to restart the backend to open it again)",
-				args: [],
-				flags: [],
-				cb: () => {
-					this.Repl.endRepl();
-				},
-			},
-			{
-				name: "clear",
-				description: "Clear the console",
-				args: [],
-				flags: [],
-				cb: () => {
-					console.clear();
-				},
-			},
-		]);
+		this.logger.who = who;
 	}
 
-	public async Init(): Promise<void> {
-		this.Logger.hex("#ca8911")(
-			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${
-				Relative.Version ? `v${Relative.Version}` : "Unknown version"
-			} of Kastel's Backend. Bun version ${
-				Bun.version
+	public logo() {
+		this.logger.hex("#ca8911")(
+			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${relative.Version ? `v${relative.Version}` : "Unknown version"
+			} of Kastel's Backend. Bun version ${Bun.version
 			}\nIf you would like to support this project please consider donating to https://opencollective.com/kastel\n`,
 		);
+	}
 
-		await this.SetupDebug(this.Args.includes("debug"));
+	public async init(): Promise<void> {
+		await this.setupDebug(this.args.includes("debug"));
+		const loaded = await App.configManager.load();
 
-		this.Repl.startRepl();
+		if (!loaded) {
+			this.logger.error("Initial config load failed");
 
-		this.Cache.on("Connected", () => this.Logger.info("Connected to Redis"));
-		this.Cache.on("Error", (err) => {
-			this.Logger.fatal(err);
+			process.exit();
+		}
+
+		Encryption.setConfig(this.config.encryption);
+
+		this.cache = new CacheManager({
+			AllowForDangerousCommands: true,
+			DB: this.config.redis.db,
+			Host: this.config.redis.host,
+			Password: this.config.redis.password,
+			Port: this.config.redis.port,
+			Username: this.config.redis.username,
+		});
+
+		this.cassandra = new Connection(
+			this.config.scyllaDB.nodes,
+			this.config.scyllaDB.username,
+			this.config.scyllaDB.password,
+			this.config.scyllaDB.keyspace,
+			this.config.scyllaDB.networkTopologyStrategy,
+			this.config.scyllaDB.durableWrites,
+		);
+
+		this.cache.on("Connected", () => this.logger.info("Connected to Redis"));
+		this.cache.on("Error", (err) => {
+			this.logger.fatal(err);
 
 			process.exit(1);
 		});
-		this.Cache.on("MissedPing", () => this.Logger.warn("Missed Redis ping"));
-		this.Cassandra.on("Connected", () => this.Logger.info("Connected to ScyllaDB"));
-		this.Cassandra.on("Error", (err) => {
-			console.error(err);
-			this.Logger.fatal(err);
+		this.cache.on("MissedPing", () => this.logger.warn("Missed Redis ping"));
+		this.cassandra.on("Connected", () => this.logger.info("Connected to ScyllaDB"));
+		this.cassandra.on("Error", (err) => {
+			// @ts-expect-error -- its fine
+			this.logger.fatal(`${err.name}: ${err.message} ${err.query}\n${err.stack.replace("Error: \n", "")}`);
 
 			process.exit(1);
 		});
 
-		this.Logger.info("Connecting to ScyllaDB");
-		this.Logger.warn("IT IS NOT FROZEN, ScyllaDB may take a while to connect");
+		this.logger.info("Connecting to ScyllaDB");
+		this.logger.warn("IT IS NOT FROZEN, ScyllaDB may take a while to connect");
 
-		await Promise.all([this.SystemSocket.Connect(), this.Cassandra.Connect(), this.Cache.connect()]);
+		await Promise.all([this.cassandra.connect(), this.cache.connect()]);
 
-		this.Logger.info("Creating ScyllaDB Tables.. This may take a while..");
-		this.Logger.warn("IT IS NOT FROZEN, ScyllaDB may take a while to create the tables");
+		this.logger.info("Creating ScyllaDB Tables.. This may take a while..");
+		this.logger.warn("IT IS NOT FROZEN, ScyllaDB may take a while to create the tables");
 
-		const TablesCreated = await this.Cassandra.CreateTables();
+		const tablesCreated = await this.cassandra.createTables();
 
-		if (TablesCreated) {
-			this.Logger.info("Created ScyllaDB tables");
+		if (tablesCreated) {
+			this.logger.info("Created ScyllaDB tables");
 		} else {
-			this.Logger.warn("whar");
+			this.logger.error("This shouldn't happen, please report this");
 		}
-
-		if (Config.MailServer.Enabled) {
-			const Support = Config.MailServer.Users.find((user) => user.ShortCode === "Support");
-			const NoReply = Config.MailServer.Users.find((user) => user.ShortCode === "NoReply");
-
-			if (!Support || !NoReply) {
-				this.Logger.fatal("Missing Support or NoReply user in config");
-				this.Logger.fatal("Disable MailServer in config to ignore this error");
-
-				process.exit(0);
-			}
-
-			this.Support = new Emails(
-				Support.Host,
-				Support.Port,
-				Support.Secure,
-				Boolean(Support.Password),
-				Support.User,
-				Support.Password,
-			);
-
-			this.NoReply = new Emails(
-				NoReply.Host,
-				NoReply.Port,
-				NoReply.Secure,
-				Boolean(Support.Password),
-				NoReply.User,
-				NoReply.Password,
-			);
-
-			try {
-				await Promise.all([this.Support.Connect(), this.NoReply.Connect()]);
-			} catch (error) {
-				this.Logger.fatal("Failed to connect to Mail Server", error);
-
-				process.exit(1);
-			}
-
-			this.Logger.info("Mail Server connected!");
-		} else {
-			this.Logger.info("Mail Server disabled!");
-		}
-
-		if (Config.Server.Sentry.Enabled) {
-			Sentry.init({
-				...Config.Server.Sentry.OtherOptions,
-				dsn: Config.Server.Sentry.Dsn,
-				tracesSampleRate: Config.Server.Sentry.TracesSampleRate,
-				integrations: (integrations) => {
-					return [
-						...integrations.map((integration) => {
-							if (integration.name === "OnUncaughtException") {
-								return new Sentry.Integrations.OnUncaughtException({
-									exitEvenIfOtherHandlersAreRegistered: false,
-								});
-							} else {
-								return integration;
-							}
-						}),
-						new Sentry.Integrations.Http({ tracing: true }),
-						new Sentry.Integrations.Express({ app: this.ExpressApp }),
-					];
-				},
-			});
-		}
-
-		process
-			.on("uncaughtException", (err) => {
-				if (Config.Server.Sentry.Enabled) {
-					Sentry.captureException(err);
-				}
-
-				this.Logger.error("Uncaught Exception, \n", err?.stack ? err.stack : err);
-			})
-			.on("unhandledRejection", (reason: any) => {
-				if (Config.Server.Sentry.Enabled) {
-					Sentry.captureException(reason);
-				}
-
-				this.Logger.error(`Unhandled Rejection, \n${reason?.stack ? reason.stack : reason}`);
-			});
-
-		this.ExpressApp.use(cors())
-			.use(bodyParser.json())
-			.use(bodyParser.urlencoded({ extended: true }))
-			.use(bodyParser.raw())
-			.disable("x-powered-by");
-
-		if (Config.Server.Sentry.Enabled) {
-			this.ExpressApp.use(
-				Sentry.Handlers.requestHandler({
-					...Config.Server.Sentry.RequestOptions,
-				}),
-			)
-				.use(Sentry.Handlers.tracingHandler())
-				.use(Sentry.Handlers.errorHandler());
-		}
-
-		// eslint-disable-next-line promise/prefer-await-to-callbacks -- (Its not)
-		this.ExpressApp.use((error: Error, _: Request, res: Response, __: NextFunction) => {
-			// @ts-expect-error -- express being weird
-			if (error instanceof SyntaxError && error.status === 400 && "body" in error) {
-				this.Logger.error("Someone sent invalid JSON", error);
-
-				res.status(500).json({
-					Message: `Invalid JSON (${error.message})`,
-				});
-			} else {
-				res.status(500).json({
-					Message: "Internal Server Error :(",
-				});
-			}
-		});
-
-		this.ExpressApp.use(async (req, res, next) => {
-			req.clientIp = IpUtils.GetIp(req);
-			req.methodi = req.method as ExpressMethodCap;
-			req.captcha = new Turnstile(this.Config.Server.CaptchaEnabled, this.Config.Server.TurnstileSecret ?? "secret");
-
-			req.fourohfourit = () => {
-				const Error = ErrorGen.NotFound();
-
-				Error.AddError({
-					NotFound: {
-						Code: "NotFound",
-						Message: `Could not find route for ${req.method} ${req.path}`,
-					},
-				});
-
-				res.status(404).json(Error.toJSON());
-
-				return true;
-			};
-
-			if (
-				Config.Server.CloudflareAccessOnly &&
-				!(await IpUtils.isCloudflareIp(req.headers["x-forwarded-for"] as string))
-			) {
-				req.fourohfourit();
-
-				return;
-			}
-
-			// we have a hard limit of 1mb for requests, any higher and we 408 it
-			if (req.socket.bytesRead > 1e6) {
-				const Error = ErrorGen.TooLarge();
-
-				Error.AddError({
-					TooLarge: {
-						Code: "TooLarge",
-						Message: "Request body too large",
-					},
-				});
-
-				res.status(408).json(Error.toJSON());
-
-				return;
-			}
-
-			next();
-		});
-
-		// guilds with params should be at the bottom as ones without them take priority
-		const LoadedRoutes = (await this.LoadRoutes()).sort((a, b) => {
-			if (a.route.includes(":") && !b.route.includes(":")) {
-				return 1;
-			}
-
-			if (!a.route.includes(":") && b.route.includes(":")) {
-				return -1;
-			}
-
-			return 0;
-		});
-
-		for (const route of LoadedRoutes) {
-			this.Logger.verbose(
-				`Loaded "${route.route.length === 0 ? "/" : route.route}" [${route.default.Methods.join(", ")}]`,
-			);
-		}
-
-		this.Logger.info(`Loaded ${LoadedRoutes.length} routes`);
-
-		for (const Route of LoadedRoutes) {
-			for (const Method of Route.default.Methods) {
-				this.ExpressApp[Method.toLowerCase() as ExpressMethod](
-					Route.route,
-					...Route.default.Middleware,
-					(req: Request, res: Response) => {
-						this.Logger.verbose(
-							`Request for ${req.path} (${req.method}) ${
-								req?.user?.Id ? `from ${req.user.Id}` : "from a logged out user."
-							}`,
-						);
-
-						const ContentType = req.headers["content-type"] ?? "";
-
-						res.on("finish", () => {
-							this.Logger.verbose(
-								`Request for ${req.path} (${req.method}) ${
-									req?.user?.Id ? `from ${req.user.Id}` : "from a logged out user."
-								} finished with status code ${res.statusCode}`,
-							);
-
-							Route.default.Finish(res, res.statusCode, new Date());
-						});
-
-						if (Route.default.KillSwitched) {
-							const Error = ErrorGen.ServiceUnavailable();
-
-							Error.AddError({
-								ServiceUnavailable: {
-									Code: "ServiceUnavailable",
-									Message: "This endpoint is currently disabled",
-								},
-							});
-
-							res.status(503).json(Error.toJSON());
-
-							return;
-						}
-
-						if (
-							Route.default.AllowedContentTypes.length > 0 &&
-							!Route.default.AllowedContentTypes.includes(ContentType as ContentTypes)
-						) {
-							const Error = ErrorGen.InvalidContentType();
-
-							Error.AddError({
-								ContentType: {
-									Code: "InvalidContentType",
-									Message: `Invalid Content-Type header, Expected (${Route.default.AllowedContentTypes.join(
-										", ",
-									)}), Got (${ContentType})`,
-								},
-							});
-
-							res.status(400).json(Error);
-
-							return;
-						}
-
-						const PreRan = Route.default.PreRun(req, res);
-
-						if (!PreRan) {
-							// note: we expect that it returns a response itself (also PreRun should only be used for special routes not used all the time)
-							return;
-						}
-
-						// @ts-expect-error -- im tired
-						// eslint-disable-next-line promise/prefer-await-to-callbacks, promise/prefer-await-to-then, @typescript-eslint/no-confusing-void-expression
-						Route.default.Request(req, res)?.catch((error: Error) => {
-							this.Logger.error(error);
-
-							if (!res.headersSent) {
-								res.status(500).send("Internal Server Error :(");
-							}
-						});
-					},
-				);
-			}
-		}
-
-		this.ExpressApp.all("*", (req, res) => {
-			const Error = ErrorGen.NotFound();
-
-			Error.AddError({
-				NotFound: {
-					Code: "NotFound",
-					Message: `Could not find route for ${req.method} ${req.path}`,
-				},
-			});
-
-			res.status(404).json(Error.toJSON());
-		});
-
-		this.ExpressApp.listen(Config.Server.Port, () => {
-			this.Logger.info(`Listening on port ${Config.Server.Port}`);
-		});
 	}
 
-	private async LoadRoutes(): Promise<(typeof this)["Routes"]> {
-		const Routes = await this.WalkDirectory(this.RouteDirectory);
+	public checkObjectForBlacklistedFields(object: unknown, blacklistedFields: string[]): boolean {
+		if (typeof object !== "object" || object === null || object instanceof Date) return false;
 
-		for (const Route of Routes) {
-			if (!Route.endsWith(".ts")) {
-				this.Logger.debug(`Skipping ${Route} as it is not a .ts file`);
-
-				continue;
+		if (Array.isArray(object)) {
+			for (const item of object) {
+				if (this.checkObjectForBlacklistedFields(item, blacklistedFields)) return true;
 			}
 
-			const RouteClass = await import(Route);
-
-			if (!RouteClass.default) {
-				this.Logger.warn(`Skipping ${Route} as it does not have a default export`);
-
-				continue;
-			}
-
-			const RouteInstance = new RouteClass.default(this);
-
-			if (!(RouteInstance instanceof RouteBuilder)) {
-				this.Logger.warn(`Skipping ${Route} as it does not extend Route`);
-
-				continue;
-			}
-
-			for (const SubRoute of RouteInstance.Routes) {
-				const fixedRoute = (
-					(Route.split(this.RouteDirectory)[1]?.replaceAll(/\\/g, "/").split("/").slice(0, -1).join("/") ?? "") +
-					(SubRoute as string)
-				).replace(/\/$/, "");
-
-				this.Routes.push({
-					default: RouteInstance,
-					directory: Route,
-					route: fixedRoute.replaceAll(/\[([^\]]+)]/g, ":$1"), // eslint-disable-line prefer-named-capture-group
-				});
-			}
+			return false;
 		}
 
-		return this.Routes;
-	}
+		for (const [key, value] of Object.entries(object)) {
+			if (blacklistedFields.includes(key)) return true;
 
-	private async WalkDirectory(dir: string): Promise<string[]> {
-		const Routes = await readdir(dir, { withFileTypes: true });
-
-		const Files: string[] = [];
-
-		for (const Route of Routes) {
-			if (Route.isDirectory()) {
-				const SubFiles = await this.WalkDirectory(join(dir, Route.name));
-				Files.push(...SubFiles);
-			} else {
-				Files.push(join(dir, Route.name));
-			}
+			if (this.checkObjectForBlacklistedFields(value, blacklistedFields)) return true;
 		}
 
-		return Files;
+		return false;
 	}
 
-	private async SetupDebug(Log: boolean) {
-		const SystemClass = new SystemInfo();
-		const System = await SystemClass.Info();
-		const GithubInfo = await this.GithubInfo();
+	private async setupDebug(Log: boolean) {
+		const systemClass = new SystemInfo();
+		const system = await systemClass.Info();
+		const githubInfo = await App.githubInfo();
 
-		const Strings = [
+		App.gitBranch = githubInfo.Branch;
+		App.gitCommit = githubInfo.Commit!;
+		this.clean = githubInfo.Clean;
+
+		const strings = [
 			"=".repeat(40),
 			"Kastel Debug Logs",
 			"=".repeat(40),
-			`Backend Version: ${this.Constants.Relative.Version}`,
+			`Backend Version: ${this.constants.relative.Version}`,
 			`Bun Version: ${Bun.version}`,
 			"=".repeat(40),
 			"System Info:",
-			`OS: ${System.OperatingSystem.Platform}`,
-			`Arch: ${System.OperatingSystem.Arch}`,
-			`Os Release: ${System.OperatingSystem.Release}`,
-			`Internet Status: ${System.InternetAccess ? "Online" : "Offline - Some features may not work"}`,
+			`OS: ${system.operatingSystem.platform}`,
+			`Arch: ${system.operatingSystem.arch}`,
+			`Os Release: ${system.operatingSystem.release}`,
+			`Internet Status: ${system.internetAccess ? "Online" : "Offline - Some features may not work"}`,
 			"=".repeat(40),
 			"Hardware Info:",
-			`CPU: ${System.Cpu.Type}`,
-			`CPU Cores: ${System.Cpu.Cores}`,
-			`Total Memory: ${System.Ram.Total}`,
-			`Free Memory: ${System.Ram.Available}`,
-			`Used Memory: ${System.Ram.Usage}`,
+			`CPU: ${system.cpu.type}`,
+			`CPU Cores: ${system.cpu.cores}`,
+			`Total Memory: ${system.ram.Total}`,
+			`Free Memory: ${system.ram.Available}`,
+			`Used Memory: ${system.ram.Usage}`,
 			"=".repeat(40),
 			"Process Info:",
 			`PID: ${process.pid}`,
-			`Uptime: ${System.Process.Uptime}`,
+			`Uptime: ${system.process.uptime}`,
 			"=".repeat(40),
 			"Git Info:",
-			`Branch: ${this.GitBranch}`,
-			`Commit: ${GithubInfo.CommitShort ?? GithubInfo.Commit}`,
-			`Status: ${
-				this.Clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
+			`Branch: ${App.gitBranch}`,
+			`Commit: ${githubInfo.CommitShort ?? githubInfo.Commit}`,
+			`Status: ${this.clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
 			}`,
-			this.Clean ? "" : "=".repeat(40),
-			`${this.Clean ? "" : "Changed Files:"}`,
+			this.clean ? "" : "=".repeat(40),
+			`${this.clean ? "" : "Changed Files:"}`,
 		];
 
-		for (const File of this.GitFiles) {
-			Strings.push(`${File.type}: ${File.filePath}`);
+		for (const file of App.gitFiles) {
+			// if the directory is "node_modules", ".bun", ".git", ".yarn" we want to ignore it
+
+			if (["node_modules", ".bun", ".git", ".yarn"].includes(file.filePath.split("/")[0] ?? "")) {
+				continue;
+			}
+
+			strings.push(`${file.type}: ${file.filePath}`);
 		}
 
-		Strings.push("=".repeat(40));
+		strings.push("=".repeat(40));
 
 		if (Log) {
-			for (const String of Strings) {
-				this.Logger.importantDebug(String);
+			for (const string of strings) {
+				this.logger.importantDebug(string);
 			}
 		}
 	}
 
-	private async GithubInfo(): Promise<{
+	public static async githubInfo(): Promise<{
 		Branch: string;
 		Clean: boolean;
 		Commit: string | undefined;
 		CommitShort: string | undefined;
 	}> {
-		const Branch = await this.Git.branch();
-		const Commit = await this.Git.log();
-		const Status = await this.Git.status();
+		const branch = await App.git.branch();
+		const commit = await App.git.log();
+		const status = await App.git.status();
 
-		if (!Commit.latest?.hash) {
-			this.Logger.fatal("Could not get Commit Info, are you sure you pulled the repo correctly?");
+		if (!commit.latest?.hash) {
+			App.staticLogger.fatal("Could not get Commit Info, are you sure you pulled the repo correctly?");
 
 			process.exit(1);
 		}
 
-		this.GitBranch = Branch.current;
-
-		this.GitCommit = Commit.latest.hash;
-
-		this.Clean = Status.files.length === 0;
-
-		for (const File of Status.files) {
-			this.GitFiles.push({
-				filePath: File.path,
-				type: this.TypeIndex[File.working_dir as keyof typeof this.TypeIndex] as GitType,
+		for (const file of status.files) {
+			App.gitFiles.push({
+				filePath: file.path,
+				type: this.typeIndex[file.working_dir as keyof typeof this.typeIndex] as GitType,
 			});
 		}
 
 		return {
-			Branch: Branch.current,
-			Commit: Commit.latest.hash,
-			CommitShort: Commit.latest.hash.slice(0, 7),
-			Clean: Status.files.length === 0,
+			Branch: branch.current,
+			Commit: commit.latest.hash,
+			CommitShort: commit.latest.hash.slice(0, 7),
+			Clean: status.files.length === 0,
 		};
 	}
 
-	public GetBucket(Snowflake?: string): string {
-		let BucketNumber;
+	public getBucket(Snowflake?: string): string {
+		let bucketNumber;
 
 		if (Snowflake) {
-			BucketNumber = BigInt(this.Snowflake.TimeStamp(Snowflake)) - this.Snowflake.Epoch;
+			bucketNumber = BigInt(App.snowflake.timeStamp(Snowflake)) - App.snowflake.epoch;
 		} else {
-			BucketNumber = BigInt(Date.now()) - this.Snowflake.Epoch;
+			bucketNumber = BigInt(Date.now()) - App.snowflake.epoch;
 		}
 
-		let Bucket = BucketNumber / BigInt(this.Config.Server.BucketInterval);
+		let bucket = bucketNumber / BigInt(this.config.server.bucketInterval);
 
-		Bucket += BigInt(this.Config.Server.BucketRnd);
+		bucket += BigInt(this.config.server.bucketRnd);
 
-		return Bucket.toString(16);
+		return bucket.toString(16);
 	}
 
-	public GetBuckets(StartId: string, EndId?: string) {
-		const startBucket = this.GetBucket(StartId);
-		const endBucket = this.GetBucket(EndId);
+	public getBuckets(StartId: string, EndId?: string) {
+		const startBucket = this.getBucket(StartId);
+		const endBucket = this.getBucket(EndId);
 
 		let startBucketNumber = Number.parseInt(startBucket, 16);
 		let endBucketNumber = Number.parseInt(endBucket, 16);
 
-		startBucketNumber -= this.Config.Server.BucketRnd;
-		endBucketNumber -= this.Config.Server.BucketRnd;
+		startBucketNumber -= this.config.server.bucketRnd;
+		endBucketNumber -= this.config.server.bucketRnd;
 
 		const bucketRange = endBucketNumber - startBucketNumber;
 
 		const buckets = [];
 
-		for (let i = 0; i <= bucketRange; i++) {
-			let currentBucket = startBucketNumber + i;
+		for (let int = 0; int <= bucketRange; int++) {
+			let currentBucket = startBucketNumber + int;
 
-			currentBucket += this.Config.Server.BucketRnd;
+			currentBucket += this.config.server.bucketRnd;
 
 			buckets.push(currentBucket.toString(16));
 		}
 
 		return buckets;
+	}
+
+	public rabbitMQForwarder(topic: GetChannelTypes<typeof channels>, data: unknown) {
+		postMessage({
+			type: "rabbitMQ",
+			data: {
+				topic,
+				data,
+			},
+		});
+	}
+
+	/**
+	 * basically can handle bigints turning them into strings
+	 */
+	public jsonStringify(data: unknown) {
+		return JSON.stringify(Encryption.completeDecryption(data), (_, value) => {
+			if (typeof value === "bigint") {
+				return value.toString();
+			}
+
+			return value;
+		});
+	}
+	
+	public get status() {
+		return {
+			has: (type: keyof typeof statusTypes, int: number) => {
+				const foundInt = statusTypes[type];
+				
+				return (int & foundInt) === foundInt;
+			},
+			remove: (type: keyof typeof statusTypes, int: number) => {
+				const foundInt = statusTypes[type];
+				
+				return int & ~foundInt;
+			},
+			add: (type: keyof typeof statusTypes, int: number) => {
+				const foundInt = statusTypes[type];
+				
+				return int | foundInt;
+			},
+			isOffline: (int: number) => {
+				return this.status.has("offline", int);
+			},
+			get: (int: number) => {
+				if (this.status.has("offline", int)) return "offline";
+				if (this.status.has("dnd", int)) return "dnd";
+				if (this.status.has("idle", int)) return "idle";
+				if (this.status.has("invisible", int)) return "invisible";
+				
+				return "online";
+			}
+		}
+	}
+
+	public get config() {
+		return App.configManager.config as MySchema;
+	}
+
+	public static get config() {
+		return App.configManager.config as MySchema;
+	}
+
+	public get logger(): CustomLogger {
+		return App.staticLogger;
+	}
+
+	public static get logger(): CustomLogger {
+		return App.staticLogger;
+	}
+
+	public get snowflake(): Snowflake {
+		return App.snowflake;
+	}
+
+	public get questionier(): Question {
+		return App.questionier;
 	}
 }
 

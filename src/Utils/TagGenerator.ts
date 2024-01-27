@@ -1,36 +1,37 @@
-/* !
- *   ██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗
- *   ██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║
- *  █████╔╝ ███████║███████╗   ██║   █████╗  ██║
- *  ██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║
- * ██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗
- * ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝
- * Copyright(c) 2022-2023 DarkerInk
- * GPL 3.0 Licensed
- */
+const generateMissingNumbers = (existingNumbers: Set<number>): number[] => {
+	const missingNumbers: number[] = [];
 
-const TagGenerator = (tags: (number | string)[]): string => {
-	const ExistingTags = new Set(tags.map(Number));
-
-	let Num = Math.floor(Math.random() * 10_000);
-
-	while (ExistingTags.has(Num)) {
-		Num = Math.floor(Math.random() * 10_000);
+	for (let i = 0; i <= 9_999; i++) {
+		if (!existingNumbers.has(i)) {
+			missingNumbers.push(i);
+		}
 	}
 
-	return Num.toString().padStart(4, "0000");
+	return missingNumbers;
 };
 
-const TagValidator = (originalTag: string, newTag: number | string): string => {
-	const FixedTag = newTag.toString();
+const tagGenerator = (tags: (number | string)[]): string | null => {
+	const existingTags = new Set(tags.map(Number));
 
-	if (FixedTag.length !== 4) return originalTag;
+	existingTags.add(0);
 
-	if (FixedTag === "0000") return originalTag;
+	if (existingTags.size >= 9_999) return null;
 
-	return FixedTag;
+	const missingTags = generateMissingNumbers(existingTags);
+
+	return missingTags[Math.floor(Math.random() * missingTags.length)]?.toString().padStart(4, "0") ?? "0001";
 };
 
-export default TagGenerator;
+const tagValidator = (originalTag: string, newTag: number | string): string => {
+	const fixedTag = newTag.toString();
 
-export { TagGenerator, TagValidator };
+	if (fixedTag.length !== 4) return originalTag;
+
+	if (fixedTag === "0000") return originalTag;
+
+	return fixedTag;
+};
+
+export default tagGenerator;
+
+export { tagGenerator, tagValidator };
