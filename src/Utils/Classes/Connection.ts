@@ -1,7 +1,7 @@
 import { EventEmitter } from "node:events";
 import fs from "node:fs/promises";
 import path from "node:path";
-import cassandra, { mapping, type ClientOptions } from "@kastelll/cassandra-driver";
+import cassandra, { mapping, type ClientOptions } from "@kastelapp/cassandra-driver";
 import type {
 	Ban,
 	Bot,
@@ -111,9 +111,9 @@ class Connection extends EventEmitter {
 		this.mappingOptions = {
 			models: {
 				Ban: this.generateMappingOptions("bans"),
-				Bot: this.generateMappingOptions("bot"),
+				Bot: this.generateMappingOptions("bots"),
 				Channel: this.generateMappingOptions("channels"),
-				Dm: this.generateMappingOptions("dm"),
+				Dm: this.generateMappingOptions("dms"),
 				Emoji: this.generateMappingOptions("emojis"),
 				File: this.generateMappingOptions("files"),
 				Friend: this.generateMappingOptions("friends"),
@@ -122,7 +122,7 @@ class Connection extends EventEmitter {
 				GuildMember: this.generateMappingOptions("guild_members"),
 				Invite: this.generateMappingOptions("invites"),
 				Message: this.generateMappingOptions("messages"),
-				PermissionOverride: this.generateMappingOptions("permissionsoverides"),
+				PermissionOverride: this.generateMappingOptions("permissions_overides"),
 				Role: this.generateMappingOptions("roles"),
 				Settings: this.generateMappingOptions("settings"),
 				User: this.generateMappingOptions("users"),

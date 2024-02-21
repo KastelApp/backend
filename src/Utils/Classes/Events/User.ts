@@ -47,7 +47,7 @@ class User {
 	public token!: string;
 
 	public username!: string;
-	
+
 	#events: Map<string, Set<Function>> = new Map();
 
 	public closedAt: number = 0;
@@ -199,15 +199,15 @@ class User {
 			{
 				fields: [
 					"tokens",
-					"max_file_upload_size",
+					"maxFileUploadSize",
 					"bio",
-					"guild_order",
+					"guildOrder",
 					"language",
 					"privacy",
 					"theme",
 					"status",
-					"allowed_invites",
-					"custom_status"
+					"allowedInvites",
+					"customStatus"
 				],
 			},
 		);
@@ -217,7 +217,7 @@ class User {
 				userId: Encryption.encrypt(decodedToken.Snowflake),
 			},
 			{
-				fields: ["email", "user_id", "flags", "password", "public_flags", "guilds", "username"],
+				fields: ["email", "userId", "flags", "password", "publicFlags", "guilds", "username"],
 			},
 		);
 
@@ -297,17 +297,17 @@ class User {
 			username: this.username
 		};
 	}
-	
+
 	public async setStatus(status: "dnd" | "idle" | "invisible" | "offline" | "online") {
 		let stat = statusTypes[this.settings.status]; // old status
-		
+
 		if (status === "offline") stat |= statusTypes.offline;
 		else stat &= ~statusTypes.offline;
-		
-		if (stat === 0) stat = statusTypes[status]
+
+		if (stat === 0) stat = statusTypes[status];
 
 		this.settings.status = this.App.status.get(stat);
-		
+
 		await this.App.cassandra.models.Settings.update({
 			userId: Encryption.encrypt(this.id),
 			status: statusTypes[status]

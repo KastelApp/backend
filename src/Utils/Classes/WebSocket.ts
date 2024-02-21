@@ -9,7 +9,7 @@ import { opCodes } from "./Events/OpCodes.ts";
 import type { WsOptions } from "./Events/User.ts";
 import User from "./Events/User.ts";
 import FileSystemRouter from "./FileSystemRouter.ts";
-import type { GetChannelTypes , channels } from "./Shared/RabbitMQ.ts";
+import type { GetChannelTypes, channels } from "./Shared/RabbitMQ.ts";
 
 declare const self: Worker;
 
@@ -50,9 +50,17 @@ class WebSocket extends App {
 		});
 
 		self.onmessage = (event: MessageEvent) => {
+			if (event.data.type === "config") {
+				postMessage({ type: "config", data: this.config });
+			}
+
 			if (!this.isRabbitMessage(event.data)) return;
 
-			console.log("received", event.data);
+			switch (event.data.topic) {
+				default: {
+					this.logger.warn(`Unknown topic: ${event.data.topic}`);
+				}
+			}
 		};
 	}
 
@@ -95,6 +103,8 @@ class WebSocket extends App {
 					const foundEvent = this.eventCache.get(`${parsed.op}-${ws.data.user.version ?? 0}`);
 
 					if (!foundEvent) {
+						this.logger.warn(`Invalid opcode ${parsed.op} for version ${ws.data.user.version}`);
+
 						ws.data.user.close(errorCodes.invalidOpCode);
 
 						return;
@@ -103,6 +113,8 @@ class WebSocket extends App {
 					const foundOp = foundEvent.eventClass.__opcodes.find((op) => op.code === parsed.op);
 
 					if (!foundOp) {
+						this.logger.warn(`Invalid opcode ${parsed.op} for version ${ws.data.user.version}`);
+
 						ws.data.user.close(errorCodes.invalidOpCode); // ! more of an internal server error but meh
 
 						return;
@@ -153,6 +165,9 @@ class WebSocket extends App {
 					const encoding = params.get("encoding");
 
 					if (version) newUser.version = Number(version);
+					else newUser.version = 1;
+
+					console.log(newUser.version, params, ws.data.url);
 
 					if (encoding) {
 						if (encoding === "json") newUser.encoding = encoding;
@@ -161,6 +176,12 @@ class WebSocket extends App {
 
 							return;
 						}
+					}
+
+					if (newUser.version && !this.eventCache.has(`${opCodes.identify}-${newUser.version}`)) { // ? if the client sends a version, we'll check if the identify event exists for that version else disconnect
+						newUser.close(errorCodes.unknownError);
+
+						return;
 					}
 
 					newUser.ip = ws.data.ip;
@@ -262,15 +283,15 @@ class WebSocket extends App {
 				if (!user.resumeable) {
 					this.clients.delete(user.sessionId);
 
-					if (user.settings.status === "online") await user.setStatus("offline"); 
-					
+					if (user.token && user.settings.status === "online") await user.setStatus("offline");
+
 					continue;
 				}
 
 				if (user.closedAt + Number(this.config.ws.intervals.closeTimeout.leeway) < Date.now()) {
 					this.clients.delete(user.sessionId);
-					
-					if (user.settings.status !== "offline") await user.setStatus("offline");
+
+					if (user.token && user.settings.status !== "offline") await user.setStatus("offline");
 				}
 			}
 		}, Number(this.config.ws.intervals.closeTimeout.interval));
@@ -289,37 +310,41 @@ class WebSocket extends App {
 	}
 
 	private async loadEvents(path: string) {
-		// this is a hack to make sure it doesn't cache the file
-		const eventClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof EventBuilder; };
+		try {
+			// this is a hack to make sure it doesn't cache the file
+			const eventClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof EventBuilder; };
 
-		if (!eventClass.default) {
-			this.logger.warn(`Skipping ${path} as it does not have a default export`);
+			if (!eventClass.default) {
+				this.logger.warn(`Skipping ${path} as it does not have a default export`);
 
+				return null;
+			}
+
+			const routeInstance = new eventClass.default(this);
+
+			if (!(routeInstance instanceof EventBuilder)) {
+				this.logger.warn(`Skipping ${path} as it does not extend Events`);
+
+				return null;
+			}
+
+			const version = this.getVersion(path);
+
+			for (const op of routeInstance.__opcodes) {
+				const hash = `${op.code}-${version ?? "0"}`;
+
+				this.eventCache.set(hash, {
+					eventClass: routeInstance,
+					file: path,
+					opCode: op.code,
+					version: version ?? 0,
+				});
+			}
+
+			return path.split("/").pop()!.split(".").shift();
+		} catch {
 			return null;
 		}
-
-		const routeInstance = new eventClass.default(this);
-
-		if (!(routeInstance instanceof EventBuilder)) {
-			this.logger.warn(`Skipping ${path} as it does not extend Events`);
-
-			return null;
-		}
-
-		const version = this.getVersion(path);
-
-		for (const op of routeInstance.__opcodes) {
-			const hash = `${op.code}-${version ?? "0"}`;
-
-			this.eventCache.set(hash, {
-				eventClass: routeInstance,
-				file: path,
-				opCode: op.code,
-				version: version ?? 0,
-			});
-		}
-
-		return path.split("/").pop()!.split(".").shift();
 	}
 
 	public getVersion(path: string) {

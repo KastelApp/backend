@@ -43,7 +43,7 @@ interface ProcessArg {
 	type: "boolean" | "number" | "string" | "string[]";
 }
 
-const newprocessArgs = <T extends ProcessArg>(args: T[]) => {
+const newprocessArgs = <T extends ProcessArg[]>(args: T) => {
 	const parsedArgs: Record<string, string[] | boolean | number | string> = {};
 
 	const argv = process.argv.slice(2);

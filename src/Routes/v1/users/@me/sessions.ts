@@ -29,7 +29,7 @@ export default class Sessions extends Route {
 				userId: Encryption.encrypt(user.id),
 			},
 			{
-				fields: ["user_id", "tokens"],
+				fields: ["userId", "tokens"],
 			},
 		);
 

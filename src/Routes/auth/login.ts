@@ -141,7 +141,7 @@ export default class Login extends Route {
 				userId: Encryption.encrypt(fetchedUser.userId),
 			},
 			{
-				fields: ["user_id", "tokens"],
+				fields: ["userId", "tokens"],
 			},
 		);
 
@@ -166,14 +166,16 @@ export default class Login extends Route {
 		}
 
 		const sessionId = this.App.snowflake.generate();
-
-		tokens.tokens.push({
+		const newTokenObject = {
 			createdDate: new Date(this.App.snowflake.timeStamp(sessionId)),
 			flags: 0,
 			ip,
 			token: Encryption.encrypt(newToken),
 			tokenId: Encryption.encrypt(sessionId),
-		});
+		};
+
+		if (tokens.tokens) tokens.tokens.push(newTokenObject);
+		else tokens.tokens = [newTokenObject];
 
 		if (wasNull) {
 			await this.App.cassandra.models.Settings.insert(tokens);
@@ -197,7 +199,7 @@ export default class Login extends Route {
 				email: Encryption.encrypt(email),
 			},
 			{
-				fields: ["email", "user_id", "password", "flags", "public_flags"],
+				fields: ["email", "userId", "password", "flags", "publicFlags"],
 			},
 		);
 

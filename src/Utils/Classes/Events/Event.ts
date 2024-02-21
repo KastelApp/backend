@@ -2,14 +2,22 @@ import type { BodyValidator } from "@/Types/BodyValidation.ts";
 import type WebSocket from "../WebSocket.ts";
 
 class Event {
-	public readonly App: WebSocket;
+	#App: WebSocket;
 
 	public KillSwitched: boolean;
 
 	public constructor(App: WebSocket) {
-		this.App = App;
+		this.#App = App;
 
 		this.KillSwitched = false;
+	}
+	
+	public get App() {
+		return this.#App;
+	}
+	
+	public set App(App: WebSocket) {
+		this.#App = App;
 	}
 }
 

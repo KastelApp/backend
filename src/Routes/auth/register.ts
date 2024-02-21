@@ -66,7 +66,7 @@ export default class Register extends Route {
 		const foundUsers = await this.fetchUser({ username: Encryption.encrypt(body.username) }, ["tag"]);
 		const tag = tagGenerator(foundUsers.map((usr) => usr.tag));
 
-		if (!foundPlatformInvite && this.App.config.server.features.includes("InviteBasedRegistration") || foundPlatformInvite && !foundPlatformInvite.usedById && (foundPlatformInvite.expiresAt?.getTime() ?? 0) < Date.now()) {
+		if (!foundPlatformInvite && this.App.config.server.features.includes("InviteBasedRegistration") || foundPlatformInvite && !foundPlatformInvite.usedById && (new Date(foundPlatformInvite.expiresAt)?.getTime() ?? 0) < Date.now()) {
 			failed.addError({
 				platformInvite: {
 					code: "InvalidInvite",

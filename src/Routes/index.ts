@@ -1,3 +1,18 @@
+// import {
+// 	allowedMentions,
+// 	auditLogActions,
+// 	channelTypes,
+// 	guildFeatures,
+// 	inviteFlags,
+// 	messageFlags,
+// 	permissionOverrideTypes,
+// 	permissions,
+// 	presenceTypes,
+// 	publicFlags,
+// 	statusTypes,
+// 	relationshipFlags,
+// 	privateFlags
+// } from "@/Constants.ts"
 import type API from "@/Utils/Classes/API.ts";
 import ContentTypes from "@/Utils/Classes/Routing/Decorators/ContentTypes.ts";
 import Description from "@/Utils/Classes/Routing/Decorators/Description.ts";
@@ -31,12 +46,31 @@ export default class Index extends Route {
 				return [...acc, cur];
 			}, []);
 
-		return {
+		return JSON.parse(this.App.jsonStringify({
 			api: {
 				versions: apiVersions,
 				latest: apiVersions[apiVersions.length - 1] ?? 0,
 			},
 			features: this.App.config.server.features ?? [],
-		};
+			// constants: { // ? NOTE: to any bot devs, do not rely on the API provided constants. Please hard code them into your library.
+			// 	allowedMentions,
+			// 	auditLogActions,
+			// 	channelTypes,
+			// 	guildFeatures: Object.values(guildFeatures).filter((feature) => feature.settable && !feature.deprecated).map((feature) => feature.name),
+			// 	inviteFlags,
+			// 	messageFlags,
+			// 	permissionOverrideTypes,
+			// 	permissions,
+			// 	presenceTypes,
+			// 	publicFlags,
+			// 	relationshipFlags,
+			// 	privateFlags: {
+			// 		Spammer: privateFlags.Spammer,
+			// 		VerifiedBot: privateFlags.VerifiedBot,
+			// 		Bot: privateFlags.Bot,
+			// 	},
+			// 	statusTypes
+			// }
+		}));
 	}
 }

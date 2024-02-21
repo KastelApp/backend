@@ -294,30 +294,34 @@ class API extends App {
 			this.routeCache.delete(path);
 		}
 
-		// this is a hack to make sure it doesn't cache the file
-		const routeClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof RouteBuilder; };
+		try {
+			// this is a hack to make sure it doesn't cache the file
+			const routeClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof RouteBuilder; };
 
-		if (!routeClass.default) {
-			this.logger.warn(`Skipping ${path} as it does not have a default export`);
+			if (!routeClass.default) {
+				this.logger.warn(`Skipping ${path} as it does not have a default export`);
 
+				return null;
+			}
+
+			const routeInstance = new routeClass.default(this);
+
+			if (!(routeInstance instanceof RouteBuilder)) {
+				this.logger.warn(`Skipping ${path} as it does not extend Route`);
+
+				return null;
+			}
+
+			this.routeCache.set(path, {
+				path,
+				route,
+				routeClass: routeInstance,
+			});
+
+			return this.routeCache.get(path);
+		} catch {
 			return null;
 		}
-
-		const routeInstance = new routeClass.default(this);
-
-		if (!(routeInstance instanceof RouteBuilder)) {
-			this.logger.warn(`Skipping ${path} as it does not extend Route`);
-
-			return null;
-		}
-
-		this.routeCache.set(path, {
-			path,
-			route,
-			routeClass: routeInstance,
-		});
-
-		return this.routeCache.get(path);
 	}
 }
 

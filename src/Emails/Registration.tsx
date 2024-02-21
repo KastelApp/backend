@@ -88,7 +88,6 @@ const registration = (username: string, verifyUrl: string, deleteAccountUrl: str
         <Html>
             <Head />
             <Preview>
-                {/* what the email clients first show */}
                 Welcome to Kastel, Verify your email to get started!
             </Preview>
             <Body style={styles.main}>
@@ -98,16 +97,16 @@ const registration = (username: string, verifyUrl: string, deleteAccountUrl: str
                         <Heading style={styles.logo.text}>Kastel</Heading>
                     </div>
                     <Text style={styles.header}>
-                        Welcome to Kastel {username},
+                        Welcome to Kastel, {username}!
                     </Text>
                     <br />
                     <Text style={styles.paragraph}>
-                        Thank you for signing up to Kastel, we are very excited to have you here! I hope you will enjoy our community.
+                        Thank you for signing up to Kastel. We are very excited to have you here, I hope you will enjoy our community.
                     </Text>
                     <br />
                     <Hr style={styles.hr} />
                     <Text style={styles.btnText}>
-                        Before you can truly enjoy Kastel, you'll need to verify your email, don't worry its easy, just click the link below.
+                        Before you can truly enjoy Kastel, you'll need to verify your email. Don't worry, it's easy; Just click the link or button below.
                     </Text>
                     <Section style={styles.btnContainer}>
                         <Button style={styles.btn} href={verifyUrl}>

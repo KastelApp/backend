@@ -47,9 +47,6 @@ export default class FetchEditGuild extends Route {
 		const noPermission = errorGen.MissingPermissions();
 		const notFound = errorGen.UnknownGuild();
 
-		console.log(Encryption.encrypt(params.guildId));
-
-
 		if (!user.guilds.includes(params.guildId)) {
 			notFound.addError({
 				guildId: {

@@ -116,15 +116,15 @@ const userMiddleware = (options: UserMiddleware) => {
 				{
 					fields: [
 						"tokens",
-						"max_file_upload_size",
+						"maxFileUploadSize",
 						"bio",
-						"guild_order",
+						"guildOrder",
 						"language",
 						"privacy",
 						"theme",
 						"status",
-						"allowed_invites",
-						"custom_status"
+						"allowedInvites",
+						"customStatus"
 					],
 				},
 			);
@@ -134,7 +134,7 @@ const userMiddleware = (options: UserMiddleware) => {
 					userId: Encryption.encrypt(decodedToken.Snowflake),
 				},
 				{
-					fields: ["email", "user_id", "flags", "password", "public_flags", "guilds", "username"],
+					fields: ["email", "userId", "flags", "password", "publicFlags", "guilds", "username"],
 				},
 			);
 

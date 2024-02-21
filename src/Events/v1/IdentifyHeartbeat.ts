@@ -55,7 +55,7 @@ interface finishedGuilds {
 	icon: string | null;
 	id: string;
 	maxMembers?: number;
-	members?: { nickname: string | null; owner: boolean; roles: string[]; user: { avatar: string | null; flags: string; id: any; publicFlags: string; username: string; }; }[];
+	members?: { joinedAt: string, nickname: string | null; owner: boolean; roles: string[]; user: { avatar: string | null; flags: string; id: string; publicFlags: string; username: string; }; }[];
 	name: string;
 	owner?: {
 		avatar: string | null;
@@ -88,8 +88,8 @@ export default class IdentifyAndHeartbeat extends Event {
 	@AuthRequired()
 	@Validator(heartbeatData)
 	public heartbeat(user: User, data: Infer<typeof heartbeatData>) {
-		this.App.logger.debug(`Expecting ${user.sequence}, received ${data.seq}, is correct: ${data.seq === user.sequence}`)
-		
+		this.App.logger.debug(`Expecting ${user.sequence}, received ${data.seq}, is correct: ${data.seq === user.sequence}`);
+
 		if (data.seq !== user.sequence) {
 			user.close(errorCodes.invalidSequence); // ? if the seq is not the same as the last seq, close the connection
 
@@ -199,14 +199,14 @@ export default class IdentifyAndHeartbeat extends Event {
 					user.subscribe(`channel:messages:${channel.id}:reactions`);
 					user.subscribe(`channel:messages:${channel.id}:pins`);
 				}
-				
+
 				if (permCheck.hasChannelPermission(channel.id, ["ViewChannels", "ViewMessageHistory"])) user.subscribe(`channel:messages:${channel.id}:typing`); // ? can only see typing events if they can see the channel and view messages
-				
-				user.subscribe(`channel:${channel.id}`)
+
+				user.subscribe(`channel:${channel.id}`);
 			}
 
 			for (const member of Encryption.completeDecryption(first100Members)) {
-				const fetchedUser = await this.App.cassandra.models.User.get({ userId: Encryption.encrypt(member.userId) }, { fields: ["username", "user_id", "flags", "public_flags", "avatar"] });
+				const fetchedUser = await this.App.cassandra.models.User.get({ userId: Encryption.encrypt(member.userId) }, { fields: ["username", "userId", "flags", "publicFlags", "avatar"] });
 
 				if (!fetchedUser) {
 					this.App.logger.warn(`User not found for ${member.userId} in ${guild.id}`);
@@ -225,6 +225,7 @@ export default class IdentifyAndHeartbeat extends Event {
 					owner: finishedGuild.owner?.id === member.userId,
 					nickname: member.nickname,
 					roles: member.roles,
+					joinedAt: member.joinedAt.toISOString()
 				});
 			}
 
@@ -232,9 +233,9 @@ export default class IdentifyAndHeartbeat extends Event {
 		}
 
 		user.lastHeartbeat = Date.now();
-		
+
 		if (user.settings.status === "offline") {
-			await user.setStatus("online")
+			await user.setStatus("online");
 		}
 
 		user.send({
@@ -252,7 +253,8 @@ export default class IdentifyAndHeartbeat extends Event {
 					type: presenceTypes.custom,
 					state: user.settings.customStatus,
 					status: user.settings.status,
-					since: Date.now(),				
+					since: Date.now(),
+					current: true
 				}]
 			},
 			seq: user.sequence + 1

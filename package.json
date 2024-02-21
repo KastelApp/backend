@@ -6,7 +6,7 @@
   "dependencies": {
     "@elysiajs/cors": "^0.8.0",
     "@elysiajs/server-timing": "^0.8.0",
-    "@kastelll/cassandra-driver": "^4.6.23",
+    "@kastelapp/cassandra-driver": "4.6.24",
     "@kastelll/util": "^0.2.7",
     "@react-email/components": "^0.0.14",
     "@react-email/render": "^0.0.12",
