@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { types } from "@kastelll/cassandra-driver";
+import { types } from "@kastelapp/cassandra-driver";
 import App from "./App.ts";
 
 class Encryption {
