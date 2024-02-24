@@ -58,90 +58,146 @@ class WebSocket extends App {
 			if (!this.isRabbitMessage(event.data)) return;
 
 			switch (event.data.topic) {
-				case "ban.create":
+				case "ban.create": {
 					banCreate(this, event.data.data)
 					break
-				case "ban.delete":
+				}
+
+				case "ban.delete": {
 					banDelete(this, event.data.data)
 					break
-				case "channel.create":
+				}
+
+				case "channel.create": {
 					channelCreate(this, event.data.data)
 					break
-				case "channel.delete":
+				}
+
+				case "channel.delete": {
 					channelDelete(this, event.data.data)
 					break
-				case "channel.update":
+				}
+
+				case "channel.update": {
 					channelUpdate(this, event.data.data)
 					break
-				case "guild.create":
+				}
+
+				case "guild.create": {
 					guildCreate(this, event.data.data)
 					break
-				case "guild.delete":
+				}
+
+				case "guild.delete": {
 					guildDelete(this, event.data.data)
 					break
-				case "guild.update":
+				}
+
+				case "guild.update": {
 					guildUpdate(this, event.data.data)
 					break
-				case "guildMember.add":
+				}
+
+				case "guildMember.add": {
 					guildMemberAdd(this, event.data.data)
 					break
-				case "guildMember.ban":
+				}
+
+				case "guildMember.ban": {
 					guildMemberBan(this, event.data.data)
 					break
-				case "guildMember.kick":
+				}
+
+				case "guildMember.kick": {
 					guildMemberKick(this, event.data.data)
 					break
-				case "guildMember.remove":
+				}
+
+				case "guildMember.remove": {
 					guildMemberRemove(this, event.data.data)
 					break
-				case "guildMember.unban":
+				}
+
+				case "guildMember.unban": {
 					guildMemberUnban(this, event.data.data)
 					break
-				case "guildMember.update":
+				}
+
+				case "guildMember.update": {
 					guildMemberUpdate(this, event.data.data)
 					break
-				case "invite.create":
+				}
+
+				case "invite.create": {
 					inviteCreate(this, event.data.data)
 					break
-				case "invite.delete":
+				}
+
+				case "invite.delete": {
 					inviteDelete(this, event.data.data)
 					break
-				case "invite.update":
+				}
+
+				case "invite.update": {
 					inviteUpdate(this, event.data.data)
 					break
-				case "message.create":
+				}
+
+				case "message.create": {
 					messageCreate(this, event.data.data)
 					break
-				case "message.delete":
+				}
+
+				case "message.delete": {
 					messageDelete(this, event.data.data)
 					break
-				case "message.reported":
+				}
+
+				case "message.reported": {
 					messageReported(this, event.data.data)
 					break
-				case "message.update":
+				}
+
+				case "message.update": {
 					messageUpdated(this, event.data.data)
 					break
-				case "presence.update":
+				}
+
+				case "presence.update": {
 					presenceUpdate(this, event.data.data)
 					break
-				case "role.create":
+				}
+
+				case "role.create": {
 					roleCreate(this, event.data.data)
 					break
-				case "role.delete":
+				}
+
+				case "role.delete": {
 					roleDelete(this, event.data.data)
 					break
-				case "role.update":
+				}
+
+				case "role.update": {
 					roleUpdate(this, event.data.data)
 					break
-				case "sessions.create":
+				}
+
+				case "sessions.create": {
 					sessionCreate(this, event.data.data)
 					break
-				case "sessions.delete":
+				}
+
+				case "sessions.delete": {
 					sessionDelete(this, event.data.data)
 					break
-				case "user.update":
+				}
+
+				case "user.update": {
 					userUpdate(this, event.data.data)
 					break
+				}
+
 				default: {
 					this.logger.warn(`Unknown topic: ${event.data.topic}`);
 				}
