@@ -9,6 +9,7 @@ import { opCodes } from "./Events/OpCodes.ts";
 import type { WsOptions } from "./Events/User.ts";
 import User from "./Events/User.ts";
 import FileSystemRouter from "./FileSystemRouter.ts";
+import { banCreate, banDelete, channelCreate, channelDelete, channelUpdate, guildCreate, guildDelete, guildMemberAdd, guildMemberBan, guildMemberKick, guildMemberRemove, guildMemberUnban, guildMemberUpdate, guildUpdate, inviteCreate, inviteDelete, inviteUpdate, messageCreate, messageDelete, messageReported, messageUpdated, presenceUpdate, roleCreate, roleDelete, roleUpdate, sessionCreate, sessionDelete, userUpdate } from "./Shared/Events/index.ts";
 import type { GetChannelTypes, channels } from "./Shared/RabbitMQ.ts";
 
 declare const self: Worker;
@@ -57,6 +58,146 @@ class WebSocket extends App {
 			if (!this.isRabbitMessage(event.data)) return;
 
 			switch (event.data.topic) {
+				case "ban.create": {
+					banCreate(this, event.data.data)
+					break
+				}
+
+				case "ban.delete": {
+					banDelete(this, event.data.data)
+					break
+				}
+
+				case "channel.create": {
+					channelCreate(this, event.data.data)
+					break
+				}
+
+				case "channel.delete": {
+					channelDelete(this, event.data.data)
+					break
+				}
+
+				case "channel.update": {
+					channelUpdate(this, event.data.data)
+					break
+				}
+
+				case "guild.create": {
+					guildCreate(this, event.data.data)
+					break
+				}
+
+				case "guild.delete": {
+					guildDelete(this, event.data.data)
+					break
+				}
+
+				case "guild.update": {
+					guildUpdate(this, event.data.data)
+					break
+				}
+
+				case "guildMember.add": {
+					guildMemberAdd(this, event.data.data)
+					break
+				}
+
+				case "guildMember.ban": {
+					guildMemberBan(this, event.data.data)
+					break
+				}
+
+				case "guildMember.kick": {
+					guildMemberKick(this, event.data.data)
+					break
+				}
+
+				case "guildMember.remove": {
+					guildMemberRemove(this, event.data.data)
+					break
+				}
+
+				case "guildMember.unban": {
+					guildMemberUnban(this, event.data.data)
+					break
+				}
+
+				case "guildMember.update": {
+					guildMemberUpdate(this, event.data.data)
+					break
+				}
+
+				case "invite.create": {
+					inviteCreate(this, event.data.data)
+					break
+				}
+
+				case "invite.delete": {
+					inviteDelete(this, event.data.data)
+					break
+				}
+
+				case "invite.update": {
+					inviteUpdate(this, event.data.data)
+					break
+				}
+
+				case "message.create": {
+					messageCreate(this, event.data.data)
+					break
+				}
+
+				case "message.delete": {
+					messageDelete(this, event.data.data)
+					break
+				}
+
+				case "message.reported": {
+					messageReported(this, event.data.data)
+					break
+				}
+
+				case "message.update": {
+					messageUpdated(this, event.data.data)
+					break
+				}
+
+				case "presence.update": {
+					presenceUpdate(this, event.data.data)
+					break
+				}
+
+				case "role.create": {
+					roleCreate(this, event.data.data)
+					break
+				}
+
+				case "role.delete": {
+					roleDelete(this, event.data.data)
+					break
+				}
+
+				case "role.update": {
+					roleUpdate(this, event.data.data)
+					break
+				}
+
+				case "sessions.create": {
+					sessionCreate(this, event.data.data)
+					break
+				}
+
+				case "sessions.delete": {
+					sessionDelete(this, event.data.data)
+					break
+				}
+
+				case "user.update": {
+					userUpdate(this, event.data.data)
+					break
+				}
+
 				default: {
 					this.logger.warn(`Unknown topic: ${event.data.topic}`);
 				}
