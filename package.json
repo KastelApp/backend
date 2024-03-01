@@ -32,7 +32,7 @@
     "@types/deep-equal": "^1.0.4",
     "@types/nodemailer": "^6.4.14",
     "@types/ws": "^8.5.10",
-    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^6.19.0",
     "bun-types": "^1.0.23",
     "eslint": "^8.56.0",
