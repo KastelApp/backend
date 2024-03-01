@@ -12,7 +12,7 @@
     "@react-email/render": "^0.0.12",
     "@sentry/bun": "^7.93.0",
     "amqplib": "^0.10.3",
-    "archiver": "^6.0.1",
+    "archiver": "^7.0.0",
     "chokidar": "^3.5.3",
     "elysia": "^0.8.9",
     "husky": "^8.0.3",
