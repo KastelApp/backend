@@ -26,3 +26,4 @@ export { roleUpdate } from "./role/update";
 export { sessionCreate } from "./session/create";
 export { sessionDelete } from "./session/delete";
 export { userUpdate } from "./user/update";
+export { messageTyping } from "./message/typing.ts";

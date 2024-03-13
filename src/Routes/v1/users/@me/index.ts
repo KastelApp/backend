@@ -15,7 +15,7 @@ import type { CreateRoute } from "@/Utils/Classes/Routing/Route.ts";
 import Route from "@/Utils/Classes/Routing/Route.ts";
 import Token from "@/Utils/Classes/Token.ts";
 
-interface User {
+export interface User {
 	allowedInvites?: number;
 	avatar: string | null;
 	bio?: string | null;

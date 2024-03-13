@@ -1,22 +1,31 @@
-import type { types } from "@kastelll/cassandra-driver";
-
 export interface MessageCreate {
-    allowedMentions: number;
-    attachments: string[];
-    authorId: string;
-    bucket: string;
     channelId: string;
-    content: string;
-    embeds: {}[];
-    flags: number;
-    guildId: string;
-    member: {};
-    mentionChannels: string[];
-    mentionRoles: string[];
-    mentions: string[];
-    messageId: types.Long | bigint;
-    replyingTo: string | null;
-    updatedDate: Date | null;
+    message: {
+        allowedMentions: number;
+        attachments: any[];
+        author: {
+            avatar: string | null;
+            flags: string;
+            globalNickname: string | null;
+            id: string;
+            publicFlags: string;
+            tag: string;
+            username: string;
+        };
+        content: string;
+        creationDate: string;
+        deletable: boolean;
+        editedDate: string | null;
+        embeds: any[];
+        flags: number;
+        id: string;
+        mentions: {
+            channels: any[];
+            roles: any[];
+            users: any[];
+        };
+        nonce: string;
+        pinned: boolean;
+        replyingTo: string | null;
+    };
 }
-
-export default MessageCreate;

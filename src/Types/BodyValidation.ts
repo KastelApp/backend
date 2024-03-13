@@ -46,6 +46,7 @@ type TypeDependentStuff<
 		email(): CreateType<Type, Option, M, E, false, OType>;
 		max(value: number): CreateType<Type, Option, M, E, false, OType>;
 		min(value: number): CreateType<Type, Option, M, E, false, OType>;
+		regex(value: RegExp): CreateType<Type, Option, M, E, false, OType>;	
 	}
 	: Type extends "number"
 	? {
@@ -110,8 +111,8 @@ type CreateType<
 
 interface TypeMapping {
 	any: any;
-	array: unknown[];
 	// ! Only here for the Optionalize type, this will never be used
+	array: unknown[];
 	boolean: boolean;
 	enum: string;
 	null: null;
@@ -204,6 +205,7 @@ const validate =
 		values?: E,
 		isarray = false,
 		objecttype?: OType,
+		regex?: RegExp,
 	) =>
 		(value: unknown) => {
 			if ((opt === "required" && value === undefined) || value === null)
@@ -273,6 +275,12 @@ const validate =
 						return {
 							valid: false,
 							error: `{key} was expected to be a string, but received ${typeof value}`,
+						};
+						
+					if (regex && !regex.test(value))
+						return {
+							valid: false,
+							error: "{key} was expected to match a specific regex, but did not.",
 						};
 
 					const error = `{key} was expected to be between ${min === -1 ? "0" : min} and ${max === -1 ? "infinity" : max
@@ -463,6 +471,7 @@ const createdType = <
 	values?: Enums,
 	isarray?: IsArray,
 	objecttype?: OType,
+	regex?: RegExp,
 ) => {
 	return {
 		canBeNull: option === "none" || option === "requiredNullable",
@@ -477,6 +486,7 @@ const createdType = <
 				values,
 				isarray,
 				objecttype,
+				regex
 			);
 		},
 		nullable: () => {
@@ -490,22 +500,26 @@ const createdType = <
 				values,
 				isarray,
 				objecttype,
+				regex
 			);
 		},
 		required: option === "required" || option === "requiredNullable",
 		type,
-		validate: validate(type, option, min, max, email, items, values, isarray, objecttype),
+		validate: validate(type, option, min, max, email, items, values, isarray, objecttype, regex),
 		min: (value: number) => {
-			return createdType(type, option, email, value, max, items, values, isarray, objecttype);
+			return createdType(type, option, email, value, max, items, values, isarray, objecttype, regex);
 		},
 		max: (value: number) => {
-			return createdType(type, option, email, min, value, items, values, isarray, objecttype);
+			return createdType(type, option, email, min, value, items, values, isarray, objecttype, regex);
 		},
 		email: () => {
-			return createdType(type, option, true, min, max, items, values, isarray, objecttype);
+			return createdType(type, option, true, min, max, items, values, isarray, objecttype, regex);
 		},
 		array: () => {
-			return createdType(type, option, email, min, max, items, values, true, objecttype);
+			return createdType(type, option, email, min, max, items, values, true, objecttype, regex);
+		},
+		regex: (value: RegExp) => {
+			return createdType(type, option, email, min, max, items, values, isarray, objecttype, value);
 		},
 		items,
 		values,

@@ -35,8 +35,14 @@ class Encryption {
 
 			if (raw) return cleaned;
 
+			// ? THIS, is the most TERRIBLE fix I've done, the issue here is that for some reason, some ids get treated as being encrypted
+			// ? So, if cleaned.data does not exist, but cleaned does, and its a valid snowflake, just return the data - DarkerInk 3/12/2024
+			if (!cleaned.data && cleaned && App.snowflake.validate(data)) return data;
+
 			return cleaned.data;
 		} catch {
+			if (typeof data === "string" && data.length > 0) return data;
+
 			throw new Error(`Failed to decrypt data ${data}`);
 		}
 	}
@@ -91,7 +97,7 @@ class Encryption {
 				} else if (typeof value === "object") {
 					newObject[key] = this.completeDecryption(value);
 				} else {
-					newObject[key] = Encryption.isEncrypted(value) ? Encryption.decrypt(value, raw) : value;
+					newObject[key] = Encryption.completeDecryption(value, raw);
 				}
 			}
 
@@ -122,7 +128,7 @@ class Encryption {
 				} else if (typeof value === "object") {
 					newObject[key] = this.completeEncryption(value);
 				} else {
-					newObject[key] = Encryption.isEncrypted(value) ? value : Encryption.encrypt(value);
+					newObject[key] = Encryption.completeEncryption(value);
 				}
 			}
 

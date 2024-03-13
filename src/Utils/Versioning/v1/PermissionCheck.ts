@@ -1,6 +1,7 @@
 import GuildMemberFlags from "@/Utils/Classes/BitFields/GuildMember.ts";
 import type { PermissionKey } from "@/Utils/Classes/BitFields/Permissions.ts";
 import Permissions from "@/Utils/Classes/BitFields/Permissions.ts";
+import Encryption from "@/Utils/Classes/Encryption.ts";
 
 class PermissionHandler {
 	public guildMemberFlags: GuildMemberFlags;
@@ -38,22 +39,22 @@ class PermissionHandler {
 			}[];
 		}[],
 	) {
-		this.guildMemberId = guildMemberId;
+		this.guildMemberId = Encryption.decrypt(guildMemberId);
 
 		this.guildMemberFlags = new GuildMemberFlags(guildMemberFlags);
 
 		this.memberRoles = memberRoles.map((Role) => ({
-			id: Role.id,
+			id: Encryption.decrypt(Role.id),
 			permissions: new Permissions(Role.permissions),
 			position: Role.position,
 		}));
 
 		this.channels = channels?.map((Channel) => ({
-			id: Channel.id,
+			id: Encryption.decrypt(Channel.id),
 			overrides: Channel.overrides.map((Override) => ({
 				allow: new Permissions(Override.allow),
 				deny: new Permissions(Override.deny),
-				id: Override.id,
+				id: Encryption.decrypt(Override.id),
 				type: Override.type,
 			})),
 		})) ?? [];
@@ -92,15 +93,17 @@ class PermissionHandler {
 	 *? Checks if you have permissiosn to a specific channel
 	 */
 	public hasChannelPermission(channelId: string, permission: PermissionKey[]): boolean {
-		if (this.guildMemberFlags.has("Owner") || this.guildMemberFlags.has("CoOwner")) return true;
-
 		const channel = this.channels.find((Channel) => Channel.id === channelId);
 
 		if (!channel) return false;
 
+		if (this.guildMemberFlags.has("Owner") || this.guildMemberFlags.has("CoOwner")) return true;
+
 		const overrides = channel.overrides.filter((Override) => Override.id === this.guildMemberId || this.memberRoles.some((Role) => Role.id === Override.id));
 
-		if (overrides.length === 0) return false;
+		if (overrides.length === 0) {
+			return this.hasAnyRole(permission);
+		}
 
 		const allow = overrides.some((Override) => Override.allow.has(permission));
 

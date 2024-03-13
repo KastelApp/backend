@@ -13,7 +13,7 @@ const channels = {
     channel: ["create", "delete", "update"],
     user: ["update"],
     presence: ["update"],
-    message: ["create", "delete", "update", "reported"],
+    message: ["create", "delete", "update", "reported", "typing"],
     guild: ["create", "delete", "update"],
     invite: ["create", "delete", "update"],
     role: ["create", "delete", "update"],
@@ -98,7 +98,7 @@ class RabbitMQ {
     }
 
     private compress(data: unknown) {
-        const string = JSON.stringify(data);
+        const string = this.jsonStringify(data);
         const stringToUint8Array = new TextEncoder().encode(string);
 
         // eslint-disable-next-line n/no-sync -- theres no other options
@@ -115,6 +115,19 @@ class RabbitMQ {
 
     private get url() {
         return `amqp://${this.config.rabbitMQ.host}:${this.config.rabbitMQ.port}`;
+    }
+
+    /**
+     * basically can handle bigints turning them into strings
+     */
+    public jsonStringify(data: unknown) {
+        return JSON.stringify(data, (_, value) => {
+            if (typeof value === "bigint") {
+                return value.toString();
+            }
+
+            return value;
+        });
     }
 }
 

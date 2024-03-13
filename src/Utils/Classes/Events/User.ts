@@ -1,10 +1,12 @@
 import type { ServerWebSocket } from "bun";
 import { statusTypes } from "@/Constants.ts";
+import { type User as UserType } from "@/Routes/v1/users/@me/index.ts";
 import FlagFields from "../BitFields/Flags.ts";
 import Encryption from "../Encryption.ts";
 import Token from "../Token.ts";
 import type WebSocket from "../WebSocket.ts";
 import { errorCodes } from "./Errors.ts";
+
 
 interface WsOptions {
 	headers: Request["headers"];
@@ -79,6 +81,8 @@ class User {
 	};
 
 	public sequence: number = -1; // ? -1 due to the hello packet
+
+	public fetchedUser!: UserType;
 
 	public constructor(App: WebSocket) {
 		this.#App = App;
@@ -312,7 +316,7 @@ class User {
 			userId: Encryption.encrypt(this.id),
 			status: statusTypes[status]
 		});
-		
+
 		return this;
 	}
 }

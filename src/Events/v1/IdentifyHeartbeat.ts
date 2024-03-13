@@ -1,4 +1,4 @@
-import { permissionOverrideTypes, presenceTypes } from "@/Constants.ts";
+import { permissionOverrideTypes, presenceTypes, statusTypes } from "@/Constants.ts";
 import FetchGuilds from "@/Routes/v1/guilds/index.ts";
 import FetchPatch from "@/Routes/v1/users/@me/index.ts";
 import type { Infer } from "@/Types/BodyValidation.ts";
@@ -55,7 +55,26 @@ interface finishedGuilds {
 	icon: string | null;
 	id: string;
 	maxMembers?: number;
-	members?: { joinedAt: string, nickname: string | null; owner: boolean; roles: string[]; user: { avatar: string | null; flags: string; id: string; publicFlags: string; username: string; }; }[];
+	members?: {
+		joinedAt: string;
+		nickname: string | null;
+		owner: boolean;
+		presence: {
+			since: number | null;
+			state: string | null;
+			status: number;
+			type: number;
+		}[],
+		roles: string[];
+		user: {
+			avatar: string | null;
+			flags: string;
+			id: string;
+			publicFlags: string;
+			tag: string;
+			username: string;
+		};
+	}[];
 	name: string;
 	owner?: {
 		avatar: string | null;
@@ -149,10 +168,43 @@ export default class IdentifyAndHeartbeat extends Event {
 			return;
 		}
 
+		user.fetchedUser = fetchedUser;
+
 		const finishedGuilds: finishedGuilds[] = [];
+
+		if (user.settings.status === "offline") {
+			await user.setStatus("online");
+		}
+
+		const got = await this.App.cache.get(`user:${Encryption.encrypt(user.id)}`);
+
+		if (!got || typeof got !== "string") {
+			await this.App.cache.set(`user:${Encryption.encrypt(user.id)}`, JSON.stringify([{
+				type: presenceTypes.custom,
+				state: user.settings.customStatus,
+				status: user.settings.status,
+				since: Date.now(),
+				sessionId: user.sessionId
+			}]));
+		}
+
+		const parsed = JSON.parse(got as string ?? "[]") as { sessionId: string | null, since: number | null; state: string | null; status: number; type: number; }[];
+
+		const presences = [{
+			type: presenceTypes.custom,
+			state: user.settings.customStatus,
+			status: user.settings.status,
+			since: Date.now(),
+			current: true,
+			sessionId: user.sessionId
+		}, ...parsed.map((prec) => ({
+			...prec,
+			current: false,
+		}))];
 
 		for (const guild of fetchedGuilds) {
 			user.subscribe(`guild:${guild.id}`);
+			user.subscribe(`guild:${guild.id}:members`);
 
 			const finishedGuild: finishedGuilds = {
 				name: guild.name,
@@ -206,7 +258,7 @@ export default class IdentifyAndHeartbeat extends Event {
 			}
 
 			for (const member of Encryption.completeDecryption(first100Members)) {
-				const fetchedUser = await this.App.cassandra.models.User.get({ userId: Encryption.encrypt(member.userId) }, { fields: ["username", "userId", "flags", "publicFlags", "avatar"] });
+				const fetchedUser = await this.App.cassandra.models.User.get({ userId: Encryption.encrypt(member.userId) }, { fields: ["username", "userId", "flags", "publicFlags", "avatar", "tag"] });
 
 				if (!fetchedUser) {
 					this.App.logger.warn(`User not found for ${member.userId} in ${guild.id}`);
@@ -214,29 +266,67 @@ export default class IdentifyAndHeartbeat extends Event {
 					continue;
 				}
 
-				finishedGuild.members?.push({
+				const data = {
 					user: {
 						username: fetchedUser.username,
 						id: fetchedUser.userId,
 						flags: fetchedUser.flags,
 						publicFlags: fetchedUser.publicFlags,
-						avatar: fetchedUser.avatar
+						avatar: fetchedUser.avatar,
+						tag: fetchedUser.tag
 					},
 					owner: finishedGuild.owner?.id === member.userId,
 					nickname: member.nickname,
 					roles: member.roles,
-					joinedAt: member.joinedAt.toISOString()
-				});
+					joinedAt: member.joinedAt.toISOString(),
+					presence: []
+				};
+
+				if (data.user.id === Encryption.encrypt(user.id)) {
+					// @ts-expect-error -- it's fine
+					data.presence = presences;
+				} else {
+					const fetchedPresence = await this.App.cache.get(`user:${fetchedUser.userId}`);
+					const parsedPresence = JSON.parse(fetchedPresence as string ?? `[{ "sessionId": null, "since": null, "state": null, "type": ${presenceTypes.custom}, "status": ${statusTypes.offline} }]`) as
+						{ sessionId: string | null, since: number | null; state: string | null; status: number; type: number; }[];
+
+					// @ts-expect-error -- it's fine
+					data.presence = parsedPresence.map((pre) => ({
+						...pre,
+						sessionId: undefined,
+						current: undefined
+					}));
+				}
+
+
+				finishedGuild.members?.push(data);
 			}
 
 			finishedGuilds.push(finishedGuild);
+
+			this.App.publish(`guild:${guild.id}:members`, {
+				op: opCodes.event,
+				event: "PresencesUpdate",
+				data: {
+					user: {
+						id: fetchedUser.id,
+						username: fetchedUser.username,
+						avatar: fetchedUser.avatar,
+						tag: fetchedUser.tag,
+						publicFlags: fetchedUser.publicFlags,
+						flags: fetchedUser.flags
+					},
+					guildId: guild.id,
+					presences: presences.map((pre) => ({
+						...pre,
+						sessionId: undefined,
+						current: undefined
+					}))
+				}
+			}, [user]);
 		}
 
 		user.lastHeartbeat = Date.now();
-
-		if (user.settings.status === "offline") {
-			await user.setStatus("online");
-		}
 
 		user.send({
 			op: opCodes.ready,
@@ -249,15 +339,11 @@ export default class IdentifyAndHeartbeat extends Event {
 					theme: user.settings.theme,
 					guildOrder: user.settings.guildOrder
 				},
-				presence: [{
-					type: presenceTypes.custom,
-					state: user.settings.customStatus,
-					status: user.settings.status,
-					since: Date.now(),
-					current: true
-				}]
+				presence: presences
 			},
 			seq: user.sequence + 1
 		});
+
+		await this.App.cache.set(`user:${Encryption.encrypt(user.id)}`, JSON.stringify(presences));
 	}
 }

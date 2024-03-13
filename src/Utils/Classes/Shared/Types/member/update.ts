@@ -1,4 +1,4 @@
-import type { types } from "@kastelll/cassandra-driver";
+import type { types } from "@kastelapp/cassandra-driver";
 
 export interface GuildMemberUpdate {
     flags: number;

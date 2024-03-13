@@ -1,4 +1,4 @@
-import type { types } from "@kastelll/cassandra-driver";
+import type { types } from "@kastelapp/cassandra-driver";
 
 export interface MessageUpdated {
     allowedMentions: number;
@@ -14,7 +14,7 @@ export interface MessageUpdated {
     mentionChannels: string[];
     mentionRoles: string[];
     mentions: string[];
-    messageId: types.Long | bigint;
+    messageId: types.Long | bigint | string;
     replyingTo: string | null;
     updatedDate: Date | null;
 }

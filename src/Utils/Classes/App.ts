@@ -321,22 +321,22 @@ class App {
 			return value;
 		});
 	}
-	
+
 	public get status() {
 		return {
 			has: (type: keyof typeof statusTypes, int: number) => {
 				const foundInt = statusTypes[type];
-				
+
 				return (int & foundInt) === foundInt;
 			},
 			remove: (type: keyof typeof statusTypes, int: number) => {
 				const foundInt = statusTypes[type];
-				
+
 				return int & ~foundInt;
 			},
 			add: (type: keyof typeof statusTypes, int: number) => {
 				const foundInt = statusTypes[type];
-				
+
 				return int | foundInt;
 			},
 			isOffline: (int: number) => {
@@ -347,10 +347,10 @@ class App {
 				if (this.status.has("dnd", int)) return "dnd";
 				if (this.status.has("idle", int)) return "idle";
 				if (this.status.has("invisible", int)) return "invisible";
-				
+
 				return "online";
 			}
-		}
+		};
 	}
 
 	public get config() {

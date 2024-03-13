@@ -182,8 +182,7 @@ class Permissions {
 				if (!Object.values(permissions).some((group) => group.int === bits[0])) return null;
 				if (
 					!Object.values(permissions).some((group) => Object.values(group.subPermissions).includes(bits[1] as bigint))
-				)
-					return null;
+				) return null;
 
 				return bits;
 			})
@@ -213,10 +212,14 @@ class Permissions {
 			? new Permissions(permissions.map((bits) => [bits.first.toString(), bits.second.toString()]))
 			: new Permissions([]);
 	}
+
+	public static permissionFromDatabase(permissions: bigintPair[]) {
+		return this.permissionFromBigint(permissions).normizedBits;
+	}
 }
 
 export default Permissions;
 
 export {
 	type PermissionKey
-}
+};

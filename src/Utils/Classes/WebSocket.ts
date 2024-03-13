@@ -1,15 +1,47 @@
 import { join } from "node:path";
 import { URL } from "node:url";
 import { isMainThread, type Server } from "bun";
+import { presenceTypes, statusTypes } from "@/Constants.ts";
 import { validate } from "@/Middleware/BodyValidator.ts";
 import App from "./App.ts";
+import Encryption from "./Encryption.ts";
 import { errorCodes } from "./Events/Errors.ts";
 import EventBuilder from "./Events/Event.ts";
 import { opCodes } from "./Events/OpCodes.ts";
 import type { WsOptions } from "./Events/User.ts";
 import User from "./Events/User.ts";
 import FileSystemRouter from "./FileSystemRouter.ts";
-import { banCreate, banDelete, channelCreate, channelDelete, channelUpdate, guildCreate, guildDelete, guildMemberAdd, guildMemberBan, guildMemberKick, guildMemberRemove, guildMemberUnban, guildMemberUpdate, guildUpdate, inviteCreate, inviteDelete, inviteUpdate, messageCreate, messageDelete, messageReported, messageUpdated, presenceUpdate, roleCreate, roleDelete, roleUpdate, sessionCreate, sessionDelete, userUpdate } from "./Shared/Events/index.ts";
+import {
+	banCreate,
+	banDelete,
+	channelCreate,
+	channelDelete,
+	channelUpdate,
+	guildCreate,
+	guildDelete,
+	guildMemberAdd,
+	guildMemberBan,
+	guildMemberKick,
+	guildMemberRemove,
+	guildMemberUnban,
+	guildMemberUpdate,
+	guildUpdate,
+	inviteCreate,
+	inviteDelete,
+	inviteUpdate,
+	messageCreate,
+	messageDelete,
+	messageReported,
+	messageUpdated,
+	presenceUpdate,
+	roleCreate,
+	roleDelete,
+	roleUpdate,
+	sessionCreate,
+	sessionDelete,
+	userUpdate,
+	messageTyping
+} from "./Shared/Events/index.ts";
 import type { GetChannelTypes, channels } from "./Shared/RabbitMQ.ts";
 
 declare const self: Worker;
@@ -55,147 +87,157 @@ class WebSocket extends App {
 				postMessage({ type: "config", data: this.config });
 			}
 
-			if (!this.isRabbitMessage(event.data)) return;
+			if (!this.isRabbitMessage(event.data)) {
+				this.logger.warn("Invalid RabbitMQ message");
+
+				return;
+			}
 
 			switch (event.data.topic) {
 				case "ban.create": {
-					banCreate(this, event.data.data)
-					break
+					banCreate(this, event.data.data);
+					break;
 				}
 
 				case "ban.delete": {
-					banDelete(this, event.data.data)
-					break
+					banDelete(this, event.data.data);
+					break;
 				}
 
 				case "channel.create": {
-					channelCreate(this, event.data.data)
-					break
+					channelCreate(this, event.data.data);
+					break;
 				}
 
 				case "channel.delete": {
-					channelDelete(this, event.data.data)
-					break
+					channelDelete(this, event.data.data);
+					break;
 				}
 
 				case "channel.update": {
-					channelUpdate(this, event.data.data)
-					break
+					channelUpdate(this, event.data.data);
+					break;
 				}
 
 				case "guild.create": {
-					guildCreate(this, event.data.data)
-					break
+					guildCreate(this, event.data.data);
+					break;
 				}
 
 				case "guild.delete": {
-					guildDelete(this, event.data.data)
-					break
+					guildDelete(this, event.data.data);
+					break;
 				}
 
 				case "guild.update": {
-					guildUpdate(this, event.data.data)
-					break
+					guildUpdate(this, event.data.data);
+					break;
 				}
 
 				case "guildMember.add": {
-					guildMemberAdd(this, event.data.data)
-					break
+					guildMemberAdd(this, event.data.data);
+					break;
 				}
 
 				case "guildMember.ban": {
-					guildMemberBan(this, event.data.data)
-					break
+					guildMemberBan(this, event.data.data);
+					break;
 				}
 
 				case "guildMember.kick": {
-					guildMemberKick(this, event.data.data)
-					break
+					guildMemberKick(this, event.data.data);
+					break;
 				}
 
 				case "guildMember.remove": {
-					guildMemberRemove(this, event.data.data)
-					break
+					guildMemberRemove(this, event.data.data);
+					break;
 				}
 
 				case "guildMember.unban": {
-					guildMemberUnban(this, event.data.data)
-					break
+					guildMemberUnban(this, event.data.data);
+					break;
 				}
 
 				case "guildMember.update": {
-					guildMemberUpdate(this, event.data.data)
-					break
+					guildMemberUpdate(this, event.data.data);
+					break;
 				}
 
 				case "invite.create": {
-					inviteCreate(this, event.data.data)
-					break
+					inviteCreate(this, event.data.data);
+					break;
 				}
 
 				case "invite.delete": {
-					inviteDelete(this, event.data.data)
-					break
+					inviteDelete(this, event.data.data);
+					break;
 				}
 
 				case "invite.update": {
-					inviteUpdate(this, event.data.data)
-					break
+					inviteUpdate(this, event.data.data);
+					break;
 				}
 
 				case "message.create": {
-					messageCreate(this, event.data.data)
-					break
+					messageCreate(this, event.data.data);
+					break;
 				}
 
 				case "message.delete": {
-					messageDelete(this, event.data.data)
-					break
+					messageDelete(this, event.data.data);
+					break;
 				}
 
 				case "message.reported": {
-					messageReported(this, event.data.data)
-					break
+					messageReported(this, event.data.data);
+					break;
 				}
 
 				case "message.update": {
-					messageUpdated(this, event.data.data)
-					break
+					messageUpdated(this, event.data.data);
+					break;
 				}
 
 				case "presence.update": {
-					presenceUpdate(this, event.data.data)
-					break
+					presenceUpdate(this, event.data.data);
+					break;
 				}
 
 				case "role.create": {
-					roleCreate(this, event.data.data)
-					break
+					roleCreate(this, event.data.data);
+					break;
 				}
 
 				case "role.delete": {
-					roleDelete(this, event.data.data)
-					break
+					roleDelete(this, event.data.data);
+					break;
 				}
 
 				case "role.update": {
-					roleUpdate(this, event.data.data)
-					break
+					roleUpdate(this, event.data.data);
+					break;
 				}
 
 				case "sessions.create": {
-					sessionCreate(this, event.data.data)
-					break
+					sessionCreate(this, event.data.data);
+					break;
 				}
 
 				case "sessions.delete": {
-					sessionDelete(this, event.data.data)
-					break
+					sessionDelete(this, event.data.data);
+					break;
 				}
 
 				case "user.update": {
-					userUpdate(this, event.data.data)
-					break
+					userUpdate(this, event.data.data);
+					break;
+				}
+
+				case "message.typing": {
+					messageTyping(this, event.data.data);
+
+					break;
 				}
 
 				default: {
@@ -308,8 +350,6 @@ class WebSocket extends App {
 					if (version) newUser.version = Number(version);
 					else newUser.version = 1;
 
-					console.log(newUser.version, params, ws.data.url);
-
 					if (encoding) {
 						if (encoding === "json") newUser.encoding = encoding;
 						else {
@@ -337,7 +377,7 @@ class WebSocket extends App {
 						}
 					});
 				},
-				close: (ws, code) => {
+				close: async (ws, code) => {
 					if (ws.data.user.expectingClose) {
 						if (!ws.data.user.resumeable) {
 							this.clients.delete(ws.data.user.sessionId);
@@ -351,6 +391,48 @@ class WebSocket extends App {
 							ws.data.user.resumeable = true;
 						}
 					}
+
+					const got = await this.cache.get(`user:${Encryption.encrypt(ws.data.user.id)}`);
+
+					const parsed = JSON.parse(got as string ?? `[{ "sessionId": null, "since": null, "state": null, "type": ${presenceTypes.custom}, "status": ${statusTypes.offline} }]`) as
+						{ sessionId: string | null, since: number | null; state: string | null; status: number; type: number; }[];
+
+					const filtered = parsed.filter((prec) => prec.sessionId !== ws.data.user.sessionId);
+
+					if (filtered.length > 0) {
+						filtered.push({
+							sessionId: null,
+							since: null,
+							state: null,
+							status: statusTypes.offline,
+							type: presenceTypes.custom
+						});
+					}
+
+					for (const guild of ws.data.user.guilds) {
+						this.publish(`guild:${guild}:members`, {
+							op: opCodes.event,
+							event: "PresencesUpdate",
+							data: {
+								user: {
+									id: ws.data.user.fetchedUser.id,
+									username: ws.data.user.fetchedUser.username,
+									avatar: ws.data.user.fetchedUser.avatar,
+									tag: ws.data.user.fetchedUser.tag,
+									publicFlags: ws.data.user.fetchedUser.publicFlags,
+									flags: ws.data.user.fetchedUser.flags
+								},
+								guildId: guild,
+								presences: filtered.map((prec) => ({
+									...prec,
+									sessionId: undefined,
+									current: undefined
+								}))
+							}
+						});
+					}
+
+					if (got) await this.cache.set(`user:${Encryption.encrypt(ws.data.user.id)}`, JSON.stringify(filtered));
 				},
 			},
 			hostname: "0.0.0.0",
@@ -545,6 +627,40 @@ class WebSocket extends App {
 		}
 
 		return "data" in data;
+	}
+
+	public publish(topic: string, data: unknown, ignoreUsers: User[] = []) {
+		const users = this.topics.get(topic);
+
+		if (!users) {
+			this.logger.debug(`No users subscribed to ${topic}`);
+
+			return 0;
+		}
+
+		for (const user of users) {
+			if (ignoreUsers.includes(user)) continue;
+
+			user.send(typeof data === "object" ? { ...data, seq: user.sequence } : data);
+		}
+
+		return users.size;
+	}
+
+	public getTopic(topic: string) {
+		return this.topics.get(topic) ?? new Set();
+	}
+
+	public unsubscribe(topic: string, user: User) {
+		const users = this.topics.get(topic);
+
+		if (!users) return;
+
+		users.delete(user);
+
+		if (users.size === 0) this.topics.delete(topic);
+
+		return users.size;
 	}
 }
 

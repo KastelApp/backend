@@ -61,9 +61,7 @@ const allowedMethods = ["get", "post", "put", "patch", "delete", "head", "option
 const typechecker = project.getTypeChecker();
 
 const serializeTypeToJson = (returnType: Type<ts.Type>): any => {
-	// console.log(returnType.getFlags());
-
-	if (returnType.getFlags() & TypeFlags.Object && !returnType.isArray()) {
+	if (returnType.getFlags() & TypeFlags.Object && !returnType.isArray() && !returnType.isTuple()) {
 		const obj: Record<string, unknown> = {};
 
 		for (const prop of returnType.getProperties()) {
@@ -105,7 +103,7 @@ const serializeTypeToJson = (returnType: Type<ts.Type>): any => {
 		return "never";
 	} else if (returnType.getFlags() & TypeFlags.BigInt) {
 		return "bigint";
-	} else if (returnType.getFlags() & TypeFlags.Object && returnType.isArray()) {
+	} else if (returnType.getFlags() & TypeFlags.Object && returnType.isArray() && !returnType.isTuple()) {
 		const typeArgs = returnType.getTypeArguments();
 
 		if (typeArgs.length === 1) {
@@ -113,6 +111,10 @@ const serializeTypeToJson = (returnType: Type<ts.Type>): any => {
 		}
 
 		return [];
+	} else if (returnType.getFlags() & TypeFlags.Object && returnType.isTuple()) {
+		const typeArgs = returnType.getTypeArguments();
+
+		return typeArgs.map((type) => serializeTypeToJson(type));
 	} else if (returnType.getFlags() & TypeFlags.BooleanLiteral) {
 		return returnType.getText();
 	} else if (returnType.getFlags() & TypeFlags.StringLiteral) {
@@ -125,31 +127,32 @@ const serializeTypeToJson = (returnType: Type<ts.Type>): any => {
 };
 
 const getErrors = (str: string) => {
-	// Remove trailing commas
-	const cleanedString = str.replaceAll(/,\s*}/g, "}").replaceAll(/,\s*]/g, "]");
+	const cleanedString = str.replaceAll(/,\s*}/g, "}").replaceAll(/,\s*]/g, "]").replaceAll(/\s+/g, " ");
 
-	// Match the login object
-	const regex = /{\s*(?<code>[\w$]+)\s*:\s*{(?<message>[^}]+)}\s*}/;
+	const regex = /{\s*(?<code>(?:[\w$]+|\[[^\]]+]))\s*:\s*{(?<data>(?:[^{}]|{[^}]*})*)}\s*}/;
 	const match = regex.exec(cleanedString);
 
 	if (match) {
 		const objName = match[1];
 
-		// Match code and message within the login object
 		const codeRegex = /code:\s*"(?<code>[^"]+)"/;
-		const messageRegex = /message:\s*"(?<message>[^"]+)"/;
+		const messageRegex = /message:\s*(?<message>["'`][^"'](?<actualtext>.*)["'`])/;;
 
 		const codeMatch = match[2]?.match(codeRegex);
 		const messageMatch = match[2]?.match(messageRegex);
 
 		if (codeMatch && messageMatch) {
 			const code = codeMatch[1];
-			const message = messageMatch[1];
+			const message = messageMatch[1]?.slice(1, -1);
 
 			return { objName, code, message };
 		} else {
+			console.warn("Missing something", codeMatch, messageMatch, cleanedString);
+
 			return null;
 		}
+	} else {
+		console.warn("Could not parse error", cleanedString);
 	}
 
 	return null;
@@ -236,7 +239,7 @@ for (const [name, route] of Object.entries(router.routes)) {
 			const exp = call.getExpression();
 			const expName = exp?.getText();
 
-			return expName === "error.addError";
+			return expName.endsWith("addError");
 		});
 
 		const errorArgs = addErrorCalls

@@ -119,6 +119,7 @@ const channelTypes = {
 	GuildNewMember: 1 << 5,
 	Dm: 1 << 10,
 	GroupChat: 1 << 11,
+	GuildMarkdown: 1 << 12
 };
 
 const presenceTypes = {

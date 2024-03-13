@@ -1,9 +1,9 @@
-import type { types } from "@kastelll/cassandra-driver";
+import type { types } from "@kastelapp/cassandra-driver";
 
 export interface MessageDelete {
     channelId: string;
     guildId: string;
-    messageId: types.Long | bigint;
+    messageId: types.Long | bigint | string;
 }
 
 export default MessageDelete;

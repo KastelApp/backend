@@ -110,7 +110,7 @@ const errorGen = {
 		return new HTTPErrors(4_017);
 	},
 	/*
-	 * Unlike the the UnAuthorized error, this is when you are missing permissions to do something (Think OUR permissions (like ManageGuild)), the othe rone is for example the route is staff only
+	 * Unlike the the UnAuthorized error, this is when you are missing permissions to do something (Think OUR permissions (like ManageGuild)), the other one is for example the route is staff only
 	 */
 	MissingPermissions: () => {
 		return new HTTPErrors(4_018);
@@ -145,11 +145,23 @@ const errorGen = {
 	MethodNotAllowed: () => {
 		return new HTTPErrors(4_023);
 	},
-	/**
+	/*
 	 * Couldn't delete an invite
 	 */
 	FailedToDeleteInvite: () => {
 		return new HTTPErrors(4_024);
+	},
+	/*
+	 * Tried sending an empty message
+	*/
+	EmptyMessage: () => {
+		return new HTTPErrors(4_025);
+	},
+	/*
+	 * If the message is unknown
+	 */
+	UnknownMessage: () => {
+		return new HTTPErrors(4_026);
 	},
 	/*
 	 * Used when the resource is unavailable (503 error)

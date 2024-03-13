@@ -1,8 +1,9 @@
+import { presenceTypes, statusTypes } from "@/Constants.ts";
 import bodyValidator from "@/Middleware/BodyValidator.ts";
 import type { UserMiddlewareType } from "@/Middleware/User.ts";
 import userMiddleware from "@/Middleware/User.ts";
 import type { Infer } from "@/Types/BodyValidation.ts";
-import { array, number, snowflake, string } from "@/Types/BodyValidation.ts";
+import { enums, array, number, snowflake, string } from "@/Types/BodyValidation.ts";
 import type API from "@/Utils/Classes/API.ts";
 import Encryption from "@/Utils/Classes/Encryption.ts";
 import errorGen from "@/Utils/Classes/ErrorGen.ts";
@@ -15,8 +16,8 @@ import Route from "@/Utils/Classes/Routing/Route.ts";
 
 const patchSettings = {
 	customStatus: string().optional().nullable().max(128),
-	theme: string().optional().max(5).min(4), // dark, light, auto
-	language: string().optional().max(5).min(2), // en-US
+	theme: enums(["dark", "light", "system"]).optional(), // dark, light, auto
+	language: enums(["en-US"]).optional(), // en-US
 	guildOrder: array({
 		guildId: snowflake(),
 		position: number().min(0).max(100),
@@ -44,7 +45,7 @@ export default class UserSettings extends Route {
 		return user.settings;
 	}
 
-	public themes = ["dark", "light", "auto"];
+	public themes = ["dark", "light", "system"];
 
 	public supportedLanugages = ["en-US"];
 
@@ -67,30 +68,10 @@ export default class UserSettings extends Route {
 		const data: Partial<Infer<typeof patchSettings>> = {};
 
 		if (body.theme) {
-			if (!this.themes.includes(body.theme)) {
-				failedToUpdateSettigns.addError({
-					theme: {
-						code: "InvalidTheme",
-						message: `The theme you provided was invalid, a valid theme is "${this.themes.join('", "')}"`,
-					},
-				});
-			}
-
 			data.theme = body.theme;
 		}
 
 		if (body.language) {
-			if (!this.supportedLanugages.includes(body.language)) {
-				failedToUpdateSettigns.addError({
-					language: {
-						code: "InvalidLanguage",
-						message: `The language you provided was invalid, a valid language is "${this.supportedLanugages.join(
-							'", "',
-						)}"`,
-					},
-				});
-			}
-
 			data.language = body.language;
 		}
 
@@ -129,7 +110,42 @@ export default class UserSettings extends Route {
 			...data,
 		});
 
+		if (body.customStatus) {
+			const fetchedPresence = await this.App.cache.get(`user:${Encryption.encrypt(user.id)}`);
+			const parsedPresence = JSON.parse(fetchedPresence as string ?? `[{ "sessionId": null, "since": null, "state": null, "type": ${presenceTypes.custom}, "status": ${statusTypes.offline} }]`) as
+				{ sessionId: string | null, since: number | null; state: string | null; status: number; type: number; }[];
+
+			for (const presence of parsedPresence) {
+				if (presence.type === presenceTypes.custom) {
+					presence.state = body.customStatus;
+				}
+			}
+
+			const usr = await this.App.cassandra.models.User.get({
+				userId: Encryption.encrypt(user.id)
+			}, {
+				fields: ["avatar"]
+			});
+
+			for (const guild of user.guilds) {
+				this.App.rabbitMQForwarder("presence.update", {
+					user: {
+						id: user.id,
+						username: user.username,
+						avatar: usr!.avatar,
+						publicFlags: user.flagsUtil.PublicFlags.cleaned,
+						flags: user.flagsUtil.PrivateFlags.cleaned
+					},
+					guildId: guild,
+					presence: parsedPresence
+				});
+			}
+
+			await this.App.cache.set(`user:${Encryption.encrypt(user.id)}`, JSON.stringify(parsedPresence));
+		}
+
 		return {
+			...user.settings,
 			bio: body.bio ?? user.settings.bio,
 			guildOrder: fixedGuilds ?? user.settings.guildOrder,
 			language: body.language ?? user.settings.language,

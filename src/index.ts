@@ -46,9 +46,9 @@ const handleMessage = async (worker: "api" | "ws", event: MessageEvent) => {
 
 	} else if (isConfigResponse(event.data)) {
 		data.api.config = event.data.data;
-		
+
 		if (rabbitMq) return;
-		
+
 		rabbitMq = new RabbitMQ(data.api.config);
 
 		await rabbitMq.init();
@@ -69,7 +69,7 @@ const handleMessage = async (worker: "api" | "ws", event: MessageEvent) => {
 };
 
 api.onmessage = async (event: MessageEvent) => handleMessage("api", event);
-websocket.onmessage = async (event: MessageEvent) =>  handleMessage("ws", event);
+websocket.onmessage = async (event: MessageEvent) => handleMessage("ws", event);
 
 api.onerror = (event: ErrorEvent) => {
 	console.log(event.message);

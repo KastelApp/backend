@@ -319,7 +319,13 @@ class API extends App {
 			});
 
 			return this.routeCache.get(path);
-		} catch {
+		} catch (error) {
+			if (this.args.includes("debug")) {
+				this.logger.error(`Failed to load ${path}`);
+
+				console.error(error);
+			}
+
 			return null;
 		}
 	}
