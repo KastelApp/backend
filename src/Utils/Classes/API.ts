@@ -7,6 +7,9 @@ import { Turnstile } from "@kastelll/util";
 import * as Sentry from "@sentry/bun";
 import { isMainThread } from "bun";
 import { Elysia } from "elysia";
+import type { Transporter } from "nodemailer";
+import { createTransport } from "nodemailer";
+import type SMTPTransport from "nodemailer/lib/smtp-transport/index";
 import App from "./App.ts";
 import errorGen from "./ErrorGen.ts";
 import FileSystemRouter from "./FileSystemRouter.ts";
@@ -31,6 +34,8 @@ class API extends App {
 	> = new Map();
 
 	public router: FileSystemRouter;
+	
+	public noReplyEmail!: Transporter<SMTPTransport.SentMessageInfo>;
 
 	public constructor() {
 		super("API");
@@ -53,6 +58,27 @@ class API extends App {
 		await super.init();
 
 		this.turnstile = new Turnstile(this.config.server.captchaEnabled, this.config.server.turnstileSecret ?? "secret");
+		
+		if (this.config.mailServer?.enabled) {
+			
+			const noReply = this.config.mailServer?.users.find((x) => x.shortCode === "NoReply");
+			
+			if (!noReply) {
+				this.logger.error("NoReply user not found in mailServer config");
+				
+				process.exit(1);
+			}
+			
+			this.noReplyEmail = createTransport({
+				host: noReply.host,
+				port: noReply.port,
+				secure: noReply.secure,
+				auth: {
+					user: noReply.username,
+					pass: noReply.password,
+				}
+			});			
+		}
 
 		this.router.on("reload", async ({ path, type, directory }) => {
 			this.logger.verbose(
@@ -330,6 +356,30 @@ class API extends App {
 			}
 
 			return null;
+		}
+	}
+	
+	public sendEmail(code: "NoReply" | "Support", to: string, subject: string, html: string, text: string) {
+		if (!this.config.mailServer?.enabled) return;
+
+		const user = this.config.mailServer?.users.find((x) => x.shortCode === code);
+		
+		if (!user) {
+			this.logger.error(`Could not find user with shortCode ${code}`);
+			
+			return;
+		}
+		
+		try {
+			void this.noReplyEmail.sendMail({
+				from: `${code === "NoReply" ? "no-reply" : "support"} <${user.username}>`,
+				to,
+				subject,
+				html,
+				text,
+			});
+		} catch {
+			this.logger.verbose(`Failed to send email to ${to}`);
 		}
 	}
 }

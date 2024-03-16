@@ -126,7 +126,7 @@ class Connection extends EventEmitter {
 				Role: this.generateMappingOptions("roles"),
 				Settings: this.generateMappingOptions("settings"),
 				User: this.generateMappingOptions("users"),
-				VerificationLink: this.generateMappingOptions("verifcationlink"),
+				VerificationLink: this.generateMappingOptions("verifcationlinks"),
 				Webhook: this.generateMappingOptions("webhooks"),
 				PlatformInvite: this.generateMappingOptions("platform_invite"),
 			},

@@ -239,6 +239,8 @@ export default class FetchJoinInvite extends Route {
 						message: "You're banned from this guild.",
 					},
 				});
+				
+				set.status = 403;
 
 				return banned.toJSON();
 			}
@@ -252,6 +254,8 @@ export default class FetchJoinInvite extends Route {
 						message: "You're already in this guild.",
 					},
 				});
+				
+				set.status = 403;
 
 				return alreadyIn.toJSON();
 			}

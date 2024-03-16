@@ -33,7 +33,7 @@ export interface User {
 	port?: number;
 	secure?: boolean;
 	shortCode?: ShortCode;
-	user?: string;
+	username?: string;
 }
 export interface Redis {
 	db: number;

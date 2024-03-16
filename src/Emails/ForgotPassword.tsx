@@ -1,5 +1,3 @@
-// ? Note: This is for when you have registered an account, it welcomes you and has a link to verify your email
-
 import {
 	Body,
 	Button,
@@ -73,7 +71,6 @@ const styles = {
 		color: "#CFDBFF",
 	},
 	hr: {
-		// HR: Display a divider that separates content areas in your email.
 		borderColor: "#262F40",
 		margin: "15px 0",
 	},
@@ -83,39 +80,34 @@ const styles = {
 	},
 } as const;
 
-
-
-const registration = (username: string, verifyUrl: string, deleteAccountUrl: string) => {
+const forgotPassword = (username: string, resetPasswordUrl: string) => {
 	return (
 		<Html>
 			<Head />
-			<Preview>Welcome to Kastel, Verify your email to get started!</Preview>
+			<Preview>Reset your Kastel password</Preview>
 			<Body style={styles.main}>
 				<Container style={styles.container}>
 					<div style={styles.logo.container}>
 						<Img src={imrUrl} alt="Kastel Logo" style={styles.logo.icon} />
 						<Heading style={styles.logo.text}>Kastel</Heading>
 					</div>
-					<Text style={styles.header}>Welcome to Kastel, {username}!</Text>
+					<Text style={styles.header}>Hello {username},</Text>
 					<br />
 					<Text style={styles.paragraph}>
-						Thank you for signing up to Kastel. We are very excited to have you here, I hope you will enjoy our
-						community.
+						We received a request to reset your password. If you did not make this request, please ignore this email. Otherwise, you can reset your password using the button below.
 					</Text>
 					<br />
 					<Hr style={styles.hr} />
 					<Text style={styles.btnText}>
-						Before you can truly enjoy Kastel, you'll need to verify your email. Don't worry, it's easy; Just click the
-						link or button below.
+						Click the button below to reset your password.
 					</Text>
 					<Section style={styles.btnContainer}>
-						<Button style={styles.btn} href={verifyUrl}>
-							Verify Email
+						<Button style={styles.btn} href={resetPasswordUrl}>
+							Reset Password
 						</Button>
 					</Section>
 					<Text style={styles.footer}>
-						If you did not sign up for kastel, please click on this link to delete the account{" "}
-						<Link href={deleteAccountUrl}>Delete Account</Link>
+						If you have any questions, feel free to contact our support team.
 					</Text>
 				</Container>
 			</Body>
@@ -123,4 +115,5 @@ const registration = (username: string, verifyUrl: string, deleteAccountUrl: str
 	);
 };
 
-export default registration;
+
+export default forgotPassword
