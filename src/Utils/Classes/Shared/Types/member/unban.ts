@@ -1,6 +1,6 @@
 export interface GuildMemberUnban {
-    guildId: string;
-    user: {};
+	guildId: string;
+	user: {};
 }
 
 export default GuildMemberUnban;

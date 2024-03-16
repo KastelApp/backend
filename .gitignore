@@ -53,3 +53,5 @@ openSpecStorage/
 src/configs/*
 
 !src/configs/example.json
+
+!src/configs/scylladb

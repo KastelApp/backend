@@ -153,7 +153,7 @@ const errorGen = {
 	},
 	/*
 	 * Tried sending an empty message
-	*/
+	 */
 	EmptyMessage: () => {
 		return new HTTPErrors(4_025);
 	},

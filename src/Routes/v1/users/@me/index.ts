@@ -63,7 +63,7 @@ export default class FetchPatch extends Route {
 		user,
 		query,
 		set,
-	}: CreateRoute<"/@me", any, [UserMiddlewareType], any, { include?: string; }>) {
+	}: CreateRoute<"/@me", any, [UserMiddlewareType], any, { include?: string }>) {
 		const fetchedUser = await this.App.cassandra.models.User.get({
 			userId: Encryption.encrypt(user.id),
 		});
@@ -238,7 +238,7 @@ export default class FetchPatch extends Route {
 				userId: Encryption.encrypt(user.id),
 				bio: Encryption.encrypt(body.bio),
 			});
-			
+
 			user.settings.bio = body.bio;
 		}
 

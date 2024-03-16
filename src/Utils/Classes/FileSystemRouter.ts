@@ -141,7 +141,7 @@ class FileSystemRouter {
 				dirent.isDirectory()
 					? this.recursiveReadDir(`${dir}/${dirent.name}`, files)
 					: !dirent.name.startsWith(".") &&
-						this.fileExtensions.includes(dirent.name.slice(dirent.name.lastIndexOf(".")))
+						  this.fileExtensions.includes(dirent.name.slice(dirent.name.lastIndexOf(".")))
 						? `${dir}/${dirent.name}`
 						: [],
 			);

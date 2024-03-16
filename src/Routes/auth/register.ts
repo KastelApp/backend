@@ -66,7 +66,12 @@ export default class Register extends Route {
 		const foundUsers = await this.fetchUser({ username: Encryption.encrypt(body.username) }, ["tag"]);
 		const tag = tagGenerator(foundUsers.map((usr) => usr.tag));
 
-		if (!foundPlatformInvite && this.App.config.server.features.includes("InviteBasedRegistration") || foundPlatformInvite && !foundPlatformInvite.usedById && (new Date(foundPlatformInvite.expiresAt)?.getTime() ?? 0) < Date.now()) {
+		if (
+			(!foundPlatformInvite && this.App.config.server.features.includes("InviteBasedRegistration")) ||
+			(foundPlatformInvite &&
+				!foundPlatformInvite.usedById &&
+				(new Date(foundPlatformInvite.expiresAt)?.getTime() ?? 0) < Date.now())
+		) {
 			failed.addError({
 				platformInvite: {
 					code: "InvalidInvite",
@@ -77,7 +82,6 @@ export default class Register extends Route {
 			set.status = 400;
 
 			return failed.toJSON(); // ? This is the only place this happens, we don't want to leak if the email is already taken, or if that max usernames has been reached
-
 		}
 
 		if (foundUser.length > 0) {

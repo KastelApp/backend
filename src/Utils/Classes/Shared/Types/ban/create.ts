@@ -1,6 +1,6 @@
 export interface BanCreate {
-    guildId: string;
-    user: {};
+	guildId: string;
+	user: {};
 }
 
 export default BanCreate;

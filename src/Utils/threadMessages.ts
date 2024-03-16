@@ -27,7 +27,7 @@ const isNewLog = (data: unknown): data is { data: string[]; type: "newLog" } => 
 	if (data.type !== "newLog") return false;
 
 	return "data" in data;
-}
+};
 
 const isQuestion = (data: unknown): data is { nonce: string; question: string } => {
 	if (typeof data !== "object") return false;
@@ -55,28 +55,22 @@ const isConfigResponse = (data: unknown): data is { data: MySchema; type: "confi
 	if (data.type !== "config") return false;
 
 	return "data" in data;
-}
+};
 
-const isRabbitMqType = (data: unknown): data is { data: { data: unknown, topic: GetChannelTypes<typeof channels>;}, type: "rabbitMQ" } => {
-    if (!isImportant(data)) return false;
+const isRabbitMqType = (
+	data: unknown,
+): data is { data: { data: unknown; topic: GetChannelTypes<typeof channels> }; type: "rabbitMQ" } => {
+	if (!isImportant(data)) return false;
 
-    if (data.type !== "rabbitMQ") return false;
+	if (data.type !== "rabbitMQ") return false;
 
-    if (!("data" in data)) return false;
-    
-    if (typeof data.data !== "object") return false;
-    
-    if (data.data === null) return false;
-    
-    return "topic" in data.data
-}
+	if (!("data" in data)) return false;
 
-export {
-    isImportant,
-    isLog,
-    isNewLog,
-    isQuestion,
-    isReady,
-    isConfigResponse,
-    isRabbitMqType,
-}
+	if (typeof data.data !== "object") return false;
+
+	if (data.data === null) return false;
+
+	return "topic" in data.data;
+};
+
+export { isImportant, isLog, isNewLog, isQuestion, isReady, isConfigResponse, isRabbitMqType };

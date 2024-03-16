@@ -27,14 +27,14 @@ class FlagFields {
 	public toArray(): (keyof typeof privateFlags | keyof typeof publicFlags)[] {
 		return [...this.PrivateFlags.toArray(), ...this.PublicFlags.toArray()];
 	}
-	
+
 	public toJSON() {
 		return {
 			PrivateFlags: this.PrivateFlags.bits.toString(),
 			PublicFlags: this.PublicFlags.bits.toString(),
 		};
 	}
-	
+
 	public static fromJSON(data: { PrivateFlags: bigint | number | string; PublicFlags: bigint | number | string }) {
 		return new FlagFields(data.PrivateFlags, data.PublicFlags);
 	}

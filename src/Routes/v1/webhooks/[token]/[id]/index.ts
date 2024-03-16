@@ -22,11 +22,11 @@ export default class FetchPostWebhook extends Route {
 	public patchWebhook() {
 		return {};
 	}
-    
-    @Method("post")
-    @Description("Change this Description when working on this route")
-    @ContentTypes("application/json")
-    public postWebhook() {
-        return {};
-    }
+
+	@Method("post")
+	@Description("Change this Description when working on this route")
+	@ContentTypes("application/json")
+	public postWebhook() {
+		return {};
+	}
 }

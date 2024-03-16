@@ -1,6 +1,6 @@
 export interface BanDelete {
-    guildId: string;
-    user: {};
+	guildId: string;
+	user: {};
 }
 
 export default BanDelete;

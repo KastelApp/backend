@@ -56,7 +56,8 @@ class API extends App {
 
 		this.router.on("reload", async ({ path, type, directory }) => {
 			this.logger.verbose(
-				`Reloaded Routes due to a ${directory ? "directory" : "file"} (${path}) being ${type === "A" ? "Added" : type === "M" ? "Modified" : type === "D" ? "Removed" : "Unknown"
+				`Reloaded Routes due to a ${directory ? "directory" : "file"} (${path}) being ${
+					type === "A" ? "Added" : type === "M" ? "Modified" : type === "D" ? "Removed" : "Unknown"
 				}`,
 			);
 
@@ -155,10 +156,11 @@ class API extends App {
 				error.addError({
 					methodNotAllowed: {
 						code: "MethodNotAllowed",
-						message: `Method "${request.method
-							}" is not allowed for "${path}", allowed methods are [${route.routeClass.__methods
-								.map((method) => method.method.toUpperCase())
-								.join(", ")}]`,
+						message: `Method "${
+							request.method
+						}" is not allowed for "${path}", allowed methods are [${route.routeClass.__methods
+							.map((method) => method.method.toUpperCase())
+							.join(", ")}]`,
 					},
 				});
 
@@ -198,8 +200,9 @@ class API extends App {
 				error.addError({
 					contentType: {
 						code: "InvalidContentType",
-						message: `Invalid Content-Type header, Expected (${contentTypes.type.join(", ")}), Got (${headers["content-type"]
-							})`,
+						message: `Invalid Content-Type header, Expected (${contentTypes.type.join(", ")}), Got (${
+							headers["content-type"]
+						})`,
 					},
 				});
 
@@ -296,7 +299,7 @@ class API extends App {
 
 		try {
 			// this is a hack to make sure it doesn't cache the file
-			const routeClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof RouteBuilder; };
+			const routeClass = (await import(`${path}?t=${Date.now()}`)) as { default: typeof RouteBuilder };
 
 			if (!routeClass.default) {
 				this.logger.warn(`Skipping ${path} as it does not have a default export`);

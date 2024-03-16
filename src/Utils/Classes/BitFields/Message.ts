@@ -6,10 +6,10 @@ class MessageFlags extends FlagUtils<typeof messageFlags> {
 	public constructor(bits: bigint | number | string) {
 		super(bits, messageFlags);
 	}
-    
-    public isDeletable(flag: number ) {
-        return (flag & nonDeletableMessageFlags) === 0;
-    }
+
+	public isDeletable(flag: number) {
+		return (flag & nonDeletableMessageFlags) === 0;
+	}
 }
 
 export default MessageFlags;

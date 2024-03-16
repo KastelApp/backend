@@ -1,4 +1,4 @@
 export interface GuildMemberRemove {
-    guildId: string;
-    member: {};
+	guildId: string;
+	member: {};
 }

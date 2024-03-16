@@ -1,6 +1,6 @@
 export interface SessionCreate {
-    sessionId: string;
-    userId: string;
+	sessionId: string;
+	userId: string;
 }
 
 export default SessionCreate;

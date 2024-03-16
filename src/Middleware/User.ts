@@ -16,7 +16,7 @@ export interface UserMiddlewareType extends Record<string, any> {
 		settings: {
 			allowedInvites: number;
 			bio: string | null;
-			customStatus: string | null,
+			customStatus: string | null;
 			guildOrder: {
 				guildId: string;
 				position: number;
@@ -124,7 +124,7 @@ const userMiddleware = (options: UserMiddleware) => {
 						"theme",
 						"status",
 						"allowedInvites",
-						"customStatus"
+						"customStatus",
 					],
 				},
 			);
@@ -334,7 +334,7 @@ const userMiddleware = (options: UserMiddleware) => {
 						status: usersSettings.status,
 						theme: usersSettings.theme,
 						allowedInvites: usersSettings.allowedInvites ?? 0,
-						customStatus: usersSettings.customStatus
+						customStatus: usersSettings.customStatus,
 					}),
 				},
 			};

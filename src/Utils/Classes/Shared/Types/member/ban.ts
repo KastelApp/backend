@@ -1,6 +1,6 @@
 export interface GuildMemberBan {
-    guildId: string;
-    user: {};
+	guildId: string;
+	user: {};
 }
 
 export default GuildMemberBan;

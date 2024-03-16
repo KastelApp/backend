@@ -114,4 +114,4 @@ const bodyValidator = (options: BodyValidator) => {
 
 export default bodyValidator;
 
-export { validate }
+export { validate };

@@ -7,7 +7,6 @@ import Token from "../Token.ts";
 import type WebSocket from "../WebSocket.ts";
 import { errorCodes } from "./Errors.ts";
 
-
 interface WsOptions {
 	headers: Request["headers"];
 	ip: string;
@@ -35,7 +34,7 @@ class User {
 	public settings!: {
 		allowedInvites: number;
 		bio: string | null;
-		customStatus: string | null,
+		customStatus: string | null;
 		guildOrder: {
 			guildId: string;
 			position: number;
@@ -74,7 +73,8 @@ class User {
 
 	public ip!: string;
 
-	public metadata!: {  // ? Meta data is just for statistics
+	public metadata!: {
+		// ? Meta data is just for statistics
 		client?: string;
 		device: "browser" | "desktop" | "mobile";
 		os: string;
@@ -134,7 +134,7 @@ class User {
 		return this;
 	}
 
-	public publish(topic: string, data: { data: any, event?: string, op: number; }) {
+	public publish(topic: string, data: { data: any; event?: string; op: number }) {
 		if (!this.App.topics.has(topic)) return this;
 
 		for (const user of this.App.topics.get(topic)!) {
@@ -155,7 +155,7 @@ class User {
 	}
 
 	public close(
-		code?: number | { code?: number; reason?: string; reconnect?: boolean; },
+		code?: number | { code?: number; reason?: string; reconnect?: boolean },
 		reason?: string,
 		reconnect?: boolean,
 	) {
@@ -211,7 +211,7 @@ class User {
 					"theme",
 					"status",
 					"allowedInvites",
-					"customStatus"
+					"customStatus",
 				],
 			},
 		);
@@ -282,13 +282,14 @@ class User {
 			privacy: usersSettings.privacy,
 			status: this.App.status.get(usersSettings.status),
 			theme: usersSettings.theme,
-			customStatus: usersSettings.customStatus
+			customStatus: usersSettings.customStatus,
 		});
 
 		return true;
 	}
 
-	public translation() { // This is a "translation" layer for the API's middleware, basically just returns what the user middleware would
+	public translation() {
+		// This is a "translation" layer for the API's middleware, basically just returns what the user middleware would
 		return {
 			bot: this.bot,
 			email: this.email,
@@ -298,7 +299,7 @@ class User {
 			password: this.password,
 			settings: this.settings,
 			token: this.token,
-			username: this.username
+			username: this.username,
 		};
 	}
 
@@ -314,7 +315,7 @@ class User {
 
 		await this.App.cassandra.models.Settings.update({
 			userId: Encryption.encrypt(this.id),
-			status: statusTypes[status]
+			status: statusTypes[status],
 		});
 
 		return this;

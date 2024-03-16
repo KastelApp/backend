@@ -88,7 +88,7 @@ export interface Ws {
 		closeTimeout: Interval;
 		heartbeat: Interval;
 		unAuthedTimeout: Interval;
-	},
+	};
 	maxConnections: number | string;
 	maxConnectionsPerIp: number | string;
 	maxConnectionsPerMinute: number | string;

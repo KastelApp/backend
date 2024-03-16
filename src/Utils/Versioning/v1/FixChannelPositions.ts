@@ -96,7 +96,7 @@ export const fixChannelPositions = (channel: Channel, existingChannels: Channel[
 	}
 };
 
-export const fixChannelPositionsWithoutNewChannel = (channels: Channel[]): Channel[] =>  {
+export const fixChannelPositionsWithoutNewChannel = (channels: Channel[]): Channel[] => {
 	const positionMap: { [parentId: string]: number } = {};
 
 	channels.sort((a, b) => a.position - b.position);

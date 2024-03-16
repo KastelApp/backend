@@ -34,24 +34,23 @@ const errorCodes = {
 	unauthorized: {
 		code: 4_004,
 		reason: "You sent a payload that requires authorization, or didn't authorize in time.",
-		reconnect: false
+		reconnect: false,
 	},
 	alreadyAuthorized: {
 		code: 4_005,
 		reason: "You sent a payload that requires you not to be authorized.",
-		reconnect: true // ? For example, if you sent a identify payload twice, you can still reconnect
+		reconnect: true, // ? For example, if you sent a identify payload twice, you can still reconnect
 	},
 	invalidSequence: {
 		code: 4_006,
 		reason: "You sent an invalid sequence.",
-		reconnect: true
+		reconnect: true,
 	},
 	heartbeatTimeout: {
 		code: 4_007,
 		reason: "You missed a heartbeat.. your heart is now dead :(.",
-		reconnect: true
-	}
+		reconnect: true,
+	},
 };
 
 export { errorCodes };
-

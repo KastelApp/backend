@@ -182,7 +182,8 @@ class Permissions {
 				if (!Object.values(permissions).some((group) => group.int === bits[0])) return null;
 				if (
 					!Object.values(permissions).some((group) => Object.values(group.subPermissions).includes(bits[1] as bigint))
-				) return null;
+				)
+					return null;
 
 				return bits;
 			})
@@ -220,6 +221,4 @@ class Permissions {
 
 export default Permissions;
 
-export {
-	type PermissionKey
-};
+export { type PermissionKey };

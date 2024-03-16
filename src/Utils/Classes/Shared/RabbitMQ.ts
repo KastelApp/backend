@@ -9,126 +9,131 @@ import type { MySchema } from "@/Types/JsonSchemaType.ts";
 // ? Funny thing is (I just remembered) we don't got to calculate anything, just use topics :3
 
 const channels = {
-    // ? { type: ["sub"] } i.e { "channel": ["create", "delete", "update"] } will turn into "channel.create", "channel.delete", "channel.update"
-    channel: ["create", "delete", "update"],
-    user: ["update"],
-    presence: ["update"],
-    message: ["create", "delete", "update", "reported", "typing"],
-    guild: ["create", "delete", "update"],
-    invite: ["create", "delete", "update"],
-    role: ["create", "delete", "update"],
-    ban: ["create", "delete"],
-    guildMember: ["add", "remove", "update", "ban", "unban", "kick"],
-    sessions: ["create", "delete"]
+	// ? { type: ["sub"] } i.e { "channel": ["create", "delete", "update"] } will turn into "channel.create", "channel.delete", "channel.update"
+	channel: ["create", "delete", "update"],
+	user: ["update"],
+	presence: ["update"],
+	message: ["create", "delete", "update", "reported", "typing"],
+	guild: ["create", "delete", "update"],
+	invite: ["create", "delete", "update"],
+	role: ["create", "delete", "update"],
+	ban: ["create", "delete"],
+	guildMember: ["add", "remove", "update", "ban", "unban", "kick"],
+	sessions: ["create", "delete"],
 } as const;
 
 // basically returns "channel.create" | "channel.delete" etc
 type GetChannelTypes<T extends typeof channels> = {
-    // @ts-expect-error -- I don't know how to fix this
-    [K in keyof T]: `${K}.${T[K][number]}`;
+	// @ts-expect-error -- I don't know how to fix this
+	[K in keyof T]: `${K}.${T[K][number]}`;
 }[keyof T];
 
 interface opts {
-    data: unknown;
-    topic: string;
-    type: string;
-    workerId: number;
+	data: unknown;
+	topic: string;
+	type: string;
+	workerId: number;
 }
 
 type func = (opt: opts) => void;
 type events = "data";
 
 class RabbitMQ {
-    public rabbit!: amqplib.Connection;
+	public rabbit!: amqplib.Connection;
 
-    readonly #events: Map<string, Set<func>> = new Map();
+	readonly #events: Map<string, Set<func>> = new Map();
 
-    private channel!: amqplib.Channel;
+	private channel!: amqplib.Channel;
 
-    public constructor(private readonly config: MySchema) {
-        this.config = config;
-    }
+	public constructor(private readonly config: MySchema) {
+		this.config = config;
+	}
 
-    public on(event: events, data: func) {
-        if (!this.#events.has(event)) this.#events.set(event, new Set());
+	public on(event: events, data: func) {
+		if (!this.#events.has(event)) this.#events.set(event, new Set());
 
-        this.#events.get(event)?.add(data);
-    }
+		this.#events.get(event)?.add(data);
+	}
 
-    public emit(event: events, data: opts) {
-        if (this.#events.get(event)) for (const func of this.#events.get(event)!) func(data);
-    }
+	public emit(event: events, data: opts) {
+		if (this.#events.get(event)) for (const func of this.#events.get(event)!) func(data);
+	}
 
-    public async init() {
-        this.rabbit = await amqplib.connect(this.url);
+	public async init() {
+		this.rabbit = await amqplib.connect(this.url);
 
-        this.channel = await this.rabbit.createChannel();
+		this.channel = await this.rabbit.createChannel();
 
-        for (const [topic, types] of Object.entries(channels)) {
-            for (const type of types) {
+		for (const [topic, types] of Object.entries(channels)) {
+			for (const type of types) {
+				await this.channel.assertExchange(`${topic}.${type}`, "fanout", { durable: false });
 
-                await this.channel.assertExchange(`${topic}.${type}`, "fanout", { durable: false });
+				const { queue } = await this.channel.assertQueue("", { exclusive: true });
 
-                const { queue } = await this.channel.assertQueue("", { exclusive: true });
+				await this.channel.bindQueue(queue, `${topic}.${type}`, "");
 
-                await this.channel.bindQueue(queue, `${topic}.${type}`, "");
+				// eslint-disable-next-line @typescript-eslint/no-loop-func
+				await this.channel.consume(queue, (msg) => {
+					if (msg) {
+						const parsed = this.decompress(msg.content);
 
-                // eslint-disable-next-line @typescript-eslint/no-loop-func
-                await this.channel.consume(queue, (msg) => {
-                    if (msg) {
-                        const parsed = this.decompress(msg.content);
+						this.emit("data", parsed);
 
-                        this.emit("data", parsed);
+						this.channel.ack(msg);
+					} else {
+						postMessage({ type: "newLog", message: [`RabbitMQ Message was null for ${topic}.${type}`] });
+					}
+				});
+			}
+		}
+	}
 
-                        this.channel.ack(msg);
-                    } else {
-                        postMessage({ type: "newLog", message: [`RabbitMQ Message was null for ${topic}.${type}`] });
-                    }
-                });
-            }
-        }
-    }
+	public send(topic: GetChannelTypes<typeof channels>, data: unknown) {
+		this.channel.publish(
+			topic,
+			"",
+			Buffer.from(
+				this.compress({
+					data,
+					topic,
+					workerId: this.config.server.workerId,
+				}),
+			),
+		);
+	}
 
-    public send(topic: GetChannelTypes<typeof channels>, data: unknown) {
-        this.channel.publish(topic, "", Buffer.from(this.compress({
-            data,
-            topic,
-            workerId: this.config.server.workerId,
-        })));
-    }
+	private compress(data: unknown) {
+		const string = this.jsonStringify(data);
+		const stringToUint8Array = new TextEncoder().encode(string);
 
-    private compress(data: unknown) {
-        const string = this.jsonStringify(data);
-        const stringToUint8Array = new TextEncoder().encode(string);
+		// eslint-disable-next-line n/no-sync -- theres no other options
+		return Bun.gzipSync(stringToUint8Array);
+	}
 
-        // eslint-disable-next-line n/no-sync -- theres no other options
-        return Bun.gzipSync(stringToUint8Array);
-    }
+	private decompress(data: Buffer) {
+		// eslint-disable-next-line n/no-sync -- theres no other options
+		const decompressed = Bun.gunzipSync(data);
+		const uint8ArrayToString = new TextDecoder().decode(decompressed);
 
-    private decompress(data: Buffer) {
-        // eslint-disable-next-line n/no-sync -- theres no other options
-        const decompressed = Bun.gunzipSync(data);
-        const uint8ArrayToString = new TextDecoder().decode(decompressed);
+		return JSON.parse(uint8ArrayToString);
+	}
 
-        return JSON.parse(uint8ArrayToString);
-    }
+	private get url() {
+		return `amqp://${this.config.rabbitMQ.host}:${this.config.rabbitMQ.port}`;
+	}
 
-    private get url() {
-        return `amqp://${this.config.rabbitMQ.host}:${this.config.rabbitMQ.port}`;
-    }
+	/**
+	 * basically can handle bigints turning them into strings
+	 */
+	public jsonStringify(data: unknown) {
+		return JSON.stringify(data, (_, value) => {
+			if (typeof value === "bigint") {
+				return value.toString();
+			}
 
-    /**
-     * basically can handle bigints turning them into strings
-     */
-    public jsonStringify(data: unknown) {
-        return JSON.stringify(data, (_, value) => {
-            if (typeof value === "bigint") {
-                return value.toString();
-            }
-
-            return value;
-        });
-    }
+			return value;
+		});
+	}
 }
 
 export default RabbitMQ;

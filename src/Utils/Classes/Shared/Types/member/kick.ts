@@ -1,6 +1,6 @@
 export interface GuildMemberKick {
-    guildId: string;
-    user: {};
+	guildId: string;
+	user: {};
 }
 
 export default GuildMemberKick;

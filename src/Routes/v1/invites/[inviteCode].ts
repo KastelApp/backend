@@ -14,6 +14,7 @@ import Method from "@/Utils/Classes/Routing/Decorators/Method.ts";
 import Middleware from "@/Utils/Classes/Routing/Decorators/Middleware.ts";
 import type { CreateRoute } from "@/Utils/Classes/Routing/Route.ts";
 import Route from "@/Utils/Classes/Routing/Route.ts";
+import type GuildMembers from "@/Utils/Cql/Types/GuildMember.ts";
 import FetchEditGuild from "../guilds/[guildId]/index.ts";
 import type { finishedGuild } from "../guilds/index.ts";
 
@@ -30,13 +31,13 @@ export default class FetchJoinInvite extends Route {
 	public async getInviteCode({
 		params,
 		set,
-		query,
-		headers,
-		store
-	}: CreateRoute<"/invites/:inviteCode", any, any, any, {
-		key?: string;
-	}>) {
-		if (((headers || store) && query.key) || !this.randomKey.equals(query.key as unknown as KeyObject)) {
+		key
+	}: CreateRoute<
+		"/invites/:inviteCode"
+	> & {
+		key: KeyObject;
+	}) {
+		if (key && !this.randomKey.equals(key)) {
 			set.status = 500;
 
 			return "Internal Server Error :("; // ? its a user, not the server
@@ -95,36 +96,40 @@ export default class FetchJoinInvite extends Route {
 			return invalidInvite.toJSON();
 		}
 
-		const fetchedGuild = await (new FetchEditGuild(this.App)).getGuild({
+		const fetchedGuild = (await new FetchEditGuild(this.App).getGuild({
 			// @ts-expect-error -- This is fine
 			user: {
 				guilds: [Encryption.decrypt(inviteExists.guildId)],
 			},
 			query: {
-				include: "channels"
+				include: "channels",
 			},
 			params: {
-				guildId: Encryption.decrypt(inviteExists.guildId)
+				guildId: Encryption.decrypt(inviteExists.guildId),
 			},
-			set
-		}) as finishedGuild;
+			set,
+		})) as finishedGuild;
 
 		if (set.status !== 200) {
 			return fetchedGuild;
 		}
 
-		const foundChannel = fetchedGuild.channels.find((channel) => channel.id === Encryption.decrypt(inviteExists.channelId));
+		const foundChannel = fetchedGuild.channels?.find(
+			(channel) => channel.id === Encryption.decrypt(inviteExists.channelId),
+		);
 
 		return Encryption.completeDecryption({
 			type: inviteExists.type,
 			code: inviteExists.code,
-			guild: query.key ? fetchedGuild : {
-				id: inviteExists.guildId,
-				name: fetchedGuild.name,
-				icon: fetchedGuild.icon,
-				ownerId: fetchedGuild.ownerId,
-				features: fetchedGuild.features ?? [],
-			},
+			guild: key
+				? fetchedGuild
+				: {
+						id: inviteExists.guildId,
+						name: fetchedGuild.name,
+						icon: fetchedGuild.icon,
+						ownerId: fetchedGuild.ownerId,
+						features: fetchedGuild.features ?? [],
+					},
 			channel: {
 				id: inviteExists.channelId,
 				name: foundChannel?.name,
@@ -140,15 +145,13 @@ export default class FetchJoinInvite extends Route {
 	@Method("post")
 	@Description("Join the guild from the invite code")
 	@ContentTypes("any")
-	@Middleware(userMiddleware({
-		AccessType: "LoggedIn",
-		AllowedRequesters: "User"
-	}))
-	public async postInviteCode({
-		params,
-		user,
-		set
-	}: CreateRoute<"/invites/:inviteCode", any, [UserMiddlewareType]>) {
+	@Middleware(
+		userMiddleware({
+			AccessType: "LoggedIn",
+			AllowedRequesters: "User",
+		}),
+	)
+	public async postInviteCode({ params, user, set }: CreateRoute<"/invites/:inviteCode", any, [UserMiddlewareType]>) {
 		const canJoin = this.canJoinGuild(user.flagsUtil, user.guilds.length);
 
 		if (!canJoin.can) {
@@ -219,7 +222,6 @@ export default class FetchJoinInvite extends Route {
 			return invalidInvite.toJSON();
 		}
 
-
 		const member = await this.App.cassandra.models.GuildMember.get({
 			userId: Encryption.encrypt(user.id),
 			guildId: inviteExists.guildId,
@@ -255,14 +257,15 @@ export default class FetchJoinInvite extends Route {
 			}
 
 			if (memberFlags.hasOneArray(["Left", "Kicked"])) {
-				await this.App.cassandra.models.GuildMember.remove({ // they ar joining back, remove it
+				await this.App.cassandra.models.GuildMember.remove({
+					// they ar joining back, remove it
 					userId: user.id,
 					guildId: inviteExists.guildId,
 				});
 			}
 		}
 
-		const newMember = {
+		const newMember: GuildMembers = {
 			flags: Constants.guildMemberFlags.In,
 			guildId: inviteExists.guildId,
 			guildMemberId: this.App.snowflake.generate(),
@@ -271,6 +274,7 @@ export default class FetchJoinInvite extends Route {
 			roles: [inviteExists.guildId],
 			timeouts: [],
 			userId: Encryption.encrypt(user.id),
+			channelAcks: [],
 		};
 
 		await this.App.cassandra.models.GuildMember.insert(newMember);
@@ -290,21 +294,19 @@ export default class FetchJoinInvite extends Route {
 		const fetchedInvite = await this.getInviteCode({
 			params,
 			set,
-			query: {
-				key: this.randomKey as unknown as string,
-			},
+			key: this.randomKey
 		});
 
-		
 		if (set.status !== 200 || typeof fetchedInvite === "string") {
 			return fetchedInvite;
 		}
 
 		this.App.rabbitMQForwarder("guild.create", {
 			userId: user.id,
-			guild: (fetchedInvite as { guild: finishedGuild }).guild
-		})
-		
+			guild: (fetchedInvite as { guild: finishedGuild }).guild,
+			member: newMember,
+		});
+
 		this.App.rabbitMQForwarder("guildMember.add", {
 			userId: user.id,
 			guildId: inviteExists.guildId,
@@ -313,14 +315,15 @@ export default class FetchJoinInvite extends Route {
 
 		return {
 			...fetchedInvite,
-			guild: { // ? it should be the same as if they didn't provide the key
+			guild: {
+				// ? it should be the same as if they didn't provide the key
 				id: inviteExists.guildId,
 				name: (fetchedInvite as { guild: finishedGuild }).guild.name,
 				icon: (fetchedInvite as { guild: finishedGuild }).guild.icon,
 				ownerId: (fetchedInvite as { guild: finishedGuild }).guild.ownerId,
 				features: (fetchedInvite as { guild: finishedGuild }).guild.features ?? [],
-			}
-		}
+			},
+		};
 	}
 
 	public canJoinGuild(flags: FlagFields, guildCount: number) {

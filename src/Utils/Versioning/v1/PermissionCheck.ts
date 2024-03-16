@@ -28,7 +28,7 @@ class PermissionHandler {
 	public constructor(
 		guildMemberId: string,
 		guildMemberFlags: bigint | number | string,
-		memberRoles: { id: string; permissions: [bigint | string, bigint | string][]; position: number; }[],
+		memberRoles: { id: string; permissions: [bigint | string, bigint | string][]; position: number }[],
 		channels?: {
 			id: string;
 			overrides: {
@@ -49,15 +49,16 @@ class PermissionHandler {
 			position: Role.position,
 		}));
 
-		this.channels = channels?.map((Channel) => ({
-			id: Encryption.decrypt(Channel.id),
-			overrides: Channel.overrides.map((Override) => ({
-				allow: new Permissions(Override.allow),
-				deny: new Permissions(Override.deny),
-				id: Encryption.decrypt(Override.id),
-				type: Override.type,
-			})),
-		})) ?? [];
+		this.channels =
+			channels?.map((Channel) => ({
+				id: Encryption.decrypt(Channel.id),
+				overrides: Channel.overrides.map((Override) => ({
+					allow: new Permissions(Override.allow),
+					deny: new Permissions(Override.deny),
+					id: Encryption.decrypt(Override.id),
+					type: Override.type,
+				})),
+			})) ?? [];
 	}
 
 	/**
@@ -77,9 +78,13 @@ class PermissionHandler {
 	}
 
 	/**
-	 *? If you are able to manage a specific role (mainly checks the position of the role) 
+	 *? If you are able to manage a specific role (mainly checks the position of the role)
 	 */
-	public canManageRole(role: { id: string; permissions: [bigint | string, bigint | string][]; position: number; }): boolean {
+	public canManageRole(role: {
+		id: string;
+		permissions: [bigint | string, bigint | string][];
+		position: number;
+	}): boolean {
 		if (this.guildMemberFlags.has("Owner") || this.guildMemberFlags.has("CoOwner")) return true;
 
 		const membersHighestRole = this.memberRoles.sort((a, b) => b.position - a.position)[0];
@@ -99,7 +104,9 @@ class PermissionHandler {
 
 		if (this.guildMemberFlags.has("Owner") || this.guildMemberFlags.has("CoOwner")) return true;
 
-		const overrides = channel.overrides.filter((Override) => Override.id === this.guildMemberId || this.memberRoles.some((Role) => Role.id === Override.id));
+		const overrides = channel.overrides.filter(
+			(Override) => Override.id === this.guildMemberId || this.memberRoles.some((Role) => Role.id === Override.id),
+		);
 
 		if (overrides.length === 0) {
 			return this.hasAnyRole(permission);
@@ -111,7 +118,6 @@ class PermissionHandler {
 
 		return allow && !deny;
 	}
-
 }
 
 export default PermissionHandler;

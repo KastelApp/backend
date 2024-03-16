@@ -12,6 +12,7 @@ import Middleware from "@/Utils/Classes/Routing/Decorators/Middleware.ts";
 import type { CreateRoute } from "@/Utils/Classes/Routing/Route.ts";
 import Route from "@/Utils/Classes/Routing/Route.ts";
 import { fixChannelPositionsWithoutNewChannel } from "@/Utils/Versioning/v1/FixChannelPositions.ts";
+import FetchCreateMessages from "../../channels/[channelId]/messages/index.ts";
 import type { finishedGuild, rawGuild } from "../index.ts";
 
 // TODO: Emit when the guild is deleted
@@ -30,8 +31,12 @@ export default class FetchEditGuild extends Route {
 			AllowedRequesters: "User",
 		}),
 	)
-	public async getGuild({ user, query, params, set }: CreateRoute<"/guilds/:guildId", any, [UserMiddlewareType], any, { include: string; }>) {
-
+	public async getGuild({
+		user,
+		query,
+		params,
+		set,
+	}: CreateRoute<"/guilds/:guildId", any, [UserMiddlewareType], any, { include: string; }>) {
 		const include: ("channels" | "owners" | "roles")[] = query.include
 			? (query.include.split(",") as ("channels" | "owners" | "roles")[])
 			: [];
@@ -138,10 +143,11 @@ export default class FetchEditGuild extends Route {
 					`Failed to fetch owner ${Encryption.decrypt(rawGuild.guild.ownerId)} for guild ${Encryption.decrypt(rawGuild.guild.guildId)}`,
 				);
 			}
-
 		} else {
 			guild.ownerId = Encryption.decrypt(rawGuild.guild.ownerId);
 		}
+
+		const messageFetcher = new FetchCreateMessages(this.App);
 
 		for (const channel of rawGuild.channels) {
 			guild.channels?.push({
@@ -167,6 +173,7 @@ export default class FetchEditGuild extends Route {
 					}),
 				),
 				position: channel.channel.position,
+				lastMessageId: await messageFetcher.getLastMessageId(Encryption.decrypt(channel.channel.channelId)),
 			});
 		}
 
@@ -182,7 +189,6 @@ export default class FetchEditGuild extends Route {
 			});
 		}
 
-
 		return guild;
 	}
 
@@ -195,16 +201,14 @@ export default class FetchEditGuild extends Route {
 
 	@Method("delete")
 	@Description("Delete a guild")
-	@ContentTypes("application/json")
-	@Middleware(userMiddleware({
-		AccessType: "LoggedIn",
-		AllowedRequesters: "User"
-	}))
-	public async deleteGuild({
-		user,
-		params,
-		set
-	}: CreateRoute<"/:guildId", any, [UserMiddlewareType]>) {
+	@ContentTypes("any")
+	@Middleware(
+		userMiddleware({
+			AccessType: "LoggedIn",
+			AllowedRequesters: "User",
+		}),
+	)
+	public async deleteGuild({ user, params, set }: CreateRoute<"/:guildId", any, [UserMiddlewareType]>) {
 		const noPermission = errorGen.MissingPermissions();
 		const notFound = errorGen.UnknownGuild();
 
@@ -212,8 +216,8 @@ export default class FetchEditGuild extends Route {
 			notFound.addError({
 				guildId: {
 					code: "UnknownGuild",
-					message: "The provided guild does not exist, or you do not have access to it."
-				}
+					message: "The provided guild does not exist, or you do not have access to it.",
+				},
 			});
 
 			set.status = 404;
@@ -221,7 +225,10 @@ export default class FetchEditGuild extends Route {
 			return notFound.toJSON();
 		}
 
-		const guildMember = (await this.App.cassandra.models.GuildMember.get({ guildId: Encryption.encrypt(params.guildId), userId: Encryption.encrypt(user.id) }))!;
+		const guildMember = (await this.App.cassandra.models.GuildMember.get({
+			guildId: Encryption.encrypt(params.guildId),
+			userId: Encryption.encrypt(user.id),
+		}))!;
 
 		if (!guildMember) {
 			set.status = 500;
@@ -236,8 +243,8 @@ export default class FetchEditGuild extends Route {
 				guildId: {
 					code: "MissingPermissions",
 					message: "You do not have permission to delete this guild.",
-					requiredPermissions: []
-				}
+					requiredPermissions: [],
+				},
 			});
 
 			set.status = 403;
@@ -247,7 +254,9 @@ export default class FetchEditGuild extends Route {
 
 		// ? why aren't we using the models here?
 		await this.App.cassandra.execute("DELETE FROM channels WHERE guild_id = ?", [Encryption.encrypt(params.guildId)]);
-		await this.App.cassandra.execute("DELETE FROM guild_members WHERE guild_id = ?", [Encryption.encrypt(params.guildId)]);
+		await this.App.cassandra.execute("DELETE FROM guild_members WHERE guild_id = ?", [
+			Encryption.encrypt(params.guildId),
+		]);
 		await this.App.cassandra.execute("DELETE FROM emojis WHERE guild_id = ?", [Encryption.encrypt(params.guildId)]);
 		await this.App.cassandra.execute("DELETE FROM invites WHERE guild_id = ?", [Encryption.encrypt(params.guildId)]);
 		await this.App.cassandra.execute("DELETE FROM roles WHERE guild_id = ?", [Encryption.encrypt(params.guildId)]);
@@ -257,13 +266,13 @@ export default class FetchEditGuild extends Route {
 
 		await this.App.cassandra.models.User.update({
 			userId: Encryption.encrypt(user.id),
-			guilds: Encryption.completeEncryption(user.guilds.filter((guild) => guild !== params.guildId))
+			guilds: Encryption.completeEncryption(user.guilds.filter((guild) => guild !== params.guildId)),
 		});
 
 		set.status = 204;
 
 		this.App.rabbitMQForwarder("guild.delete", {
-			guildId: params.guildId
+			guildId: params.guildId,
 		});
 
 		// eslint-disable-next-line sonarjs/no-redundant-jump, no-useless-return

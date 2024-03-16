@@ -76,7 +76,7 @@ const guildFeatures = [
 		deprecated: false,
 		enabled: false,
 		settable: false,
-	}
+	},
 ] as const satisfies {
 	default?: boolean;
 	deprecated: boolean;
@@ -119,7 +119,7 @@ const channelTypes = {
 	GuildNewMember: 1 << 5,
 	Dm: 1 << 10,
 	GroupChat: 1 << 11,
-	GuildMarkdown: 1 << 12
+	GuildMarkdown: 1 << 12,
 };
 
 const presenceTypes = {
@@ -127,16 +127,17 @@ const presenceTypes = {
 	playing: 1,
 	watching: 2,
 	listening: 3,
-	streaming: 4
+	streaming: 4,
 };
 
-const statusTypes = { // ? can only have one at a time besides if you are offline, so if you are offline you can have 1 << 1 | 1 << 2 which means, you are offline but your are idle
+const statusTypes = {
+	// ? can only have one at a time besides if you are offline, so if you are offline you can have 1 << 1 | 1 << 2 which means, you are offline but your are idle
 	offline: 1 << 0,
 	online: 1 << 1,
 	idle: 1 << 2,
 	dnd: 1 << 3,
 	invisible: 1 << 4,
-}
+};
 
 const messageFlags = {
 	System: 1 << 0,
@@ -199,7 +200,7 @@ const permissions = {
 	Administrator: {
 		int: 1n << 0n,
 		group: "role", // ? Groups = role, channel, both. role = Permissions only supported for a role (and not a channel permission override) channel = Permissions only supported for a channel (and not a role) both = Permissions supported for both
-		subPermissions: {} // ? It has them all already
+		subPermissions: {}, // ? It has them all already
 	},
 	Guild: {
 		int: 1n << 1n,
@@ -212,7 +213,7 @@ const permissions = {
 			AddBots: 1n << 4n,
 			ViewAuditLog: 1n << 5n,
 			ManageVanity: 1n << 6n,
-		}
+		},
 	},
 	Roles: {
 		int: 1n << 2n,
@@ -223,7 +224,7 @@ const permissions = {
 			RolePosition: 1n << 2n,
 			RolePermissions: 1n << 3n,
 			GrantOtherRoles: 1n << 4n, // ? If you can give other users roles
-		}
+		},
 	},
 	Channels: {
 		int: 1n << 3n,
@@ -249,7 +250,7 @@ const permissions = {
 			UseChatFormatting: 1n << 18n, // ? i.e markdown, and default emojis
 			ManageMessages: 1n << 19n,
 			BypassSlowmode: 1n << 20n,
-		}
+		},
 	},
 	Members: {
 		int: 1n << 4n,
@@ -260,7 +261,7 @@ const permissions = {
 			MemberDeafen: 1n << 5n,
 			MemberMove: 1n << 6n,
 			MemberVoice: 1n << 7n,
-		}
+		},
 	},
 	Emojis: {
 		int: 1n << 5n,
@@ -270,7 +271,7 @@ const permissions = {
 			EmojiImage: 1n << 1n,
 			UploadEmoji: 1n << 2n,
 			DeleteEmoji: 1n << 3n,
-		}
+		},
 	},
 	Moderation: {
 		int: 1n << 6n,
@@ -281,7 +282,7 @@ const permissions = {
 			ViewBans: 1n << 2n,
 			KickMembers: 1n << 3n,
 			TimeoutMembers: 1n << 4n,
-		}
+		},
 	},
 	ManageNicknames: {
 		int: 1n << 7n,
@@ -289,7 +290,7 @@ const permissions = {
 		subPermissions: {
 			Nickname: 1n << 0n, // ? you can change your own nickname
 			ChangeNickname: 1n << 1n, // ? you can change other peoples nicknames
-		}
+		},
 	},
 	ManageInvites: {
 		int: 1n << 8n,
@@ -298,8 +299,8 @@ const permissions = {
 			CreateInvite: 1n << 0n,
 			DeleteInvite: 1n << 1n,
 			ViewInvites: 1n << 2n,
-		}
-	}
+		},
+	},
 } satisfies {
 	[key: string]: {
 		group: "both" | "channel" | "role";
@@ -363,7 +364,7 @@ export default {
 	guildFeatures,
 	permissionOverrideTypes,
 	inviteFlags,
-	statusTypes
+	statusTypes,
 };
 
 export {
@@ -384,5 +385,5 @@ export {
 	guildFeatures,
 	permissionOverrideTypes,
 	inviteFlags,
-	statusTypes
+	statusTypes,
 };

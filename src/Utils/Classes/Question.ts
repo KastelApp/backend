@@ -7,7 +7,7 @@ import App from "./App.ts";
 
 declare const self: Worker;
 
-const isQuestion = (data: unknown): data is { nonce: string; response: unknown; } => {
+const isQuestion = (data: unknown): data is { nonce: string; response: unknown } => {
 	if (typeof data !== "object") return false;
 
 	if (data === null) return false;
@@ -20,7 +20,7 @@ const isQuestion = (data: unknown): data is { nonce: string; response: unknown; 
 };
 
 class Question {
-	private questions: Map<string, { answer: unknown; answered: boolean; nonce: string; }> = new Map();
+	private questions: Map<string, { answer: unknown; answered: boolean; nonce: string }> = new Map();
 
 	public constructor() {
 		if (!isMainThread) return;

@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+ redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_USER=default
+      - REDIS_PASSWORD=default
+
+ rabbitmq:
+    image: rabbitmq:latest
+    environment:
+      - RABBITMQ_DEFAULT_USER=default
+      - RABBITMQ_DEFAULT_PASS=default
+
+ scylladb:
+    image: scylladb/scylla:latest
+    ports:
+      - "9042:9042"
+    volumes:
+      - ./src/configs/scylladb/config.yml:/etc/scylla/scylla.yaml

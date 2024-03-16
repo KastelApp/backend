@@ -22,8 +22,11 @@ import PermissionHandler from "@/Utils/Versioning/v1/PermissionCheck.ts";
 
 const createInviteBody = {
 	maxUses: number().max(100_000).min(1).optional(),
-	maxAge: number().max(1_000 * 60 * 60 * 24 * 30).min(0).optional(), // 30 days
-	channelId: snowflake()
+	maxAge: number()
+		.max(1_000 * 60 * 60 * 24 * 30)
+		.min(0)
+		.optional(), // 30 days
+	channelId: snowflake(),
 };
 
 export default class FetchInvite extends Route {
@@ -34,10 +37,12 @@ export default class FetchInvite extends Route {
 	@Method("get")
 	@Description("Fetch invites from a guild")
 	@ContentTypes("any")
-	@Middleware(userMiddleware({
-		AccessType: "LoggedIn",
-		AllowedRequesters: "User"
-	}))
+	@Middleware(
+		userMiddleware({
+			AccessType: "LoggedIn",
+			AllowedRequesters: "User",
+		}),
+	)
 	public async getInvites({ user, params, set }: CreateRoute<"/guilds/:guildId/invites", any, [UserMiddlewareType]>) {
 		const guildMember = await this.App.cassandra.models.GuildMember.get({
 			guildId: Encryption.encrypt(params.guildId)!,
@@ -51,7 +56,7 @@ export default class FetchInvite extends Route {
 				guild: {
 					code: "UnknownGuild",
 					message: "The provided guild does not exist or you do not have access to it.",
-				}
+				},
 			});
 
 			set.status = 404;
@@ -68,14 +73,23 @@ export default class FetchInvite extends Route {
 				guild: {
 					code: "UnknownGuild",
 					message: "The provided guild does not exist or you do not have access to it.",
-				}
+				},
 			});
 
 			return unknownGuild.toJSON();
 		}
 
 		// eslint-disable-next-line @typescript-eslint/promise-function-async
-		const roles = (await Promise.all(guildMember.roles.map((id) => this.App.cassandra.models.Role.get({ roleId: Encryption.encrypt(id), guildId: Encryption.encrypt(params.guildId) })))).filter(Boolean) as Roles[];
+		const roles = (
+			await Promise.all(
+				guildMember.roles.map(async (id) =>
+					this.App.cassandra.models.Role.get({
+						roleId: Encryption.encrypt(id),
+						guildId: Encryption.encrypt(params.guildId),
+					}),
+				),
+			)
+		).filter(Boolean) as Roles[];
 
 		const permissionCheck = new PermissionHandler(
 			user.id,
@@ -85,7 +99,7 @@ export default class FetchInvite extends Route {
 				permissions: Permissions.permissionFromDatabase(role.permissions),
 				position: role.position,
 			})),
-			[]
+			[],
 		);
 
 		if (!permissionCheck.hasAnyRole(["ViewInvites"])) {
@@ -97,18 +111,23 @@ export default class FetchInvite extends Route {
 				permission: {
 					code: "MissingPermissions",
 					message: "You do not have permission to view invites in this guild.",
-				}
+				},
 			});
 
 			return missingPermission.toJSON();
 		}
 
-		const invites = (await this.App.cassandra.models.Invite.find({
-			guildId: Encryption.encrypt(params.guildId),
-		}, {
-			fields: ["code", "uses", "maxUses", "createdAt", "expires", "creatorId", "deleteable", "type"],
-			limit: 1_000
-		})).toArray();
+		const invites = (
+			await this.App.cassandra.models.Invite.find(
+				{
+					guildId: Encryption.encrypt(params.guildId),
+				},
+				{
+					fields: ["code", "uses", "maxUses", "createdAt", "expires", "creatorId", "deleteable", "type"],
+					limit: 1_000,
+				},
+			)
+		).toArray();
 
 		return invites.map((invite) => ({
 			code: invite.code,
@@ -127,11 +146,18 @@ export default class FetchInvite extends Route {
 	@Description("Create a new invite")
 	@ContentTypes("application/json")
 	@Middleware(bodyValidator(createInviteBody))
-	@Middleware(userMiddleware({
-		AccessType: "LoggedIn",
-		AllowedRequesters: "User"
-	}))
-	public async createInvite({ user, body, params, set }: CreateRoute<"/guilds/:guildId/invites", Infer<typeof createInviteBody>, [UserMiddlewareType]>) {
+	@Middleware(
+		userMiddleware({
+			AccessType: "LoggedIn",
+			AllowedRequesters: "User",
+		}),
+	)
+	public async createInvite({
+		user,
+		body,
+		params,
+		set,
+	}: CreateRoute<"/guilds/:guildId/invites", Infer<typeof createInviteBody>, [UserMiddlewareType]>) {
 		const guildMember = await this.App.cassandra.models.GuildMember.get({
 			guildId: Encryption.encrypt(params.guildId)!,
 			userId: Encryption.encrypt(user.id),
@@ -144,7 +170,7 @@ export default class FetchInvite extends Route {
 				guild: {
 					code: "UnknownGuild",
 					message: "The provided guild does not exist or you do not have access to it.",
-				}
+				},
 			});
 
 			set.status = 404;
@@ -161,7 +187,7 @@ export default class FetchInvite extends Route {
 				guild: {
 					code: "UnknownGuild",
 					message: "The provided guild does not exist or you do not have access to it.",
-				}
+				},
 			});
 
 			return unknownGuild.toJSON();
@@ -169,6 +195,7 @@ export default class FetchInvite extends Route {
 
 		const channel = await this.App.cassandra.models.Channel.get({
 			channelId: Encryption.encrypt(body.channelId),
+			guildId: Encryption.encrypt(params.guildId),
 		});
 
 		const unknownChannel = errorGen.UnknownChannel();
@@ -180,16 +207,30 @@ export default class FetchInvite extends Route {
 				channel: {
 					code: "UnknownChannel",
 					message: "The provided channel does not exist or you do not have access to it.",
-				}
+				},
 			});
 
 			return unknownChannel.toJSON();
 		}
 
 		// eslint-disable-next-line @typescript-eslint/promise-function-async
-		const permissionOverrides = channel.permissionOverrides ? (await Promise.all(channel.permissionOverrides.map((id) => this.App.cassandra.models.PermissionOverride.get({ permissionId: Encryption.encrypt(id) })))).filter(Boolean) as PermissionsOverrides[] : [];
+		const permissionOverrides = channel.permissionOverrides
+			? ((
+					await Promise.all(
+						channel.permissionOverrides.map(async (id) =>
+							this.App.cassandra.models.PermissionOverride.get({ permissionId: Encryption.encrypt(id) }),
+						),
+					)
+				).filter(Boolean) as PermissionsOverrides[])
+			: [];
 		// eslint-disable-next-line @typescript-eslint/promise-function-async
-		const roles = (await Promise.all(guildMember.roles.map((id) => this.App.cassandra.models.Role.get({ roleId: Encryption.encrypt(id), guildId: channel.guildId! })))).filter(Boolean) as Roles[];
+		const roles = (
+			await Promise.all(
+				guildMember.roles.map(async (id) =>
+					this.App.cassandra.models.Role.get({ roleId: Encryption.encrypt(id), guildId: channel.guildId! }),
+				),
+			)
+		).filter(Boolean) as Roles[];
 
 		const permissionCheck = new PermissionHandler(
 			user.id,
@@ -199,18 +240,22 @@ export default class FetchInvite extends Route {
 				permissions: Permissions.permissionFromDatabase(role.permissions),
 				position: role.position,
 			})),
-			[{
-				id: channel.channelId,
-				overrides: permissionOverrides.map((override) => ({
-					allow: Permissions.permissionFromDatabase(override.allow),
-					deny: Permissions.permissionFromDatabase(override.deny),
-					id: override.permissionId,
-					type: override.type === Constants.permissionOverrideTypes.Member ? "Member" : "Role",
-				}))
-			}]
+			[
+				{
+					id: channel.channelId,
+					overrides: permissionOverrides.map((override) => ({
+						allow: Permissions.permissionFromDatabase(override.allow),
+						deny: Permissions.permissionFromDatabase(override.deny),
+						id: override.permissionId,
+						type: override.type === Constants.permissionOverrideTypes.Member ? "Member" : "Role",
+					})),
+				},
+			],
 		);
 
-		if (!permissionCheck.hasChannelPermission(Encryption.decrypt(channel.channelId), ["CreateInvite", "ViewChannels"])) {
+		if (
+			!permissionCheck.hasChannelPermission(Encryption.decrypt(channel.channelId), ["CreateInvite", "ViewChannels"])
+		) {
 			set.status = 403;
 
 			const missingPermission = errorGen.MissingPermissions();
@@ -219,19 +264,24 @@ export default class FetchInvite extends Route {
 				permission: {
 					code: "MissingPermissions",
 					message: "You do not have permission to create an invite in this channel.",
-				}
+				},
 			});
 
 			return missingPermission.toJSON();
 		}
 
-		const invites = (await this.App.cassandra.models.Invite.find({
-			guildId: Encryption.encrypt(params.guildId),
-			channelId: Encryption.encrypt(body.channelId),
-		}, {
-			fields: ["code"],
-			limit: 1_000
-		})).toArray();
+		const invites = (
+			await this.App.cassandra.models.Invite.find(
+				{
+					guildId: Encryption.encrypt(params.guildId),
+					channelId: Encryption.encrypt(body.channelId),
+				},
+				{
+					fields: ["code"],
+					limit: 1_000,
+				},
+			)
+		).toArray();
 
 		const maxInvites = errorGen.LimitReached();
 
@@ -242,7 +292,7 @@ export default class FetchInvite extends Route {
 				invite: {
 					code: "LimitReached",
 					message: `The maximum amount of invites for this channel has been reached (${Constants.settings.Max.InviteCount}).`,
-				}
+				},
 			});
 
 			return maxInvites.toJSON();
@@ -250,7 +300,8 @@ export default class FetchInvite extends Route {
 
 		const inviteCode = await this.generateInviteCode();
 
-		if (!inviteCode) { // ? Shouldn't happen, but just in case
+		if (!inviteCode) {
+			// ? Shouldn't happen, but just in case
 			set.status = 500;
 
 			return "Internal server error :(";
@@ -266,7 +317,7 @@ export default class FetchInvite extends Route {
 			creatorId: Encryption.encrypt(user.id),
 			deleteable: true,
 			expires: body.maxAge ? new Date(Date.now() + body.maxAge) : null,
-			type: Constants.inviteFlags.Normal
+			type: Constants.inviteFlags.Normal,
 		});
 
 		return {

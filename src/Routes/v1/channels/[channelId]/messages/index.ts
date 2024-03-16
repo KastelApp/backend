@@ -52,16 +52,19 @@ export interface ReturnMessage {
 	flags: number;
 	id: bigint | string;
 	mentions: {
-		channels: never[];
-		roles: never[];
-		users: never[];
+		channels: string[];
+		roles: string[];
+		users: string[];
 	};
 	nonce: null;
 	pinned: boolean;
-	replyingTo: ReturnMessage | {
-		channelId: string;
-		messageId: string;
-	} | null;
+	replyingTo:
+		| ReturnMessage
+		| {
+				channelId: string;
+				messageId: string;
+		  }
+		| null;
 }
 
 export default class FetchCreateMessages extends Route {
@@ -78,11 +81,22 @@ export default class FetchCreateMessages extends Route {
 			AllowedRequesters: "User",
 		}),
 	)
-	public async getMessages({ user, params, query, set }: CreateRoute<"/channels/:channelId/messages", any, [UserMiddlewareType], any, {
-		after?: string;
-		before?: string;
-		limit?: string;
-	}>) {
+	public async getMessages({
+		user,
+		params,
+		query,
+		set,
+	}: CreateRoute<
+		"/channels/:channelId/messages",
+		any,
+		[UserMiddlewareType],
+		any,
+		{
+			after?: string;
+			before?: string;
+			limit?: string;
+		}
+	>) {
 		const channel = await this.App.cassandra.models.Channel.get({
 			channelId: Encryption.encrypt(params.channelId),
 		});
@@ -96,7 +110,7 @@ export default class FetchCreateMessages extends Route {
 				channel: {
 					code: "UnknownChannel",
 					message: "The provided channel does not exist or you do not have access to it.",
-				}
+				},
 			});
 
 			return unknownChannel.toJSON();
@@ -131,16 +145,30 @@ export default class FetchCreateMessages extends Route {
 					channel: {
 						code: "UnknownChannel",
 						message: "The provided channel does not exist or you do not have access to it.",
-					}
+					},
 				});
 
 				return unknownChannel.toJSON();
 			}
 
 			// eslint-disable-next-line @typescript-eslint/promise-function-async
-			const permissionOverrides = channel.permissionOverrides ? (await Promise.all(channel.permissionOverrides.map((id) => this.App.cassandra.models.PermissionOverride.get({ permissionId: Encryption.encrypt(id) })))).filter(Boolean) as PermissionsOverrides[] : [];
+			const permissionOverrides = channel.permissionOverrides
+				? ((
+						await Promise.all(
+							channel.permissionOverrides.map(async (id) =>
+								this.App.cassandra.models.PermissionOverride.get({ permissionId: Encryption.encrypt(id) }),
+							),
+						)
+					).filter(Boolean) as PermissionsOverrides[])
+				: [];
 			// eslint-disable-next-line @typescript-eslint/promise-function-async
-			const roles = (await Promise.all(guildMember.roles.map((id) => this.App.cassandra.models.Role.get({ roleId: id, guildId: channel.guildId! })))).filter(Boolean) as Roles[];
+			const roles = (
+				await Promise.all(
+					guildMember.roles.map(async (id) =>
+						this.App.cassandra.models.Role.get({ roleId: id, guildId: channel.guildId! }),
+					),
+				)
+			).filter(Boolean) as Roles[];
 
 			const permissionCheck = new PermissionHandler(
 				user.id,
@@ -150,15 +178,17 @@ export default class FetchCreateMessages extends Route {
 					permissions: Permissions.permissionFromDatabase(role.permissions),
 					position: role.position,
 				})),
-				[{
-					id: channel.channelId,
-					overrides: permissionOverrides.map((override) => ({
-						allow: Permissions.permissionFromDatabase(override.allow),
-						deny: Permissions.permissionFromDatabase(override.deny),
-						id: override.permissionId,
-						type: override.type === Constants.permissionOverrideTypes.Role ? "Role" : Constants.permissionOverrideTypes.Everyone ? "Role" : "Member",
-					}))
-				}]
+				[
+					{
+						id: channel.channelId,
+						overrides: permissionOverrides.map((override) => ({
+							allow: Permissions.permissionFromDatabase(override.allow),
+							deny: Permissions.permissionFromDatabase(override.deny),
+							id: override.permissionId,
+							type: override.type === Constants.permissionOverrideTypes.Member ? "Member" : "Role",
+						})),
+					},
+				],
 			);
 
 			if (!permissionCheck.hasChannelPermission(Encryption.decrypt(channel.channelId), ["ViewMessageHistory"])) {
@@ -169,9 +199,9 @@ export default class FetchCreateMessages extends Route {
 				missingPermission.addError({
 					channel: {
 						code: "MissingPermissions",
-						message: "You are missing the \"ViewMessageHistory\" permission.",
+						message: 'You are missing the "ViewMessageHistory" permission.',
 						requiredPermissions: ["ViewMessageHistory"], // ? note: this is a testing field, may be removed later
-					}
+					},
 				});
 
 				return missingPermission.toJSON();
@@ -180,12 +210,12 @@ export default class FetchCreateMessages extends Route {
 
 		const invalidRequest = errorGen.InvalidField();
 
-		if (query.limit && Number.isNaN(query.limit) || Number(query.limit) < 1 || Number(query.limit) > 100) {
+		if ((query.limit && Number.isNaN(query.limit)) || Number(query.limit) < 1 || Number(query.limit) > 100) {
 			invalidRequest.addError({
 				limit: {
 					code: "InvalidLimit",
 					message: "The provided limit is invalid. It must be a number between 1 and 100.",
-				}
+				},
 			});
 		}
 
@@ -194,7 +224,7 @@ export default class FetchCreateMessages extends Route {
 				after: {
 					code: "InvalidAfter",
 					message: "The provided after is invalid. It must be a snowflake.",
-				}
+				},
 			});
 		}
 
@@ -203,7 +233,7 @@ export default class FetchCreateMessages extends Route {
 				before: {
 					code: "InvalidBefore",
 					message: "The provided before is invalid. It must be a snowflake.",
-				}
+				},
 			});
 		}
 
@@ -228,7 +258,7 @@ export default class FetchCreateMessages extends Route {
 		return this.App.cassandra.models.Message.get({
 			channelId: Encryption.encrypt(channelId),
 			messageId,
-			bucket
+			bucket,
 		});
 	}
 
@@ -250,14 +280,13 @@ export default class FetchCreateMessages extends Route {
 		limit = 50,
 		before?: string,
 		after?: string,
-		order = "DESC"
+		order = "DESC",
+		fields = ["*"],
 	) {
-		let query = "SELECT * from messages WHERE channel_id = ? AND bucket = ?";
+		// ? we can trust fields since thats not user input
+		let query = `SELECT ${fields.join(", ")} from messages WHERE channel_id = ? AND bucket = ?`;
 
-		const params: (number | string)[] = [
-			Encryption.encrypt(channelId),
-			bucket
-		];
+		const params: (number | string)[] = [Encryption.encrypt(channelId), bucket];
 
 		if (before) {
 			query += " AND message_id < ?";
@@ -275,18 +304,26 @@ export default class FetchCreateMessages extends Route {
 
 		return {
 			query,
-			params
+			params,
 		};
 	}
 
-	private async getMessageData(channelId: string, limit = 50, before?: string, after?: string): Promise<Message[]> {
+	private async getMessageData(
+		channelId: string,
+		limit = 50,
+		before?: string,
+		after?: string,
+		fields?: string[],
+	): Promise<Message[]> {
 		const messages: Message[] = [];
 		const possibleBuckets = this.App.getBuckets(channelId).reverse();
 
 		for (const bucket of possibleBuckets) {
-			const { query, params } = this.buildQuery(channelId, bucket, limit, before, after);
+			const { query, params } = this.buildQuery(channelId, bucket, limit, before, after, "DESC", fields);
 
-			const fetchedMessages = await this.App.cassandra.client.execute(query, params, { prepare: true }) as unknown as { rows: Message[]; };
+			const fetchedMessages = (await this.App.cassandra.client.execute(query, params, {
+				prepare: true,
+			})) as unknown as { rows: Message[] };
 
 			messages.push(...this.App.cassandra.underscoreCqlToCamelCaseMappings.objectToFixedCasing(fetchedMessages.rows));
 
@@ -296,14 +333,25 @@ export default class FetchCreateMessages extends Route {
 		return messages.slice(0, limit);
 	}
 
+	public async getLastMessageId(channelId: string) {
+		return (
+			(await this.getMessageData(channelId, 1, undefined, undefined, ["message_id"]))
+				.map((message) => message.messageId)[0]
+				?.toString() ?? null
+		);
+	}
+
 	public async parseMessage(message: Message | null, levelsDeep = 0): Promise<ReturnMessage | null> {
 		if (!message) return null;
 
-		const userData = await this.App.cassandra.models.User.get({
-			userId: message.authorId
-		}, {
-			fields: ["userId", "username", "globalNickname", "tag", "avatar", "publicFlags", "flags"]
-		});
+		const userData = await this.App.cassandra.models.User.get(
+			{
+				userId: message.authorId,
+			},
+			{
+				fields: ["userId", "username", "globalNickname", "tag", "avatar", "publicFlags", "flags"],
+			},
+		);
 
 		return {
 			id: message.messageId as bigint | string,
@@ -322,22 +370,26 @@ export default class FetchCreateMessages extends Route {
 			embeds: [],
 			nonce: null,
 			replyingTo: message.replyingTo
-				? levelsDeep < 3 ?
-					await this.parseMessage(await this.tryMessage(Encryption.decrypt(message.channelId), Encryption.decrypt(message.replyingTo)), levelsDeep + 1) :
-					{
-						messageId: message.replyingTo,
-						channelId: message.channelId,
-					} : null,
+				? levelsDeep < 3
+					? await this.parseMessage(
+							await this.tryMessage(Encryption.decrypt(message.channelId), Encryption.decrypt(message.replyingTo)),
+							levelsDeep + 1,
+						)
+					: {
+							messageId: message.replyingTo,
+							channelId: message.channelId,
+						}
+				: null,
 			attachments: [],
 			flags: message.flags,
 			allowedMentions: message.allowedMentions,
 			mentions: {
-				channels: [],
+				channels: message.mentionChannels ?? [],
 				roles: [],
-				users: [],
+				users: message.mentions ?? [],
 			},
 			pinned: false,
-			deletable: true
+			deletable: true,
 		};
 	}
 
@@ -351,8 +403,12 @@ export default class FetchCreateMessages extends Route {
 		}),
 	)
 	@Middleware(bodyValidator(messageData))
-	public async postMessages({ body, params, set, user }: CreateRoute<"/channels/:channelId/messages", Infer<typeof messageData>, [UserMiddlewareType]>) {
-
+	public async postMessages({
+		body,
+		params,
+		set,
+		user,
+	}: CreateRoute<"/channels/:channelId/messages", Infer<typeof messageData>, [UserMiddlewareType]>) {
 		if (!body.content && (body.embeds?.length ?? 0) > 0) {
 			set.status = 400;
 
@@ -361,8 +417,8 @@ export default class FetchCreateMessages extends Route {
 			invalidContent.addError({
 				message: {
 					code: "InvalidMessage",
-					message: "You cannot send an empty message"
-				}
+					message: "You cannot send an empty message",
+				},
 			});
 
 			return invalidContent.toJSON();
@@ -381,7 +437,7 @@ export default class FetchCreateMessages extends Route {
 				channel: {
 					code: "UnknownChannel",
 					message: "The provided channel does not exist or you do not have access to it.",
-				}
+				},
 			});
 
 			return unknownChannel.toJSON();
@@ -406,7 +462,7 @@ export default class FetchCreateMessages extends Route {
 					channel: {
 						code: "UnknownChannel",
 						message: "The provided channel does not exist or you do not have access to it.",
-					}
+					},
 				});
 
 				set.status = 404;
@@ -423,16 +479,30 @@ export default class FetchCreateMessages extends Route {
 					channel: {
 						code: "UnknownChannel",
 						message: "The provided channel does not exist or you do not have access to it.",
-					}
+					},
 				});
 
 				return unknownChannel.toJSON();
 			}
 
 			// eslint-disable-next-line @typescript-eslint/promise-function-async
-			const permissionOverrides = channel.permissionOverrides ? (await Promise.all(channel.permissionOverrides.map((id) => this.App.cassandra.models.PermissionOverride.get({ permissionId: id })))).filter(Boolean) as PermissionsOverrides[] : [];
+			const permissionOverrides = channel.permissionOverrides
+				? ((
+						await Promise.all(
+							channel.permissionOverrides.map(async (id) =>
+								this.App.cassandra.models.PermissionOverride.get({ permissionId: id }),
+							),
+						)
+					).filter(Boolean) as PermissionsOverrides[])
+				: [];
 			// eslint-disable-next-line @typescript-eslint/promise-function-async
-			const roles = (await Promise.all(guildMember.roles.map((id) => this.App.cassandra.models.Role.get({ roleId: id, guildId: channel.guildId! })))).filter(Boolean) as Roles[];
+			const roles = (
+				await Promise.all(
+					guildMember.roles.map(async (id) =>
+						this.App.cassandra.models.Role.get({ roleId: id, guildId: channel.guildId! }),
+					),
+				)
+			).filter(Boolean) as Roles[];
 
 			const permissionCheck = new PermissionHandler(
 				user.id,
@@ -442,15 +512,17 @@ export default class FetchCreateMessages extends Route {
 					permissions: Permissions.permissionFromDatabase(role.permissions),
 					position: role.position,
 				})),
-				[{
-					id: channel.channelId,
-					overrides: permissionOverrides.map((override) => ({
-						allow: Permissions.permissionFromDatabase(override.allow),
-						deny: Permissions.permissionFromDatabase(override.deny),
-						id: override.permissionId,
-						type: override.type === Constants.permissionOverrideTypes.Role ? "Role" : Constants.permissionOverrideTypes.Everyone ? "Role" : "Member",
-					}))
-				}]
+				[
+					{
+						id: channel.channelId,
+						overrides: permissionOverrides.map((override) => ({
+							allow: Permissions.permissionFromDatabase(override.allow),
+							deny: Permissions.permissionFromDatabase(override.deny),
+							id: override.permissionId,
+							type: override.type === Constants.permissionOverrideTypes.Member ? "Member" : "Role",
+						})),
+					},
+				],
 			);
 
 			if (!permissionCheck.hasChannelPermission(Encryption.decrypt(channel.channelId), ["SendMessages"])) {
@@ -461,26 +533,29 @@ export default class FetchCreateMessages extends Route {
 				missingPermission.addError({
 					channel: {
 						code: "MissingPermissions",
-						message: "You are missing the \"SendMessages\" permission.",
+						message: 'You are missing the "SendMessages" permission.',
 						requiredPermissions: ["SendMessages"], // ? note: this is a testing field, may be removed later
-					}
+					},
 				});
 
 				return missingPermission.toJSON();
 			}
-
 		}
 
 		if (body.nonce) {
-			const foundNonce = await this.App.cache.get<string | null>(`messageNonce:${Encryption.encrypt(user.id)}:${Encryption.encrypt(body.nonce)}`);
+			const foundNonce = await this.App.cache.get<string | null>(
+				`messageNonce:${Encryption.encrypt(user.id)}:${Encryption.encrypt(body.nonce)}`,
+			);
 
 			if (foundNonce) {
 				// @ts-expect-error -- this is fine
-				const fetchedMessage = await (new DeleteEditGetMessage(this.App)).getMessage({
-					user, params: {
+				const fetchedMessage = await new DeleteEditGetMessage(this.App).getMessage({
+					user,
+					params: {
 						channelId: params.channelId,
 						messageId: Encryption.decrypt(foundNonce),
-					}, set
+					},
+					set,
 				});
 
 				if (set.status === 200) {
@@ -489,7 +564,6 @@ export default class FetchCreateMessages extends Route {
 
 				set.status = 200; // set it back to normal
 			}
-
 		}
 
 		if (body.replyingTo) {
@@ -504,7 +578,7 @@ export default class FetchCreateMessages extends Route {
 					message: {
 						code: "UnknownMessage",
 						message: "The provided message does not exist or you do not have access to it.",
-					}
+					},
 				});
 
 				return unknownMessage.toJSON();
@@ -517,7 +591,7 @@ export default class FetchCreateMessages extends Route {
 
 		this.App.logger.debug(mentions);
 
-		await this.App.cassandra.models.Message.insert({
+		const insertMsg: Message = {
 			allowedMentions: body.allowedMentions ?? 0,
 			attachments: [],
 			authorId: Encryption.encrypt(user.id),
@@ -532,18 +606,73 @@ export default class FetchCreateMessages extends Route {
 			messageId,
 			replyingTo: body.replyingTo ? Encryption.encrypt(body.replyingTo) : null,
 			updatedDate: null,
-		});
+		};
+
+		const allowedMentionFlags = new FlagUtils(insertMsg.allowedMentions, Constants.allowedMentions);
+
+		if (allowedMentionFlags.hasOneArray(["Users", "All"])) {
+			for (const userMention of mentions.users) {
+				// fetch the user
+				const fetchedUser = await this.App.cassandra.models.User.get(
+					{
+						userId: Encryption.encrypt(userMention),
+					},
+					{
+						fields: ["userId", "flags", "publicFlags"],
+					},
+				);
+
+				if (!fetchedUser) continue;
+
+				insertMsg.mentions.push(Encryption.encrypt(userMention));
+
+				const settings = await this.App.cassandra.models.Settings.get(
+					{
+						userId: Encryption.encrypt(userMention),
+					},
+					{
+						fields: ["mentions"],
+					},
+				);
+
+				if (!settings) continue;
+
+				await this.App.cassandra.models.Settings.update({
+					userId: Encryption.encrypt(userMention),
+					mentions: (settings.mentions ?? []).concat({
+						channelId: Encryption.encrypt(params.channelId),
+						messageId: Encryption.encrypt(messageId),
+						count: 1,
+					}),
+				});
+			}
+		}
+
+		for (const channel of mentions.channels) {
+			const channelExists = await this.App.cassandra.models.Channel.get({
+				channelId: Encryption.encrypt(channel),
+			});
+
+			if (!channelExists) continue;
+
+			insertMsg.mentionChannels.push(Encryption.encrypt(channel));
+		}
+
+		await this.App.cassandra.models.Message.insert(insertMsg);
 
 		if (body.nonce) {
-			await this.App.cache.set(`messageNonce:${Encryption.encrypt(user.id)}:${Encryption.encrypt(body.nonce)}`, Encryption.encrypt(messageId));
+			await this.App.cache.set(
+				`messageNonce:${Encryption.encrypt(user.id)}:${Encryption.encrypt(body.nonce)}`,
+				Encryption.encrypt(messageId),
+			);
 		}
 
 		// @ts-expect-error -- this is fine
-		const fetchedUser = await (new FetchPatch(this.App).getFetch({
+		const fetchedUser = await new FetchPatch(this.App).getFetch({
 			user,
 			query: {},
 			set,
-		}));
+		});
 
 		if (set.status === 500 || fetchedUser === "Internal Server Error :(") {
 			set.status = 500;
@@ -567,17 +696,19 @@ export default class FetchCreateMessages extends Route {
 			editedDate: null,
 			embeds: [],
 			nonce: body.nonce ?? null,
-			replyingTo: body.replyingTo ? await this.parseMessage(await this.tryMessage(params.channelId, body.replyingTo)) : null,
+			replyingTo: body.replyingTo
+				? await this.parseMessage(await this.tryMessage(params.channelId, body.replyingTo))
+				: null,
 			attachments: [],
 			flags: body.flags ?? 0,
 			allowedMentions: body.allowedMentions ?? 0,
 			mentions: {
-				channels: [],
+				channels: insertMsg.mentionChannels,
 				roles: [],
-				users: [],
+				users: insertMsg.mentions,
 			},
 			pinned: false,
-			deletable: true
+			deletable: true,
 		};
 
 		this.App.rabbitMQForwarder("message.create", {

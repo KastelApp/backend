@@ -136,7 +136,7 @@ const getErrors = (str: string) => {
 		const objName = match[1];
 
 		const codeRegex = /code:\s*"(?<code>[^"]+)"/;
-		const messageRegex = /message:\s*(?<message>["'`][^"'](?<actualtext>.*)["'`])/;;
+		const messageRegex = /message:\s*(?<message>["'`][^"'](?<actualtext>.*)["'`])/;
 
 		const codeMatch = match[2]?.match(codeRegex);
 		const messageMatch = match[2]?.match(messageRegex);

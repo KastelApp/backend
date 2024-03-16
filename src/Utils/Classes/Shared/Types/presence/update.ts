@@ -1,7 +1,7 @@
 export interface PresenceUpdate {
-    guildId: string;
-    status: string;
-    user: {};
+	guildId: string;
+	status: string;
+	user: {};
 }
 
 export default PresenceUpdate;

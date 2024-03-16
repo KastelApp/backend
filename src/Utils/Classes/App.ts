@@ -21,7 +21,14 @@ type GitType = "Added" | "Copied" | "Deleted" | "Ignored" | "Modified" | "None" 
 class App {
 	public ready: boolean = false;
 
-	public static snowflake: Snowflake = new Snowflake(Constants.snowflake.Epoch, Constants.snowflake.WorkerId, Constants.snowflake.ProcessId, Constants.snowflake.TimeShift, Constants.snowflake.WorkerIdBytes, Constants.snowflake.ProcessIdBytes);
+	public static snowflake: Snowflake = new Snowflake(
+		Constants.snowflake.Epoch,
+		Constants.snowflake.WorkerId,
+		Constants.snowflake.ProcessId,
+		Constants.snowflake.TimeShift,
+		Constants.snowflake.WorkerIdBytes,
+		Constants.snowflake.ProcessIdBytes,
+	);
 
 	public cassandra!: Connection;
 
@@ -78,8 +85,10 @@ class App {
 
 	public logo() {
 		this.logger.hex("#ca8911")(
-			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${relative.Version ? `v${relative.Version}` : "Unknown version"
-			} of Kastel's Backend. Bun version ${Bun.version
+			`\n██╗  ██╗ █████╗ ███████╗████████╗███████╗██╗     \n██║ ██╔╝██╔══██╗██╔════╝╚══██╔══╝██╔════╝██║     \n█████╔╝ ███████║███████╗   ██║   █████╗  ██║     \n██╔═██╗ ██╔══██║╚════██║   ██║   ██╔══╝  ██║     \n██║  ██╗██║  ██║███████║   ██║   ███████╗███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚══════╝\nA Chatting Application\nRunning version ${
+				relative.Version ? `v${relative.Version}` : "Unknown version"
+			} of Kastel's Backend. Bun version ${
+				Bun.version
 			}\nIf you would like to support this project please consider donating to https://opencollective.com/kastel\n`,
 		);
 	}
@@ -202,7 +211,8 @@ class App {
 			"Git Info:",
 			`Branch: ${App.gitBranch}`,
 			`Commit: ${githubInfo.CommitShort ?? githubInfo.Commit}`,
-			`Status: ${this.clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
+			`Status: ${
+				this.clean ? "Clean" : "Dirty - You will not be given support if something breaks with a dirty instance"
 			}`,
 			this.clean ? "" : "=".repeat(40),
 			`${this.clean ? "" : "Changed Files:"}`,
@@ -349,7 +359,7 @@ class App {
 				if (this.status.has("invisible", int)) return "invisible";
 
 				return "online";
-			}
+			},
 		};
 	}
 

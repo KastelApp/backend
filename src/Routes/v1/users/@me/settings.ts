@@ -112,8 +112,10 @@ export default class UserSettings extends Route {
 
 		if (body.customStatus) {
 			const fetchedPresence = await this.App.cache.get(`user:${Encryption.encrypt(user.id)}`);
-			const parsedPresence = JSON.parse(fetchedPresence as string ?? `[{ "sessionId": null, "since": null, "state": null, "type": ${presenceTypes.custom}, "status": ${statusTypes.offline} }]`) as
-				{ sessionId: string | null, since: number | null; state: string | null; status: number; type: number; }[];
+			const parsedPresence = JSON.parse(
+				(fetchedPresence as string) ??
+					`[{ "sessionId": null, "since": null, "state": null, "type": ${presenceTypes.custom}, "status": ${statusTypes.offline} }]`,
+			) as { sessionId: string | null; since: number | null; state: string | null; status: number; type: number }[];
 
 			for (const presence of parsedPresence) {
 				if (presence.type === presenceTypes.custom) {
@@ -121,11 +123,14 @@ export default class UserSettings extends Route {
 				}
 			}
 
-			const usr = await this.App.cassandra.models.User.get({
-				userId: Encryption.encrypt(user.id)
-			}, {
-				fields: ["avatar"]
-			});
+			const usr = await this.App.cassandra.models.User.get(
+				{
+					userId: Encryption.encrypt(user.id),
+				},
+				{
+					fields: ["avatar"],
+				},
+			);
 
 			for (const guild of user.guilds) {
 				this.App.rabbitMQForwarder("presence.update", {
@@ -134,10 +139,10 @@ export default class UserSettings extends Route {
 						username: user.username,
 						avatar: usr!.avatar,
 						publicFlags: user.flagsUtil.PublicFlags.cleaned,
-						flags: user.flagsUtil.PrivateFlags.cleaned
+						flags: user.flagsUtil.PrivateFlags.cleaned,
 					},
 					guildId: guild,
-					presence: parsedPresence
+					presence: parsedPresence,
 				});
 			}
 

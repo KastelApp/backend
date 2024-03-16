@@ -9,7 +9,7 @@ class Encryption {
 		securityKey: "",
 	};
 
-	public static setConfig(config: typeof Encryption["config"]) {
+	public static setConfig(config: (typeof Encryption)["config"]) {
 		Encryption.config = config;
 	}
 

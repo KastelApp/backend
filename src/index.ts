@@ -17,7 +17,7 @@ const data = {
 	api: {
 		port: 0,
 		ready: false,
-		config: {} as MySchema
+		config: {} as MySchema,
 	},
 	websocket: {
 		port: 0,
@@ -40,10 +40,9 @@ const handleMessage = async (worker: "api" | "ws", event: MessageEvent) => {
 			data.websocket.port = Number(event.data.data.port);
 		}
 
-		if (data.websocket.ready) {
+		if (data.websocket.ready && data.api.ready) {
 			mainLogger.info(`API is ready on port ${data.api.port}`, `WebSocket is ready on port ${data.websocket.port}`);
 		}
-
 	} else if (isConfigResponse(event.data)) {
 		data.api.config = event.data.data;
 
@@ -53,10 +52,11 @@ const handleMessage = async (worker: "api" | "ws", event: MessageEvent) => {
 
 		await rabbitMq.init();
 
+		mainLogger.info("RabbitMQ is ready");
+
 		rabbitMq.on("data", (data) => {
 			websocket.postMessage(data);
 		});
-
 	} else if (isNewLog(event.data)) {
 		mainLogger.info(...event.data.data);
 	} else if (isRabbitMqType(event.data)) {

@@ -1,4 +1,4 @@
 export interface GuildDelete {
-    guildId: string;
-    unavailable: string;
+	guildId: string;
+	unavailable: string;
 }

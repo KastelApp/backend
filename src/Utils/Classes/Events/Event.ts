@@ -11,11 +11,11 @@ class Event {
 
 		this.KillSwitched = false;
 	}
-	
+
 	public get App() {
 		return this.#App;
 	}
-	
+
 	public set App(App: WebSocket) {
 		this.#App = App;
 	}

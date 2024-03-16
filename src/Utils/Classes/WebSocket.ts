@@ -40,7 +40,7 @@ import {
 	sessionCreate,
 	sessionDelete,
 	userUpdate,
-	messageTyping
+	messageTyping,
 } from "./Shared/Events/index.ts";
 import type { GetChannelTypes, channels } from "./Shared/RabbitMQ.ts";
 
@@ -257,9 +257,7 @@ class WebSocket extends App {
 			);
 
 			if (!directory && type !== "D") {
-				const loaded = await this.loadEvents(
-					path
-				);
+				const loaded = await this.loadEvents(path);
 
 				if (!loaded) {
 					this.logger.warn(`Failed to load event ${path}`);
@@ -304,7 +302,11 @@ class WebSocket extends App {
 					}
 
 					// @ts-expect-error -- its fine :3
-					const event = foundEvent.eventClass[foundOp.name].bind(foundEvent.eventClass) as (user: User, data: unknown, ws: WebSocket) => Promise<void> | void;
+					const event = foundEvent.eventClass[foundOp.name].bind(foundEvent.eventClass) as (
+						user: User,
+						data: unknown,
+						ws: WebSocket,
+					) => Promise<void> | void;
 
 					if (!event) {
 						ws.data.user.close(errorCodes.internalServerError);
@@ -312,7 +314,9 @@ class WebSocket extends App {
 						return;
 					}
 
-					const bodyValidator = foundEvent.eventClass?.__validator?.find((validator) => validator.name === foundOp.name);
+					const bodyValidator = foundEvent.eventClass?.__validator?.find(
+						(validator) => validator.name === foundOp.name,
+					);
 					const authRequired = foundEvent.eventClass?.__authRequired?.find((auth) => auth.name === foundOp.name);
 
 					if (authRequired?.auth === true && !ws.data.user.token) {
@@ -320,7 +324,7 @@ class WebSocket extends App {
 
 						return;
 					} else if (authRequired?.auth === false && ws.data.user.token) {
-						ws.data.user.close(errorCodes.alreadyAuthorized); // ? mainly for identify 
+						ws.data.user.close(errorCodes.alreadyAuthorized); // ? mainly for identify
 
 						return;
 					}
@@ -359,7 +363,8 @@ class WebSocket extends App {
 						}
 					}
 
-					if (newUser.version && !this.eventCache.has(`${opCodes.identify}-${newUser.version}`)) { // ? if the client sends a version, we'll check if the identify event exists for that version else disconnect
+					if (newUser.version && !this.eventCache.has(`${opCodes.identify}-${newUser.version}`)) {
+						// ? if the client sends a version, we'll check if the identify event exists for that version else disconnect
 						newUser.close(errorCodes.unknownError);
 
 						return;
@@ -373,8 +378,8 @@ class WebSocket extends App {
 						op: opCodes.hello,
 						data: {
 							heartbeatInterval: newUser.heartbeatInterval,
-							sessionId: newUser.sessionId
-						}
+							sessionId: newUser.sessionId,
+						},
 					});
 				},
 				close: async (ws, code) => {
@@ -392,47 +397,51 @@ class WebSocket extends App {
 						}
 					}
 
-					const got = await this.cache.get(`user:${Encryption.encrypt(ws.data.user.id)}`);
+					if (ws.data.user.guilds) {
+						const got = await this.cache.get(`user:${Encryption.encrypt(ws.data.user.id)}`);
 
-					const parsed = JSON.parse(got as string ?? `[{ "sessionId": null, "since": null, "state": null, "type": ${presenceTypes.custom}, "status": ${statusTypes.offline} }]`) as
-						{ sessionId: string | null, since: number | null; state: string | null; status: number; type: number; }[];
+						const parsed = JSON.parse(
+							(got as string) ??
+							`[{ "sessionId": null, "since": null, "state": null, "type": ${presenceTypes.custom}, "status": ${statusTypes.offline} }]`,
+						) as { sessionId: string | null; since: number | null; state: string | null; status: number; type: number; }[];
 
-					const filtered = parsed.filter((prec) => prec.sessionId !== ws.data.user.sessionId);
+						const filtered = parsed.filter((prec) => prec.sessionId !== ws.data.user.sessionId);
 
-					if (filtered.length > 0) {
-						filtered.push({
-							sessionId: null,
-							since: null,
-							state: null,
-							status: statusTypes.offline,
-							type: presenceTypes.custom
-						});
-					}
+						if (filtered.length === 0) {
+							filtered.push({
+								sessionId: null,
+								since: null,
+								state: null,
+								status: statusTypes.offline,
+								type: presenceTypes.custom,
+							});
+						}
 
-					for (const guild of ws.data.user.guilds) {
-						this.publish(`guild:${guild}:members`, {
-							op: opCodes.event,
-							event: "PresencesUpdate",
-							data: {
-								user: {
-									id: ws.data.user.fetchedUser.id,
-									username: ws.data.user.fetchedUser.username,
-									avatar: ws.data.user.fetchedUser.avatar,
-									tag: ws.data.user.fetchedUser.tag,
-									publicFlags: ws.data.user.fetchedUser.publicFlags,
-									flags: ws.data.user.fetchedUser.flags
+						for (const guild of ws.data.user.guilds) {
+							this.publish(`guild:${guild}:members`, {
+								op: opCodes.event,
+								event: "PresencesUpdate",
+								data: {
+									user: {
+										id: ws.data.user.fetchedUser.id,
+										username: ws.data.user.fetchedUser.username,
+										avatar: ws.data.user.fetchedUser.avatar,
+										tag: ws.data.user.fetchedUser.tag,
+										publicFlags: ws.data.user.fetchedUser.publicFlags,
+										flags: ws.data.user.fetchedUser.flags,
+									},
+									guildId: guild,
+									presences: filtered.map((prec) => ({
+										...prec,
+										sessionId: undefined,
+										current: undefined,
+									})),
 								},
-								guildId: guild,
-								presences: filtered.map((prec) => ({
-									...prec,
-									sessionId: undefined,
-									current: undefined
-								}))
-							}
-						});
-					}
+							});
+						}
 
-					if (got) await this.cache.set(`user:${Encryption.encrypt(ws.data.user.id)}`, JSON.stringify(filtered));
+						if (got) await this.cache.set(`user:${Encryption.encrypt(ws.data.user.id)}`, JSON.stringify(filtered));
+					}
 				},
 			},
 			hostname: "0.0.0.0",
@@ -491,7 +500,10 @@ class WebSocket extends App {
 			for (const user of this.clients.values()) {
 				if (user.lastHeartbeat === 0) continue;
 
-				if (user.lastHeartbeat + user.heartbeatInterval + Number(this.config.ws.intervals.heartbeat.leeway) < Date.now()) {
+				if (
+					user.lastHeartbeat + user.heartbeatInterval + Number(this.config.ws.intervals.heartbeat.leeway) <
+					Date.now()
+				) {
 					user.close(errorCodes.heartbeatTimeout);
 				}
 			}
@@ -591,7 +603,9 @@ class WebSocket extends App {
 		return Math.round(interval);
 	}
 
-	public isRabbitMessage(data: unknown): data is { data: unknown, topic: GetChannelTypes<typeof channels>, workerId: number; } {
+	public isRabbitMessage(
+		data: unknown,
+	): data is { data: unknown; topic: GetChannelTypes<typeof channels>; workerId: number; } {
 		if (typeof data !== "object" || !data) {
 			this.logger.warn("data is not an object");
 
@@ -613,7 +627,7 @@ class WebSocket extends App {
 		return "data" in data;
 	}
 
-	public isCorrectPayload(data: unknown): data is { data: unknown, op: number; } {
+	public isCorrectPayload(data: unknown): data is { data: unknown; op: number; } {
 		if (typeof data !== "object" || !data) {
 			this.logger.warn("data is not an object");
 
@@ -647,16 +661,106 @@ class WebSocket extends App {
 		return users.size;
 	}
 
+	public subscribe(
+		opt: {
+			sessionId?: string;
+			topic?: string;
+			userId?: string;
+			userIds?: string[];
+			users?: User[]; // ? anyone subscribed to this topic, sub them to the new topic
+		},
+		topics: string[] | string,
+	) {
+		// ? if there's nothing throw an error, there has to be at least one thing
+		if (!opt.sessionId && !opt.userId && !opt.userIds && !opt.users) {
+			throw new Error("You must provide at least one of sessionId, userId, userIds or users");
+		}
+
+		// ? if there's a sessionId, we'll get the user from the sessionId
+		if (opt.sessionId) {
+			const user = this.clients.get(opt.sessionId);
+
+			if (!user) {
+				throw new Error("Invalid sessionId");
+			}
+
+			for (const topic of topics) {
+				user.subscribe(topic);
+			}
+
+			return true;
+		}
+
+		// ? if there's a userId, we'll get the user from the userId
+		if (opt.userId) {
+			for (const user of this.clients.values()) {
+				if (user.id === opt.userId) {
+					for (const topic of topics) {
+						user.subscribe(topic);
+					}
+				}
+			}
+
+			return true;
+		}
+
+		// ? if there's userIds, we'll get the user from the userIds
+		if (opt.userIds) {
+			for (const user of this.clients.values()) {
+				if (opt.userIds.includes(user.id)) {
+					for (const topic of topics) {
+						user.subscribe(topic);
+					}
+				}
+			}
+
+			return true;
+		}
+
+		if (opt.users) {
+			for (const user of opt.users) {
+				for (const topic of topics) {
+					user.subscribe(topic);
+				}
+			}
+
+			return true;
+		}
+
+		if (opt.topic) {
+			const users = this.topics.get(opt.topic);
+
+			if (!users) return 0;
+
+			for (const user of users) {
+				for (const topic of topics) {
+					user.subscribe(topic);
+				}
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
 	public getTopic(topic: string) {
 		return this.topics.get(topic) ?? new Set();
 	}
 
-	public unsubscribe(topic: string, user: User) {
+	public unsubscribe(topic: string, user: User | User[]) {
 		const users = this.topics.get(topic);
 
 		if (!users) return;
+		
+		if (Array.isArray(user)) {
+			for (const u of user) {
+				users.delete(u);
+			}
+		} else {
+			users.delete(user);
+		}
 
-		users.delete(user);
 
 		if (users.size === 0) this.topics.delete(topic);
 

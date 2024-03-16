@@ -182,11 +182,11 @@ export default class Login extends Route {
 		} else {
 			await this.App.cassandra.models.Settings.update(tokens);
 		}
-		
+
 		this.App.rabbitMQForwarder("sessions.create", {
 			sessionId,
 			userId: fetchedUser.userId,
-		})
+		});
 
 		return {
 			token: newToken,

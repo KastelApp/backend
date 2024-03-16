@@ -3,7 +3,7 @@ export { banDelete } from "./ban/delete";
 export { channelCreate } from "./channel/create";
 export { channelDelete } from "./channel/delete";
 export { channelUpdate } from "./channel/update";
-export { guildCreate } from "./guild/create"
+export { guildCreate } from "./guild/create";
 export { guildDelete } from "./guild/delete";
 export { guildUpdate } from "./guild/update";
 export { inviteCreate } from "./invite/create";

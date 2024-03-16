@@ -271,16 +271,9 @@
 					},
 					"required": ["unAuthedTimeout", "closeTimeout", "heartbeat"]
 				}
-			}
-			,
+			},
 			"type": "object",
-			"required": [
-				"port",
-				"maxConnections",
-				"maxConnectionsPerMinute",
-				"maxConnectionsPerIp",
-				"intervals"
-			]
+			"required": ["port", "maxConnections", "maxConnectionsPerMinute", "maxConnectionsPerIp", "intervals"]
 		},
 		"RabbitMQ": {
 			"properties": {

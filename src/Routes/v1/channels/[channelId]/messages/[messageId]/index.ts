@@ -38,7 +38,11 @@ export default class DeleteEditGetMessage extends Route {
 			AllowedRequesters: "User",
 		}),
 	)
-	public async deleteMessage({ user, params, set }: CreateRoute<"/channels/:channelId/messages/:messageId", any, [UserMiddlewareType]>) {
+	public async deleteMessage({
+		user,
+		params,
+		set,
+	}: CreateRoute<"/channels/:channelId/messages/:messageId", any, [UserMiddlewareType]>) {
 		const channel = await this.App.cassandra.models.Channel.get({
 			channelId: Encryption.encrypt(params.channelId),
 		});
@@ -52,7 +56,7 @@ export default class DeleteEditGetMessage extends Route {
 				channel: {
 					code: "UnknownChannel",
 					message: "The provided channel does not exist or you do not have access to it.",
-				}
+				},
 			});
 
 			return unknownChannel.toJSON();
@@ -72,7 +76,7 @@ export default class DeleteEditGetMessage extends Route {
 					message: {
 						code: "UnknownMessage",
 						message: "The provided message does not exist or you do not have access to it.",
-					}
+					},
 				});
 
 				return unknownMessage.toJSON();
@@ -88,7 +92,7 @@ export default class DeleteEditGetMessage extends Route {
 						code: "MissingPermissions",
 						message: "You cannot delete a message that you did not create.",
 						requiredPermissions: [], // ? note: this is a testing field, may be removed later
-					}
+					},
 				});
 
 				return missingPermission.toJSON();
@@ -97,7 +101,7 @@ export default class DeleteEditGetMessage extends Route {
 			await this.App.cassandra.models.Message.remove({
 				channelId: Encryption.encrypt(params.channelId),
 				messageId: params.messageId,
-				bucket: message.bucket
+				bucket: message.bucket,
 			});
 		} else {
 			const guildMember = await this.App.cassandra.models.GuildMember.get({
@@ -110,7 +114,7 @@ export default class DeleteEditGetMessage extends Route {
 					channel: {
 						code: "UnknownChannel",
 						message: "The provided channel does not exist or you do not have access to it.",
-					}
+					},
 				});
 
 				set.status = 404;
@@ -127,7 +131,7 @@ export default class DeleteEditGetMessage extends Route {
 					channel: {
 						code: "UnknownChannel",
 						message: "The provided channel does not exist or you do not have access to it.",
-					}
+					},
 				});
 
 				return unknownChannel.toJSON();
@@ -144,7 +148,7 @@ export default class DeleteEditGetMessage extends Route {
 					message: {
 						code: "UnknownMessage",
 						message: "The provided message does not exist or you do not have access to it.",
-					}
+					},
 				});
 
 				return unknownMessage.toJSON();
@@ -154,7 +158,7 @@ export default class DeleteEditGetMessage extends Route {
 				await this.App.cassandra.models.Message.remove({
 					channelId: Encryption.encrypt(params.channelId),
 					messageId: params.messageId,
-					bucket: message.bucket
+					bucket: message.bucket,
 				});
 
 				set.status = 204;
@@ -163,9 +167,23 @@ export default class DeleteEditGetMessage extends Route {
 			}
 
 			// eslint-disable-next-line @typescript-eslint/promise-function-async
-			const permissionOverrides = channel.permissionOverrides ? (await Promise.all(channel.permissionOverrides.map((id) => this.App.cassandra.models.PermissionOverride.get({ permissionId: Encryption.encrypt(id) })))).filter(Boolean) as PermissionsOverrides[] : [];
+			const permissionOverrides = channel.permissionOverrides
+				? ((
+						await Promise.all(
+							channel.permissionOverrides.map(async (id) =>
+								this.App.cassandra.models.PermissionOverride.get({ permissionId: Encryption.encrypt(id) }),
+							),
+						)
+					).filter(Boolean) as PermissionsOverrides[])
+				: [];
 			// eslint-disable-next-line @typescript-eslint/promise-function-async
-			const roles = (await Promise.all(guildMember.roles.map((id) => this.App.cassandra.models.Role.get({ roleId: Encryption.encrypt(id), guildId: channel.guildId! })))).filter(Boolean) as Roles[];
+			const roles = (
+				await Promise.all(
+					guildMember.roles.map(async (id) =>
+						this.App.cassandra.models.Role.get({ roleId: Encryption.encrypt(id), guildId: channel.guildId! }),
+					),
+				)
+			).filter(Boolean) as Roles[];
 
 			const permissionCheck = new PermissionHandler(
 				user.id,
@@ -175,18 +193,25 @@ export default class DeleteEditGetMessage extends Route {
 					permissions: Permissions.permissionFromDatabase(role.permissions),
 					position: role.position,
 				})),
-				[{
-					id: channel.channelId,
-					overrides: permissionOverrides.map((override) => ({
-						allow: Permissions.permissionFromDatabase(override.allow),
-						deny: Permissions.permissionFromDatabase(override.deny),
-						id: override.permissionId,
-						type: override.type === Constants.permissionOverrideTypes.Role ? "Role" : Constants.permissionOverrideTypes.Everyone ? "Role" : "Member",
-					}))
-				}]
+				[
+					{
+						id: channel.channelId,
+						overrides: permissionOverrides.map((override) => ({
+							allow: Permissions.permissionFromDatabase(override.allow),
+							deny: Permissions.permissionFromDatabase(override.deny),
+							id: override.permissionId,
+							type: override.type === Constants.permissionOverrideTypes.Member ? "Member" : "Role",
+						})),
+					},
+				],
 			);
 
-			if (!permissionCheck.hasChannelPermission(Encryption.decrypt(channel.channelId), ["ManageMessages", "ViewMessageHistory"])) {
+			if (
+				!permissionCheck.hasChannelPermission(Encryption.decrypt(channel.channelId), [
+					"ManageMessages",
+					"ViewMessageHistory",
+				])
+			) {
 				set.status = 403;
 
 				const missingPermission = errorGen.MissingPermissions();
@@ -194,9 +219,9 @@ export default class DeleteEditGetMessage extends Route {
 				missingPermission.addError({
 					channel: {
 						code: "MissingPermissions",
-						message: "You are missing the \"ManageMessages\" and \"ViewMessageHistory\" permissions.",
+						message: 'You are missing the "ManageMessages" and "ViewMessageHistory" permissions.',
 						requiredPermissions: ["ManageMessages", "ViewMessageHistory"], // ? note: this is a testing field, may be removed later
-					}
+					},
 				});
 
 				return missingPermission.toJSON();
@@ -205,7 +230,7 @@ export default class DeleteEditGetMessage extends Route {
 			await this.App.cassandra.models.Message.remove({
 				channelId: Encryption.encrypt(params.channelId),
 				messageId: params.messageId,
-				bucket: message.bucket
+				bucket: message.bucket,
 			});
 		}
 
@@ -225,7 +250,12 @@ export default class DeleteEditGetMessage extends Route {
 		}),
 	)
 	@Middleware(bodyValidator(editMessageBody))
-	public async patchMessage({ user, params, set, body }: CreateRoute<"/channels/:channelId/messages/:messageId", any, [UserMiddlewareType]>) {
+	public async patchMessage({
+		user,
+		params,
+		set,
+		body,
+	}: CreateRoute<"/channels/:channelId/messages/:messageId", any, [UserMiddlewareType]>) {
 		const channel = await this.App.cassandra.models.Channel.get({
 			channelId: Encryption.encrypt(params.channelId),
 		});
@@ -239,7 +269,7 @@ export default class DeleteEditGetMessage extends Route {
 				channel: {
 					code: "UnknownChannel",
 					message: "The provided channel does not exist or you do not have access to it.",
-				}
+				},
 			});
 
 			return unknownChannel.toJSON();
@@ -257,14 +287,13 @@ export default class DeleteEditGetMessage extends Route {
 				message: {
 					code: "UnknownMessage",
 					message: "The provided message does not exist or you do not have access to it.",
-				}
+				},
 			});
 
 			return unknownMessage.toJSON();
 		}
 
 		if (channelFlags.hasOneArray(["Dm", "GroupChat"])) {
-
 			if (Encryption.decrypt(message.authorId) !== user.id) {
 				set.status = 403;
 
@@ -275,7 +304,7 @@ export default class DeleteEditGetMessage extends Route {
 						code: "MissingPermissions",
 						message: "You cannot edit a message that you did not create.",
 						requiredPermissions: [], // ? note: this is a testing field, may be removed later
-					}
+					},
 				});
 
 				return missingPermission.toJSON();
@@ -291,7 +320,7 @@ export default class DeleteEditGetMessage extends Route {
 					channel: {
 						code: "UnknownChannel",
 						message: "The provided channel does not exist or you do not have access to it.",
-					}
+					},
 				});
 
 				set.status = 404;
@@ -308,16 +337,30 @@ export default class DeleteEditGetMessage extends Route {
 					channel: {
 						code: "UnknownChannel",
 						message: "The provided channel does not exist or you do not have access to it.",
-					}
+					},
 				});
 
 				return unknownChannel.toJSON();
 			}
-			
+
 			// eslint-disable-next-line @typescript-eslint/promise-function-async
-			const permissionOverrides = channel.permissionOverrides ? (await Promise.all(channel.permissionOverrides.map((id) => this.App.cassandra.models.PermissionOverride.get({ permissionId: Encryption.encrypt(id) })))).filter(Boolean) as PermissionsOverrides[] : [];
+			const permissionOverrides = channel.permissionOverrides
+				? ((
+						await Promise.all(
+							channel.permissionOverrides.map(async (id) =>
+								this.App.cassandra.models.PermissionOverride.get({ permissionId: Encryption.encrypt(id) }),
+							),
+						)
+					).filter(Boolean) as PermissionsOverrides[])
+				: [];
 			// eslint-disable-next-line @typescript-eslint/promise-function-async
-			const roles = (await Promise.all(guildMember.roles.map((id) => this.App.cassandra.models.Role.get({ roleId: Encryption.encrypt(id), guildId: channel.guildId! })))).filter(Boolean) as Roles[];
+			const roles = (
+				await Promise.all(
+					guildMember.roles.map(async (id) =>
+						this.App.cassandra.models.Role.get({ roleId: Encryption.encrypt(id), guildId: channel.guildId! }),
+					),
+				)
+			).filter(Boolean) as Roles[];
 
 			const permissionCheck = new PermissionHandler(
 				user.id,
@@ -327,15 +370,17 @@ export default class DeleteEditGetMessage extends Route {
 					permissions: Permissions.permissionFromDatabase(role.permissions),
 					position: role.position,
 				})),
-				[{
-					id: channel.channelId,
-					overrides: permissionOverrides.map((override) => ({
-						allow: Permissions.permissionFromDatabase(override.allow),
-						deny: Permissions.permissionFromDatabase(override.deny),
-						id: override.permissionId,
-						type: override.type === Constants.permissionOverrideTypes.Role ? "Role" : Constants.permissionOverrideTypes.Everyone ? "Role" : "Member",
-					}))
-				}]
+				[
+					{
+						id: channel.channelId,
+						overrides: permissionOverrides.map((override) => ({
+							allow: Permissions.permissionFromDatabase(override.allow),
+							deny: Permissions.permissionFromDatabase(override.deny),
+							id: override.permissionId,
+							type: override.type === Constants.permissionOverrideTypes.Member ? "Member" : "Role",
+						})),
+					},
+				],
 			);
 
 			if (!permissionCheck.hasChannelPermission(Encryption.decrypt(channel.channelId), ["ViewMessageHistory"])) {
@@ -346,9 +391,9 @@ export default class DeleteEditGetMessage extends Route {
 				missingPermission.addError({
 					channel: {
 						code: "MissingPermissions",
-						message: "You are missing the \"ViewMessageHistory\" permission.",
+						message: 'You are missing the "ViewMessageHistory" permission.',
 						requiredPermissions: ["ViewMessageHistory"], // ? note: this is a testing field, may be removed later
-					}
+					},
 				});
 
 				return missingPermission.toJSON();
@@ -364,19 +409,19 @@ export default class DeleteEditGetMessage extends Route {
 						code: "MissingPermissions",
 						message: "You cannot edit a message that you did not create.",
 						requiredPermissions: [], // ? note: this is a testing field, may be removed later
-					}
+					},
 				});
 
 				return missingPermission.toJSON();
 			}
 		}
-		
+
 		await this.App.cassandra.models.Message.update({
 			channelId: Encryption.encrypt(params.channelId),
 			messageId: params.messageId,
 			bucket: message.bucket,
 			content: Encryption.encrypt(body.content),
-			updatedDate: new Date()
+			updatedDate: new Date(),
 		});
 
 		set.status = 204;
@@ -394,7 +439,11 @@ export default class DeleteEditGetMessage extends Route {
 			AllowedRequesters: "User",
 		}),
 	)
-	public async getMessage({ user, params, set }: CreateRoute<"/channels/:channelId/messages/:messageId", any, [UserMiddlewareType]>) {
+	public async getMessage({
+		user,
+		params,
+		set,
+	}: CreateRoute<"/channels/:channelId/messages/:messageId", any, [UserMiddlewareType]>) {
 		const channel = await this.App.cassandra.models.Channel.get({
 			channelId: Encryption.encrypt(params.channelId),
 		});
@@ -408,7 +457,7 @@ export default class DeleteEditGetMessage extends Route {
 				channel: {
 					code: "UnknownChannel",
 					message: "The provided channel does not exist or you do not have access to it.",
-				}
+				},
 			});
 
 			return unknownChannel.toJSON();
@@ -433,7 +482,7 @@ export default class DeleteEditGetMessage extends Route {
 					channel: {
 						code: "UnknownChannel",
 						message: "The provided channel does not exist or you do not have access to it.",
-					}
+					},
 				});
 
 				set.status = 404;
@@ -450,16 +499,30 @@ export default class DeleteEditGetMessage extends Route {
 					channel: {
 						code: "UnknownChannel",
 						message: "The provided channel does not exist or you do not have access to it.",
-					}
+					},
 				});
 
 				return unknownChannel.toJSON();
 			}
 
 			// eslint-disable-next-line @typescript-eslint/promise-function-async
-			const permissionOverrides = channel.permissionOverrides ? (await Promise.all(channel.permissionOverrides.map((id) => this.App.cassandra.models.PermissionOverride.get({ permissionId: Encryption.encrypt(id) })))).filter(Boolean) as PermissionsOverrides[] : [];
+			const permissionOverrides = channel.permissionOverrides
+				? ((
+						await Promise.all(
+							channel.permissionOverrides.map(async (id) =>
+								this.App.cassandra.models.PermissionOverride.get({ permissionId: Encryption.encrypt(id) }),
+							),
+						)
+					).filter(Boolean) as PermissionsOverrides[])
+				: [];
 			// eslint-disable-next-line @typescript-eslint/promise-function-async
-			const roles = (await Promise.all(guildMember.roles.map((id) => this.App.cassandra.models.Role.get({ roleId: Encryption.encrypt(id), guildId: channel.guildId! })))).filter(Boolean) as Roles[];
+			const roles = (
+				await Promise.all(
+					guildMember.roles.map(async (id) =>
+						this.App.cassandra.models.Role.get({ roleId: Encryption.encrypt(id), guildId: channel.guildId! }),
+					),
+				)
+			).filter(Boolean) as Roles[];
 
 			const permissionCheck = new PermissionHandler(
 				user.id,
@@ -469,15 +532,17 @@ export default class DeleteEditGetMessage extends Route {
 					permissions: Permissions.permissionFromDatabase(role.permissions),
 					position: role.position,
 				})),
-				[{
-					id: channel.channelId,
-					overrides: permissionOverrides.map((override) => ({
-						allow: Permissions.permissionFromDatabase(override.allow),
-						deny: Permissions.permissionFromDatabase(override.deny),
-						id: override.permissionId,
-						type: override.type === Constants.permissionOverrideTypes.Role ? "Role" : Constants.permissionOverrideTypes.Everyone ? "Role" : "Member",
-					}))
-				}]
+				[
+					{
+						id: channel.channelId,
+						overrides: permissionOverrides.map((override) => ({
+							allow: Permissions.permissionFromDatabase(override.allow),
+							deny: Permissions.permissionFromDatabase(override.deny),
+							id: override.permissionId,
+							type: override.type === Constants.permissionOverrideTypes.Member ? "Member" : "Role",
+						})),
+					},
+				],
 			);
 
 			if (!permissionCheck.hasChannelPermission(Encryption.decrypt(channel.channelId), ["ViewMessageHistory"])) {
@@ -488,9 +553,9 @@ export default class DeleteEditGetMessage extends Route {
 				missingPermission.addError({
 					channel: {
 						code: "MissingPermissions",
-						message: "You are missing the \"ViewMessageHistory\" permission.",
+						message: 'You are missing the "ViewMessageHistory" permission.',
 						requiredPermissions: ["ViewMessageHistory"], // ? note: this is a testing field, may be removed later
-					}
+					},
 				});
 
 				return missingPermission.toJSON();
@@ -508,17 +573,20 @@ export default class DeleteEditGetMessage extends Route {
 				message: {
 					code: "UnknownMessage",
 					message: "The provided message does not exist or you do not have access to it.",
-				}
+				},
 			});
 
 			return unknownMessage.toJSON();
 		}
 
-		const userData = await this.App.cassandra.models.User.get({
-			userId: message.authorId
-		}, {
-			fields: ["userId", "username", "globalNickname", "tag", "avatar", "publicFlags", "flags"]
-		});
+		const userData = await this.App.cassandra.models.User.get(
+			{
+				userId: message.authorId,
+			},
+			{
+				fields: ["userId", "username", "globalNickname", "tag", "avatar", "publicFlags", "flags"],
+			},
+		);
 
 		return Encryption.completeDecryption({
 			id: message.messageId,
@@ -541,12 +609,12 @@ export default class DeleteEditGetMessage extends Route {
 			flags: message.flags,
 			allowedMentions: message.allowedMentions,
 			mentions: {
-				channels: [],
+				channels: message.mentionChannels ?? [],
 				roles: [],
-				users: [],
+				users: message.mentions ?? [],
 			},
 			pinned: false,
-			deletable: true
+			deletable: true,
 		});
 	}
 
@@ -554,7 +622,7 @@ export default class DeleteEditGetMessage extends Route {
 		return this.App.cassandra.models.Message.get({
 			channelId: Encryption.encrypt(channelId),
 			messageId,
-			bucket
+			bucket,
 		});
 	}
 
