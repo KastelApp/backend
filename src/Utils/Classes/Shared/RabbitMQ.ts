@@ -18,7 +18,7 @@ const channels = {
 	invite: ["create", "delete", "update"],
 	role: ["create", "delete", "update"],
 	ban: ["create", "delete"],
-	guildMember: ["add", "remove", "update", "ban", "unban", "kick"],
+	guildMember: ["add", "remove", "update", "ban", "unban", "kick", "chunk"],
 	sessions: ["create", "delete"],
 } as const;
 

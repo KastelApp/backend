@@ -42,6 +42,7 @@ import {
 	userUpdate,
 	messageTyping,
 } from "./Shared/Events/index.ts";
+import { guildMemberChunk } from "./Shared/Events/member/chunk.ts";
 import type { GetChannelTypes, channels } from "./Shared/RabbitMQ.ts";
 
 declare const self: Worker;
@@ -135,7 +136,8 @@ class WebSocket extends App {
 				}
 
 				case "guildMember.add": {
-					guildMemberAdd(this, event.data.data);
+					void guildMemberAdd(this, event.data.data);
+					
 					break;
 				}
 
@@ -237,6 +239,12 @@ class WebSocket extends App {
 				case "message.typing": {
 					messageTyping(this, event.data.data);
 
+					break;
+				}
+				
+				case "guildMember.chunk": {
+					void guildMemberChunk(this, event.data.data);
+					
 					break;
 				}
 

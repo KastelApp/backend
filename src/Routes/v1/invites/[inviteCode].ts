@@ -1,5 +1,6 @@
 import type { KeyObject } from "node:crypto";
 import { generateKeySync } from "node:crypto";
+import { presenceTypes, statusTypes } from "@/Constants.example.ts";
 import Constants from "@/Constants.ts";
 import type { UserMiddlewareType } from "@/Middleware/User.ts";
 import userMiddleware from "@/Middleware/User.ts";
@@ -102,7 +103,7 @@ export default class FetchJoinInvite extends Route {
 				guilds: [Encryption.decrypt(inviteExists.guildId)],
 			},
 			query: {
-				include: "channels",
+				include: "channels,roles",
 			},
 			params: {
 				guildId: Encryption.decrypt(inviteExists.guildId),
@@ -124,12 +125,12 @@ export default class FetchJoinInvite extends Route {
 			guild: key
 				? fetchedGuild
 				: {
-						id: inviteExists.guildId,
-						name: fetchedGuild.name,
-						icon: fetchedGuild.icon,
-						ownerId: fetchedGuild.ownerId,
-						features: fetchedGuild.features ?? [],
-					},
+					id: inviteExists.guildId,
+					name: fetchedGuild.name,
+					icon: fetchedGuild.icon,
+					ownerId: fetchedGuild.ownerId,
+					features: fetchedGuild.features ?? [],
+				},
 			channel: {
 				id: inviteExists.channelId,
 				name: foundChannel?.name,
@@ -239,7 +240,7 @@ export default class FetchJoinInvite extends Route {
 						message: "You're banned from this guild.",
 					},
 				});
-				
+
 				set.status = 403;
 
 				return banned.toJSON();
@@ -254,7 +255,7 @@ export default class FetchJoinInvite extends Route {
 						message: "You're already in this guild.",
 					},
 				});
-				
+
 				set.status = 403;
 
 				return alreadyIn.toJSON();
@@ -307,14 +308,75 @@ export default class FetchJoinInvite extends Route {
 
 		this.App.rabbitMQForwarder("guild.create", {
 			userId: user.id,
-			guild: (fetchedInvite as { guild: finishedGuild }).guild,
-			member: newMember,
+			guild: Encryption.completeDecryption((fetchedInvite as { guild: finishedGuild; }).guild),
+			member: Encryption.completeDecryption(newMember),
 		});
 
 		this.App.rabbitMQForwarder("guildMember.add", {
 			userId: user.id,
-			guildId: inviteExists.guildId,
-			member: newMember
+			guildId: Encryption.decrypt(inviteExists.guildId),
+			member: Encryption.completeDecryption({
+				...newMember,
+				owner: false
+			}),
+		});
+
+		const first100Members = (
+			await this.App.cassandra.models.GuildMember.find({ guildId: inviteExists.guildId }, { limit: 100 })
+		).toArray();
+
+		const finishedGuild = (fetchedInvite as { guild: finishedGuild; }).guild;
+
+		const members: unknown[] = [];
+		
+		for (const member of Encryption.completeDecryption(first100Members)) {
+			const fetchedUser = await this.App.cassandra.models.User.get(
+				{ userId: Encryption.encrypt(member.userId) },
+				{ fields: ["username", "userId", "flags", "publicFlags", "avatar", "tag"] },
+			);
+
+			if (!fetchedUser) {
+				this.App.logger.warn(`User not found for ${member.userId} in ${finishedGuild.id}`);
+
+				continue;
+			}
+
+			const data = {
+				user: {
+					username: fetchedUser.username,
+					id: fetchedUser.userId,
+					flags: fetchedUser.flags,
+					publicFlags: fetchedUser.publicFlags,
+					avatar: fetchedUser.avatar,
+					tag: fetchedUser.tag,
+				},
+				owner: finishedGuild.owner?.id === member.userId,
+				nickname: member.nickname,
+				roles: member.roles,
+				joinedAt: member.joinedAt.toISOString(),
+				presence: [],
+			};
+
+			const fetchedPresence = await this.App.cache.get(`user:${fetchedUser.userId}`);
+			const parsedPresence = JSON.parse(
+				(fetchedPresence as string) ??
+				`[{ "sessionId": null, "since": null, "state": null, "type": ${presenceTypes.custom}, "status": ${statusTypes.offline} }]`,
+			) as { sessionId: string | null; since: number | null; state: string | null; status: number; type: number; }[];
+
+			// @ts-expect-error -- it's fine
+			data.presence = parsedPresence.map((pre) => ({
+				...pre,
+				sessionId: undefined,
+				current: undefined,
+			}));
+			
+			members.push(data);
+		}
+		
+		this.App.rabbitMQForwarder("guildMember.chunk", {
+			userId: user.id,
+			guildId: finishedGuild.id,
+			members,
 		});
 
 		return {
@@ -322,10 +384,10 @@ export default class FetchJoinInvite extends Route {
 			guild: {
 				// ? it should be the same as if they didn't provide the key
 				id: inviteExists.guildId,
-				name: (fetchedInvite as { guild: finishedGuild }).guild.name,
-				icon: (fetchedInvite as { guild: finishedGuild }).guild.icon,
-				ownerId: (fetchedInvite as { guild: finishedGuild }).guild.ownerId,
-				features: (fetchedInvite as { guild: finishedGuild }).guild.features ?? [],
+				name: (fetchedInvite as { guild: finishedGuild; }).guild.name,
+				icon: (fetchedInvite as { guild: finishedGuild; }).guild.icon,
+				ownerId: (fetchedInvite as { guild: finishedGuild; }).guild.ownerId,
+				features: (fetchedInvite as { guild: finishedGuild; }).guild.features ?? [],
 			},
 		};
 	}
