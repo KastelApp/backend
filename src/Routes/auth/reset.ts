@@ -1,4 +1,4 @@
-import { verificationFlags } from "@/Constants.ts";
+import { statusTypes, verificationFlags } from "@/Constants.ts";
 import bodyValidator from "@/Middleware/BodyValidator.ts";
 import type { Infer } from "@/Types/BodyValidation.ts";
 import { snowflake, string } from "@/Types/BodyValidation.ts";
@@ -77,12 +77,26 @@ export default class ResetPassword extends Route {
 			password: await Bun.password.hash(body.password),
 		});
 
-		const settings = await this.App.cassandra.models.Settings.get({ userId: fetchedReset.userId }, { fields: ["tokens"] });
+		let settings = await this.App.cassandra.models.Settings.get({ userId: fetchedReset.userId }, { fields: ["tokens"] });
+
+		const wasNull = !settings;
 
 		if (!settings) {
-			set.status = 500;
-
-			return "Internal Server Error :(";
+			settings = {
+				bio: null,
+				language: "en-US",
+				maxFileUploadSize: this.App.constants.settings.Max.MaxFileSize,
+				maxGuilds: this.App.constants.settings.Max.GuildCount,
+				mentions: [],
+				privacy: 0,
+				status: statusTypes.offline | statusTypes.online,
+				customStatus: null,
+				theme: "dark",
+				tokens: [],
+				userId: fetchedReset.userId,
+				guildOrder: [],
+				allowedInvites: 0, // ? You get 0 invites on creation
+			};
 		}
 
 		const newToken = Token.generateToken(Encryption.decrypt(fetchedReset.userId));
@@ -95,12 +109,14 @@ export default class ResetPassword extends Route {
 			tokenId: Encryption.encrypt(sessionId),
 		};
 
-		settings.tokens = [newTokenObject];
+		if (settings.tokens) settings.tokens.push(newTokenObject);
+		else settings.tokens = [newTokenObject];
 
-		await this.App.cassandra.models.Settings.update({
-			userId: fetchedReset.userId,
-			tokens: settings.tokens,
-		});
+		if (wasNull) {
+			await this.App.cassandra.models.Settings.insert(settings);
+		} else {
+			await this.App.cassandra.models.Settings.update(settings);
+		}
 
 		await this.App.cassandra.models.VerificationLink.remove({
 			code: Encryption.encrypt(body.token),
@@ -108,7 +124,7 @@ export default class ResetPassword extends Route {
 			userId: fetchedReset.userId,
 		});
 
-		set.status = 204;
+		set.status = 200;
 
 		return {
 			token: newToken,

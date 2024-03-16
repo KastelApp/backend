@@ -158,6 +158,8 @@ class API extends App {
 						message: `Could not find route for ${request.method} ${path}`,
 					},
 				});
+				
+				set.status = 404;
 
 				return error.toJSON();
 			}
