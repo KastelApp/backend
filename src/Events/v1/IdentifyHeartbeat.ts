@@ -369,6 +369,8 @@ export default class IdentifyAndHeartbeat extends Event {
 					privacy: user.settings.privacy,
 					theme: user.settings.theme,
 					guildOrder: user.settings.guildOrder,
+					emojiPack: user.settings.emojiPack ?? "twemoji",
+					navBarLocation: user.settings.navBarLocation ?? "bottom",
 				},
 				presence: presences,
 			},

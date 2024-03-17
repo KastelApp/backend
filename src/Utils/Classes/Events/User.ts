@@ -35,11 +35,13 @@ class User {
 		allowedInvites: number;
 		bio: string | null;
 		customStatus: string | null;
+		emojiPack: "fluentui-emoji" | "native" | "noto-emoji" | "twemoji";
 		guildOrder: {
 			guildId: string;
 			position: number;
 		}[];
 		language: string;
+		navBarLocation: "bottom" | "left";
 		privacy: number;
 		status: "dnd" | "idle" | "invisible" | "offline" | "online";
 		theme: string;
@@ -212,6 +214,8 @@ class User {
 					"status",
 					"allowedInvites",
 					"customStatus",
+					"navLocation",
+					"emojiPack",
 				],
 			},
 		);
@@ -283,6 +287,8 @@ class User {
 			status: this.App.status.get(usersSettings.status),
 			theme: usersSettings.theme,
 			customStatus: usersSettings.customStatus,
+			emojiPack: usersSettings.emojiPack,
+			navBarLocation: usersSettings.navLocation,
 		});
 
 		return true;

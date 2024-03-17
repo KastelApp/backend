@@ -96,6 +96,8 @@ export default class ResetPassword extends Route {
 				userId: fetchedReset.userId,
 				guildOrder: [],
 				allowedInvites: 0, // ? You get 0 invites on creation
+				emojiPack: "twemoji",
+				navLocation: "bottom",
 			};
 		}
 

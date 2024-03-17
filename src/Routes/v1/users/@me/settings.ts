@@ -25,6 +25,8 @@ const patchSettings = {
 		.max(100)
 		.optional(),
 	bio: string().optional().max(300),
+	emojiPack: enums(["fluentui-emoji", "native", "noto-emoji", "twemoji"]).optional(),
+	navBarLocation: enums(["bottom", "left"]).optional(),
 };
 
 export default class UserSettings extends Route {
@@ -45,10 +47,6 @@ export default class UserSettings extends Route {
 		return user.settings;
 	}
 
-	public themes = ["dark", "light", "system"];
-
-	public supportedLanugages = ["en-US"];
-
 	@Method("patch")
 	@Description("Update the current users settings")
 	@ContentTypes("application/json")
@@ -65,7 +63,7 @@ export default class UserSettings extends Route {
 	}: CreateRoute<"/@me/settings", Infer<typeof patchSettings>, [UserMiddlewareType]>) {
 		const failedToUpdateSettigns = errorGen.FailedToPatchUser();
 
-		const data: Partial<Infer<typeof patchSettings>> = {};
+		const data: Partial<Infer<typeof patchSettings> & { navLocation?: "bottom" | "left" }> = {};
 
 		if (body.theme) {
 			data.theme = body.theme;
@@ -81,6 +79,14 @@ export default class UserSettings extends Route {
 
 		if (body.bio) {
 			data.bio = Encryption.encrypt(body.bio);
+		}
+		
+		if (body.emojiPack) {
+			data.emojiPack = body.emojiPack;
+		}
+		
+		if (body.navBarLocation) {
+			data.navLocation = body.navBarLocation;
 		}
 
 		const fixedGuilds = body.guildOrder;
@@ -104,12 +110,12 @@ export default class UserSettings extends Route {
 		if (failedToUpdateSettigns.hasErrors()) {
 			return failedToUpdateSettigns;
 		}
-
+		
 		await this.App.cassandra.models.Settings.update({
 			userId: Encryption.encrypt(user.id),
 			...data,
 		});
-
+		
 		if (body.customStatus) {
 			const fetchedPresence = await this.App.cache.get(`user:${Encryption.encrypt(user.id)}`);
 			const parsedPresence = JSON.parse(
@@ -157,6 +163,8 @@ export default class UserSettings extends Route {
 			privacy: user.settings.privacy,
 			customStatus: body.customStatus ?? user.settings.customStatus,
 			theme: body.theme ?? user.settings.theme,
+			emojiPack: (body.emojiPack ?? user.settings.emojiPack) ?? "twemoji",
+			navBarLocation: (body.navBarLocation ?? user.settings.navBarLocation) ?? "bottom",
 		};
 	}
 }

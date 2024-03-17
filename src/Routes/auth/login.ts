@@ -162,6 +162,8 @@ export default class Login extends Route {
 				userId: Encryption.encrypt(fetchedUser.userId),
 				guildOrder: [],
 				allowedInvites: 0, // ? You get 0 invites on creation
+				emojiPack: "twemoji",
+				navLocation: "bottom",
 			};
 		}
 

@@ -17,11 +17,13 @@ export interface UserMiddlewareType extends Record<string, any> {
 			allowedInvites: number;
 			bio: string | null;
 			customStatus: string | null;
+			emojiPack: "fluentui-emoji" | "native" | "noto-emoji" | "twemoji";
 			guildOrder: {
 				guildId: string;
 				position: number;
 			}[];
 			language: string;
+			navBarLocation: "bottom" | "left";
 			privacy: number;
 			status: "dnd" | "idle" | "invisible" | "offline" | "online";
 			theme: string;
@@ -125,6 +127,8 @@ const userMiddleware = (options: UserMiddleware) => {
 						"status",
 						"allowedInvites",
 						"customStatus",
+						"navLocation",
+						"emojiPack"
 					],
 				},
 			);
@@ -335,6 +339,8 @@ const userMiddleware = (options: UserMiddleware) => {
 						theme: usersSettings.theme,
 						allowedInvites: usersSettings.allowedInvites ?? 0,
 						customStatus: usersSettings.customStatus,
+						navBarLocation: usersSettings.navLocation ?? "bottom",
+						emojiPack: usersSettings.emojiPack ?? "twemoji",
 					}),
 				},
 			};
