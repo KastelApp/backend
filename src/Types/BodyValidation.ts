@@ -271,6 +271,7 @@ const validate =
 				}
 
 				if (type === "string") {
+
 					if (email) {
 						return {
 							valid: t(value, "email"),
@@ -284,23 +285,25 @@ const validate =
 							error: `{key} was expected to be a string, but received ${typeof value}`,
 						};
 
-					if (regex && !regex.test(value))
+					const newValue = value.trim();
+
+					if (regex && !regex.test(newValue))
 						return {
 							valid: false,
 							error: "{key} was expected to match a specific regex, but did not.",
 						};
 
 					const error = `{key} was expected to be between ${min === -1 ? "0" : min} and ${max === -1 ? "infinity" : max
-						} characters, but received ${value.length}`;
+						} characters, but received ${newValue.length}`;
 
-					if (min > -1 && value.length < min)
+					if (min > -1 && newValue.length < min)
 						return {
 							valid: false,
 							error,
 						};
 
 					return {
-						valid: !(max > -1 && value.length > max),
+						valid: !(max > -1 && newValue.length > max),
 						error,
 					};
 				}

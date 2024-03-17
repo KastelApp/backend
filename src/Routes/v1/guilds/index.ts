@@ -29,11 +29,11 @@ const permissionOverrideType = (value: any): value is [[string, string]] => {
 };
 
 const postGuild = {
-	name: string().max(Constants.settings.Max.GuildNameLength),
+	name: string().max(Constants.settings.Max.GuildNameLength).min(2),
 	description: string().max(Constants.settings.Max.GuildDescriptionLength).optional().nullable(),
 	channels: array({
 		id: snowflake().optional(),
-		name: string().max(32),
+		name: string().max(32).min(2),
 		description: string().max(256).optional().nullable(),
 		type: enums(
 			Object.entries(Constants.channelTypes)
