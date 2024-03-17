@@ -43,37 +43,37 @@ type TypeDependentStuff<
 	OType extends ObjectOptions = ObjectOptions,
 > = Type extends "string"
 	? {
-			email(): CreateType<Type, Option, M, E, false, OType>;
-			max(value: number): CreateType<Type, Option, M, E, false, OType>;
-			min(value: number): CreateType<Type, Option, M, E, false, OType>;
-			regex(value: RegExp): CreateType<Type, Option, M, E, false, OType>;
-		}
+		email(): CreateType<Type, Option, M, E, false, OType>;
+		max(value: number): CreateType<Type, Option, M, E, false, OType>;
+		min(value: number): CreateType<Type, Option, M, E, false, OType>;
+		regex(value: RegExp): CreateType<Type, Option, M, E, false, OType>;
+	}
 	: Type extends "number"
-		? {
-				max(value: number): CreateType<Type, Option, M, E, false, OType>;
-				min(value: number): CreateType<Type, Option, M, E, false, OType>;
-			}
-		: Type extends "array"
-			? {
-					items: M[];
-					max(value: number): CreateType<Type, Option, M, E, true, OType>;
-					min(value: number): CreateType<Type, Option, M, E, true, OType>;
-				}
-			: Type extends "enum"
-				? {
-						array(): CreateType<Type, Option, M, E, true>;
-						values: E;
-					}
-				: Type extends "object"
-					? {
-							items: M;
-							otype: OType;
-						}
-					: Type extends "any"
-						? {
-								array(): CreateType<Type, Option, M, E, true>;
-							}
-						: {};
+	? {
+		max(value: number): CreateType<Type, Option, M, E, false, OType>;
+		min(value: number): CreateType<Type, Option, M, E, false, OType>;
+	}
+	: Type extends "array"
+	? {
+		items: M[];
+		max(value: number): CreateType<Type, Option, M, E, true, OType>;
+		min(value: number): CreateType<Type, Option, M, E, true, OType>;
+	}
+	: Type extends "enum"
+	? {
+		array(): CreateType<Type, Option, M, E, true>;
+		values: E;
+	}
+	: Type extends "object"
+	? {
+		items: M;
+		otype: OType;
+	}
+	: Type extends "any"
+	? {
+		array(): CreateType<Type, Option, M, E, true>;
+	}
+	: {};
 
 // ? None = not required, can be null
 // ? requiredNullable = required, can be null
@@ -89,25 +89,25 @@ type CreateType<
 > = TypeDependentStuff<Type, Option, M, E, OType> &
 	(Option extends "required"
 		? {
-				nullable(): CreateType<Type, "requiredNullable", M, E, A, OType>;
-				optional(): CreateType<Type, "notNullable", M, E, A, OType>;
-			}
+			nullable(): CreateType<Type, "requiredNullable", M, E, A, OType>;
+			optional(): CreateType<Type, "notNullable", M, E, A, OType>;
+		}
 		: Option extends "requiredNullable"
-			? {
-					optional(): CreateType<Type, "none", M, E, A, OType>;
-				}
-			: Option extends "notNullable"
-				? {
-						nullable(): CreateType<Type, "none", M, E, A, OType>;
-					}
-				: Option extends "none"
-					? {}
-					: true) & {
-		canbeNull: Option extends "none" ? true : Option extends "requiredNullable" ? true : false;
-		isarray: A;
-		required: Option extends "required" ? true : Option extends "requiredNullable" ? true : false;
-		type: Type;
-	};
+		? {
+			optional(): CreateType<Type, "none", M, E, A, OType>;
+		}
+		: Option extends "notNullable"
+		? {
+			nullable(): CreateType<Type, "none", M, E, A, OType>;
+		}
+		: Option extends "none"
+		? {}
+		: true) & {
+			canbeNull: Option extends "none" ? true : Option extends "requiredNullable" ? true : false;
+			isarray: A;
+			required: Option extends "required" ? true : Option extends "requiredNullable" ? true : false;
+			type: Type;
+		};
 
 interface TypeMapping {
 	any: any;
@@ -128,66 +128,66 @@ interface BodyValidator {
 
 type Optionalize<T extends AnyType> = T["required"] extends true
 	? T["canbeNull"] extends true
-		? TypeMapping[T["type"]] | null
-		: TypeMapping[T["type"]]
+	? TypeMapping[T["type"]] | null
+	: TypeMapping[T["type"]]
 	: T["canbeNull"] extends true
-		? TypeMapping[T["type"]] | null
-		: TypeMapping[T["type"]];
+	? TypeMapping[T["type"]] | null
+	: TypeMapping[T["type"]];
 
 type InfererRawRaw<T extends object, K extends keyof T> = T[K] extends AnyType
 	? T[K]["type"] extends "array"
-		? RawArrayType<T, K>
-		: T[K]["type"] extends "enum"
-			? RawEnumType<T, K>
-			: T[K]["type"] extends "any"
-				? RawAnyType<T, K>
-				: T[K]["type"] extends "object"
-					? RawObjectType<T, K>
-					: Optionalize<T[K]>
+	? RawArrayType<T, K>
+	: T[K]["type"] extends "enum"
+	? RawEnumType<T, K>
+	: T[K]["type"] extends "any"
+	? RawAnyType<T, K>
+	: T[K]["type"] extends "object"
+	? RawObjectType<T, K>
+	: Optionalize<T[K]>
 	: InferRaw<T[K]>;
 
 // @ts-expect-error -- it exists, I tried making it understand that but typescript wants to whine about it
 type RawArrayType<T extends object, K extends keyof T> = T[K]["items"] extends (infer U)[]
 	? // @ts-expect-error -- ^
-		T[K]["canbeNull"] extends true
-		? InferRaw<U>[] | null
-		: InferRaw<U>[]
+	T[K]["canbeNull"] extends true
+	? InferRaw<U>[] | null
+	: InferRaw<U>[]
 	: never;
 
 // @ts-expect-error -- ^
 type RawEnumType<T extends object, K extends keyof T> = T[K]["isarray"] extends true
 	? // @ts-expect-error -- ^
-		T[K]["values"]
+	T[K]["values"]
 	: // @ts-expect-error -- ^
-		T[K]["values"][number];
+	T[K]["values"][number];
 
 // @ts-expect-error -- ^
 type RawAnyType<T extends object, K extends keyof T> = T[K]["isarray"] extends true
 	? // @ts-expect-error -- ^
-		T[K]["canbeNull"] extends true
-		? unknown[] | null
-		: unknown[]
+	T[K]["canbeNull"] extends true
+	? unknown[] | null
+	: unknown[]
 	: // @ts-expect-error -- ^
-		T[K]["canbeNull"] extends true
-		? unknown | null
-		: unknown;
+	T[K]["canbeNull"] extends true
+	? unknown | null
+	: unknown;
 
 // @ts-expect-error -- ^
 type RawObjectType<T extends object, K extends keyof T> = T[K]["otype"] extends "keyof"
 	? // @ts-expect-error -- ^
-		{ [key: string]: InferRaw<T[K]["items"]> }
+	{ [key: string]: InferRaw<T[K]["items"]>; }
 	: // @ts-expect-error -- ^
-		InferRaw<T[K]["items"]>;
+	InferRaw<T[K]["items"]>;
 
 type InferRaw<T> = T extends object
 	? {
-			[K in keyof T as T[K] extends AnyType ? (T[K]["required"] extends false ? K : never) : never]?: InfererRawRaw<
-				T,
-				K
-			>;
-		} & {
-			[K in keyof T as T[K] extends AnyType ? (T[K]["required"] extends true ? K : never) : K]: InfererRawRaw<T, K>;
-		}
+		[K in keyof T as T[K] extends AnyType ? (T[K]["required"] extends false ? K : never) : never]?: InfererRawRaw<
+			T,
+			K
+		>;
+	} & {
+		[K in keyof T as T[K] extends AnyType ? (T[K]["required"] extends true ? K : never) : K]: InfererRawRaw<T, K>;
+	}
 	: never;
 
 type Expand<T> = T extends unknown ? { [K in keyof T]: Expand<T[K]> } : T;
@@ -207,135 +207,237 @@ const validate =
 		objecttype?: OType,
 		regex?: RegExp,
 	) =>
-	(value: unknown) => {
-		if ((opt === "required" && value === undefined) || value === null)
-			return {
-				valid: false,
-				error: "{key} is required, but was not provided.",
-			};
-		if (opt === "requiredNullable" && value === undefined)
-			return {
-				valid: false,
-				error: "{key} is required, but was not provided.",
-			};
-		if (opt === "notNullable" && value === null)
-			return {
-				valid: false,
-				error: "{key} cannot be null.",
-			};
-		if ((opt === "none" && value === undefined) || value === null)
-			return {
-				valid: true,
-				error: null,
-			};
-
-		// if value exists and is not undefined, check if it is the correct type
-		if (value !== undefined) {
-			if (type === "any") return { valid: true, error: null };
-
-			if (type === "snowflake")
+		(value: unknown) => {
+			if (opt === "none" && (value === undefined || value === null)) {
 				return {
-					valid: typeof value === "string" && App.snowflake.validate(value),
-					error: "{key} is not a valid snowflake.",
-				};
-
-			if (type === "number") {
-				const isNumber = typeof value === "number";
-
-				if (!isNumber || Number.isNaN(value))
-					return {
-						valid: false,
-						error: "{key} is not a number.",
-					};
-
-				const error = `{key} was expected to be between ${min === -1 ? "0" : min} and ${
-					max === -1 ? "infinity" : max
-				}, but received ${value}`;
-
-				if (min > -1 && value < min)
-					return {
-						valid: false,
-						error,
-					};
-
-				return {
-					valid: !(max > -1 && value > max),
-					error,
+					valid: true,
+					error: null,
 				};
 			}
 
-			if (type === "string") {
-				if (email) {
+			if ((opt === "required" && value === undefined) || value === null) {
+				return {
+					valid: false,
+					error: "{key} is required, but was not provided.",
+				};
+			}
+
+			if (opt === "requiredNullable" && value === undefined) {
+				return {
+					valid: false,
+					error: "{key} is required, but was not provided.",
+				};
+			}
+
+			if (opt === "notNullable" && value === null) {
+				return {
+					valid: false,
+					error: "{key} cannot be null.",
+				};
+			}
+
+			// if value exists and is not undefined, check if it is the correct type
+			if (value !== undefined) {
+				if (type === "any") return { valid: true, error: null };
+
+				if (type === "snowflake")
 					return {
-						valid: t(value, "email"),
-						error: "{key} was expected to be an email.",
+						valid: typeof value === "string" && App.snowflake.validate(value),
+						error: "{key} is not a valid snowflake.",
+					};
+
+				if (type === "number") {
+					const isNumber = typeof value === "number";
+
+					if (!isNumber || Number.isNaN(value))
+						return {
+							valid: false,
+							error: "{key} is not a number.",
+						};
+
+					const error = `{key} was expected to be between ${min === -1 ? "0" : min} and ${max === -1 ? "infinity" : max
+						}, but received ${value}`;
+
+					if (min > -1 && value < min)
+						return {
+							valid: false,
+							error,
+						};
+
+					return {
+						valid: !(max > -1 && value > max),
+						error,
 					};
 				}
 
-				if (typeof value !== "string")
-					return {
-						valid: false,
-						error: `{key} was expected to be a string, but received ${typeof value}`,
-					};
+				if (type === "string") {
+					if (email) {
+						return {
+							valid: t(value, "email"),
+							error: "{key} was expected to be an email.",
+						};
+					}
 
-				if (regex && !regex.test(value))
-					return {
-						valid: false,
-						error: "{key} was expected to match a specific regex, but did not.",
-					};
+					if (typeof value !== "string")
+						return {
+							valid: false,
+							error: `{key} was expected to be a string, but received ${typeof value}`,
+						};
 
-				const error = `{key} was expected to be between ${min === -1 ? "0" : min} and ${
-					max === -1 ? "infinity" : max
-				} characters, but received ${value.length}`;
+					if (regex && !regex.test(value))
+						return {
+							valid: false,
+							error: "{key} was expected to match a specific regex, but did not.",
+						};
 
-				if (min > -1 && value.length < min)
+					const error = `{key} was expected to be between ${min === -1 ? "0" : min} and ${max === -1 ? "infinity" : max
+						} characters, but received ${value.length}`;
+
+					if (min > -1 && value.length < min)
+						return {
+							valid: false,
+							error,
+						};
+
 					return {
-						valid: false,
+						valid: !(max > -1 && value.length > max),
 						error,
 					};
+				}
 
-				return {
-					valid: !(max > -1 && value.length > max),
-					error,
-				};
-			}
+				if (type === "array") {
+					if (!Array.isArray(value))
+						return {
+							valid: false,
+							error: "{key} was expected to be an array, but received unknown",
+						};
 
-			if (type === "array") {
-				if (!Array.isArray(value))
+					const error = `{key} was expected to be between ${min === -1 ? "0" : min} and ${max === -1 ? "infinity" : max
+						} items, but received ${value.length}`;
+
+					if (min > -1 && value.length < min)
+						return {
+							valid: false,
+							error,
+						};
+					if (max > -1 && value.length > max)
+						return {
+							valid: false,
+							error,
+						};
+
+					if (items) {
+						const errors = [];
+						for (const item of value) {
+							for (const [key, data] of Object.entries(items)) {
+								// @ts-expect-error -- yeah yeah
+								const validated = data.validate(item[key]);
+
+								if (!validated.valid)
+									errors.push({
+										valid: validated.valid as boolean,
+										error: validated.error ? (validated.error.replace("{key}", key) as string) : null,
+										key,
+										pos: value.indexOf(item),
+										multiErrors: validated.multiErrors,
+									});
+							}
+						}
+
+						return {
+							valid: errors.length === 0,
+							error: null,
+							multiErrors: errors,
+						};
+					}
+
 					return {
-						valid: false,
-						error: "{key} was expected to be an array, but received unknown",
+						valid: true,
+						error: null,
 					};
+				}
 
-				const error = `{key} was expected to be between ${min === -1 ? "0" : min} and ${
-					max === -1 ? "infinity" : max
-				} items, but received ${value.length}`;
+				if (type === "enum") {
+					if (!values)
+						return {
+							valid: false,
+							error: "{key} was expected to be an enum, but no values were provided. (Internal server error)",
+						};
 
-				if (min > -1 && value.length < min)
+					if (!isarray)
+						return {
+							valid: values.includes(value as E[number]),
+							error: `{key} was expected to be one of the following "${values.join(", ")}", but received ${
+								// eslint-disable-next-line @typescript-eslint/no-base-to-string
+								typeof (value as E[number]) === "object" ? "object" : value
+								}`,
+						};
+
+					if (!Array.isArray(value))
+						return {
+							valid: false,
+							error: "{key} was expected to be an array, but received unknown",
+						};
+
+					for (const val of value) {
+						if (!values.includes(val as E[number]))
+							return {
+								valid: false,
+								// eslint-disable-next-line @typescript-eslint/no-base-to-string
+								error: `{key} was expected to be one of the following "${values.join(", ")}", but received ${typeof (val as E[number]) === "object" ? "object" : val
+									}`,
+							};
+					}
+
 					return {
-						valid: false,
-						error,
+						valid: true,
+						error: null,
 					};
-				if (max > -1 && value.length > max)
-					return {
-						valid: false,
-						error,
-					};
+				}
 
-				if (items) {
+				if (type === "object") {
+					// keyof: { name: { item: BodyValidator }}
+					// obj: { item: BodyValidator }
 					const errors = [];
-					for (const item of value) {
-						for (const [key, data] of Object.entries(items)) {
+
+					if (!objecttype)
+						return {
+							valid: false,
+							error: "{key} was expected to be an object, but no values were provided. (Internal server error)",
+						};
+
+					if (typeof value !== "object" || Array.isArray(value))
+						return {
+							valid: false,
+							error: "{key} was expected to be an object, but received unknown",
+						};
+
+					if (objecttype === "keyof") {
+						for (const [key, vv] of Object.entries(value)) {
+							for (const [k, v] of Object.entries(items ?? {})) {
+								// @ts-expect-error -- yeah yeah
+								const validated = v.validate(vv[k]);
+
+								if (!validated.valid)
+									errors.push({
+										valid: validated.valid as boolean,
+										error: validated.error ? (validated.error.replace("{key}", k) as string) : null,
+										key: `${key}.${k}`,
+										pos: -1,
+									});
+							}
+						}
+					} else {
+						for (const [key, v] of Object.entries(items ?? {})) {
 							// @ts-expect-error -- yeah yeah
-							const validated = data.validate(item[key]);
+							const validated = v.validate(value[key]);
 
 							if (!validated.valid)
 								errors.push({
 									valid: validated.valid as boolean,
 									error: validated.error ? (validated.error.replace("{key}", key) as string) : null,
 									key,
-									pos: value.indexOf(item),
-									multiErrors: validated.multiErrors,
+									pos: -1,
 								});
 						}
 					}
@@ -348,115 +450,16 @@ const validate =
 				}
 
 				return {
-					valid: true,
-					error: null,
-				};
-			}
-
-			if (type === "enum") {
-				if (!values)
-					return {
-						valid: false,
-						error: "{key} was expected to be an enum, but no values were provided. (Internal server error)",
-					};
-
-				if (!isarray)
-					return {
-						valid: values.includes(value as E[number]),
-						error: `{key} was expected to be one of the following "${values.join(", ")}", but received ${
-							// eslint-disable-next-line @typescript-eslint/no-base-to-string
-							typeof (value as E[number]) === "object" ? "object" : value
-						}`,
-					};
-
-				if (!Array.isArray(value))
-					return {
-						valid: false,
-						error: "{key} was expected to be an array, but received unknown",
-					};
-
-				for (const val of value) {
-					if (!values.includes(val as E[number]))
-						return {
-							valid: false,
-							// eslint-disable-next-line @typescript-eslint/no-base-to-string
-							error: `{key} was expected to be one of the following "${values.join(", ")}", but received ${
-								typeof (val as E[number]) === "object" ? "object" : val
-							}`,
-						};
-				}
-
-				return {
-					valid: true,
-					error: null,
-				};
-			}
-
-			if (type === "object") {
-				// keyof: { name: { item: BodyValidator }}
-				// obj: { item: BodyValidator }
-				const errors = [];
-
-				if (!objecttype)
-					return {
-						valid: false,
-						error: "{key} was expected to be an object, but no values were provided. (Internal server error)",
-					};
-
-				if (typeof value !== "object" || Array.isArray(value))
-					return {
-						valid: false,
-						error: "{key} was expected to be an object, but received unknown",
-					};
-
-				if (objecttype === "keyof") {
-					for (const [key, vv] of Object.entries(value)) {
-						for (const [k, v] of Object.entries(items ?? {})) {
-							// @ts-expect-error -- yeah yeah
-							const validated = v.validate(vv[k]);
-
-							if (!validated.valid)
-								errors.push({
-									valid: validated.valid as boolean,
-									error: validated.error ? (validated.error.replace("{key}", k) as string) : null,
-									key: `${key}.${k}`,
-									pos: -1,
-								});
-						}
-					}
-				} else {
-					for (const [key, v] of Object.entries(items ?? {})) {
-						// @ts-expect-error -- yeah yeah
-						const validated = v.validate(value[key]);
-
-						if (!validated.valid)
-							errors.push({
-								valid: validated.valid as boolean,
-								error: validated.error ? (validated.error.replace("{key}", key) as string) : null,
-								key,
-								pos: -1,
-							});
-					}
-				}
-
-				return {
-					valid: errors.length === 0,
-					error: null,
-					multiErrors: errors,
+					valid: typeof value === type,
+					error: `{key} was expected to be a ${type}, but received ${typeof value}`,
 				};
 			}
 
 			return {
-				valid: typeof value === type,
-				error: `{key} was expected to be a ${type}, but received ${typeof value}`,
+				valid: opt === "notNullable" ? true : opt === "none" ? true : opt === "required",
+				error: "{key} was expected to be provided, but was not.",
 			};
-		}
-
-		return {
-			valid: opt === "notNullable" ? true : opt === "none" ? true : opt === "required",
-			error: "{key} was expected to be provided, but was not.",
 		};
-	};
 
 const createdType = <
 	Type extends Types,

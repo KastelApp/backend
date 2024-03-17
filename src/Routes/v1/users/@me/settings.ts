@@ -63,7 +63,7 @@ export default class UserSettings extends Route {
 	}: CreateRoute<"/@me/settings", Infer<typeof patchSettings>, [UserMiddlewareType]>) {
 		const failedToUpdateSettigns = errorGen.FailedToPatchUser();
 
-		const data: Partial<Infer<typeof patchSettings> & { navLocation?: "bottom" | "left" }> = {};
+		const data: Partial<Infer<typeof patchSettings> & { navLocation?: "bottom" | "left"; }> = {};
 
 		if (body.theme) {
 			data.theme = body.theme;
@@ -73,18 +73,18 @@ export default class UserSettings extends Route {
 			data.language = body.language;
 		}
 
-		if (body.customStatus) {
-			data.customStatus = Encryption.encrypt(body.customStatus);
+		if (body.customStatus !== undefined) {
+			data.customStatus = body.customStatus ? Encryption.encrypt(body.customStatus) : null;
 		}
 
 		if (body.bio) {
 			data.bio = Encryption.encrypt(body.bio);
 		}
-		
+
 		if (body.emojiPack) {
 			data.emojiPack = body.emojiPack;
 		}
-		
+
 		if (body.navBarLocation) {
 			data.navLocation = body.navBarLocation;
 		}
@@ -110,18 +110,20 @@ export default class UserSettings extends Route {
 		if (failedToUpdateSettigns.hasErrors()) {
 			return failedToUpdateSettigns;
 		}
+
+		if (Object.keys(data).length > 0) {
+			await this.App.cassandra.models.Settings.update({
+				userId: Encryption.encrypt(user.id),
+				...data,
+			});
+		}
 		
-		await this.App.cassandra.models.Settings.update({
-			userId: Encryption.encrypt(user.id),
-			...data,
-		});
-		
-		if (body.customStatus) {
+		if (body.customStatus !== undefined) {
 			const fetchedPresence = await this.App.cache.get(`user:${Encryption.encrypt(user.id)}`);
 			const parsedPresence = JSON.parse(
 				(fetchedPresence as string) ??
-					`[{ "sessionId": null, "since": null, "state": null, "type": ${presenceTypes.custom}, "status": ${statusTypes.offline} }]`,
-			) as { sessionId: string | null; since: number | null; state: string | null; status: number; type: number }[];
+				`[{ "sessionId": null, "since": null, "state": null, "type": ${presenceTypes.custom}, "status": ${statusTypes.offline} }]`,
+			) as { sessionId: string | null; since: number | null; state: string | null; status: number; type: number; }[];
 
 			for (const presence of parsedPresence) {
 				if (presence.type === presenceTypes.custom) {
@@ -148,7 +150,8 @@ export default class UserSettings extends Route {
 						flags: user.flagsUtil.PrivateFlags.cleaned,
 					},
 					guildId: guild,
-					presence: parsedPresence,
+					presences: parsedPresence,
+					guilds: user.guilds
 				});
 			}
 
