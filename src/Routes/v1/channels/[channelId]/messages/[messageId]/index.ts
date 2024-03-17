@@ -171,7 +171,7 @@ export default class DeleteEditGetMessage extends Route {
 				? ((
 						await Promise.all(
 							channel.permissionOverrides.map(async (id) =>
-								this.App.cassandra.models.PermissionOverride.get({ permissionId: Encryption.encrypt(id) }),
+								this.App.cassandra.models.PermissionOverride.get({ permissionId: id }),
 							),
 						)
 					).filter(Boolean) as PermissionsOverrides[])
@@ -180,7 +180,7 @@ export default class DeleteEditGetMessage extends Route {
 			const roles = (
 				await Promise.all(
 					guildMember.roles.map(async (id) =>
-						this.App.cassandra.models.Role.get({ roleId: Encryption.encrypt(id), guildId: channel.guildId! }),
+						this.App.cassandra.models.Role.get({ roleId: id, guildId: channel.guildId! }),
 					),
 				)
 			).filter(Boolean) as Roles[];
@@ -348,7 +348,7 @@ export default class DeleteEditGetMessage extends Route {
 				? ((
 						await Promise.all(
 							channel.permissionOverrides.map(async (id) =>
-								this.App.cassandra.models.PermissionOverride.get({ permissionId: Encryption.encrypt(id) }),
+								this.App.cassandra.models.PermissionOverride.get({ permissionId: id }),
 							),
 						)
 					).filter(Boolean) as PermissionsOverrides[])
@@ -357,7 +357,7 @@ export default class DeleteEditGetMessage extends Route {
 			const roles = (
 				await Promise.all(
 					guildMember.roles.map(async (id) =>
-						this.App.cassandra.models.Role.get({ roleId: Encryption.encrypt(id), guildId: channel.guildId! }),
+						this.App.cassandra.models.Role.get({ roleId: id, guildId: channel.guildId! }),
 					),
 				)
 			).filter(Boolean) as Roles[];
@@ -510,7 +510,7 @@ export default class DeleteEditGetMessage extends Route {
 				? ((
 						await Promise.all(
 							channel.permissionOverrides.map(async (id) =>
-								this.App.cassandra.models.PermissionOverride.get({ permissionId: Encryption.encrypt(id) }),
+								this.App.cassandra.models.PermissionOverride.get({ permissionId: id }),
 							),
 						)
 					).filter(Boolean) as PermissionsOverrides[])
@@ -519,7 +519,7 @@ export default class DeleteEditGetMessage extends Route {
 			const roles = (
 				await Promise.all(
 					guildMember.roles.map(async (id) =>
-						this.App.cassandra.models.Role.get({ roleId: Encryption.encrypt(id), guildId: channel.guildId! }),
+						this.App.cassandra.models.Role.get({ roleId: id, guildId: channel.guildId! }),
 					),
 				)
 			).filter(Boolean) as Roles[];

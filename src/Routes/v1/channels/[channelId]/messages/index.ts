@@ -156,7 +156,7 @@ export default class FetchCreateMessages extends Route {
 				? ((
 						await Promise.all(
 							channel.permissionOverrides.map(async (id) =>
-								this.App.cassandra.models.PermissionOverride.get({ permissionId: Encryption.encrypt(id) }),
+								this.App.cassandra.models.PermissionOverride.get({ permissionId: id }),
 							),
 						)
 					).filter(Boolean) as PermissionsOverrides[])
