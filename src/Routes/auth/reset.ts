@@ -77,7 +77,7 @@ export default class ResetPassword extends Route {
 			password: await Bun.password.hash(body.password),
 		});
 
-		let settings = await this.App.cassandra.models.Settings.get({ userId: fetchedReset.userId }, { fields: ["tokens"] });
+		let settings = await this.App.cassandra.models.Settings.get({ userId: fetchedReset.userId }, { fields: ["tokens", "userId"] });
 
 		const wasNull = !settings;
 

@@ -106,7 +106,10 @@ class API extends App {
 		this.elysiaApp
 			.use(
 				cors({
-					methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+					allowedHeaders: ["Content-Type", "Authorization", "X-Special-Properties"],
+					methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+					origin: true,
+					maxAge: 600, // 10 minutes
 				}),
 			)
 			.use(serverTiming())
