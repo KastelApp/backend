@@ -1,6 +1,16 @@
 import type { Channel } from "../../Cql/Types";
 
-export const fixChannelPositions = (channel: Channel, existingChannels: Channel[], ignoreParent = false): Channel[] => {
+export const fixChannelPositionsWithoutNewChannel = (channels: Channel[]): Channel[] => {
+	const parentlessChannels = channels.filter(channel => !channel.parentId).sort((a, b) => a.position - b.position);
+    const parentChannels = channels.filter(channel => channel.parentId).sort((a, b) => a.position - b.position);
+    
+    return parentlessChannels.flatMap(channel => {
+        const children = parentChannels.filter(child => child.parentId === channel.channelId);
+        return children.length ? [channel, ...children] : channel;
+    });
+};
+
+export const fixChannelPositions = (channel: Channel, existingChannels: Channel[]): Channel[] => {
 	/* position 0 = top
 	So for example four channels:
 		test1 = 0
@@ -35,92 +45,7 @@ export const fixChannelPositions = (channel: Channel, existingChannels: Channel[
 	WARNING: Changing how this works is API version breaking, So do not mess with this function unless it will output the same as the old one
 	WARNING: You may change it on a brand new experiment API version but not on old ones nor the current latest one.
 	*/
-
-	const sortedExistingChannels = existingChannels.sort((a, b) => a.position - b.position);
-
-	if (channel.parentId && !ignoreParent) {
-		const allChannelsRelatingToParentId = sortedExistingChannels.filter((filteredChannel) => {
-			return filteredChannel.parentId === channel.parentId;
-		});
-
-		const imagine = fixChannelPositions(channel, allChannelsRelatingToParentId, true);
-
-		const filteredExistingChannels = sortedExistingChannels.filter((filteredChannel) => {
-			return !imagine.some((UpdatedChannel) => UpdatedChannel.channelId === filteredChannel.channelId);
-		});
-
-		return [...filteredExistingChannels, ...imagine].sort((a, b) => a.position - b.position);
-	}
-
-	const newChannelPositionIndex = sortedExistingChannels.findIndex(
-		(indexedChannel) => indexedChannel.position === channel.position,
-	);
-
-	if (newChannelPositionIndex === -1) {
-		const lastPosition = sortedExistingChannels[sortedExistingChannels.length - 1]?.position ?? 0;
-
-		return [
-			...sortedExistingChannels,
-			{
-				...channel,
-				position: lastPosition + 1,
-			},
-		].sort((a, b) => a.position - b.position);
-	} else {
-		const channelsUnderNewChannelPosition = sortedExistingChannels.filter((filteredChannel) => {
-			return (
-				filteredChannel.position >= channel.position &&
-				(ignoreParent ? true : filteredChannel.parentId ? filteredChannel.parentId.length === 0 : true)
-			);
-		});
-
-		const updatedChannels = channelsUnderNewChannelPosition.map((mappedChannel) => {
-			return {
-				...mappedChannel,
-				position: mappedChannel.position + 1,
-			};
-		});
-
-		const filteredExistingChannels = sortedExistingChannels.filter((FilteredChannel) => {
-			return !updatedChannels.some((UpdatedChannel) => UpdatedChannel.channelId === FilteredChannel.channelId);
-		});
-
-		return [
-			...filteredExistingChannels,
-			...updatedChannels,
-			{
-				...channel,
-				position: channel.position,
-			},
-		].sort((a, b) => a.position - b.position);
-	}
+	
+	return fixChannelPositionsWithoutNewChannel(existingChannels.concat(channel));
 };
 
-export const fixChannelPositionsWithoutNewChannel = (channels: Channel[]): Channel[] => {
-	const positionMap: { [parentId: string]: number } = {};
-
-	channels.sort((a, b) => a.position - b.position);
-
-	return channels.map((channel) => {
-		if (channel.parentId) {
-			if (positionMap[channel.parentId] === undefined) {
-				positionMap[channel.parentId] = 0;
-			} else {
-				positionMap[channel.parentId]++;
-			}
-
-			channel.position = positionMap[channel.parentId] ?? 0;
-		} else {
-			const rootKey = "root";
-			if (positionMap[rootKey] === undefined) {
-				positionMap[rootKey] = 0;
-			} else {
-				positionMap[rootKey]++;
-			}
-
-			channel.position = positionMap[rootKey];
-		}
-
-		return channel;
-	});
-};

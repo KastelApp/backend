@@ -150,7 +150,7 @@ export default class FetchGuilds extends Route {
 			AllowedRequesters: "User",
 		}),
 	)
-	public async getGuilds({ user, query }: CreateRoute<"/guilds", any, [UserMiddlewareType], any, { include: string }>) {
+	public async getGuilds({ user, query }: CreateRoute<"/guilds", any, [UserMiddlewareType], any, { include: string; }>) {
 		const rawFinishedGuild: rawGuild[] = [];
 		const invalidGuildIds: string[] = [];
 		const include: ("channels" | "owners" | "roles")[] = query.include
@@ -172,14 +172,14 @@ export default class FetchGuilds extends Route {
 
 			const rawChannels = include.includes("channels")
 				? await this.App.cassandra.models.Channel.find({
-						guildId: Encryption.encrypt(guild),
-					})
+					guildId: Encryption.encrypt(guild),
+				})
 				: null;
 
 			const rawRoles = include.includes("roles")
 				? await this.App.cassandra.models.Role.find({
-						guildId: Encryption.encrypt(guild),
-					})
+					guildId: Encryption.encrypt(guild),
+				})
 				: null;
 
 			const raw: rawGuild = {
@@ -433,25 +433,7 @@ export default class FetchGuilds extends Route {
 				};
 			});
 
-			const sortedChannels = fixedChannels.sort((a, b) => {
-				if (a.type === Constants.channelTypes.GuildCategory) {
-					return -1;
-				}
-
-				if (b.type === Constants.channelTypes.GuildCategory) {
-					return 1;
-				}
-
-				if (a.parentId && !b.parentId) {
-					return -1;
-				}
-
-				if (b.parentId && !a.parentId) {
-					return 1;
-				}
-
-				return 0;
-			});
+			const sortedChannels = this.sortChannels(fixedChannels);
 
 			for (const channel of sortedChannels) {
 				if (channel.id && newChannels.some((c) => c.oldId === channel.id)) continue;
@@ -539,7 +521,7 @@ export default class FetchGuilds extends Route {
 				position: newChannels.findIndex((c) => c.id === channel.id),
 			});
 		}
-
+		
 		for (const role of newRoles) {
 			roles.push({
 				color: role.color,
@@ -676,6 +658,16 @@ export default class FetchGuilds extends Route {
 		});
 
 		return finishedGuild;
+	}
+
+	public sortChannels(channels: Infer<typeof postGuild>["channels"] = []) {
+		const parentlessChannels = channels.filter(channel => !channel.parentId).sort((a, b) => a.position! - b.position!);
+		const parentChannels = channels.filter(channel => channel.parentId).sort((a, b) => a.position! - b.position!);
+
+		return parentlessChannels.flatMap(channel => {
+			const children = parentChannels.filter(child => child.parentId === channel.id);
+			return children.length ? [channel, ...children] : channel;
+		});
 	}
 
 	public canCreateGuild(flags: FlagFields, guildCount: number) {
