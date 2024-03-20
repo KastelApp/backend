@@ -67,6 +67,10 @@ class WebSocket extends App {
 	> = new Map();
 
 	public clients: Map<string, User> = new Map(); // sessionId -> User
+	
+	public disconnectedUsers: Set<string> = new Set(); // sessionId
+	
+	public unAuthedUsers: Set<string> = new Set(); // sessionId
 
 	public constructor() {
 		super("WSS");
@@ -381,6 +385,7 @@ class WebSocket extends App {
 					newUser.ip = ws.data.ip;
 
 					this.clients.set(newUser.sessionId, newUser);
+					this.unAuthedUsers.add(newUser.sessionId);
 
 					newUser.send({
 						op: opCodes.hello,
@@ -404,6 +409,8 @@ class WebSocket extends App {
 							ws.data.user.resumeable = true;
 						}
 					}
+					
+					this.disconnectedUsers.add(ws.data.user.sessionId);
 
 					if (ws.data.user.guilds) {
 						const got = await this.cache.get(`user:${Encryption.encrypt(ws.data.user.id)}`);
@@ -520,11 +527,24 @@ class WebSocket extends App {
 
 	private handleClosedConnects() {
 		setInterval(async () => {
-			for (const user of this.clients.values()) {
-				if (user.closedAt === 0) continue;
+			for (const sessionId of this.disconnectedUsers.values()) {
+				const user = this.clients.get(sessionId);
+				
+				if (!user) {
+					this.disconnectedUsers.delete(sessionId);
+
+					continue;
+				}
+
+				if (user.closedAt === 0) {
+					this.disconnectedUsers.delete(sessionId);
+
+					continue;
+				}
 
 				if (!user.resumeable) {
 					this.clients.delete(user.sessionId);
+					this.disconnectedUsers.delete(sessionId);
 
 					if (user.token && user.settings.status === "online") await user.setStatus("offline");
 
@@ -541,6 +561,7 @@ class WebSocket extends App {
 
 				if (user.closedAt + Number(this.config.ws.intervals.closeTimeout.leeway) < Date.now()) {
 					this.clients.delete(user.sessionId);
+					this.disconnectedUsers.delete(sessionId);
 
 					if (user.token && user.settings.status !== "offline") await user.setStatus("offline");
 					
@@ -558,11 +579,26 @@ class WebSocket extends App {
 
 	private handleUnauthedUsers() {
 		setInterval(() => {
-			for (const user of this.clients.values()) {
-				if (user.token) continue;
+			for (const sessionId of this.unAuthedUsers.values()) {
+				
+				const user = this.clients.get(sessionId);
+				
+				if (!user) {
+					this.unAuthedUsers.delete(sessionId);
+
+					continue;
+				}
+				
+				if (user.token) {
+					this.unAuthedUsers.delete(sessionId);
+					
+					continue;
+				}
 
 				if (user.openedAt + Number(this.config.ws.intervals.closeTimeout.leeway) < Date.now()) {
 					user.close(errorCodes.unauthorized);
+					
+					this.unAuthedUsers.delete(sessionId);
 				}
 			}
 		}, Number(this.config.ws.intervals.closeTimeout.interval));
