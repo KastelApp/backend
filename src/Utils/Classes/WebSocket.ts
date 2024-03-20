@@ -528,6 +528,14 @@ class WebSocket extends App {
 
 					if (user.token && user.settings.status === "online") await user.setStatus("offline");
 
+					for (const [topic, users] of this.topics) {
+						if (users.has(user)) {
+							users.delete(user);
+							
+							if (users.size === 0) this.topics.delete(topic);
+						}
+					}
+					
 					continue;
 				}
 
@@ -535,6 +543,14 @@ class WebSocket extends App {
 					this.clients.delete(user.sessionId);
 
 					if (user.token && user.settings.status !== "offline") await user.setStatus("offline");
+					
+					for (const [topic, users] of this.topics) {
+						if (users.has(user)) {
+							users.delete(user);
+							
+							if (users.size === 0) this.topics.delete(topic);
+						}
+					}
 				}
 			}
 		}, Number(this.config.ws.intervals.closeTimeout.interval));
