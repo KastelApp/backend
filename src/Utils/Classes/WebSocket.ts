@@ -411,8 +411,8 @@ class WebSocket extends App {
 					}
 					
 					this.disconnectedUsers.add(ws.data.user.sessionId);
-
-					if (ws.data.user.guilds) {
+					
+					if (ws.data.user.guilds && ws.data.user.fetchedUser) {
 						const got = await this.cache.get(`user:${Encryption.encrypt(ws.data.user.id)}`);
 
 						const parsed = JSON.parse(
