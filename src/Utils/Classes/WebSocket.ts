@@ -512,16 +512,11 @@ class WebSocket extends App {
 
 	private handleHeartbeats() {
 		setInterval(() => {
-			for (const user of this.clients.values()) {
-				if (user.lastHeartbeat === 0) continue;
-
-				if (
-					user.lastHeartbeat + user.heartbeatInterval + Number(this.config.ws.intervals.heartbeat.leeway) <
-					Date.now()
-				) {
-					user.close(errorCodes.heartbeatTimeout);
-				}
-			}
+			const usersWeWantToDealWith = Array.from(this.clients.values()).filter((user) => user.lastHeartbeat !== 0 && user.lastHeartbeat + user.heartbeatInterval + Number(this.config.ws.intervals.heartbeat.leeway) < Date.now());
+			
+			for (const user of usersWeWantToDealWith) {
+				user.close(errorCodes.heartbeatTimeout);
+			}			
 		}, Number(this.config.ws.intervals.heartbeat.interval));
 	}
 
@@ -548,12 +543,12 @@ class WebSocket extends App {
 
 					if (user.token && user.settings.status === "online") await user.setStatus("offline");
 
-					for (const [topic, users] of this.topics) {
-						if (users.has(user)) {
-							users.delete(user);
-							
-							if (users.size === 0) this.topics.delete(topic);
-						}
+					const foundTopics = Array.from(this.topics.entries()).filter(([, users]) => users.has(user));
+					
+					for (const [topic, users] of foundTopics) {
+						users.delete(user);
+						
+						if (users.size === 0) this.topics.delete(topic);
 					}
 					
 					continue;
@@ -565,12 +560,12 @@ class WebSocket extends App {
 
 					if (user.token && user.settings.status !== "offline") await user.setStatus("offline");
 					
-					for (const [topic, users] of this.topics) {
-						if (users.has(user)) {
-							users.delete(user);
-							
-							if (users.size === 0) this.topics.delete(topic);
-						}
+					const foundTopics = Array.from(this.topics.entries()).filter(([, users]) => users.has(user));
+					
+					for (const [topic, users] of foundTopics) {
+						users.delete(user);
+						
+						if (users.size === 0) this.topics.delete(topic);
 					}
 				}
 			}
@@ -580,7 +575,6 @@ class WebSocket extends App {
 	private handleUnauthedUsers() {
 		setInterval(() => {
 			for (const sessionId of this.unAuthedUsers.values()) {
-				
 				const user = this.clients.get(sessionId);
 				
 				if (!user) {
