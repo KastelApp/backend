@@ -14,12 +14,26 @@ const guildDelete = (ws: WebSocket, data: unknown) => {
 
 		return;
 	}
+	
+	if (data.self && data.userId) {
+		ws.publish(`user:${data.userId}`, {
+			op: opCodes.event,
+			event: "GuildDelete",
+			data: {
+				guildId: data.guildId,
+				unavailable: data.unavailable ?? false,
+			},
+		});
+		
+		return;
+	}
 
 	ws.publish(`guild:${data.guildId}`, { // ? Clients should remove any data related to the guild when they receive this event, we will not emit events for the guild after this event
 		op: opCodes.event,
 		event: "GuildDelete",
 		data: {
 			guildId: data.guildId,
+			unavailable: data.unavailable ?? false,
 		},
 	});
 

@@ -19,14 +19,8 @@ import type { bigintPair } from "@/Utils/Cql/Types/PermissionsOverides.ts";
 import type Roles from "@/Utils/Cql/Types/Role.ts";
 import type { Channel, Guild, GuildMember, PermissionOverride } from "@/Utils/Cql/Types/index.ts";
 import { fixChannelPositionsWithoutNewChannel } from "@/Utils/Versioning/v1/FixChannelPositions.ts";
+import permissionOverrideType from "@/Utils/Versioning/v1/permissionOverrideType.ts";
 import FetchCreateMessages from "../channels/[channelId]/messages/index.ts";
-
-const permissionOverrideType = (value: any): value is [[string, string]] => {
-	return (
-		Array.isArray(value) &&
-		value.every((v) => Array.isArray(v) && v.length === 2 && typeof v[0] === "string" && typeof v[1] === "string")
-	);
-};
 
 const postGuild = {
 	name: string().max(Constants.settings.Max.GuildNameLength).min(2),
@@ -559,6 +553,7 @@ export default class FetchGuilds extends Route {
 			userId: Encryption.encrypt(user.id),
 			guildMemberId: this.App.snowflake.generate(),
 			channelAcks: [],
+			left: false
 		});
 
 		const fixedChannels = fixChannelPositionsWithoutNewChannel(channels);

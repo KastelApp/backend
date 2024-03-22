@@ -47,7 +47,8 @@ export default class FetchInvite extends Route {
 		const guildMember = await this.App.cassandra.models.GuildMember.get({
 			guildId: Encryption.encrypt(params.guildId)!,
 			userId: Encryption.encrypt(user.id),
-		});
+				left: false
+			});
 
 		const unknownGuild = errorGen.UnknownGuild();
 
@@ -161,7 +162,8 @@ export default class FetchInvite extends Route {
 		const guildMember = await this.App.cassandra.models.GuildMember.get({
 			guildId: Encryption.encrypt(params.guildId)!,
 			userId: Encryption.encrypt(user.id),
-		});
+				left: false
+			});
 
 		const unknownGuild = errorGen.UnknownGuild();
 

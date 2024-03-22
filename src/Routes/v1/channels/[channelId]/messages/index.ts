@@ -128,6 +128,7 @@ export default class FetchCreateMessages extends Route {
 			const guildMember = await this.App.cassandra.models.GuildMember.get({
 				guildId: channel.guildId!,
 				userId: Encryption.encrypt(user.id),
+				left: false
 			});
 
 			if (!guildMember) {
@@ -455,6 +456,7 @@ export default class FetchCreateMessages extends Route {
 			const guildMember = await this.App.cassandra.models.GuildMember.get({
 				guildId: channel.guildId!,
 				userId: Encryption.encrypt(user.id),
+				left: false
 			});
 
 			if (!guildMember) {

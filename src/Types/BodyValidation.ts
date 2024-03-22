@@ -471,6 +471,7 @@ const createdType = <
 	Enums extends Enumms[] = Enumms[],
 	IsArray extends boolean = false,
 	OType extends ObjectOptions = ObjectOptions,
+	customValidator extends ((value: unknown) => boolean) | undefined = undefined,
 >(
 	type: Type,
 	option: Option,
@@ -482,6 +483,7 @@ const createdType = <
 	isarray?: IsArray,
 	objecttype?: OType,
 	regex?: RegExp,
+	custom?: customValidator,
 ) => {
 	return {
 		canBeNull: option === "none" || option === "requiredNullable",
@@ -497,6 +499,7 @@ const createdType = <
 				isarray,
 				objecttype,
 				regex,
+				custom
 			);
 		},
 		nullable: () => {
@@ -511,25 +514,26 @@ const createdType = <
 				isarray,
 				objecttype,
 				regex,
+				custom
 			);
 		},
 		required: option === "required" || option === "requiredNullable",
 		type,
-		validate: validate(type, option, min, max, email, items, values, isarray, objecttype, regex),
+		validate: custom ? custom : validate(type, option, min, max, email, items, values, isarray, objecttype, regex),
 		min: (value: number) => {
-			return createdType(type, option, email, value, max, items, values, isarray, objecttype, regex);
+			return createdType(type, option, email, value, max, items, values, isarray, objecttype, regex, custom);
 		},
 		max: (value: number) => {
-			return createdType(type, option, email, min, value, items, values, isarray, objecttype, regex);
+			return createdType(type, option, email, min, value, items, values, isarray, objecttype, regex, custom);
 		},
 		email: () => {
-			return createdType(type, option, true, min, max, items, values, isarray, objecttype, regex);
+			return createdType(type, option, true, min, max, items, values, isarray, objecttype, regex, custom);
 		},
 		array: () => {
-			return createdType(type, option, email, min, max, items, values, true, objecttype, regex);
+			return createdType(type, option, email, min, max, items, values, true, objecttype, regex, custom);
 		},
 		regex: (value: RegExp) => {
-			return createdType(type, option, email, min, max, items, values, isarray, objecttype, value);
+			return createdType(type, option, email, min, max, items, values, isarray, objecttype, value, custom);
 		},
 		items,
 		values,
@@ -541,7 +545,7 @@ const string = () => createdType("string", "required");
 const number = () => createdType("number", "required");
 const boolean = () => createdType("boolean", "required");
 const snowflake = () => createdType("snowflake", "required");
-const any = () => createdType("any", "required");
+const any = (customValidator?: (value: unknown) => boolean) => createdType("any", "required", false, -1, -1, undefined, undefined, false, undefined, undefined, customValidator);
 const array = <T extends BodyValidator>(opt: T) => createdType("array", "required", false, -1, -1, opt);
 const enums = <E extends Enumms>(values: E[]) => createdType("enum", "required", false, -1, -1, undefined, values);
 // O = keyof | obj

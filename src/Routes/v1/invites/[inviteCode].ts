@@ -226,7 +226,8 @@ export default class FetchJoinInvite extends Route {
 		const member = await this.App.cassandra.models.GuildMember.get({
 			userId: Encryption.encrypt(user.id),
 			guildId: inviteExists.guildId,
-		});
+				left: false
+			});
 
 		if (member) {
 			const memberFlags = new GuildMemberFlags(member.flags);
@@ -266,6 +267,7 @@ export default class FetchJoinInvite extends Route {
 					// they ar joining back, remove it
 					userId: user.id,
 					guildId: inviteExists.guildId,
+					left: true
 				});
 			}
 		}
@@ -280,6 +282,7 @@ export default class FetchJoinInvite extends Route {
 			timeouts: [],
 			userId: Encryption.encrypt(user.id),
 			channelAcks: [],
+			left: false
 		};
 
 		await this.App.cassandra.models.GuildMember.insert(newMember);
@@ -322,7 +325,7 @@ export default class FetchJoinInvite extends Route {
 		});
 
 		const first100Members = (
-			await this.App.cassandra.models.GuildMember.find({ guildId: inviteExists.guildId }, { limit: 100 })
+			await this.App.cassandra.models.GuildMember.find({ guildId: inviteExists.guildId, left: false }, { limit: 100 })
 		).toArray();
 
 		const finishedGuild = (fetchedInvite as { guild: finishedGuild; }).guild;
