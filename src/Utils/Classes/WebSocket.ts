@@ -741,9 +741,9 @@ class WebSocket extends App {
 			return 0;
 		}
 
-		for (const user of users) {
-			if (ignoreUsers.includes(user)) continue;
-
+		const filtered = Array.from(users).filter((user) => !ignoreUsers.includes(user));
+		
+		for (const user of filtered) {
 			user.send(typeof data === "object" ? { ...data, seq: user.sequence } : data);
 		}
 

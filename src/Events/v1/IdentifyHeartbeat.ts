@@ -206,6 +206,7 @@ export default class IdentifyAndHeartbeat extends Event {
 			const guildMember = await this.App.cassandra.models.GuildMember.get({
 				guildId: Encryption.encrypt(guild.id),
 				userId: Encryption.encrypt(user.id),
+				left: false
 			});
 
 			if (!guildMember) {
@@ -237,7 +238,7 @@ export default class IdentifyAndHeartbeat extends Event {
 			}
 
 			const first100Members = (
-				await this.App.cassandra.models.GuildMember.find({ guildId: Encryption.encrypt(guild.id) }, { limit: 100 })
+				await this.App.cassandra.models.GuildMember.find({ guildId: Encryption.encrypt(guild.id), left: false }, { limit: 100 })
 			).toArray();
 
 			const permCheck = new PermissionHandler(
@@ -330,7 +331,31 @@ export default class IdentifyAndHeartbeat extends Event {
 			}
 
 			finishedGuilds.push(finishedGuild);
+		}
 
+		user.lastHeartbeat = Date.now();
+
+		user.send({
+			op: opCodes.ready,
+			data: {
+				user: fetchedUser,
+				guilds: finishedGuilds,
+				settings: {
+					language: user.settings.language,
+					privacy: user.settings.privacy,
+					theme: user.settings.theme,
+					guildOrder: user.settings.guildOrder,
+					emojiPack: user.settings.emojiPack ?? "twemoji",
+					navBarLocation: user.settings.navBarLocation ?? "bottom",
+				},
+				presence: presences,
+			},
+			seq: user.sequence + 1,
+		});
+
+		await this.App.cache.set(`user:${Encryption.encrypt(user.id)}`, JSON.stringify(presences));
+		
+		for (const guild of finishedGuilds) {
 			this.App.publish(
 				`guild:${guild.id}:members`,
 				{
@@ -356,27 +381,5 @@ export default class IdentifyAndHeartbeat extends Event {
 				[user],
 			);
 		}
-
-		user.lastHeartbeat = Date.now();
-
-		user.send({
-			op: opCodes.ready,
-			data: {
-				user: fetchedUser,
-				guilds: finishedGuilds,
-				settings: {
-					language: user.settings.language,
-					privacy: user.settings.privacy,
-					theme: user.settings.theme,
-					guildOrder: user.settings.guildOrder,
-					emojiPack: user.settings.emojiPack ?? "twemoji",
-					navBarLocation: user.settings.navBarLocation ?? "bottom",
-				},
-				presence: presences,
-			},
-			seq: user.sequence + 1,
-		});
-
-		await this.App.cache.set(`user:${Encryption.encrypt(user.id)}`, JSON.stringify(presences));
 	}
 }
