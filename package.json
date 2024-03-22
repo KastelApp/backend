@@ -50,7 +50,8 @@
 		"prepare": "husky install",
 		"api": "bun run src/api.ts",
 		"ws": "bun run src/websocket.ts",
-		"spec": "bun run src/OpenSpec.ts"
+		"spec": "bun run src/OpenSpec.ts",
+		"dev": "bun --inspect run src/index.ts"
 	},
 	"keywords": [
 		"chatting"
