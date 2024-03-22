@@ -47,6 +47,8 @@ const handleMessage = async (worker: "api" | "heartbeat" | "ws", event: MessageE
 	} else if (isConfigResponse(event.data)) {
 		data.api.config = event.data.data;
 
+		heartbeat.postMessage({ type: "config", data: event.data.data });
+		
 		if (rabbitMq) return;
 
 		rabbitMq = new RabbitMQ(data.api.config);

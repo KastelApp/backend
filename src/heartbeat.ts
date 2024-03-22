@@ -1,10 +1,11 @@
 import Logger from "@/Utils/Classes/Logger.ts";
-import ConfigManager from "./Utils/Classes/ConfigManager.ts";
+import type { MySchema } from "./Types/JsonSchemaType.ts";
+import { isConfigResponse } from "./Utils/threadMessages.ts";
 
 declare const self: Worker;
 
 const logger = new Logger();
-const config = new ConfigManager();
+let config: MySchema = {} as MySchema;
 
 logger.who = "HTB";
 
@@ -15,6 +16,34 @@ const sessions: Map<string, {
 
 self.onmessage = (event) => {
     const { data: rawData } = event;
+    
+    if (isConfigResponse(rawData)) {
+        config = rawData.data;
+        
+        setInterval(() => {
+            const users = Array.from(sessions.entries()).filter(([, session]) => session.lastHeartbeat !== 0 && session.lastHeartbeat + session.interval + Number(config?.ws.intervals.heartbeat.leeway) < Date.now());
+        
+            for (const [sessionId] of users) {
+                logger.debug(`Kicking session: ${sessionId}`);
+        
+                self.postMessage({
+                    type: "heartbeat",
+                    data: {
+                        event: "kick",
+                        data: {
+                            sessionId,
+                        },
+                    }
+                });
+        
+                sessions.delete(sessionId);
+            }
+        }, Number(config?.ws.intervals.heartbeat.interval));
+        
+        
+        return;
+    }
+    
     const { data } = rawData;
 
     if (data.event === "session") {
@@ -39,22 +68,3 @@ self.onmessage = (event) => {
     }
 };
 
-setInterval(() => {
-    const users = Array.from(sessions.entries()).filter(([, session]) => session.lastHeartbeat !== 0 && session.lastHeartbeat + session.interval + Number(config.config?.ws.intervals.heartbeat.leeway) < Date.now());
-
-    for (const [sessionId] of users) {
-        logger.debug(`Kicking session: ${sessionId}`);
-
-        self.postMessage({
-            type: "heartbeat",
-            data: {
-                event: "kick",
-                data: {
-                    sessionId,
-                },
-            }
-        });
-
-        sessions.delete(sessionId);
-    }
-}, Number(config.config?.ws.intervals.heartbeat.interval));
