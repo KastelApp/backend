@@ -3,6 +3,7 @@ import { URL } from "node:url";
 import { isMainThread, type Server } from "bun";
 import { presenceTypes, statusTypes } from "@/Constants.ts";
 import { validate } from "@/Middleware/BodyValidator.ts";
+import { isHeartbeatMessage } from "../threadMessages.ts";
 import App from "./App.ts";
 import Encryption from "./Encryption.ts";
 import { errorCodes } from "./Events/Errors.ts";
@@ -90,6 +91,18 @@ class WebSocket extends App {
 		self.onmessage = (event: MessageEvent) => {
 			if (event.data.type === "config") {
 				postMessage({ type: "config", data: this.config });
+				
+				return;
+			}
+			
+			if (isHeartbeatMessage(event.data)) {
+				const user = this.clients.get(event.data.data.data.sessionId);
+				
+				if (!user) return;
+				
+				user.close(errorCodes.heartbeatTimeout);
+				
+				return;
 			}
 
 			if (!this.isRabbitMessage(event.data)) {
@@ -97,7 +110,7 @@ class WebSocket extends App {
 
 				return;
 			}
-
+			
 			switch (event.data.topic) {
 				case "ban.create": {
 					banCreate(this, event.data.data);
@@ -394,8 +407,30 @@ class WebSocket extends App {
 							sessionId: newUser.sessionId,
 						},
 					});
+					
+					postMessage({
+						type: "heartbeat",
+						data: {
+							event: "session",
+							data: {
+								interval: newUser.heartbeatInterval,
+								sessionId: newUser.sessionId,
+							},
+						}
+					})
 				},
 				close: async (ws, code) => {
+					
+					postMessage({
+						type: "heartbeat",
+						data: {
+							event: "left",
+							data: {
+								sessionId: ws.data.user.sessionId,
+							},
+						}
+					})
+					
 					if (ws.data.user.expectingClose) {
 						if (!ws.data.user.resumeable) {
 							this.clients.delete(ws.data.user.sessionId);
@@ -511,13 +546,13 @@ class WebSocket extends App {
 	}
 
 	private handleHeartbeats() {
-		setInterval(() => {
-			const usersWeWantToDealWith = Array.from(this.clients.values()).filter((user) => user.lastHeartbeat !== 0 && user.lastHeartbeat + user.heartbeatInterval + Number(this.config.ws.intervals.heartbeat.leeway) < Date.now());
+		// setInterval(() => {
+		// 	const usersWeWantToDealWith = Array.from(this.clients.values()).filter((user) => user.lastHeartbeat !== 0 && user.lastHeartbeat + user.heartbeatInterval + Number(this.config.ws.intervals.heartbeat.leeway) < Date.now());
 			
-			for (const user of usersWeWantToDealWith) {
-				user.close(errorCodes.heartbeatTimeout);
-			}			
-		}, Number(this.config.ws.intervals.heartbeat.interval));
+		// 	for (const user of usersWeWantToDealWith) {
+		// 		user.close(errorCodes.heartbeatTimeout);
+		// 	}			
+		// }, Number(this.config.ws.intervals.heartbeat.interval));
 	}
 
 	private handleClosedConnects() {

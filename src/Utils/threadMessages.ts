@@ -73,4 +73,18 @@ const isRabbitMqType = (
 	return "topic" in data.data;
 };
 
-export { isImportant, isLog, isNewLog, isQuestion, isReady, isConfigResponse, isRabbitMqType };
+const isHeartbeatMessage = (data: unknown): data is { data: { data: { interval?: number, sessionId: string }, event: string }, type: "heartbeat" } => {
+	if (typeof data !== "object") return false;
+
+	if (data === null) return false;
+
+	if (!("type" in data)) return false;
+
+	if (typeof data.type !== "string") return false;
+
+	if (data.type !== "heartbeat") return false;
+
+	return "data" in data
+}
+
+export { isImportant, isLog, isNewLog, isQuestion, isReady, isConfigResponse, isRabbitMqType, isHeartbeatMessage };
