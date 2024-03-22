@@ -540,19 +540,8 @@ class WebSocket extends App {
 		if (isMainThread) this.logger.info(`Listening on port ${this.config.ws.port}`);
 		else postMessage({ type: "ready", data: { port: this.config.ws.port } });
 
-		this.handleHeartbeats();
 		this.handleClosedConnects();
 		this.handleUnauthedUsers();
-	}
-
-	private handleHeartbeats() {
-		// setInterval(() => {
-		// 	const usersWeWantToDealWith = Array.from(this.clients.values()).filter((user) => user.lastHeartbeat !== 0 && user.lastHeartbeat + user.heartbeatInterval + Number(this.config.ws.intervals.heartbeat.leeway) < Date.now());
-			
-		// 	for (const user of usersWeWantToDealWith) {
-		// 		user.close(errorCodes.heartbeatTimeout);
-		// 	}			
-		// }, Number(this.config.ws.intervals.heartbeat.interval));
 	}
 
 	private handleClosedConnects() {
