@@ -82,6 +82,16 @@ export default class IdentifyAndHeartbeat extends Event {
 
 		user.lastHeartbeat = Date.now();
 
+		postMessage({
+			type: "heartbeat",
+			data: {
+				event: "heartbeat",
+				data: {
+					sessionId: user.sessionId,
+				}
+			}
+		})
+		
 		user.send(
 			{
 				op: opCodes.heartbeatAck,
