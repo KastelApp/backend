@@ -72,11 +72,11 @@ export default class IdentifyAndHeartbeat extends Event {
 			`Expecting ${user.sequence}, received ${data.seq}, is correct: ${data.seq === user.sequence}`,
 		);
 
-		if (data.seq !== user.sequence) {
-			user.close(errorCodes.invalidSequence); // ? if the seq is not the same as the last seq, close the connection
+		// if (data.seq !== user.sequence) {
+		// 	user.close(errorCodes.invalidSequence); // ? if the seq is not the same as the last seq, close the connection
 
-			return;
-		}
+		// 	return;
+		// }
 
 		if (user.lastHeartbeat + 10_000 > Date.now()) return; // ? if the last heartbeat was less than 10 seconds ago, ignore it
 

@@ -82,7 +82,7 @@ class User {
 		os: string;
 	};
 
-	public sequence: number = -1; // ? -1 due to the hello packet
+	public sequence: number = 0; // ? -1 due to the hello packet
 
 	public fetchedUser!: UserType;
 
