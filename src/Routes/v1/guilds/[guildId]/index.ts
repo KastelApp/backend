@@ -255,7 +255,10 @@ export default class FetchEditGuild extends Route {
 
 		// ? why aren't we using the models here?
 		await this.App.cassandra.execute("DELETE FROM channels WHERE guild_id = ?", [Encryption.encrypt(params.guildId)]);
-		await this.App.cassandra.execute("DELETE FROM guild_members WHERE guild_id = ?", [
+		await this.App.cassandra.execute("DELETE FROM guild_members WHERE guild_id = ? AND left = false", [
+			Encryption.encrypt(params.guildId),
+		]);
+		await this.App.cassandra.execute("DELETE FROM guild_members WHERE guild_id = ? AND left = true", [
 			Encryption.encrypt(params.guildId),
 		]);
 		await this.App.cassandra.execute("DELETE FROM emojis WHERE guild_id = ?", [Encryption.encrypt(params.guildId)]);
